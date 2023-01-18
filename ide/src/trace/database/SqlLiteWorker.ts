@@ -15,7 +15,7 @@
 
 importScripts('sql-wasm.js', "TempSql.js");
 let conn: any = null;
-
+let encoder = new TextEncoder();
 function initIndexedDB() {
     return new Promise((resolve, reject) => {
         let request = indexedDB.open("systrace");
@@ -63,6 +63,20 @@ function deleteConnection(store: IDBObjectStore, id: number) {
     })
 }
 
+let mergedUnitArray = (bufferSlice:Array<Uint8Array>)=>{
+    let length = 0;
+    bufferSlice.forEach(item => {
+        length += item.length;
+    });
+    let mergedArray = new Uint8Array(length);
+    let offset = 0;
+    bufferSlice.forEach(item => {
+        mergedArray.set(item, offset);
+        offset += item.length;
+    });
+    return mergedArray;
+}
+
 self.onerror = function (error) {
 }
 
@@ -84,7 +98,7 @@ self.onmessage = async (e: any) => {
             self.postMessage({id: e.data.id, init: true});
         });
     } else if (e.data.action === "close") {
-    } else if (e.data.action === "exec") {
+    } else if (e.data.action === "exec"||e.data.action === "exec-buf") {
         try {
             let action = e.data.action; //: "exec"
             let sql = e.data.sql;

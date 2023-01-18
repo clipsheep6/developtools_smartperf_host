@@ -12,11 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Address, ProfilerClient} from "./ProfilerClient.js";
 
 export class HiProfilerClient {
     private _client: ProfilerClient;
     private _address: Address;
+
+    public constructor(clients: ProfilerClient, addr: Address) {
+        this._client = clients;
+        this._address = addr;
+    };
 
     get client(): ProfilerClient {
         return this._client;
@@ -34,13 +40,8 @@ export class HiProfilerClient {
         this._address = value;
     }
 
-    public constructor(clients: ProfilerClient, addr: Address) {
-        this._client = clients;
-        this._address = addr;
-    };
-
-    public getProfilerClient(): ProfilerClient{
-       return this._client;
+    public getProfilerClient(): ProfilerClient {
+        return this._client;
     }
 
     public getCapabilities() {

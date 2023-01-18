@@ -15,41 +15,334 @@
 
 import {BaseElement, element} from "../../base-ui/BaseElement.js";
 
+import {
+    queryDistributedTerm,
+    querySelectTraceStats,
+    querySystemCalls,
+    querySystemCallsTop,
+    queryTraceCpu,
+    queryTraceCpuTop,
+    queryTraceMemory,
+    queryTraceMemoryTop,
+    queryTraceMemoryUnAgg,
+    queryTraceMetaData,
+    queryTraceTaskName
+} from "../database/SqlLite.js";
+
+import "../../base-ui/table/lit-table.js";
+import {initCpuStrategyData, initTest} from "./metrics/CpuStrategy.js";
+import {initDistributedTermData} from "./metrics/DistributeTermStrategy.js";
+import {initMemoryAggStrategy} from "./metrics/MemAggStrategy.js";
+import {initMemoryStrategy} from "./metrics/MemStrategy.js";
+import {initSysCallsStrategy} from "./metrics/SysCallsStrategy.js";
+import {initSysCallsTopStrategy} from "./metrics/SysCallsTopStrategy.js";
+import {initTraceStateStrategy} from "./metrics/TraceStatsStrategy.js";
+import {initTraceTaskStrategy} from "./metrics/TraceTaskStrategy.js";
+import {initMetaDataStrategy} from "./metrics/MetaDataStrategy.js";
+import {PluginConvertUtils} from "./setting/utils/PluginConvertUtils.js";
+import {info} from "../../log/Log.js";
+import {LitProgressBar} from "../../base-ui/progress-bar/LitProgressBar.js";
+
 @element('sp-metrics')
 export class SpMetrics extends BaseElement {
+    private _metric?: string;
+    private _metricResult?: string;
+    private selectMetricEl: HTMLSelectElement | undefined;
+    private runButtonEl: HTMLButtonElement | undefined | null;
+    private responseJson: HTMLPreElement | undefined | null;
+    private metricOptionalSelects: Array<MetricQueryItem> | undefined;
+    private progressLoad: LitProgressBar | undefined;
+
+    static get observedAttributes() {
+        return ["metric", "metricResult"]
+    }
+
+    get metric(): string {
+        return this.getAttribute("metric") || "";
+    }
+
+    set metric(value: string) {
+        this._metric = value;
+    }
+
+    get metricResult(): string {
+        return this.getAttribute("metricResult") || "";
+    }
+
+    set metricResult(value: string) {
+        this._metricResult = value;
+        this.setAttribute("metricResult", value);
+    }
+
+    reset() {
+        this.selectMetricEl!.selectedIndex = 0
+        this.responseJson!.textContent = ''
+    }
+
     initElements(): void {
+        this.progressLoad = this.shadowRoot?.querySelector(".load-metric") as LitProgressBar;
+        this.selectMetricEl = this.shadowRoot?.querySelector(".sql-select") as HTMLSelectElement;
+        this.runButtonEl = this.shadowRoot?.querySelector(".sql-select-button") as HTMLButtonElement;
+        this.responseJson = this.shadowRoot?.querySelector(".response-json") as HTMLPreElement;
+        if (this.selectMetricEl) {
+            this.selectMetricEl.addEventListener("selectionchange", () => {
+                if (this.selectMetricEl) this.selectMetricEl.textContent = "";
+            })
+        }
+        this.initMetricDataHandle();
+        this.initMetricSelectOption();
+    }
+
+    async initMetric(queryItem: MetricQueryItem) {
+        this.initMetricData(queryItem).then(item => {
+            this.progressLoad!.loading = false
+        })
+    }
+
+    async initMetricData(queryItem: MetricQueryItem) {
+        let metricQuery = queryItem.metricQuery;
+        let queryList = await metricQuery();
+        info("current Metric Data size is: ", queryList!.length)
+        let metric = queryItem.metricResultHandle;
+        let resultData = metric(queryList);
+        let jsonText = PluginConvertUtils.BeanToCmdTxtWithObjName(resultData, true, queryItem.metricName, 4);
+        this.responseJson!.textContent = jsonText;
+    }
+
+    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+        switch (name) {
+            case "metric":
+                if (this.selectMetricEl) this.selectMetricEl.textContent = newValue
+                break;
+            case "metricResult":
+                if (this.selectMetricEl) this.selectMetricEl.textContent = newValue
+                break;
+        }
+    }
+
+    runClickListener = (event: any) => {
+        this.progressLoad!.loading = true
+        let selectedIndex = this.selectMetricEl!.selectedIndex;
+        let value = this.selectMetricEl!.options[selectedIndex].value;
+        let resultQuery = this.metricOptionalSelects?.filter((item) => {
+            return item.metricName == value
+        })
+        if (!resultQuery || resultQuery.length < 1) return
+        this.initMetric(resultQuery[0]);
+    }
+
+
+    connectedCallback() {
+        // Run metric button to add listener
+        this.runButtonEl?.addEventListener('click', this.runClickListener);
+    }
+
+    disconnectedCallback() {
+        this.runButtonEl?.removeEventListener('click', this.runClickListener);
+    }
+
+    initMetricSelectOption() {
+        for (let index = 0; index < this.metricOptionalSelects!.length; index++) {
+            let htmlElement = document.createElement('option');
+            if (this.metricOptionalSelects) {
+                htmlElement.textContent = this.metricOptionalSelects[index].metricName;
+                this.selectMetricEl?.appendChild(htmlElement);
+            }
+        }
+    }
+
+    initMetricDataHandle() {
+        this.metricOptionalSelects = [
+            {
+                metricName: 'trace_mem',
+                metricQuery: queryTraceMemory,
+                metricResultHandle: initMemoryStrategy
+            },
+            {
+                metricName: 'trace_mem_top10',
+                metricQuery: queryTraceMemoryTop,
+                metricResultHandle: initMemoryStrategy
+            },
+            {
+                metricName: 'trace_mem_unagg',
+                metricQuery: queryTraceMemoryUnAgg,
+                metricResultHandle: initMemoryAggStrategy
+            },
+            {
+                metricName: 'trace_task_names',
+                metricQuery: queryTraceTaskName,
+                metricResultHandle: initTraceTaskStrategy
+            },
+            {
+                metricName: 'trace_stats',
+                metricQuery: querySelectTraceStats,
+                metricResultHandle: initTraceStateStrategy
+            },
+            {
+                metricName: 'trace_metadata',
+                metricQuery: queryTraceMetaData,
+                metricResultHandle: initMetaDataStrategy
+            },
+            {
+                metricName: 'sys_calls',
+                metricQuery: querySystemCalls,
+                metricResultHandle: initSysCallsStrategy
+            },
+        ]
     }
 
     initHtml(): string {
         return `
-<style>
-:host{
-    width: 100%;
-    height: 100%;
-    background-color: aqua;
-}
-xmp{
-    color: #121212;
-    background-color: #eeeeee;
-    padding: 30px;
-    margin: 30px;
-    overflow: auto;
-    border-radius: 20px;
-}
-</style>
-<div>
-<xmp>
-    trace_metadata: {
-  trace_duration_ns: 14726175738
-  trace_uuid: "00000000-0000-0000-c0bd-eb5c5728bf40"
-  statsd_triggering_subscription_id: 0
-  unique_session_name: ""
-  trace_size_bytes: 57202082
-  trace_config_pbtxt: "buffers: {  size_kb: 63488\\n  fill_policy: DISCARD\\n}\\nbuffers: {\\n  size_kb: 2048\\n  fill_policy: DISCARD\\n}\\ndata_sources: {\\n  config: {\\n    name: \\"linux.process_stats\\"\\n    target_buffer: 1\\n    trace_duration_ms: 0\\n    tracing_session_id: 0\\n    enable_extra_guardrails: false\\n    ftrace_config: {\\n      buffer_size_kb: 0\\n      drain_period_ms: 0\\n    }\\n    chrome_config: {\\n      trace_config: \\"\\"\\n      privacy_filtering_enabled: false\\n    }\\n    inode_file_config: {\\n      scan_interval_ms: 0\\n      scan_delay_ms: 0\\n      scan_batch_size: 0\\n      do_not_scan: false\\n    }\\n    process_stats_config: {\\n      scan_all_processes_on_start: true\\n      record_thread_names: false\\n      proc_stats_poll_ms: 1000\\n      proc_stats_cache_ttl_ms: 0\\n    }\\n    sys_stats_config: {\\n      meminfo_period_ms: 0\\n      vmstat_period_ms: 0\\n      stat_period_ms: 0\\n    }\\n    heapprofd_config: {\\n      sampling_interval_bytes: 0\\n      all: false\\n      continuous_dump_config: {\\n        dump_phase_ms: 0\\n        dump_interval_ms: 0\\n      }\\n      shmem_size_bytes: 0\\n      block_client: false\\n    }\\n    android_power_config: {\\n      battery_poll_ms: 0\\n      collect_power_rails: false\\n    }\\n    android_log_config: {\\n      min_prio: PRIO_UNSPECIFIED\\n    }\\n    packages_list_config: {\\n    }\\n    legacy_config: \\"\\"\\n  }\\n}\\ndata_sources: {\\n  config: {\\n    name: \\"linux.ftrace\\"\\n    target_buffer: 0\\n    trace_duration_ms: 0\\n    tracing_session_id: 0\\n    enable_extra_guardrails: false\\n    ftrace_config: {\\n      ftrace_events: \\"sched/sched_switch\\"\\n      ftrace_events: \\"power/suspend_resume\\"\\n      ftrace_events: \\"sched/sched_wakeup\\"\\n      ftrace_events: \\"sched/sched_wakeup_new\\"\\n      ftrace_events: \\"sched/sched_waking\\"\\n      ftrace_events: \\"power/cpu_frequency\\"\\n      ftrace_events: \\"power/cpu_idle\\"\\n      ftrace_events: \\"sched/sched_process_exit\\"\\n      ftrace_events: \\"sched/sched_process_free\\"\\n      ftrace_events: \\"task/task_newtask\\"\\n      ftrace_events: \\"task/task_rename\\"\\n      ftrace_events: \\"lowmemorykiller/lowmemory_kill\\"\\n      ftrace_events: \\"oom/oom_score_adj_update\\"\\n      ftrace_events: \\"ftrace/print\\"\\n      atrace_categories: \\"gfx\\"\\n      atrace_apps: \\"lmkd\\"\\n      buffer_size_kb: 0\\n      drain_period_ms: 0\\n    }\\n    chrome_config: {\\n      trace_config: \\"\\"\\n      privacy_filtering_enabled: false\\n    }\\n    inode_file_config: {\\n      scan_interval_ms: 0\\n      scan_delay_ms: 0\\n      scan_batch_size: 0\\n      do_not_scan: false\\n    }\\n    process_stats_config: {\\n      scan_all_processes_on_start: false\\n      record_thread_names: false\\n      proc_stats_poll_ms: 0\\n      proc_stats_cache_ttl_ms: 0\\n    }\\n    sys_stats_config: {\\n      meminfo_period_ms: 0\\n      vmstat_period_ms: 0\\n      stat_period_ms: 0\\n    }\\n    heapprofd_config: {\\n      sampling_interval_bytes: 0\\n      all: false\\n      continuous_dump_config: {\\n        dump_phase_ms: 0\\n        dump_interval_ms: 0\\n      }\\n      shmem_size_bytes: 0\\n      block_client: false\\n    }\\n    android_power_config: {\\n      battery_poll_ms: 0\\n      collect_power_rails: false\\n    }\\n    android_log_config: {\\n      min_prio: PRIO_UNSPECIFIED\\n    }\\n    packages_list_config: {\\n    }\\n    legacy_config: \\"\\"\\n  }\\n}\\nduration_ms: 15000\\nenable_extra_guardrails: false\\nlockdown_mode: LOCKDOWN_UNCHANGED\\nstatsd_metadata: {\\n  triggering_alert_id: 0\\n  triggering_config_uid: 0\\n  triggering_config_id: 0\\n  triggering_subscription_id: 0\\n}\\nwrite_into_file: false\\nfile_write_period_ms: 0\\nmax_file_size_bytes: 0\\nguardrail_overrides: {\\n  max_upload_per_day_bytes: 0\\n}\\ndeferred_start: false\\nflush_period_ms: 0\\nflush_timeout_ms: 0\\nnotify_traceur: false\\ntrigger_config: {\\n  trigger_mode: UNSPECIFIED\\n  trigger_timeout_ms: 0\\n}\\nallow_user_build_tracing: false\\nbuiltin_data_sources: {\\n  disable_clock_snapshotting: false\\n  disable_trace_config: false\\n  disable_system_info: false\\n}\\nincremental_state_config: {\\n  clear_period_ms: 0\\n}\\nunique_session_name: \\"\\"\\ncompression_type: COMPRESSION_TYPE_UNSPECIFIED\\nincident_report_config: {\\n  destination_package: \\"\\"\\n  destination_class: \\"\\"\\n  privacy_level: 0\\n  skip_dropbox: false\\n}"
-  sched_duration_ns: 14726119124
-}
-</xmp>       
-</div>
+        <style>
+
+        :host{
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-background5,#F6F6F6);
+            margin: 0;
+            padding: 0;
+            font-size:16px;
+        }
+
+        .metric{
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--dark-background5,#F6F6F6);
+        }
+
+        .metric-select{
+            color: #121212;
+            border-radius: 16px;
+            background-color: var(--dark-background3,#FFFFFF);
+            padding: 1% 2%;
+            margin: 2% 2.5% 0 2.5%;
+            grid-row-gap: 30px;
+        }
+
+        .request{
+            min-height: 15vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        .sql-select{
+            font-family: Helvetica,serif;
+            color: var(--dark-color1,#212121);
+            font-size:0.875em;
+            line-height: 16px;
+            font-weight: 400;
+            text-align: left;
+            width: 50%;
+            height: 32px;
+            flex-wrap: wrap;
+            margin-top: 1%;
+            border: 1px solid var(--dark-color1,#4D4D4D);
+            border-radius: 16px;
+            padding: 5px 10px 5px 10px;
+            -webkit-appearance: none;
+            background: url('img/down.png') no-repeat 98% center var(--dark-background3,#FFFFFF);
+        }
+
+        button{
+            border-radius: 16px;
+            flex-grow: 1;
+            background-color: #0A59F7;
+            height: 32px;
+            width: 96px;
+            font-size: 0.875em;
+            color: var(--dark-background3,#FFFFFF);
+            text-align: center;
+            line-height: 20px;
+            font-weight: 400;
+            border:0 solid;
+            margin-left: 2%;
+            opacity: 0.6;
+            cursor:pointer;
+        }
+
+        .response{
+            flex-grow: 1;
+            margin-bottom: 1%;
+        }
+
+        .response-json{
+            background-color: var(--dark-background3,#FFFFFF);
+            border-radius: 16px;
+            display: table-cell;
+            font-family: Helvetica,serif;
+            color: var(--dark-color1,#212121);
+            font-size:0.875em;
+            line-height: 20px;
+            font-weight: 400;
+            text-align: left;
+            height: 90%;
+            width: 100%;
+            border: none;
+            outline:none;
+            resize:none;
+        }
+
+        p{
+             display: table-cell;
+             padding: 20% 0;
+             color: #999999;
+             font-size:0.875em;
+             line-height: 20px;
+             font-weight: 400;
+             text-align: left;
+             width: 100%;
+        }
+
+        /*Define scroll bar height, width and background*/
+        ::-webkit-scrollbar
+        {
+          width: 8px;
+          background-color: var(--dark-background3,#FFFFFF);
+        }
+
+        /*define slider*/
+        ::-webkit-scrollbar-thumb
+        {
+          border-radius: 6px;
+          background-color: var(--dark-background7,rgba(0,0,0,0.1));
+        }
+        
+        .load-metric{
+            width: 95%;
+            bottom: 0;
+        }
+
+        </style>
+
+        <div class="metric">
+            <div class="metric-select request">
+                <p>Select a metric</p>
+                <select class="sql-select">
+                </select>
+                <button class="sql-select-button">&nbsp;&nbsp; Run &nbsp;&nbsp;</button>
+                <lit-progress-bar class="load-metric"></lit-progress-bar>
+            </div>
+            <div class="metric-select response">
+                 <textarea class="response-json" readonly>
+                 </textarea>
+            </div>
+        </div>
         `;
     }
+}
+
+export interface MetricQueryItem {
+    metricName: string
+    metricQuery: Function
+    metricResultHandle: Function
+}
+
+export class SpMetricsItem {
+    itemTip: string | undefined
+    itemValue: any[] | undefined
 }

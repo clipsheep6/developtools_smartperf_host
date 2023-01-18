@@ -13,17 +13,53 @@
  * limitations under the License.
  */
 
+import {CpuFreqLimitsStruct} from "../database/ui-worker/ProcedureWorkerCpuFreqLimits.js";
+
 export class SelectionParam {
-    cpus: Array<number> = [];
-    threadIds: Array<number> = [];
-    trackIds: Array<number> = [];
-    funTids: Array<number> = [];
-    heapIds: Array<number> = [];
-    nativeMemory:Array<String> = [];
+    recordStartNs:number = 0
     leftNs: number = 0;
     rightNs: number = 0;
     hasFps: boolean = false;
-    statisticsSelectData:any = undefined
+    statisticsSelectData: any = undefined
+    fileSystemVMData: any = undefined;
+    fileSystemIoData: any = undefined;
+    fileSystemFsData: any = undefined;
+    perfAll: boolean = false;
+    fileSysVirtualMemory: boolean = false;
+    diskIOLatency:boolean = false;
+    fsCount:number = 0;
+    vmCount:number = 0;
+
+    cpus: Array<number> = [];
+    cpuStateFilterIds: Array<number> = [];
+    cpuFreqFilterIds: Array<number> = [];
+    cpuFreqLimitDatas:Array<Array<CpuFreqLimitsStruct>> = [];
+    threadIds: Array<number> = [];
+    processTrackIds: Array<number> = [];
+    virtualTrackIds: Array<number> = [];
+    funTids: Array<number> = [];
+    funAsync: Array<{name:string,pid:number}> = [];
+    heapIds: Array<number> = [];
+    nativeMemory: Array<String> = [];
+    cpuAbilityIds: Array<string> = []
+    memoryAbilityIds: Array<string> = []
+    diskAbilityIds: Array<string> = []
+    networkAbilityIds: Array<string> = []
+    perfSampleIds: Array<number> = [];
+    perfCpus: Array<number> = [];
+    perfProcess: Array<number> = [];
+    perfThread: Array<number> = [];
+    fileSystemType:Array<number> = [];
+    sdkCounterIds: Array<string> = [];
+    sdkSliceIds: Array<string> = [];
+    diskIOipids:Array<number> = [];
+    diskIOReadIds:Array<number> = []
+    diskIOWriteIds:Array<number> = []
+    systemEnergy: Array<string> = []
+    powerEnergy: Array<string> = []
+    anomalyEnergy: Array<string> = []
+    smapsType:Array<string> = [];
+    promiseList:Array<Promise<any>> = []
 }
 
 export class BoxJumpParam {

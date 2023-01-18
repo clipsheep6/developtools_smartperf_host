@@ -49,6 +49,18 @@ export class LitMainMenuItem extends BaseElement {
         }
     }
 
+    get back(): boolean {
+        return this.hasAttribute("back")
+    }
+
+    set back(isShowBack: boolean) {
+        if (isShowBack) {
+            this.setAttribute("back", '');
+        } else {
+            this.removeAttribute("back");
+        }
+    }
+
     initElements(): void {
         this.rootEL = this.shadowRoot?.querySelector('.root');
         this.titleEl = this.shadowRoot?.querySelector('.name');
@@ -85,72 +97,76 @@ export class LitMainMenuItem extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-    :host{
-        user-select: none;
-        display: flex;
-        font-family: Helvetica;
-        opacity: 0.6;
-        font-size: 14px;
-        color: var(--dark-color,rgba(0,0,0,0.6));
-        text-align: left;
-        line-height: 20px;
-        font-weight: 400
-        background-color: #FFFFFF;
-        transition: background-color .3s;
-    }
-    :host(:not([disabled]):hover){
-        display: flex;
-        background-color: var(--dark-background8,#0A59F7);
-        color: #FFFFFF;
-        cursor: pointer;
-    }
-    :host([disabled]:hover){
-        display: flex;
-        /*background-color:#3391FF;*/
-        /*color: #FFFFFF;*/
-        cursor:not-allowed;
-    }
-    :host([disabled]) .root{
-        cursor:not-allowed;
-        display: flex;
-        align-items: center;
-        padding: 10px 24px;
-        width: 100%;
-    }
-    :host(:not([disabled])) .root{
-        cursor:pointer;
-        display: flex;
-        align-items: center;
-        padding: 10px 24px;
-        width: 100%;
-    }
-    .name{
-        padding-left: 10px;
-        cursor: pointer;
-    }
-    .icon{
-        pointer-events: none;
-    }
-    :host(:not([file])) .name{
-        pointer-events: none;
-    }
-    :host(:not([file])) .root{
-        pointer-events: none;
-    }
-    :host([file]) .name{
-        pointer-events: none;
-    }
-    :host([file]) .icon{
-        pointer-events: none;
-    }
-</style>
-<input id="file" class="file" type="file" style="display:none;pointer-events: none" />
-<label class="root" for="file">
-    <lit-icon class="icon" name="user" size="20"></lit-icon>
-    <label class="name"></label>
-</label>
-`;
+        <style>
+            :host{
+                user-select: none;
+                display: flex;
+                font-family: Helvetica;
+                font-size: 14px;
+                color: var(--dark-color,rgba(0,0,0,0.6));
+                text-align: left;
+                line-height: 20px;
+                font-weight: 400
+                background-color: #FFFFFF;
+                transition: background-color .3s;
+            }
+            :host(:not([disabled]):hover){
+                display: flex;
+                background-color: var(--dark-background8,#6C9BFA);
+                color: #FFFFFF;
+                cursor: pointer;
+            }
+            :host([disabled]:hover){
+                display: flex;
+                /*background-color:#3391FF;*/
+                /*color: #FFFFFF;*/
+                cursor:not-allowed;
+            }
+            :host([disabled]) .root{
+                cursor:not-allowed;
+                display: flex;
+                align-items: center;
+                padding: 10px 24px;
+                width: 100%;
+            }
+            :host(:not([disabled])) .root{
+                cursor:pointer;
+                display: flex;
+                align-items: center;
+                padding: 10px 24px;
+                width: 100%;
+            }
+            .name{
+                padding-left: 10px;
+                cursor: pointer;
+            }
+            .icon{
+                pointer-events: none;
+            }
+            :host(:not([file])) .name{
+                pointer-events: none;
+            }
+            :host(:not([file])) .root{
+                pointer-events: none;
+            }
+            :host([file]) .name{
+                pointer-events: none;
+            }
+            :host([file]) .icon{
+                pointer-events: none;
+            }
+            
+            :host([back]) {
+                background-color: var(--dark-background8,#6C9BFA);
+            } 
+            
+        </style>
+        <input id="file" class="file" type="file" style="display:none;pointer-events: none" />
+        <label class="root" for="file">
+            <lit-icon class="icon" name="user" size="20"></lit-icon>
+            <label class="name"></label>
+        </label>
+        `;
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {

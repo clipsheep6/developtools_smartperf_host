@@ -22,8 +22,9 @@ export class HeapStruct extends BaseStruct {
     startTime: number | undefined
     endTime: number | undefined
     dur: number | undefined
-    eventType:string | undefined
+    eventType: string | undefined
     heapsize: number | undefined
+    density: number | undefined
     maxHeapSize: number = 0
     minHeapSize: number = 0
 

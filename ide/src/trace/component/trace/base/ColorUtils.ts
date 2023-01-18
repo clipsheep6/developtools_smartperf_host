@@ -13,40 +13,44 @@
  * limitations under the License.
  */
 
-import {CpuStruct} from "../../../bean/CpuStruct.js";
+
+import {CpuStruct} from "../../../database/ui-worker/ProcedureWorkerCPU.js";
 
 export class ColorUtils {
     public static GREY_COLOR: string = "#f0f0f0"
 
     public static MD_PALETTE: Array<string> = [
-        "#3391ff",
-        "#0076ff",
-        "#66adff",
-        "#2db3aa",
-        "#008078",
-        "#73e6de",
-        "#535da6",
-        "#38428c",
-        "#7a84cc",
-        "#ff9201",
-        "#ff7500",
-        "#ffab40",
-        "#2db4e2",
-        "#0094c6",
-        "#7cdeff",
-        "#ffd44a",
-        "#fbbf00",
-        "#ffe593",
+        "#9785D3",
+        "#A27F7E",
+        "#00bdd6",
+        "#94B5F4",
+        "#B282F6",
+        "#E97978",
+        "#7AD7E6",
+        "#A1C38A",
+        "#DB8E86",
+        "#42B7A4",
+        "#AACEA0",
+        "#E69553",
+        "#7EC6BB",
+        "#C6D9F2",
     ];
     public static FUNC_COLOR: Array<string> = [
-        "#3391ff",
-        "#2db4e2",
-        "#2db3aa",
-        "#ffd44a",
-        "#535da6",
-        "#008078",
-        "#ff9201",
-        "#38428c"];
+        "#9785D3",
+        "#A27F7E",
+        "#00bdd6",
+        "#94B5F4",
+        "#B282F6",
+        "#E97978",
+        "#7AD7E6",
+        "#A1C38A",
+        "#DB8E86",
+        "#42B7A4",
+        "#AACEA0",
+        "#E69553",
+        "#7EC6BB",
+        "#C6D9F2",
+    ];
 
     public static hash(str: string, max: number): number {
         let colorA: number = 0x811c9dc5;
@@ -76,11 +80,26 @@ export class ColorUtils {
     }
 
     public static formatNumberComma(str: number): string {
+        if(!str) return "";
         let l = str.toString().split("").reverse();
         let t: string = "";
         for (let i = 0; i < l.length; i++) {
             t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
         }
         return t.split("").reverse().join("")
+    }
+
+    public static hashFunc(str: string, depth: number, max: number): number {
+        let colorA: number = 0x811c9dc5;
+        let colorB: number = 0xfffffff;
+        let colorC: number = 16777619;
+        let colorD: number = 0xffffffff;
+        let hash: number = colorA & colorB;
+        let st = str.replace(/[0-9]+/g, "");
+        for (let index: number = 0; index < st.length; index++) {
+            hash ^= st.charCodeAt(index);
+            hash = (hash * colorC) & colorD;
+        }
+        return (Math.abs(hash) + depth) % max;
     }
 }

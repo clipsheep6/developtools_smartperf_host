@@ -18,7 +18,7 @@ import "../../base-ui/popover/LitPopover.js"
 import {LitPopover} from "../../base-ui/popover/LitPopover.js";
 
 @element('sp-text')
-export class Sptext extends BaseElement {
+export class SpText extends BaseElement {
     initElements(): void {
         let litPopover = this.shadowRoot?.querySelector<LitPopover>('lit-popover');
         litPopover!.dataSource = [{
@@ -29,31 +29,31 @@ export class Sptext extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
-}
-.root{
-    display: flex;
-    flex-direction: column;
-}
-.trace-menu{
-    grid-area: m;
-}
-.trace-content{
-    grid-area: b;
-    width: 100%;
-    height: 2000px;
-    overflow: auto;
-}
-</style>
-<div class="root">
-    <div id="trace-content" class="trace-content">
-    <img src="img/pic.png">
-    <lit-popover direction="topleft" type="multiple-text" title=""> 
-      <button>aaaa</button>
-    </lit-popover>
-    </div>
-</div>      `;
+        <style>
+        :host{
+        }
+        .root{
+            display: flex;
+            flex-direction: column;
+        }
+        .trace-menu{
+            grid-area: m;
+        }
+        .trace-content{
+            grid-area: b;
+            width: 100%;
+            height: 2000px;
+            overflow: auto;
+        }
+        </style>
+        <div class="root">
+            <div id="trace-content" class="trace-content">
+            <img src="img/pic.png">
+            <lit-popover direction="topleft" type="multiple-text" title="">
+              <button>test</button>
+            </lit-popover>
+            </div>
+        </div>
+        `;
     }
-
 }

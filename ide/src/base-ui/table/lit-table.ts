@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 import {LitTableColumn} from "./lit-table-column.js";
 import {element} from "../BaseElement.js";
 import "../utils/Template.js"
@@ -24,8 +23,10 @@ export class LitTable extends HTMLElement {
     meauseRowElement: HTMLDivElement | undefined
     currentRecycleList: HTMLDivElement[] = []
     currentTreeDivList: HTMLDivElement[] = []
+    public rememberScrollTop = false
     private ds: Array<any> = []
     private recycleDs: Array<any> = []
+    private normalDs: Array<any> = []
     private gridTemplateColumns: any
     /*Grid css layout descriptions are obtained according to the clustern[] nested structure*/
     private st: HTMLSlotElement | null | undefined
@@ -36,161 +37,190 @@ export class LitTable extends HTMLElement {
     private treeElement: HTMLDivElement | undefined | null
     private tableColumns: NodeListOf<LitTableColumn> | undefined
     private colCount: number = 0
-
+    private currentScrollTop: number = 0
+    private isRecycleList: boolean = true
+    private isScrollXOutSide: boolean = false;
     constructor() {
         super();
         const shadowRoot = this.attachShadow({mode: 'open'});
         shadowRoot.innerHTML = `
-<style>
-:host{ 
-    display: grid;
-    grid-template-columns: repeat(1,1fr);
-    width: 100%;
-    flex:1;
-}
-.tr{
-    display: grid;
-    width:100%;
-}
-.tr:nth-of-type(even){
-}
+        <style>
+        :host{
+            display: grid;
+            grid-template-columns: repeat(1,1fr);
+            width: 100%;
+            flex:1;
+        }
+        .tr{
+            display: grid;
+            grid-column-gap: 5px;
+            min-width:100%;
+        }
+        .tr:nth-of-type(even){
+        }
 
-.tr{
-    background-color: var(--dark-background,#FFFFFF);
-}
-.tr:hover{
-    background-color: var(--dark-background6,#DEEDFF); 
-}
-.td{
-    background-color: inherit;
-    box-sizing: border-box;
-    padding: 3px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: auto;
-}
-.tr[selected]{
-    background-color: var(--dark-background6,#DEEDFF);
-}
-.td-order{
-}
-.td-order:before{
-    
-}
-:host([grid-line]) .td{
-    border-left: 1px solid #f0f0f0;
-}
-:host([grid-line]) .td:last-of-type{
-    border-right: 1px solid #f0f0f0;
-}
-.table{
-    width: 100%;
-     color: var(--dark-color2,#262626);
-}
-.thead{
-    display: grid;
-    position: sticky;
-    top: 0;
-    font-weight: bold;
-    font-size: .9rem;
-    color: var(--dark-color1,#000);
-    background-color: var(--dark-background,#FFFFFF);
-    z-index: 1;
-}
-.tbody{
-    width: 100%;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom:0;
-    display: flex;
-    flex-direction: row
-    row-gap: 1px;
-    column-gap: 1px;
-}
-.tree{
-    overflow-x:overlay;
-    overflow-y:hidden;
-    display: grid;
-    grid-template-columns: 1fr;
-    row-gap: 1px;
-    column-gap: 1px;
-    position:relative;
-}
-.tree-first-body{
-    min-width: 100%;
-    box-sizing: border-box;
-    display:flex;
-    align-items:center;
-    white-space: nowrap;
-    cursor: pointer;
-}
-.tree-first-body:hover{
-    background-color: var(--dark-background6,#DEEDFF); /*antd #fafafa 42b983*/
-}
-.body{
-    display: grid;
-    grid-template-columns: 1fr;
-    row-gap: 1px;
-    column-gap: 1px;
-    flex:1;
-    position: relative;
-}
-:host([grid-line])  .tbody{
-    border-bottom: 1px solid #f0f0f0;
-    background-color: #f0f0f0;
-}
-.th{
-    display: grid;
-}
+        .tr{
+            background-color: var(--dark-background,#FFFFFF);
+        }
+        .tr:hover{
+            background-color: var(--dark-background6,#DEEDFF);
+        }
+        .td{
+            box-sizing: border-box;
+            padding: 3px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+        .td text{
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap;
+        }
+        .tr[selected]{
+            background-color: var(--dark-background6,#DEEDFF);
+        }
+        .td-order{
+        }
+        .td-order:before{
 
-.tree-icon{
-    font-size: 1.2rem;
-    width: 20px;
-    height: 20px;
-    padding-right: 5px;
-    padding-left: 5px;
-    cursor: pointer;
-}
-.tree-icon:hover{
-    color: #42b983;
-}
-.row-checkbox,row-checkbox-all{
-    
-}
-:host([no-head]) .thead{
-    display: none;
-}
-.up-svg{
-    position: absolute;
-    right: 5px;
-    top: 8px;
-    bottom: 8px;
-    width: 15px;
-    height: 15px;
-}
-.down-svg{
-    position: absolute;
-    top: 8px;
-    right: 5px;
-    bottom: 8px;
-    width: 15px;
-    height: 15px;
-}
-</style>
+        }
+        :host([grid-line]) .td{
+            border-left: 1px solid #f0f0f0;
+        }
+        :host([grid-line]) .td:last-of-type{
+            border-right: 1px solid #f0f0f0;
+        }
+        .table{
+            width: 100%;
+             color: var(--dark-color2,#262626);
+        }
+        .thead{
+            display: grid;
+            position: sticky;
+            top: 0;
+            font-weight: bold;
+            font-size: .9rem;
+            color: var(--dark-color1,#000);
+            background-color: var(--dark-background,#FFFFFF);
+            z-index: 1;
+        }
+        .tbody{
+            width: 100%;
+            top: 0;
+            left: 0;
+            right:0;
+            bottom:0;
+            display: flex;
+            flex-direction: row
+            row-gap: 1px;
+            column-gap: 1px;
+        }
+        .tree{
+            overflow-x:hidden;
+            overflow-y:hidden;
+            display: grid;
+            grid-template-columns: 1fr;
+            row-gap: 1px;
+            column-gap: 1px;
+            position:relative;
+        }
+        .tree:hover{
+            overflow-x: overlay;
+        }
+        .tree-first-body{
+            min-width: 100%;
+            box-sizing: border-box;
+            display:flex;
+            align-items:center;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .tree-first-body:hover{
+            background-color: var(--dark-background6,#DEEDFF); /*antd #fafafa 42b983*/
+        }
+        .body{
+            display: grid;
+            grid-template-columns: 1fr;
+            row-gap: 1px;
+            column-gap: 1px;
+            flex:1;
+            position: relative;
+        }
+        :host([grid-line])  .tbody{
+            border-bottom: 1px solid #f0f0f0;
+            background-color: #f0f0f0;
+        }
+        .th{
+            grid-column-gap: 5px;
+            display: grid;
+            background-color: var(--dark-background,#FFFFFF);
+        }
 
-<slot id="slot" style="display: none"></slot>
-<div class="table" style="overflow-x:overlay;">
-    <div class="thead"></div>
-    <div class="tbody">
-        <div class="tree"></div>
-        <div class="body"></div>
-</div>
-</div>
+        .tree-icon{
+            font-size: 1.2rem;
+            width: 20px;
+            height: 20px;
+            padding-right: 5px;
+            padding-left: 5px;
+            cursor: pointer;
+        }
+        .tree-icon:hover{
+            color: #42b983;
+        }
+        .row-checkbox,row-checkbox-all{
+
+        }
+        :host([no-head]) .thead{
+            display: none;
+        }
+        .up-svg{
+            position: absolute;
+            right: 5px;
+            top: 8px;
+            bottom: 8px;
+            width: 15px;
+            height: 15px;
+        }
+        .down-svg{
+            position: absolute;
+            top: 8px;
+            right: 5px;
+            bottom: 8px;
+            width: 15px;
+            height: 15px;
+        }
+        .mouse-select{
+            background-color: var(--dark-background6,#DEEDFF);
+        }
+        .mouse-in{
+            background-color: var(--dark-background6,#DEEDFF);
+        }
+        .export{
+            width:30px;
+            height:30px;
+            cursor:pointer;
+            color:var(--dark-background6,#262626);
+            box-sizing: border-box;
+            position:fixed;
+            right:30px;
+            bottom:15px;
+        }
+        </style>
+
+        <slot id="slot" style="display: none"></slot>
+        <slot name="head"></slot>
+        <div class="table" style="overflow-x:auto;">
+            <div class="thead"></div>
+            <div class="tbody">
+                <div class="tree"></div>
+                <div class="body"></div>
+        </div>
+        </div>
         `
-
     }
 
     static get observedAttributes() {
@@ -217,12 +247,14 @@ export class LitTable extends HTMLElement {
         this.setAttribute('scroll-y', value);
     }
 
+
     get dataSource() {
         return this.ds || [];
     }
 
     set dataSource(value) {
         this.ds = value;
+        this.isRecycleList = false
         if (this.hasAttribute('tree')) {
             this.renderTreeTable();
         } else {
@@ -231,11 +263,19 @@ export class LitTable extends HTMLElement {
     }
 
     get recycleDataSource() {
-        return this.recycleDs || [];
+        return this.ds || [];
     }
 
     set recycleDataSource(value) {
-        this.tableElement!.scrollTop = 0
+        this.isScrollXOutSide = this.tableElement!.scrollWidth > this.tableElement!.clientWidth
+        this.isRecycleList = true
+        this.ds = value;
+        if (this.rememberScrollTop) {
+            this.currentScrollTop = this.tableElement!.scrollTop;
+            this.tableElement!.scrollTop = 0
+        } else {
+            this.tableElement!.scrollTop = 0
+        }
         if (this.hasAttribute('tree')) {
             this.recycleDs = this.meauseTreeRowElement(value)
         } else {
@@ -243,7 +283,64 @@ export class LitTable extends HTMLElement {
         }
     }
 
-    // It is called when the custom element is first inserted into the document DOM.
+    move1px() {
+        this.tableElement!.scrollTop = this.tableElement!.scrollTop + 1
+    }
+
+    dataExportInit() {
+        let exportDiv = this.shadowRoot!.querySelector<HTMLDivElement>(".export")
+        exportDiv && (exportDiv.onclick = () => {
+            this.exportData()
+        });
+        let tab = document?.querySelector("body > sp-application")?.shadowRoot?.querySelector("#sp-system-trace")
+            ?.shadowRoot?.querySelector("div > trace-sheet")?.shadowRoot?.querySelector("#tabs");
+        if (tab != undefined) {
+            new ResizeObserver(() => {
+                if (tab && tab.clientHeight > (38 + 70)) {
+                    exportDiv!.style.visibility = "visible";
+                } else {
+                    exportDiv!.style.visibility = "hidden";
+                }
+            }).observe(tab)
+        }
+    }
+
+    exportData() {
+        let formatData: any[] = this.formatExportData(this.ds)
+        let link = document.createElement('a')
+        link.download = new Date().getTime() + '.json'
+        link.href = 'data:text/plain,' + JSON.stringify(formatData, null, 4)
+        link.click()
+    }
+
+    formatExportData(dataSource: any[]): any[] {
+        if (dataSource == undefined || dataSource.length == 0) {
+            return []
+        }
+        if (this.columns == undefined) {
+            return []
+        }
+        return dataSource.map((item) => {
+            let formatData: any = {}
+            this.columns!.forEach((column) => {
+                let dataIndex = column.getAttribute('data-index')
+                let columnName = column.getAttribute('title')
+                if (columnName == "") {
+                    columnName = dataIndex
+                }
+                if (dataIndex && columnName && item[dataIndex] != undefined) {
+                    formatData[columnName] = item[dataIndex]
+                }
+            })
+            if (item.children != undefined) {
+                formatData.children = this.formatExportData(item.children)
+            }
+            return formatData
+        })
+    }
+
+
+    //当 custom element首次被插入文档DOM时，被调用。
     connectedCallback() {
         this.st = this.shadowRoot?.querySelector('#slot');
         this.tableElement = this.shadowRoot?.querySelector('.table');
@@ -252,6 +349,29 @@ export class LitTable extends HTMLElement {
         this.tbodyElement = this.shadowRoot?.querySelector('.body');
         this.tableColumns = this.querySelectorAll<LitTableColumn>('lit-table-column');
         this.colCount = this.tableColumns!.length;
+        this.tableElement?.addEventListener("copy",(e)=>{
+            // @ts-ignore
+            let clipboardData = e.clipboardData || window.clipboardData;
+            if(!clipboardData) return ;
+            // @ts-ignore
+            let text = window.getSelection().toString();
+            if(text){
+                e.preventDefault();
+                let length = this.tableColumns?.length||1;
+                let strings = text.split("\n");
+                let formatStr = ""
+                for (let i = 0; i < strings.length; i++) {
+                    if(i%length != 0){
+                        formatStr+="    "
+                    }
+                    formatStr+=strings[i]
+                    if(i!=0&&i%length == length - 1){
+                        formatStr += "\n"
+                    }
+                }
+                clipboardData.setData('text/plain', formatStr)
+            }
+        })
         this.st?.addEventListener('slotchange', () => {
             this.theadElement!.innerHTML = '';
             setTimeout(() => {
@@ -276,7 +396,6 @@ export class LitTable extends HTMLElement {
                             this.shadowRoot!.querySelectorAll('.tr').forEach(a => a.removeAttribute('checked'));
                         }
                     }
-
                     box.appendChild(checkbox);
                     rowElement.appendChild(box);
                 }
@@ -317,24 +436,24 @@ export class LitTable extends HTMLElement {
                                 let NS = "http://www.w3.org/2000/svg";
                                 let upSvg: any = document.createElementNS(NS, "svg");
                                 let upPath: any = document.createElementNS(NS, "path");
-                                upSvg.setAttribute('fill', '#efefef');
+                                upSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
                                 upSvg.setAttribute('viewBox', '0 0 1024 1024');
-                                upSvg.setAttribute('stroke', '#000000');
+                                upSvg.setAttribute('stroke', 'var(--dark-color1,#212121)');
                                 upSvg.classList.add('up-svg');
                                 upPath.setAttribute("d", "M858.9 689L530.5 308.2c-9.4-10.9-27.5-10.9-37 0L165.1 689c-12.2 14.2-1.2 35 18.5 35h656.8c19.7 0 30.7-20.8 18.5-35z");
                                 upSvg.appendChild(upPath);
                                 let downSvg: any = document.createElementNS(NS, "svg");
                                 let downPath: any = document.createElementNS(NS, "path");
-                                downSvg.setAttribute('fill', '#efefef');
+                                downSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
                                 downSvg.setAttribute('viewBox', '0 0 1024 1024');
-                                downSvg.setAttribute('stroke', '#efefef');
+                                downSvg.setAttribute('stroke', 'var(--dark-color1,#212121)');
                                 downSvg.classList.add('down-svg');
                                 downPath.setAttribute("d", "M840.4 300H183.6c-19.7 0-30.7 20.8-18.5 35l328.4 380.8c9.4 10.9 27.5 10.9 37 0L858.9 335c12.2-14.2 1.2-35-18.5-35z");
                                 downSvg.appendChild(downPath)
                                 if (i == 0) {
                                     h.sortType = 0; // 默认以第一列 降序排序 作为默认排序
-                                    upSvg.setAttribute('fill', '#fff');
-                                    downSvg.setAttribute('fill', '#fff');
+                                    upSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
+                                    downSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
                                 }
                                 upSvg.style.display = 'none';
                                 downSvg.style.display = 'none';
@@ -342,9 +461,9 @@ export class LitTable extends HTMLElement {
                                 h.appendChild(downSvg);
                                 h.onclick = () => {
                                     this?.shadowRoot?.querySelectorAll('.td-order svg').forEach((it: any) => {
-                                        it.setAttribute('fill', '#fff');
-                                        it.setAttribute('fill', '#fff');
+                                        it.setAttribute('fill', 'var(--dark-color1,#212121)');
                                         it.sortType = 0;
+                                        it.style.display = 'none';
                                     })
                                     if (h.sortType == undefined || h.sortType == null) {
                                         h.sortType = 0;
@@ -355,20 +474,20 @@ export class LitTable extends HTMLElement {
                                     }
                                     switch (h.sortType) {
                                         case 1:
-                                            upSvg.setAttribute('fill', '#333');
-                                            downSvg.setAttribute('fill', '#fff');
+                                            upSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
+                                            downSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
                                             upSvg.style.display = 'block';
                                             downSvg.style.display = 'none';
                                             break;
                                         case 2:
-                                            upSvg.setAttribute('fill', '#fff');
-                                            downSvg.setAttribute('fill', '#333');
+                                            upSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
+                                            downSvg.setAttribute('fill', 'var(--dark-color1,#212121)');
                                             upSvg.style.display = 'none';
                                             downSvg.style.display = 'block';
                                             break;
                                         default:
-                                            upSvg.setAttribute('fill', "#fff");
-                                            downSvg.setAttribute('fill', "#fff");
+                                            upSvg.setAttribute('fill', "var(--dark-color1,#212121)");
+                                            downSvg.setAttribute('fill', "var(--dark-color1,#212121)");
                                             upSvg.style.display = 'none';
                                             downSvg.style.display = 'none';
                                             break;
@@ -402,15 +521,16 @@ export class LitTable extends HTMLElement {
                 this.gridTemplateColumns = gridTemplateColumns.join(' ');
                 if (this.selectable) {
                     let s = area.map(a => '"_checkbox_ ' + (a.map((aa: any) => aa.t).join(' ')) + '"').join(' ');
-                    rowElement.style.gridTemplateColumns = "60px " + gridTemplateColumns.join(' ');//`repeat(${this.colCount},1fr)`
+                    rowElement.style.gridTemplateColumns = "60px " + gridTemplateColumns.join(' ');
                     rowElement.style.gridTemplateRows = `repeat(${area.length},1fr)`
                     rowElement.style.gridTemplateAreas = s
                 } else {
                     let s = area.map(a => '"' + (a.map((aa: any) => aa.t).join(' ')) + '"').join(' ');
-                    rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');//`repeat(${this.colCount},1fr)`
+                    rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');
                     rowElement.style.gridTemplateRows = `repeat(${area.length},1fr)`
                     rowElement.style.gridTemplateAreas = s
                 }
+                this.theadElement!.innerHTML = ''
                 this.theadElement!.append(rowElement);
                 this.treeElement!.style.top = this.theadElement?.clientHeight + "px"
             });
@@ -449,6 +569,7 @@ export class LitTable extends HTMLElement {
     renderTable() {
         if (!this.columns) return;
         if (!this.ds) return; // If no data source is set, it is returned directly
+        this.normalDs = []
         this.tbodyElement!.innerHTML = '';// Clear the table contents
         this.ds.forEach((rowData: any) => {
             let rowElement = document.createElement('div');
@@ -501,7 +622,7 @@ export class LitTable extends HTMLElement {
                     if (cl.hasAttribute('fixed')) {
                         this.fixed(td, cl.getAttribute('fixed') || '', "#ffffff")
                     }
-                    td.innerHTML = rowData[dataIndex];
+                    td.innerHTML = this.formatName(rowData[dataIndex]);
                     rowElement.append(td);
                 }
 
@@ -509,11 +630,21 @@ export class LitTable extends HTMLElement {
             if (this.selectable) { // If the table with selection is preceded by a 60px column
                 rowElement.style.gridTemplateColumns = '60px ' + gridTemplateColumns.join(' ');
             } else {
-                rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');//
+                rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');
             }
             rowElement.onclick = e => {
-                this.dispatchEvent(new CustomEvent('row-click', {detail: rowData, composed: true}));
+                this.dispatchEvent(new CustomEvent('row-click', {
+                    detail: {
+                        rowData, data: rowData, callBack: (isSelected: boolean) => {//是否爲单选
+                            if (isSelected) {
+                                this.clearAllSelection(rowData)
+                            }
+                            this.setSelectedRow(rowData.isSelected, [rowElement])
+                        }
+                    }, composed: true
+                }));
             }
+            this.normalDs.push(rowElement);
             this.tbodyElement!.append(rowElement);
         })
     }
@@ -533,7 +664,7 @@ export class LitTable extends HTMLElement {
                 return !father[pid];
             });
         }
-        let treeData = toTreeData(this.ds, ids[0], ids[1]);//
+        let treeData = toTreeData(this.ds, ids[0], ids[1]);
         let offset = 30;
         let offsetVal = offset;
         const drawRow = (arr: any, parentNode: any) => {
@@ -584,11 +715,9 @@ export class LitTable extends HTMLElement {
                         if (cl.template) {
                             // @ts-ignore
                             let cloneNode = cl.template.render(rowData).content.cloneNode(true);
-                            // cloneNode.classList.add('td');
                             td = document.createElement('div');
                             td.classList.add('td');
                             td.style.wordBreak = 'break-all'
-                            // td.style.whiteSpace = 'pre-wrap'
                             td.style.justifyContent = cl.getAttribute('align') || ''
                             if (cl.hasAttribute('fixed')) {
                                 this.fixed(td, cl.getAttribute('fixed') || '', "#ffffff")
@@ -598,14 +727,12 @@ export class LitTable extends HTMLElement {
                             td = document.createElement('div');
                             td.classList.add('td');
                             td.style.wordBreak = 'break-all'
-                            // td.style.whiteSpace = 'pre-wrap'
                             td.style.justifyContent = cl.getAttribute('align') || ''
                             if (cl.hasAttribute('fixed')) {
                                 this.fixed(td, cl.getAttribute('fixed') || '', "#ffffff")
                             }
-                            // td.style.position='sticky';
                             // @ts-ignore
-                            td.innerHTML = rowData[dataIndex];
+                            td.innerHTML = this.formatName(rowData[dataIndex]);
                         }
                         rowElement.append(td)
                     } else {
@@ -615,11 +742,8 @@ export class LitTable extends HTMLElement {
                         if (cl.template) {
                             // @ts-ignore
                             let cloneNode = cl.template.render(rowData).content.cloneNode(true);
-                            // cloneNode.classList.add('td');
                             td = document.createElement('div');
                             td.classList.add('td');
-                            // td.style.wordBreak = 'break-all'
-                            // td.style.whiteSpace = 'pre-wrap'
                             td.style.justifyContent = cl.getAttribute('align') || ''
                             if (cl.hasAttribute('fixed')) {
                                 this.fixed(td, cl.getAttribute('fixed') || '', "#ffffff")
@@ -628,15 +752,12 @@ export class LitTable extends HTMLElement {
                         } else {
                             td = document.createElement('div');
                             td.classList.add('td');
-                            // td.style.wordBreak = 'break-all'
-                            // td.style.whiteSpace = 'pre-wrap'
                             td.style.justifyContent = cl.getAttribute('align') || ''
                             if (cl.hasAttribute('fixed')) {
                                 this.fixed(td, cl.getAttribute('fixed') || '', "#ffffff")
                             }
-                            // td.style.position='sticky';
                             // @ts-ignore
-                            td.innerHTML = rowData[dataIndex];
+                            td.innerHTML = this.formatName(rowData[dataIndex]);
                         }
                         if (rowData.children && rowData.children.length > 0) {
                             let btn = document.createElement('lit-icon');
@@ -655,9 +776,9 @@ export class LitTable extends HTMLElement {
 
                 })
                 if (this.selectable) {
-                    rowElement.style.gridTemplateColumns = '60px ' + gridTemplateColumns.join(' ');//`repeat(${this.colCount},1fr)`
+                    rowElement.style.gridTemplateColumns = '60px ' + gridTemplateColumns.join(' ');
                 } else {
-                    rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');//`repeat(${this.colCount},1fr)`
+                    rowElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');
                 }
                 rowElement.onclick = e => {
                     this.dispatchEvent(new CustomEvent('row-click', {detail: rowData, composed: true}));
@@ -705,10 +826,11 @@ export class LitTable extends HTMLElement {
     meauseAllRowHeight(list: any[]): TableRowObject[] {
         this.tbodyElement!.innerHTML = '';
         this.meauseRowElement = undefined
-        this.tbodyElement && (this.tbodyElement.style.width = this.tableElement?.clientWidth + "px")
+        let head = this.shadowRoot!.querySelector(".th");
+        this.tbodyElement && (this.tbodyElement.style.width = head?.clientWidth + "px")
         this.currentRecycleList = []
         let headHeight = 0
-        let totalHeight = headHeight
+        let totalHeight = headHeight;
         let visibleObjects: TableRowObject[] = [];
         list.forEach((rowData, index) => {
             let height = this.meauseElementHeight(rowData);
@@ -718,7 +840,7 @@ export class LitTable extends HTMLElement {
             tableRowObject.data = rowData
             tableRowObject.rowIndex = index
             if (Math.max(totalHeight, this.tableElement!.scrollTop + headHeight) <= Math.min(totalHeight + height, this.tableElement!.scrollTop + this.tableElement!.clientHeight + headHeight)) {
-                let newTableElement = this.createNewTableElement(rowData);
+                let newTableElement = this.createNewTableElement(tableRowObject);
                 newTableElement.style.transform = `translateY(${totalHeight}px)`
                 this.tbodyElement?.append(newTableElement)
                 this.currentRecycleList.push(newTableElement)
@@ -726,7 +848,7 @@ export class LitTable extends HTMLElement {
             totalHeight += height
             visibleObjects.push(tableRowObject)
         })
-        this.tbodyElement && (this.tbodyElement.style.height = totalHeight + "px")
+        this.tbodyElement && (this.tbodyElement.style.height = totalHeight + (this.isScrollXOutSide?0:0) + "px")
         this.tableElement && (this.tableElement.onscroll = (event) => {
             let top = this.tableElement!.scrollTop;
             let skip = 0;
@@ -736,12 +858,12 @@ export class LitTable extends HTMLElement {
                     break;
                 }
             }
-            let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b,0);
-            if(reduce == 0){
+            let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b, 0);
+            if (reduce == 0) {
                 return
             }
             while (reduce <= this.tableElement!.clientHeight) {
-                let newTableElement = this.createNewTableElement(visibleObjects[skip].data);
+                let newTableElement = this.createNewTableElement(visibleObjects[skip]);
                 this.tbodyElement?.append(newTableElement)
                 this.currentRecycleList.push(newTableElement)
                 reduce += newTableElement.clientHeight
@@ -804,8 +926,8 @@ export class LitTable extends HTMLElement {
                     break;
                 }
             }
-            let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b,0);
-            if(reduce == 0){
+            let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b, 0);
+            if (reduce == 0) {
                 return
             }
             while (reduce <= this.tableElement!.clientHeight) {
@@ -843,7 +965,7 @@ export class LitTable extends HTMLElement {
                     td.template = column.template
                 } else {
                     td = document.createElement('div')
-                    td.innerHTML = rowData.data[dataIndex];
+                    td.innerHTML = this.formatName(rowData.data[dataIndex]);
                     td.dataIndex = dataIndex
                 }
                 if (rowData.data.children && rowData.data.children.length > 0) {
@@ -853,27 +975,29 @@ export class LitTable extends HTMLElement {
                 } else {
                     td.style.paddingLeft = rowData.depth * 15 + 20 + 'px';
                 }
+                (td as any).data = rowData.data
                 td.classList.add('tree-first-body');
                 td.style.position = 'absolute';
                 td.style.top = '0px'
                 td.style.left = '0px'
-                td.onmouseover = () => {
+                td.onmouseenter = () => {
                     let indexOf = this.currentTreeDivList.indexOf(td);
+                    this.currentRecycleList.forEach((row)=>{
+                        row.classList.remove('mouse-in')
+                    })
                     if (indexOf >= 0 && indexOf < this.currentRecycleList.length && td.innerHTML != "") {
-                        this.setSelectedRow(true,[(this.treeElement?.children[indexOf] as HTMLElement),newTableElement]);
+                        this.setMouseIn(true, [newTableElement]);
                     }
                 }
-                td.onmouseout = () => {
+                td.onmouseleave = () => {
                     let indexOf = this.currentTreeDivList.indexOf(td);
                     if (indexOf >= 0 && indexOf < this.currentRecycleList.length) {
-                        this.setSelectedRow(false,[(this.treeElement?.children[indexOf] as HTMLElement),newTableElement]);
+                        this.setMouseIn(false, [newTableElement]);
                     }
                 }
                 td.onclick = () => {
-                    this.dispatchEvent(new CustomEvent('row-click', {detail: {...rowData.data,callBack:(isSelected:boolean)=>{
-                        let indexOf = this.currentTreeDivList.indexOf(td);
-                        this.setSelectedRow(isSelected,[(this.currentRecycleList[indexOf] as HTMLElement),td])
-                    }}, composed: true,}));
+                    let indexOf = this.currentTreeDivList.indexOf(td);
+                    this.dispatchRowClickEvent(rowData, [(this.treeElement?.children[indexOf] as HTMLElement), newTableElement])
                 }
                 this.treeElement!.style.width = column.getAttribute('width')
                 this.treeElement?.append(td)
@@ -882,43 +1006,48 @@ export class LitTable extends HTMLElement {
                 gridTemplateColumns.push(column.getAttribute('width') || '1fr')
                 td = document.createElement('div')
                 td.classList.add('td');
-                // td.style.wordBreak = 'break-all'
                 td.style.overflow = 'hidden'
                 td.style.textOverflow = 'ellipsis'
                 td.style.whiteSpace = "nowrap"
                 td.title = rowData.data[dataIndex]
-                // td.innerHTML = rowData.data[dataIndex];
                 td.dataIndex = dataIndex
-                td.style.justifyContent = column.getAttribute('align')||'flex-start'
+                td.style.justifyContent = column.getAttribute('align') || 'flex-start'
                 if (column.template) {
                     td.appendChild(column.template.render(rowData.data).content.cloneNode(true));
                     td.template = column.template
                 } else {
-                    td.innerHTML = rowData.data[dataIndex];
+                    td.innerHTML = this.formatName(rowData.data[dataIndex]);
                 }
                 newTableElement.append(td)
             }
         });
         (this.treeElement?.lastChild as HTMLElement).style.transform = `translateY(${treeTop}px)`;
+        (newTableElement as any).data = rowData.data
         newTableElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');
         newTableElement.style.position = 'absolute';
         newTableElement.style.top = '0px'
         newTableElement.style.left = '0px'
         newTableElement.style.cursor = 'pointer'
-        newTableElement.onmouseover = () => {
+        newTableElement.onmouseenter = () => {
+            if ((newTableElement as any).data.isSelected) return;
             let indexOf = this.currentRecycleList.indexOf(newTableElement);
+            this.currentTreeDivList.forEach((row)=>{
+                row.classList.remove('mouse-in')
+            })
             if (indexOf >= 0 && indexOf < this.treeElement!.children.length) {
-                this.setSelectedRow(true,[(this.treeElement?.children[indexOf] as HTMLElement),newTableElement]);
+                this.setMouseIn(true, [(this.treeElement?.children[indexOf] as HTMLElement)]);
             }
         }
-        newTableElement.onmouseout = () => {
+        newTableElement.onmouseleave = () => {
+            if ((newTableElement as any).data.isSelected) return;
             let indexOf = this.currentRecycleList.indexOf(newTableElement);
             if (indexOf >= 0 && indexOf < this.treeElement!.children.length) {
-                this.setSelectedRow(false,[(this.treeElement?.children[indexOf] as HTMLElement),newTableElement]);
+                this.setMouseIn(false, [(this.treeElement?.children[indexOf] as HTMLElement)]);
             }
         }
         newTableElement.onclick = e => {
-            this.dispatchEvent(new CustomEvent('row-click', {detail: rowData.data, composed: true}));
+            let indexOf = this.currentRecycleList.indexOf(newTableElement);
+            this.dispatchRowClickEvent(rowData, [(this.treeElement?.children[indexOf] as HTMLElement), newTableElement])
         }
         return newTableElement
     }
@@ -980,7 +1109,7 @@ export class LitTable extends HTMLElement {
                 totalHeight += it.height
             }
         })
-        this.tbodyElement && (this.tbodyElement.style.height = totalHeight + "px")
+        this.tbodyElement && (this.tbodyElement.style.height = totalHeight + (this.isScrollXOutSide?0:0) + "px")
         this.treeElement!.style.height = (this.tableElement!.clientHeight - this.theadElement!.clientHeight) + "px"
         let visibleObjects = this.recycleDs.filter((item) => {
             return !item.rowHidden
@@ -993,8 +1122,8 @@ export class LitTable extends HTMLElement {
                 break;
             }
         }
-        let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b,0);
-        if(reduce == 0){
+        let reduce = this.currentRecycleList.map((item) => item.clientHeight).reduce((a, b) => a + b, 0);
+        if (reduce == 0) {
             return
         }
         while (reduce <= this.tableElement!.clientHeight) {
@@ -1002,7 +1131,7 @@ export class LitTable extends HTMLElement {
             if (this.hasAttribute('tree')) {
                 newTableElement = this.createNewTreeTableElement(visibleObjects[skip]);
             } else {
-                newTableElement = this.createNewTableElement(visibleObjects[skip].data)
+                newTableElement = this.createNewTableElement(visibleObjects[skip])
             }
             this.tbodyElement?.append(newTableElement)
             if (this.hasAttribute('tree')) {
@@ -1036,36 +1165,23 @@ export class LitTable extends HTMLElement {
             td.style.textOverflow = 'ellipsis'
             td.style.whiteSpace = "nowrap"
             td.dataIndex = dataIndex
-            td.style.justifyContent = column.getAttribute('align')||'flex-start'
-            td.title = rowData[dataIndex]
+            td.style.justifyContent = column.getAttribute('align') || 'flex-start'
+            td.title = rowData.data[dataIndex]
             if (column.template) {
-                td.appendChild(column.template.render(rowData).content.cloneNode(true));
+                td.appendChild(column.template.render(rowData.data).content.cloneNode(true));
                 td.template = column.template
             } else {
-                td.innerHTML = rowData[dataIndex];
+                td.innerHTML = this.formatName(rowData.data[dataIndex]);
             }
             newTableElement.append(td)
         })
-        newTableElement.onclick = ()=>{
-            let detail = {...rowData,selectedCallback:()=>{
-                    if (detail.isSelected != undefined) {
-                        if(detail.isSelected){
-                            newTableElement.setAttribute("selected","")
-                        }else {
-                            newTableElement.removeAttribute("selected")
-                        }
-                        rowData.isSelected = !rowData.isSelected
-                    }
-                }}
-            this.dispatchEvent(new CustomEvent('row-click', {detail: detail, composed: true}));
+        newTableElement.onclick = () => {
+            this.dispatchRowClickEvent(rowData, [newTableElement])
         }
-        if (rowData.isSelected != undefined) {
-            if(rowData.isSelected){
-                newTableElement.setAttribute("selected","")
-            }else {
-                newTableElement.removeAttribute("selected")
-            }
+        if (rowData.data.isSelected != undefined) {
+            this.setSelectedRow(rowData.data.isSelected, [newTableElement])
         }
+        (newTableElement as any).data = rowData.data
         newTableElement.style.cursor = "pointer"
         newTableElement.style.gridTemplateColumns = gridTemplateColumns.join(' ');
         newTableElement.style.position = 'absolute';
@@ -1084,15 +1200,16 @@ export class LitTable extends HTMLElement {
         }
         let childIndex = -1
         element.childNodes.forEach((child) => {
-            if(child.nodeType!=1)return
+            if (child.nodeType != 1) return
             childIndex++;
             let idx = firstElement != undefined ? childIndex + 1 : childIndex;
             if (firstElement != undefined && childIndex == 0) {
+                (firstElement as any).data = rowObject.data
                 if ((this.columns![0] as any).template) {
                     firstElement.innerHTML = (this.columns![0] as any).template.render(rowObject.data).content.cloneNode(true).innerHTML
                 } else {
                     let dataIndex = this.columns![0].getAttribute('data-index') || '1';
-                    firstElement.innerHTML = rowObject.data[dataIndex]
+                    firstElement.innerHTML = this.formatName(rowObject.data[dataIndex])
                     firstElement.title = rowObject.data[dataIndex]
                 }
                 if (rowObject.children && rowObject.children.length > 0) {
@@ -1100,23 +1217,29 @@ export class LitTable extends HTMLElement {
                     firstElement.insertBefore(btn, firstElement.firstChild);
                     firstElement.style.paddingLeft = 15 * rowObject.depth + "px"
                 } else {
-                    firstElement.style.paddingLeft = 15 + 20 * rowObject.depth + "px"
+                    firstElement.style.paddingLeft = 20 + 15 * rowObject.depth + "px"
                 }
                 firstElement.onclick = () => {
-                    this.dispatchEvent(new CustomEvent('row-click', {detail: rowObject.data, composed: true}));
+                    this.dispatchRowClickEvent(rowObject, [firstElement, element])
                 }
                 firstElement.style.transform = `translateY(${rowObject.top - this.tableElement!.scrollTop}px)`
+                if (rowObject.data.isSelected != undefined) {
+                    this.setSelectedRow(rowObject.data.isSelected, [firstElement])
+                } else {
+                    this.setSelectedRow(false, [firstElement])
+                }
             }
+            let dataIndex = this.columns![idx].getAttribute('data-index') || '1';
             if ((this.columns![idx] as any).template) {
                 (child as HTMLElement).innerHTML = "";
-                (child as HTMLElement).appendChild((this.columns![idx] as any).template.render(rowObject.data).content.cloneNode(true))
+                (child as HTMLElement).appendChild((this.columns![idx] as any).template.render(rowObject.data).content.cloneNode(true));
+                (child as HTMLElement).title = rowObject.data[dataIndex];
             } else {
-                let dataIndex = this.columns![idx].getAttribute('data-index') || '1';
-                (child as HTMLElement).innerHTML = rowObject.data[dataIndex];
+                (child as HTMLElement).innerHTML = this.formatName(rowObject.data[dataIndex]);
                 (child as HTMLElement).title = rowObject.data[dataIndex];
             }
         })
-        if(element.style.display == 'none'){
+        if (element.style.display == 'none') {
             element.style.display = 'grid'
         }
         element.style.transform = `translateY(${rowObject.top}px)`
@@ -1124,38 +1247,146 @@ export class LitTable extends HTMLElement {
             firstElement.style.display = 'flex'
         }
         element.onclick = e => {
-            let datail = {...rowObject.data,selectedCallback:()=>{
-                    if (datail.isSelected != undefined) {
-                        if(datail.isSelected){
-                            element.setAttribute("selected","")
-                        }else {
-                            element.removeAttribute("selected")
-                        }
-                        rowObject.data.isSelected = !rowObject.data.isSelected
-                    }
-                }}
-            this.dispatchEvent(new CustomEvent('row-click', {detail: datail, composed: true}));
-        }
-        if (rowObject.data.isSelected != undefined) {
-            if(rowObject.data.isSelected){
-                element.setAttribute("selected","")
-            }else {
-                element.removeAttribute("selected")
+            if (firstElement != undefined) {
+                this.dispatchRowClickEvent(rowObject, [firstElement, element])
+            } else {
+                this.dispatchRowClickEvent(rowObject, [element])
             }
-        }else {
-            element.removeAttribute("selected")
+        }
+        (element as any).data = rowObject.data
+        if (rowObject.data.isSelected != undefined) {
+            this.setSelectedRow(rowObject.data.isSelected, [element])
+        } else {
+            this.setSelectedRow(false, [element])
         }
     }
 
-    setSelectedRow(isSelected:boolean,rows:any[]){
-        if(isSelected){
-            rows.forEach((row)=>{
-                row.style.backgroundColor = "var(--dark-background6,#DEEDFF)"
+    setSelectedRow(isSelected: boolean, rows: any[]) {
+        if (isSelected) {
+            rows.forEach((row) => {
+                if (row.classList.contains("mouse-in")) row.classList.remove('mouse-in');
+                row.classList.add('mouse-select')
             })
-        }else {
-            rows.forEach((row)=>{
-                row.style.backgroundColor = "var(--dark-background,#FFFFFF)"
+        } else {
+            rows.forEach((row) => {
+                row.classList.remove('mouse-select')
             })
         }
+    }
+
+    setMouseIn(isMouseIn: boolean, rows: any[]) {
+        if (isMouseIn) {
+            rows.forEach((row) => {
+                row.classList.add('mouse-in')
+            })
+        } else {
+            rows.forEach((row) => {
+                row.classList.remove('mouse-in')
+            })
+        }
+    }
+
+    scrollToData(data: any) {
+        if (this.isRecycleList) {
+            if (this.recycleDs.length > 0) {
+                let filter = this.recycleDs.filter((item) => {
+                    return item.data == data
+                });
+                if (filter.length > 0) {
+                    this.tableElement!.scrollTop = filter[0].top
+                }
+                this.setCurrentSelection(data)
+            }
+        } else {
+            if (this.normalDs.length > 0) {
+                let filter = this.normalDs.filter((item) => {
+                    return item.data == data
+                });
+                if (filter.length > 0) {
+                    this.tableElement!.scrollTop = filter[0].top
+                }
+            }
+        }
+
+
+    }
+
+    expandList(datasource: any[]) {
+        let filter = this.recycleDs.filter((item) => {
+            return datasource.indexOf(item.data) != -1
+        });
+        if (filter.length > 0) {
+            filter.forEach((item) => {
+                item.expanded = true
+                item.rowHidden = false
+            })
+        }
+        this.reMeauseHeight()
+    }
+
+    clearAllSelection(rowObjectData: any) {
+        if (this.isRecycleList) {
+            this.recycleDs.forEach((item) => {
+                if (item.data != rowObjectData && item.data.isSelected) {
+                    item.data.isSelected = false
+                }
+            })
+            this.setSelectedRow(false, this.currentTreeDivList)
+            this.setSelectedRow(false, this.currentRecycleList)
+        } else {
+            this.dataSource.forEach((item) => {
+                if (item != rowObjectData && item.isSelected) {
+                    item.isSelected = false
+                }
+            })
+            this.setSelectedRow(false, this.normalDs)
+        }
+
+    }
+
+    setCurrentSelection(data: any) {
+        if (this.isRecycleList) {
+            if (data.isSelected != undefined) {
+                this.currentTreeDivList.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setSelectedRow(data.isSelected, [item])
+                    }
+                })
+                this.currentRecycleList.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setSelectedRow(data.isSelected, [item])
+                    }
+                })
+            }
+        } else {
+            if (data.isSelected != undefined) {
+                this.normalDs.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setSelectedRow(data.isSelected, [item])
+                    }
+                })
+            }
+        }
+
+    }
+
+    dispatchRowClickEvent(rowObject: any, elements: any[]) {
+        this.dispatchEvent(new CustomEvent('row-click', {
+            detail: {
+                ...rowObject.data, data: rowObject.data, callBack: (isSelected: boolean) => {//是否爲单选
+                    if (isSelected) {
+                        this.clearAllSelection(rowObject.data)
+                    }
+                    this.setSelectedRow(rowObject.data.isSelected, elements)
+                }
+            }, composed: true,
+        }));
+    }
+
+    formatName(name:any){
+        if(name!=undefined&&name!==null){
+            return name.toString().replace("<","&lt;").replace(">","&gt;")
+        }
+        return ""
     }
 }

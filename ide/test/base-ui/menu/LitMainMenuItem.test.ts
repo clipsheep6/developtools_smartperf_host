@@ -51,4 +51,127 @@ describe("litMainMenuItem Test", () => {
         litMainMenuItem.title ="test03"
         expect(litMainMenuItem.title).toEqual("test03")
     });
+
+    it('litMainMenuItem06', () => {
+        document.body.innerHTML = `<lit-main-menu-item></lit-main-menu-item>
+        `
+        let litMainMenuItem = new LitMainMenuItem();
+        expect(litMainMenuItem.isFile()).toBeFalsy();
+    });
+
+    it('litMainMenuItem07', () => {
+        document.body.innerHTML = `<lit-main-menu-item></lit-main-menu-item>
+        `
+        let litMainMenuItem = new LitMainMenuItem();
+        litMainMenuItem.disabled = true;
+        expect(litMainMenuItem.disabled).toBeTruthy();
+    });
+
+    it('litMainMenuItem08', () => {
+        document.body.innerHTML = `<lit-main-menu-item></lit-main-menu-item>
+        `
+        let litMainMenuItem = new LitMainMenuItem();
+        litMainMenuItem.disabled = false;
+        expect(litMainMenuItem.disabled).toBeFalsy();
+    });
+
+    it('litMainMenuItem09', () => {
+        let litMainMenuItem = new LitMainMenuItem();
+        expect(litMainMenuItem.initHtml()).toMatchInlineSnapshot(`
+"
+        <style>
+            :host{
+                user-select: none;
+                display: flex;
+                font-family: Helvetica;
+                font-size: 14px;
+                color: var(--dark-color,rgba(0,0,0,0.6));
+                text-align: left;
+                line-height: 20px;
+                font-weight: 400
+                background-color: #FFFFFF;
+                transition: background-color .3s;
+            }
+            :host(:not([disabled]):hover){
+                display: flex;
+                background-color: var(--dark-background8,#6C9BFA);
+                color: #FFFFFF;
+                cursor: pointer;
+            }
+            :host([disabled]:hover){
+                display: flex;
+                /*background-color:#3391FF;*/
+                /*color: #FFFFFF;*/
+                cursor:not-allowed;
+            }
+            :host([disabled]) .root{
+                cursor:not-allowed;
+                display: flex;
+                align-items: center;
+                padding: 10px 24px;
+                width: 100%;
+            }
+            :host(:not([disabled])) .root{
+                cursor:pointer;
+                display: flex;
+                align-items: center;
+                padding: 10px 24px;
+                width: 100%;
+            }
+            .name{
+                padding-left: 10px;
+                cursor: pointer;
+            }
+            .icon{
+                pointer-events: none;
+            }
+            :host(:not([file])) .name{
+                pointer-events: none;
+            }
+            :host(:not([file])) .root{
+                pointer-events: none;
+            }
+            :host([file]) .name{
+                pointer-events: none;
+            }
+            :host([file]) .icon{
+                pointer-events: none;
+            }
+            
+            :host([back]) {
+                background-color: var(--dark-background8,#6C9BFA);
+            } 
+            
+        </style>
+        <input id=\\"file\\" class=\\"file\\" type=\\"file\\" style=\\"display:none;pointer-events: none\\" />
+        <label class=\\"root\\" for=\\"file\\">
+            <lit-icon class=\\"icon\\" name=\\"user\\" size=\\"20\\"></lit-icon>
+            <label class=\\"name\\"></label>
+        </label>
+        "
+`);
+    });
+    it('litMainMenuItem10', () => {
+        let litMainMenuItem = new LitMainMenuItem();
+        litMainMenuItem.back = true
+        expect(litMainMenuItem.back).toBeTruthy()
+    })
+    it('litMainMenuItem11', () => {
+        let litMainMenuItem = new LitMainMenuItem();
+        litMainMenuItem.back = false
+        expect(litMainMenuItem.back).toBeFalsy()
+    })
+
+    it('litMainMenuItem12', () => {
+        const onclick = jest.fn();
+        let menuItem = document.body.innerHTML = `
+            <lit-main-menu-item id='menu'></lit-main-menu-item>
+        `
+        const menu = document.getElementById('menu');
+        expect(onclick).not.toBeCalled();
+        menu!.onclick = onclick;
+        menu!.click();
+        expect(onclick).toBeCalled();
+        expect(onclick).toHaveBeenCalledTimes(1);
+    });
 })

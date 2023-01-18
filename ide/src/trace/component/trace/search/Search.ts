@@ -40,7 +40,11 @@ export class LitSearch extends BaseElement {
 
     set index(value: number) {
         this._index = value;
-        this.indexEL!.textContent = `${value+1}`;
+        this.indexEL!.textContent = `${value + 1}`;
+    }
+
+    get searchValue(){
+        return this.search?.value
     }
 
     get total(): number {
@@ -54,9 +58,22 @@ export class LitSearch extends BaseElement {
         this.totalEL!.textContent = value.toString();
     }
 
+    get isLoading(): boolean{
+        return this.hasAttribute('isLoading')
+    }
+
+    set isLoading(va){
+        if (va) {
+            this.setAttribute('isLoading','');
+        } else {
+            this.removeAttribute('isLoading')
+        }
+    }
+
     setPercent(name: string = "", value: number) {
         let searchHide = this.shadowRoot!.querySelector<HTMLElement>(".root")
         let searchIcon = this.shadowRoot!.querySelector<HTMLElement>("#search-icon")
+        this.isLoading = false
         if (value > 0 && value <= 100) {
             searchHide!.style.display = "flex"
             searchHide!.style.backgroundColor = "var(--dark-background5,#e3e3e3)"
@@ -64,6 +81,7 @@ export class LitSearch extends BaseElement {
             this.search!.setAttribute('placeholder', `${name}${value}%`);
             this.search!.setAttribute('readonly', "");
             this.search!.className = "readonly"
+            this.isLoading = true
         } else if (value > 100) {
             searchHide!.style.display = "flex"
             searchHide!.style.backgroundColor = "var(--dark-background5,#fff)"
@@ -89,9 +107,10 @@ export class LitSearch extends BaseElement {
         this.list = [];
     }
 
-    blur(){
+    blur() {
         this.search?.blur();
     }
+
     initElements(): void {
         this.search = this.shadowRoot!.querySelector<HTMLInputElement>("input");
         this.totalEL = this.shadowRoot!.querySelector<HTMLSpanElement>("#total");
@@ -110,24 +129,31 @@ export class LitSearch extends BaseElement {
                 }
             }));
         });
+        this.search!.addEventListener('change', (event) => {
+            this.index = -1;
+        });
+
         this.search!.addEventListener("keyup", (e: KeyboardEvent) => {
             if (e.code == "Enter") {
                 if (e.shiftKey) {
                     this.dispatchEvent(new CustomEvent("previous-data", {
                         detail: {
                             value: this.search!.value
-                        }
+                        },
+                        composed:false
                     }));
                 } else {
                     this.dispatchEvent(new CustomEvent("next-data", {
                         detail: {
                             value: this.search!.value
-                        }
+                        },
+                        composed:false
                     }));
                 }
             } else {
                 this.valueChangeHandler?.(this.search!.value);
             }
+            e.stopPropagation();
         });
         this.shadowRoot?.querySelector("#arrow-left")?.addEventListener("click", (e) => {
             this.dispatchEvent(new CustomEvent("previous-data", {
@@ -147,70 +173,73 @@ export class LitSearch extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
-}
-.root{
-    background-color: var(--dark-background5,#fff);    
-    border-radius: 40px;
-    padding: 3px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--dark-border,#c5c5c5);
-    }
-.root input{
-    outline: none;
-    border: 0px;
-    background-color: transparent;
-    font-size: inherit;
-    color: var(--dark-color,#666666);
-    width: 30vw;
-    height: auto;
-    vertical-align:middle;
-    line-height:inherit;
-    height:inherit;
-    padding: 6px 6px 6px 6px};
-    max-height: inherit;
-    box-sizing: border-box;
-}
-::placeholder {
-  color: #b5b7ba;
-  font-size: 1em;
-}
-.write::placeholder {
-  color: #b5b7ba;
-  font-size: 1em;
-}
-.readonly::placeholder {
-  color: #4f7ab3;
-  font-size: 1em;
-}
-:host([show-search-info]) .search-info{
-    display: inline-flex;
-}
-:host(:not([show-search-info])) .search-info{
-    display: none;
-}
-.search-info span{
-    color:#ABABAB;
-}
-.search-info lit-icon{
-    font-weight: bold;
-}
+        <style>
+        :host{
+        }
+        .root{
+            background-color: var(--dark-background5,#fff);
+            border-radius: 40px;
+            padding: 3px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--dark-border,#c5c5c5);
+            width: 35vw;
+            }
+        .root input{
+            outline: none;
+            border: 0px;
+            background-color: transparent;
+            font-size: inherit;
+            color: var(--dark-color,#666666);
+            flex: 1;
+            height: auto;
+            vertical-align:middle;
+            line-height:inherit;
+            height:inherit;
+            padding: 6px 6px 6px 6px};
+            max-height: inherit;
+            box-sizing: border-box;
+        }
+        ::placeholder {
+          color: #b5b7ba;
+          font-size: 1em;
+        }
+        .write::placeholder {
+          color: #b5b7ba;
+          font-size: 1em;
+        }
+        .readonly::placeholder {
+          color: #4f7ab3;
+          font-size: 1em;
+        }
+        :host([show-search-info]) .search-info{
+            display: inline-flex;
+        }
+        :host(:not([show-search-info])) .search-info{
+            display: none;
+        }
+        .search-info span{
+            color:#ABABAB;
+        }
+        .search-info lit-icon{
+            font-weight: bold;
+        }
 
-</style>
-<div class="root" style="display: none">
-    <lit-icon id="search-icon" name="search" size="20" color="#aaaaaa"></lit-icon>
-    <input class="readonly" placeholder="Search" readonly/>
-    <div class="search-info">
-        <span id="index">0</span><span>/</span><span id="total">0</span>
-        <lit-icon class="icon" id="arrow-left" name="caret-left" color="#AAAAAA" size="22"></lit-icon>
-        <span>|</span>
-        <lit-icon class="icon" id="arrow-right"  name="caret-right" color="#AAAAAA" size="22"></lit-icon>
-    </div>
-</div>
+        </style>
+        <div class="root" style="display: none">
+            <lit-icon id="search-icon" name="search" size="20" color="#aaaaaa">
+            </lit-icon>
+            <input class="readonly" placeholder="Search" readonly/>
+            <div class="search-info">
+                <span id="index">0</span><span>/</span><span id="total">0</span>
+                <lit-icon class="icon" id="arrow-left" name="caret-left" color="#AAAAAA" size="22">
+                </lit-icon>
+                <span>|</span>
+                <lit-icon class="icon" id="arrow-right"  name="caret-right" color="#AAAAAA" size="22">
+                </lit-icon>
+            </div>
+        </div>
         `;
     }
-
 }

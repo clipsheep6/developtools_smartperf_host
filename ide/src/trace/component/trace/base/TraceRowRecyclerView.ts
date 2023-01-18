@@ -15,6 +15,7 @@
 import {BaseElement, element} from "../../../../base-ui/BaseElement.js";
 import {TraceRowObject} from "./TraceRowObject.js";
 import {TraceRow} from "./TraceRow.js";
+import {log} from "../../../../log/Log.js";
 
 @element("trace-row-recycler-view")
 export class TraceRowRecyclerView extends BaseElement {
@@ -33,6 +34,7 @@ export class TraceRowRecyclerView extends BaseElement {
     }
 
     set dataSource(value: Array<TraceRowObject<any>>) {
+        log("dataSource TraceRowObject size :" +  value.length);
         this._dataSource = value;
         this.measureHeight();
         this.initUI();
@@ -118,7 +120,7 @@ export class TraceRowRecyclerView extends BaseElement {
         }
         if (!this.recycler) this.visibleRowsCount = this.dataSource.length;
         for (let i = 0; i <= this.visibleRowsCount; i++) {
-            let el = new TraceRow<any>({canvasNumber:1,alpha: true, contextId: '2d', isOffScreen: true});
+            let el = new TraceRow<any>({canvasNumber: 1, alpha: true, contextId: '2d', isOffScreen: true});
             el.className = "recycler-cell"
             this.container?.appendChild(el);
             el.addEventListener('expansion-change', (ev: any) => {
@@ -149,42 +151,42 @@ export class TraceRowRecyclerView extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
-    width:100%;
-    height:100%;
-    display: block;
-    position:relative;
-}
-.container{
-    width:100%;
-    height:100%;
-    overflow: auto;
-    position: absolute;
-    display: block;
-}
-.gasket{
-    width:100%;
-    height:auto;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom:0;
-    visibility: hidden;
-}
-.recycler-cell{
-    position: absolute;
-    width:100%;
-    visibility: hidden;
-    top: 0;
-    left: 0;
-}
-</style>
-<div class="container">
-    <div class="gasket"></div>
-</div>
+        <style>
+        :host{
+            width:100%;
+            height:100%;
+            display: block;
+            position:relative;
+        }
+        .container{
+            width:100%;
+            height:100%;
+            overflow: auto;
+            position: absolute;
+            display: block;
+        }
+        .gasket{
+            width:100%;
+            height:auto;
+            top: 0;
+            left: 0;
+            right:0;
+            bottom:0;
+            visibility: hidden;
+        }
+        .recycler-cell{
+            position: absolute;
+            width:100%;
+            visibility: hidden;
+            top: 0;
+            left: 0;
+        }
+        </style>
+        <div class="container">
+            <div class="gasket"></div>
+        </div>
 
-`;
+        `;
     }
 
 }

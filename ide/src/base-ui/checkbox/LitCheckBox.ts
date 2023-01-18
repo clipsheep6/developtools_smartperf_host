@@ -60,11 +60,10 @@ export class LitCheckBox extends BaseElement {
         return `
         <style>
         :host{ 
-            display:inline-block;
+            display:flex;
             opacity: 0.86;
             font-family: Helvetica;
             font-size: 14px;
-            /*color: #212121;*/
             text-align: left;
             line-height: 16px;
             font-weight: 400;
@@ -131,7 +130,10 @@ export class LitCheckBox extends BaseElement {
         </style>
         <input type="checkbox" id="checkbox">
         <label for="checkbox">
-          <span class="chekebox"><lit-icon name="checkmark" class="icon" color="#3391FF" size="8"></lit-icon></span>
+          <span class="chekebox">
+          <lit-icon name="checkmark" class="icon" color="#3391FF" size="8">
+          </lit-icon>
+          </span>
           <slot id="slot"></slot>
        </label>
         `;

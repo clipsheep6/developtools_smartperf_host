@@ -70,24 +70,25 @@ export class LitCheckBoxWithText extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
- display: grid;
- grid-template-columns: 1fr min-content min-content;
- grid-column-gap: 10px;
- text-align: center;
- height: 16px;
-}
-.input-style {
-  width: 48px;
-  height: 16px;
-  border: 1px solid #B3B3B3;
-  text-align: center;
-}
+        <style>
+        :host{
+         display: grid;
+         grid-template-columns: 1fr min-content min-content;
+         grid-column-gap: 10px;
+         text-align: center;
+         height: 16px;
+        }
+        .input-style {
+          width: 48px;
+          height: 16px;
+          border: 1px solid #B3B3B3;
+          text-align: center;
+        }
 
-</style>
-<check-des-box id ='checkbox' value="${this.text}"></check-des-box>
-<input class="input-style" id="textLowerLimit" value="${this.lowerLimit}"/><input class="input-style" id="_upLimit" value="${this.upLimit}"/>
+        </style>
+        <check-des-box id ='checkbox' value="${this.text}"></check-des-box>
+        <input class="input-style" id="textLowerLimit" value="${this.lowerLimit}"/>
+        <input class="input-style" id="_upLimit" value="${this.upLimit}"/>
         `;
     }
 

@@ -185,7 +185,10 @@ export class LitRadioBox extends BaseElement {
         </style>
         <input type="checkbox" id="radio" >
         <label id="label" for="radio">
-            <span class="selected"><lit-icon name="checkmark" class="icon" size="8"></lit-icon></span>
+            <span class="selected">
+            <lit-icon name="checkmark" class="icon" size="8">
+            </lit-icon>
+            </span>
             <slot id='slot'></slot>
         </label>
         `;

@@ -147,6 +147,11 @@ describe("RangeSelect Test", () => {
         rangeSelect.timerShaftDragEL.timerShaftDragEL = jest.fn(()=>0)
         rangeSelect.spacerEL = jest.fn(()=>true)
         rangeSelect.spacerEL.offsetTop = jest.fn(()=>1)
+        rangeSelect.ns2x = jest.fn(()=> 1)
+        rangeSelect.mouseX = jest.fn(()=> 10)
+        rangeSelect.markA = jest.fn( ()=> 8)
+        rangeSelect.markB = jest.fn( ()=> 9)
+
         expect(rangeSelect.mouseMove(rowsEL,mouseEvent)).toBeUndefined();
     });
 
@@ -176,4 +181,22 @@ describe("RangeSelect Test", () => {
         rangeSelect.timerShaftDragEL.timerShaftDragEL = jest.fn(()=>0)
         expect(rangeSelect.isTouchMark(mouseEvent)).toBeFalsy();
     });
+
+    it('Utils Test06', () => {
+        let rangeSelect = new RangeSelect();
+        rangeSelect.isHover = true;
+        let mouseEvent = new MouseEvent("mousedown",{
+            // @ts-ignore
+            offsetY:1,
+            offsetX:1,
+            button: 0,
+            buttons: 0,
+            clientX: 2,
+            clientY: 100,
+            screenX: 255,
+            screenY: 325
+        });
+        expect(rangeSelect.mouseDown(mouseEvent)).toBeUndefined();
+    });
+
 })

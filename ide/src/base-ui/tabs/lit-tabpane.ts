@@ -80,16 +80,16 @@ export class LitTabpane extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host(){
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    overflow: auto;
-    width: 100%;
-}
-</style>
-<slot></slot>
-`;
+        <style>
+        :host(){
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            overflow: auto;
+            width: 100%;
+        }
+        </style>
+        <slot></slot>
+        `;
     }
 
     connectedCallback() {

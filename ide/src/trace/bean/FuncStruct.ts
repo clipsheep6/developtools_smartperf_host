@@ -31,6 +31,7 @@ export class FuncStruct extends BaseStruct {
     startTs: number | undefined
     threadName: string | undefined
     tid: number | undefined
+    identify:number |undefined
     track_id: number | undefined
 
     static draw(ctx: CanvasRenderingContext2D, data: FuncStruct) {
@@ -81,6 +82,18 @@ export class FuncStruct extends BaseStruct {
                 data.funName.toLowerCase().startsWith("binder transaction")
                 || data.funName.toLowerCase().startsWith("binder async")
                 || data.funName.toLowerCase().startsWith("binder reply")
+            )
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    static isBinderAsync(data: FuncStruct): boolean {
+        if (data.funName != null &&
+            (
+                data.funName.toLowerCase().includes("async")
             )
         ) {
             return true;

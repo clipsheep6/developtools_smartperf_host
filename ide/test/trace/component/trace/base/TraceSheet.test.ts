@@ -15,6 +15,7 @@
 
 // @ts-ignore
 import {TraceSheet} from "../../../../../dist/trace/component/trace/base/TraceSheet.js";
+
 window.ResizeObserver = window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
@@ -25,70 +26,90 @@ window.ResizeObserver = window.ResizeObserver ||
 describe("TraceSheet Test", () => {
     beforeAll(() => {
     })
-let val=[{
-        cpus:{length:1,},
-    threadIds:{length: 2},
-    funTids:{length: 2},
-    trackIds:{length: 2},
-    hasFps:0,
-    heapIds:{length: 0},
-    nativeMemory:{length: 1}
-}]
+    let val = {
+        hasFps: 1,
+        cpus:{length:1},
+        threadIds:[{length:2}],
+        funTids:{length:1},
+        trackIds: {length:1},
+        heapIds: {length:1},
+        nativeMemory: {length:1},
+        cpuAbilityIds:{length:1},
+        memoryAbilityIds:{length:1},
+        diskAbilityIds:{length:1},
+        networkAbilityIds:{length:1},
+    }
+    let e = {detail:{
+            title:1,
+            state:0,
+            threadId:1,
+            processId:2
+        }}
+        let selection ={
+            hasFps: 1,
+            cpus:{length:1},
+            threadIds:[{length:2}],
+            funTids:{length:1},
+            trackIds: {length:1},
+            heapIds: {length:1},
+            nativeMemory: {length:1},
+            cpuAbilityIds:{length:0},
+            memoryAbilityIds:{length:0},
+            diskAbilityIds:{length:0},
+            networkAbilityIds:{length:0},
+            perfSampleIds:{length:0},
+            processTrackIds:{length:0},
+            fileSystemType:{length:0},
+            virtualTrackIds:{length:0},
+            sdkCounterIds:[{
+                length:0
+            }],
+            sdkSliceIds:[{
+                length:0
+            }]
+
+        }
     it('TraceSheet Test01', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow).not.toBeUndefined()
+        let traceSheet = new TraceSheet();
+        expect(traceSheet).not.toBeUndefined()
     });
-
-    it('TraceSheet Test02', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.recoveryBoxSelection).not.toBeUndefined()
-    });
-
-
-
-    it('TraceSheet Test03', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.hideBoxTab()).toBeUndefined()
-    });
-
-   /* it('TraceSheet Test04', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.hideOtherBoxTab("11")).not.toBeUndefined()
-    });
-
-
-    it('TraceSheet Test05', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.hideOtherBoxTab("12")).not.toBeUndefined()
-    });
-
-
-    it('TraceSheet Test06', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.hideOtherBoxTab("13")).not.toBeUndefined()
-    });
-
-    it('TraceSheet Test07', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.hideOtherBoxTab("14")).not.toBeUndefined()
-    });*/
 
     it('TraceSheet Test08', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.connectedCallback()).toBeUndefined()
+        let traceSheet = new TraceSheet();
+        expect(traceSheet.connectedCallback()).toBeUndefined()
     });
     it('TraceSheet Test09', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.loadTabPaneData()).toBeUndefined()
+        let traceSheet = new TraceSheet();
+        expect(traceSheet.loadTabPaneData()).toBeUndefined()
     });
 
-    it('TraceSheet Test10', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.clear()).toBeUndefined()
-    });
-
-    it('TraceSheet Test11', () => {
-        let traceRow = new TraceSheet();
-        expect(traceRow.boxSelection(val)).toBeUndefined()
+    it('TraceSheet Test19', () => {
+        let traceSheet = new TraceSheet();
+        expect(traceSheet.initHtml()).toMatchInlineSnapshot(`
+"
+            <style>
+                :host([mode='hidden']){
+                    display: none;
+                }
+                :host{
+                    display: block;
+                    background-color: rebeccapurple;
+                }
+                .tabHeight{
+                    height: 30vh;
+                    background-color: var(--dark-background,#FFFFFF);
+                }
+            </style>
+            <div style=\\"border-top: 1px solid var(--dark-border1,#D5D5D5);\\">
+                <lit-tabs id=\\"tabs\\" position=\\"top-left\\" activekey=\\"1\\" mode=\\"card\\" >
+                    <div slot=\\"right\\" style=\\"margin: 0 10px; color: var(--dark-icon,#606060);display: flex;align-items: center;\\">
+                        <lit-icon id=\\"max-btn\\" name=\\"vertical-align-top\\" style=\\"font-weight: bold;cursor: pointer;margin-right: 5px\\" size=\\"20\\">
+                        </lit-icon>
+                        <lit-icon id=\\"min-btn\\" name=\\"down\\" style=\\"font-weight: bold;cursor: pointer;\\" size=\\"20\\">
+                        </lit-icon>
+                    </div>
+                </lit-tabs>
+            </div>"
+`)
     });
 })

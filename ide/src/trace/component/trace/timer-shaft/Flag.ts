@@ -23,8 +23,9 @@ export class Flag {
     selected: boolean = false
     text: string = ""
     hidden: boolean = false;
-    type:string = "";
-    constructor(x: number, y: number, width: number, height: number, time: number, color: string = "#999999", selected = false, type:string="") {
+    type: string = "";
+
+    constructor(x: number, y: number, width: number, height: number, time: number, color: string = "#999999", selected = false, type: string = "") {
         this.x = x;
         this.y = y;
         this.width = width;

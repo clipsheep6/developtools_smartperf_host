@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-export class HeapBean{
-    MoudleName:string|undefined
-    AllocationFunction:string|undefined
-    Allocations:number|string = 0
-    Deallocations:number|string= 0
-    AllocationSize:number|string= 0
-    DeAllocationSize:number|string= 0
-    Total:number|string= 0
-    RemainingSize:number|string= 0
-    children:HeapBean[] = []
-    depth:number = 0
+export class HeapBean {
+    MoudleName: string | undefined
+    AllocationFunction: string | undefined
+    Allocations: number | string = 0
+    Deallocations: number | string = 0
+    AllocationSize: number | string = 0
+    DeAllocationSize: number | string = 0
+    Total: number | string = 0
+    RemainingSize: number | string = 0
+    children: HeapBean[] = []
+    depth: number = 0
 }

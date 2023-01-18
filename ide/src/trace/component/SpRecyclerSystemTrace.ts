@@ -28,8 +28,6 @@ import {
     queryCpuFreqData,
     queryCpuMax,
     queryCpuMaxFreq,
-    queryHeapByPid,
-    queryHeapPid,
     queryProcess,
     queryProcessData,
     queryProcessMem,
@@ -95,7 +93,7 @@ export class SpRecyclerSystemTrace extends BaseElement {
             // 款选的函数的 线程id ,无则不传
             selection.funTids = [];
             // 框选的 内存 trackId ,无则不传
-            selection.trackIds = [];
+            selection.processTrackIds = [];
             // 框选的起始时间
             selection.leftNs = 0;
             // 框选的结束时间
@@ -121,7 +119,7 @@ export class SpRecyclerSystemTrace extends BaseElement {
                     selection.rightNs = it.rangeSelect.endNS;
                 }
             })
-            this.traceSheetEL?.boxSelection(selection)
+            this.traceSheetEL?.rangeSelect(selection)
         }
         // @ts-ignore
         new ResizeObserver((entries) => {
@@ -521,7 +519,6 @@ export class SpRecyclerSystemTrace extends BaseElement {
     initProcess = async () => {
         let objs = [];
         let processList = await queryProcess();
-        let heapPidList = await queryHeapPid()
         for (let i = 0; i < processList.length; i++) {
             const it = processList[i];
             let processRow = new TraceRowObject<ProcessStruct>();
@@ -553,75 +550,6 @@ export class SpRecyclerSystemTrace extends BaseElement {
                 })
             }
             objs.push(processRow);
-            if (heapPidList != undefined && Array.isArray(heapPidList) && heapPidList.filter((item) => {
-                return item.pid == it.pid
-            }).length > 0) {
-                /**
-                 * 添加heap信息
-                 */
-                let allHeapRow = new TraceRowObject<HeapStruct>();
-                allHeapRow.rowParentId = `${it.pid}`
-                allHeapRow.rowHidden = !processRow.expansion
-                allHeapRow.rowHeight = 40
-                allHeapRow.name = "All Heap Allocations";
-                allHeapRow.folder = false;
-                allHeapRow.rowType = TraceRow.ROW_TYPE_HEAP
-                allHeapRow.frame = new Rect(0, 0, this.rowsEL.clientWidth - 248, allHeapRow.rowHeight)
-                allHeapRow.children = true
-                allHeapRow.supplier = () => queryHeapByPid(0, TraceRow.range?.totalNS || 0, it.pid || 0).then((res) => {
-                    let heapList: HeapStruct[] = []
-                    let allocMap: Map<string, HeapBean[]> = new Map<string, HeapBean[]>()
-                    let currentHeapSize = 0
-                    let maxHeapSize = 0;
-                    for (let j = 0; j < res.length; j++) {
-                        let struct = new HeapStruct();
-                        if (res[j].eventType == "AllocEvent") {
-                            currentHeapSize += (res[j].heapsize || 0)
-                            if (allocMap.has(res[j].addr || "")) {
-                                allocMap.get(res[j].addr || "")?.push(res[j])
-                            } else {
-                                allocMap.set(res[j].addr || "", [res[j]])
-                            }
-                        } else if (res[j].eventType == "FreeEvent") {
-                            if (allocMap.has(res[j].addr || "")) {
-                                let allocList = allocMap.get(res[j].addr || "");
-                                if (allocList != undefined && allocList.length > 0) {
-                                    currentHeapSize -= allocList[allocList.length - 1].heapsize || 0
-                                }
-                            }
-                        }
-                        if (currentHeapSize > maxHeapSize) {
-                            maxHeapSize = currentHeapSize
-                        }
-                        struct.pid = it.pid + ""
-                        struct.startTime = res[j].startTime
-                        if (j != res.length - 1) {
-                            struct.endTime = res[j + 1].startTime
-                        } else {
-                            struct.endTime = allHeapRow.range?.totalNS || 0
-                        }
-                        struct.duration = (struct.endTime || 0) - (struct.startTime || 0)
-                        struct.heapsize = currentHeapSize
-                        heapList.push(struct)
-                    }
-                    for (let j = 0; j < heapList.length; j++) {
-                        heapList[j].maxHeapSize = maxHeapSize
-                    }
-                    return heapList
-                })
-                allHeapRow.onDrawHandler = ctx => {
-                    if (allHeapRow.dataList) {
-                        for (let i = 0; i < allHeapRow.dataList.length; i++) {
-                            let it = allHeapRow.dataList[i];
-                            if ((it.startTime || 0) + (it.duration || 0) > (TraceRow.range?.startNS || 0) && (it.startTime || 0) < (TraceRow.range?.endNS || 0)) {
-                                HeapStruct.setFrame(allHeapRow.dataList[i], 5, TraceRow.range?.startNS || 0, TraceRow.range?.endNS || 0, TraceRow.range?.totalNS || 0, allHeapRow.frame)
-                                HeapStruct.draw(ctx, allHeapRow.dataList[i])
-                            }
-                        }
-                    }
-                }
-                objs.push(allHeapRow);
-            }
 
             /**
              * 添加进程内存信息
@@ -765,40 +693,43 @@ export class SpRecyclerSystemTrace extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-.timer-shaft{
-    width: 100%;
-    z-index: 2;
-}
-.rows{
-    display: flex;
-    box-sizing: border-box;
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: calc(100vh - 150px - 48px);
-    flex: 1;
-    width: 100%;
-}
-.container{
-    width: 100%;
-    box-sizing: border-box;
-    height: 100%;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content 1fr min-content;
-}
+        <style>
+        :host{
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .timer-shaft{
+            width: 100%;
+            z-index: 2;
+        }
+        .rows{
+            display: flex;
+            box-sizing: border-box;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: calc(100vh - 150px - 48px);
+            flex: 1;
+            width: 100%;
+        }
+        .container{
+            width: 100%;
+            box-sizing: border-box;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: min-content 1fr min-content;
+        }
 
-</style>
-<div class="container">
-    <timer-shaft-element class="timer-shaft"></timer-shaft-element>
-    <trace-row-recycler-view class="rows"></trace-row-recycler-view>
-    <trace-sheet class="trace-sheet" mode="hidden"></trace-sheet>
-</div>
+        </style>
+        <div class="container">
+            <timer-shaft-element class="timer-shaft">
+            </timer-shaft-element>
+            <trace-row-recycler-view class="rows">
+            </trace-row-recycler-view>
+            <trace-sheet class="trace-sheet" mode="hidden">
+            </trace-sheet>
+        </div>
         `;
     }
 

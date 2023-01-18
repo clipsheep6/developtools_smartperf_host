@@ -32,7 +32,8 @@ describe("TraceRow Test", () => {
 
     it('Test03', function () {
         let traceRow = new TraceRowRecyclerView();
-        traceRow.dataSource=false
+        traceRow.measureHeight = jest.fn(()=>true)
+        traceRow.dataSource = true
         expect(traceRow.dataSource).toBeTruthy();
     });
 
@@ -49,22 +50,84 @@ describe("TraceRow Test", () => {
 
     it('Test06', function () {
         let traceRow = new TraceRowRecyclerView();
-        expect(traceRow.refreshRow()).toBeUndefined();
-    });
+        const obj={
+            folder:false,
+            top:0,
+            name:"",
+            children:false,
+            rowId:"",
+            rowType:"",
+            rowParentId:"1",
+            expansion:false,
+            rowHidden:false,
+            rowHeight:40
+        }
+        const el={
+            obj:undefined,
+            style:{top:1,visibility:'visible'},
+            name:"",
+            rowId:"",
+            rowType:"",
+            rowParentId:"1",
+            expansion:false,
+            rowHidden:false,
+            setAttribute:"",
+            removeAttribute:""
 
-    it('Test07', function () {
-        let traceRow = new TraceRowRecyclerView();
-        traceRow.dataSource = jest.fn(()=>true)
-        traceRow.dataSource.filter = jest.fn(()=>true)
-        expect(traceRow.measureHeight()).toBeUndefined();
+        }
+        expect(traceRow.refreshRow(el,!obj)).toBeUndefined();
     });
 
     it('Test08', function () {
         let traceRow = new TraceRowRecyclerView();
         expect(traceRow.initUI()).toBeUndefined();
     });
+
     it('Test09', function () {
         let traceRow = new TraceRowRecyclerView();
         expect(traceRow.initUI()).toBeUndefined();
+    });
+
+    it('Test09', function () {
+        let traceRow = new TraceRowRecyclerView();
+        expect(traceRow.initHtml()).toMatchInlineSnapshot(`
+"
+        <style>
+        :host{
+            width:100%;
+            height:100%;
+            display: block;
+            position:relative;
+        }
+        .container{
+            width:100%;
+            height:100%;
+            overflow: auto;
+            position: absolute;
+            display: block;
+        }
+        .gasket{
+            width:100%;
+            height:auto;
+            top: 0;
+            left: 0;
+            right:0;
+            bottom:0;
+            visibility: hidden;
+        }
+        .recycler-cell{
+            position: absolute;
+            width:100%;
+            visibility: hidden;
+            top: 0;
+            left: 0;
+        }
+        </style>
+        <div class=\\"container\\">
+            <div class=\\"gasket\\"></div>
+        </div>
+
+        "
+`)
     });
 })

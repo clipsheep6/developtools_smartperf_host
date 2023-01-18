@@ -81,10 +81,14 @@ export interface CreateSessionRequest {
 
 export interface ProfilerPluginConfig<T> {
     pluginName: string;
-    sampleInterval: number;
+    sampleInterval?: number;
     configData: T;
 }
 
+export interface FileSystemConfig {
+    cmdLine: string;
+    outfileName: string;
+}
 
 export interface MemoryConfig {
     /** set true to report process list */
@@ -108,6 +112,8 @@ export interface MemoryConfig {
     reportAppMemByMemoryService: boolean;
     /** set required pid list */
     pid: number[];
+    /** set true to report smaps meminfo from /proc/${pid}/smaps */
+    reportSmapsMemInfo?: boolean;
 }
 
 
@@ -675,6 +681,7 @@ export enum SysMeminfoType {
     MEMINFO_VMALLOC_CHUNK = "PMEM_VMALLOC_CHUNK",
     MEMINFO_CMA_TOTAL = "PMEM_CMA_TOTAL",
     MEMINFO_CMA_FREE = "PMEM_CMA_FREE",
+    MEMINFO_KERNEL_RECLAIMABLE = "PMEM_KERNEL_RECLAIMABLE",
     UNRECOGNIZED = "UNRECOGNIZED",
 }
 
@@ -782,6 +789,9 @@ export function sysMeminfoTypeFromJSON(object: any): SysMeminfoType {
         case 33:
         case "MEMINFO_CMA_FREE":
             return SysMeminfoType.MEMINFO_CMA_FREE;
+        case 34:
+        case "MEMINFO_KERNEL_RECLAIMABLE":
+            return SysMeminfoType.MEMINFO_KERNEL_RECLAIMABLE;
         case -1:
         case "UNRECOGNIZED":
         default:
@@ -841,10 +851,53 @@ export interface NativeHookConfig {
     fileName: string,
     filterSize: number,
     smbPages: number,
-    maxStackDepth: number
-    processName: string
+    maxStackDepth: number,
+    processName: string,
+    mallocFreeMatchingInterval: number,
+    mallocFreeMatchingCnt: number,
+    stringCompressed: boolean
+    fpUnwind: boolean
+    blocked: boolean
 }
 
 export interface FpsConfig {
     reportFps: boolean;
+}
+
+export interface ProcessConfig {
+    report_process_tree: boolean;
+    report_cpu: boolean;
+    report_diskio: boolean;
+    report_pss: boolean;
+}
+
+export interface CpuConfig {
+    pid: number;
+    reportProcessInfo: boolean;
+}
+
+enum IoReportType {
+    UNSPECIFIED = "UNSPECIFIED",
+    IO_REPORT = "IO_REPORT",
+    IO_REPORT_EX = "IO_REPORT_EX"
+}
+
+export interface DiskioConfig {
+    reportIoStats: string;
+}
+
+export interface NetworkConfig {
+    testFile: string;
+}
+
+
+export interface HiperfPluginConfig {
+    isRoot: boolean;
+    outfileName: string;
+    recordArgs: string;
+}
+
+export interface HiSystemEventConfig {
+    msg:string;
+    processName:string
 }

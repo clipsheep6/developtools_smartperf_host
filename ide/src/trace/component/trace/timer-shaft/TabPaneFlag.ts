@@ -29,13 +29,21 @@ export class TabPaneFlag extends BaseElement {
                 document.dispatchEvent(new CustomEvent('flag-change', {detail: this.flag}));
             }
         });
-        this.shadowRoot?.querySelector("#text-input")?.addEventListener("keydown", (event: any) => {
+        this.shadowRoot?.querySelector("#text-input")?.addEventListener("keyup", (event: any) => {
+            event.stopPropagation();
             if (event.keyCode == "13") {
                 if (this.flag) {
+                    (window as any).flagInputFocus = false;
                     this.flag.text = event?.target.value
                     document.dispatchEvent(new CustomEvent('flag-change', {detail: this.flag}));
                 }
             }
+        });
+        this.shadowRoot?.querySelector("#text-input")?.addEventListener("blur", (event: any) => {
+            (window as any).flagInputFocus = false;
+        });
+        this.shadowRoot?.querySelector("#text-input")?.addEventListener("focus", (event: any) => {
+            (window as any).flagInputFocus = true;
         });
         this.shadowRoot?.querySelector("#remove-flag")?.addEventListener("click", (event: any) => {
             if (this.flag) {
@@ -54,50 +62,50 @@ export class TabPaneFlag extends BaseElement {
 
     initHtml(): string {
         return `
-<style>
-:host{
-    display: flex;
-    flex-direction: column;
-    padding: 10px 10px;
-}
-.notes-editor-panel{
-display: flex;align-items: center
-}
-.flag-text{
-font-size: 14px;color: var(--dark-color1,#363636c7);font-weight: 300;
-}
-.flag-input{
-    border-radius: 4px;
-    border: 1px solid var(--dark-border,#dcdcdc);
-    color: var(--dark-color1,#212121);
-    background: var(--dark-background5,#FFFFFF);
-    padding: 3px;
-    margin: 0 10px;
-}
-.flag-input:focus{
-    outline: none;
-    box-shadow: 1px 1px 1px var(--bark-prompt,#bebebe);
-}
-.notes-editor-panel button {
-    background: var(--dark-border1,#262f3c);
-    color: white;
-    border-radius: 10px;
-    font-size: 10px;
-    height: 22px;
-    line-height: 18px;
-    min-width: 7em;
-    margin: auto 0 auto 1rem;
-    
-    border: none;
-    cursor: pointer;
-    outline: inherit;
-</style>
-<div class="notes-editor-panel">
-    <div class="flag-text">Annotation at <span id="flag-time"></span></div>
-    <input style="flex: 1" class="flag-input" type="text" id="text-input"/>
-    <span class="flag-text">Change color: <input style="background: var(--dark-background5,#FFFFFF);" type="color" id="color-input"/></span>
-    <button id="remove-flag">Remove</button>
-</div>
+        <style>
+        :host{
+            display: flex;
+            flex-direction: column;
+            padding: 10px 10px;
+        }
+        .notes-editor-panel{
+        display: flex;align-items: center
+        }
+        .flag-text{
+        font-size: 14px;color: var(--dark-color1,#363636c7);font-weight: 300;
+        }
+        .flag-input{
+            border-radius: 4px;
+            border: 1px solid var(--dark-border,#dcdcdc);
+            color: var(--dark-color1,#212121);
+            background: var(--dark-background5,#FFFFFF);
+            padding: 3px;
+            margin: 0 10px;
+        }
+        .flag-input:focus{
+            outline: none;
+            box-shadow: 1px 1px 1px var(--bark-prompt,#bebebe);
+        }
+        .notes-editor-panel button {
+            background: var(--dark-border1,#262f3c);
+            color: white;
+            border-radius: 10px;
+            font-size: 10px;
+            height: 22px;
+            line-height: 18px;
+            min-width: 7em;
+            margin: auto 0 auto 1rem;
+
+            border: none;
+            cursor: pointer;
+            outline: inherit;
+        </style>
+        <div class="notes-editor-panel">
+            <div class="flag-text">Annotation at <span id="flag-time"></span></div>
+            <input style="flex: 1" class="flag-input" type="text" id="text-input"/>
+            <span class="flag-text">Change color: <input style="background: var(--dark-background5,#FFFFFF);" type="color" id="color-input"/></span>
+            <button id="remove-flag">Remove</button>
+        </div>
         `;
     }
 
