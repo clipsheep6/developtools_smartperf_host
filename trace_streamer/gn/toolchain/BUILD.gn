@@ -13,12 +13,14 @@
 
 import("//gn/wasm.gni")
 declare_args() {
-  if (target_os == "linux" || target_os == "wasm" || target_os == "test") {
+  if (target_os == "linux" || target_os == "macx") {
     cc = "/usr/bin/clang"
     cxx = "/usr/bin/clang++"
+    pic = "-fPIC"
   } else if (target_os == "windows") {
-    cc = "~/mingw-w64/ohos/linux-x86_64/clang-mingw/bin/clang"
-    cxx = "~/mingw-w64/ohos/linux-x86_64/clang-mingw/bin/clang++"
+    cc = "gcc.exe"
+    cxx = "g++.exe"
+    pic = ""
   }
   if (use_wasm == true) {
     print("make_wasm")
@@ -26,12 +28,13 @@ declare_args() {
     print("no make_wasm")
   }
   cc_wrapper = ""
-  is_mac = false
 }
 toolchain("wasm") {
   # emsdk_dir and em_config are defined in wasm.gni.
   print("use gcc_like_chain wasm")
-  ar = "$emsdk_dir/emscripten/emar --em-config $em_config"
+  if (!is_macx) {
+    ar = "$emsdk_dir/emscripten/emar --em-config $em_config"
+  }
   cc = "$emsdk_dir/emscripten/emcc --em-config $em_config"
   cxx = "$emsdk_dir/emscripten/em++ --em-config $em_config"
 
@@ -82,7 +85,11 @@ toolchain("wasm") {
   tool("alink") {
     rspfile = "{{output}}.rsp"  # must be defined
     rspfile_content = "{{inputs}}"
-    command = "rm -rf {{output}} && $ar rcsD {{output}} @$rspfile"
+    if (is_macx) {
+      command = "rm -f {{output}} && libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
+    } else {
+      command = "rm -rf {{output}} && $ar rcsD {{output}} @$rspfile"
+    }
     outputfiles = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
     outputs = [ outputfiles ]
     output_prefix = "lib"
@@ -124,7 +131,7 @@ toolchain("gcc_like") {
 
   tool("cxx") {
     depfile = "{{output}}.d"  # must be defined
-    command = "$cxx -o {{output}} -MMD -MF $depfile {{defines}} -fPIC {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}}"
+    command = "$cxx -o {{output}} -MMD -MF $depfile {{defines}} $pic {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}}"
     outputfiles =
         "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
     outputs = [ outputfiles ]
@@ -133,7 +140,7 @@ toolchain("gcc_like") {
 
   tool("cc") {
     depfile = "{{output}}.d"
-    command = "$cc -o {{output}} -MMD -MF $depfile {{defines}} -fPIC {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}}"
+    command = "$cc -o {{output}} -MMD -MF $depfile {{defines}} $pic {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}}"
     outputfiles =
         "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o"
     outputs = [ outputfiles ]
@@ -141,8 +148,13 @@ toolchain("gcc_like") {
   }
   tool("alink") {
     rspfile = "{{output}}.rsp"  # this must be defined
-    rspfile_content = "{{inputs}}"  # this must be defined
-    command = "rm -f {{output}} && $ar rcsD {{output}} @$rspfile"
+    if (is_macx) {
+      rspfile_content = "{{inputs_newline}}"
+      command = "rm -f {{output}} && libtool -static {{arflags}} -filelist $rspfile -o {{output}}"
+    } else {
+      rspfile_content = "{{inputs}}"  # this must be defined
+      command = "rm -f {{output}} && $ar rcsD {{output}} @$rspfile"
+    }
     outputsfiles = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
     outputs = [ outputsfiles ]
     default_output_extension = ".a"

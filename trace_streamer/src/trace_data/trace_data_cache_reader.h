@@ -33,12 +33,16 @@ public:
 public:
     const std::string& GetDataFromDict(DataIndex id) const;
     const Process& GetConstProcessData(InternalPid internalPid) const;
+    const  std::deque<Process>& GetConstProcessData() const;
     const Thread& GetConstThreadData(InternalTid internalTid) const;
+    const std::deque<Thread>& GetConstThreadData() const;
     const CallStack& GetConstInternalSlicesData() const;
     const CallStack& GetConstIrqData() const;
     const Filter& GetConstFilterData() const;
     const Raw& GetConstRawTableData() const;
     const Measure& GetConstMeasureData() const;
+    const Measure& GetConstSysMemMeasureData() const;
+    const Measure& GetConstProcessMeasureData() const;
     const ThreadMeasureFilter& GetConstThreadMeasureFilterData() const;
     const ThreadState& GetConstThreadStateData() const;
     const SchedSlice& GetConstSchedSliceData() const;
@@ -57,12 +61,37 @@ public:
     const SymbolsData& GetConstSymbolsData() const;
     const SysCall& GetConstSysCallData() const;
     const LogInfo& GetConstHilogData() const;
-    const HeapInfo& GetConstHeapData() const;
-    const HeapFrameInfo& GetConstHeapFrameData() const;
+    const NativeHook& GetConstNativeHookData() const;
+    const NativeHookFrame& GetConstNativeHookFrameData() const;
     const Hidump& GetConstHidumpData() const;
+    const PerfCallChain& GetConstPerfCallChainData() const;
+    const PerfFiles& GetConstPerfFilesData() const;
+    const PerfSample& GetConstPerfSampleData() const;
+    const PerfThread& GetConstPerfThreadData() const;
+    const PerfReport& GetConstPerfReportData() const;
     const ArgSet& GetConstArgSetData() const;
     const DataType& GetConstDataTypeData() const;
     const SysMeasureFilter& GetConstSysMeasureFilterData() const;
+    const NetDetailData& GetConstNetworkData() const;
+    const CpuUsageDetailData& GetConstCpuUsageInfoData() const;
+    const DiskIOData& GetConstDiskIOData() const;
+    const LiveProcessDetailData& GetConstLiveProcessData() const;
+    const FileSystemSample& GetConstFileSystemSample() const;
+    const DeviceStateData& GetConstDeviceStateData() const;
+    const EbpfCallStackData& GetConstEbpfCallStackData() const;
+    const PagedMemorySampleData& GetConstPagedMemorySampleData() const;
+#if WITH_EBPF_HELP
+    const EbpfProcessMaps& GetConstEbpfProcessMaps() const;
+    const EbpfElf& GetConstEbpfElf() const;
+    const EbpfElfSymbol& GetConstEbpfElfSymbol() const;
+#endif
+    const AppNames& GetConstAppNamesData() const;
+    const SysEventMeasureData& GetConstSyseventMeasureData() const;
+    const TraceConfigData& GetConstTraceConfigData() const;
+    const SmapsData& GetConstSmapsData() const;
+    const BioLatencySampleData& GetConstBioLatencySampleData() const;
+    const ClockSnapshotData& GetConstClockSnapshotData() const;
+    const DataSourceClockIdData& GetConstDataSourceClockIdData() const;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

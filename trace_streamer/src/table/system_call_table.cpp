@@ -22,23 +22,23 @@ enum Index { SYSCALL_NUM = 0, TYPE, IPID, TS, RET };
 }
 SystemCallTable::SystemCallTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
-    tableColumn_.push_back(TableBase::ColumnInfo("syscall_num", "INT"));
-    tableColumn_.push_back(TableBase::ColumnInfo("type", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("ipid", "UNSIGNED INT"));
-    tableColumn_.push_back(TableBase::ColumnInfo("ts", "UNSIGNED INT"));
-    tableColumn_.push_back(TableBase::ColumnInfo("ret", "INT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("syscall_num", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("type", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("ipid", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("ts", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("ret", "INTEGER"));
     tablePriKey_.push_back("syscall_num");
 }
 
 SystemCallTable::~SystemCallTable() {}
 
-void SystemCallTable::CreateCursor()
+std::unique_ptr<TableBase::Cursor> SystemCallTable::CreateCursor()
 {
-    cursor_ = std::make_unique<Cursor>(dataCache_);
+    return std::make_unique<Cursor>(dataCache_, this);
 }
 
-SystemCallTable::Cursor::Cursor(const TraceDataCache* dataCache)
-    : TableBase::Cursor(dataCache, 0, static_cast<uint32_t>(dataCache->GetConstSysCallData().Size())),
+SystemCallTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* table)
+    : TableBase::Cursor(dataCache, table, static_cast<uint32_t>(dataCache->GetConstSysCallData().Size())),
       sysCallObj_(dataCache->GetConstSysCallData())
 {
 }

@@ -25,15 +25,19 @@ class MeasureTable : public TableBase {
 public:
     explicit MeasureTable(const TraceDataCache* dataCache);
     ~MeasureTable() override;
-    void CreateCursor() override;
+    std::unique_ptr<TableBase::Cursor> CreateCursor() override;
 
 private:
+    void EstimateFilterCost(FilterConstraints& fc, EstimatedIndexInfo& ei) override;
+    void FilterByConstraint(FilterConstraints& fc, double& filterCost, size_t rowCount);
+    bool CanFilterSorted(const char op, size_t& rowCount) const;
+
     class Cursor : public TableBase::Cursor {
     public:
-        explicit Cursor(const TraceDataCache* dataCache);
+        explicit Cursor(const TraceDataCache* dataCache, TableBase* table);
         ~Cursor() override;
+        int Filter(const FilterConstraints& fc, sqlite3_value** argv) override;
         int Column(int column) const override;
-
     private:
         const Measure& measureObj;
     };

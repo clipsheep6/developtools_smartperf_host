@@ -22,19 +22,22 @@ enum Index { NAMEINDEX = 0, VALUE };
 }
 MetaTable::MetaTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
-    tableColumn_.push_back(TableBase::ColumnInfo("name", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("value", "STRING"));
+    tableColumn_.push_back(TableBase::ColumnInfo("name", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("value", "TEXT"));
     tablePriKey_.push_back("name");
 }
 
 MetaTable::~MetaTable() {}
 
-void MetaTable::CreateCursor()
+std::unique_ptr<TableBase::Cursor> MetaTable::CreateCursor()
 {
-    cursor_ = std::make_unique<Cursor>(dataCache_);
+    return std::make_unique<Cursor>(dataCache_, this);
 }
 
-MetaTable::Cursor::Cursor(const TraceDataCache* dataCache) : TableBase::Cursor(dataCache, 0, METADATA_ITEM_MAX) {}
+MetaTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* table)
+    : TableBase::Cursor(dataCache, table, METADATA_ITEM_MAX)
+{
+}
 
 MetaTable::Cursor::~Cursor() {}
 

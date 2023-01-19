@@ -47,8 +47,9 @@ public:
     MeasureFilter(const MeasureFilter&) = delete;
     MeasureFilter& operator=(const MeasureFilter&) = delete;
     ~MeasureFilter() override;
-    void AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timestamp, int64_t value);
+    bool AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timestamp, int64_t value);
     uint32_t GetOrCreateFilterId(uint64_t internalTid, DataIndex nameIndex);
+    void Clear();
 private:
     void AddCertainFilterId(uint64_t internalTid, DataIndex nameIndex, uint64_t filterId);
     DoubleMap<uint64_t, DataIndex, uint64_t> tidStreamIdFilterIdMap_;
@@ -67,12 +68,12 @@ private:
         { E_CLK_ENABLE_FILTER, "clk_enable_filter" },
         { E_CLK_DISABLE_FILTER, "clk_disable_filter" }
     };
-    DataIndex clockSetRateDataIndex_ = traceDataCache_->GetDataIndex("clock_set_rate");
-    DataIndex clockEnableDataIndex_ = traceDataCache_->GetDataIndex("clock_enable");
-    DataIndex clockDisableDataIndex_ = traceDataCache_->GetDataIndex("clock_disable");
-    DataIndex clkSetRateDataIndex_ = traceDataCache_->GetDataIndex("clk_set_rate");
-    DataIndex clkEnableDataIndex_ = traceDataCache_->GetDataIndex("clk_enable");
-    DataIndex clkDisableDataIndex_ = traceDataCache_->GetDataIndex("clk_disable");
+    const DataIndex clockSetRateDataIndex_ = traceDataCache_->GetDataIndex("clock_set_rate");
+    const DataIndex clockEnableDataIndex_ = traceDataCache_->GetDataIndex("clock_enable");
+    const DataIndex clockDisableDataIndex_ = traceDataCache_->GetDataIndex("clock_disable");
+    const DataIndex clkSetRateDataIndex_ = traceDataCache_->GetDataIndex("clk_set_rate");
+    const DataIndex clkEnableDataIndex_ = traceDataCache_->GetDataIndex("clk_enable");
+    const DataIndex clkDisableDataIndex_ = traceDataCache_->GetDataIndex("clk_disable");
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

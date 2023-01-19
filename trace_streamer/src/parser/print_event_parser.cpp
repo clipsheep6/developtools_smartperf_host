@@ -24,29 +24,26 @@ PrintEventParser::PrintEventParser(TraceDataCache* dataCache, const TraceStreame
 {
 }
 
-void PrintEventParser::ParsePrintEvent(uint64_t ts, uint32_t pid, std::string_view event) const
+bool PrintEventParser::ParsePrintEvent(const std::string& comm, uint64_t ts, uint32_t pid, std::string_view event)
 {
+    streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_RECEIVED);
     TracePoint point;
-    if (GetTracePoint(event, point) == SUCCESS) {
-        ParseTracePoint(ts, pid, point);
-        streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_RECEIVED);
-    } else {
+    if (GetTracePoint(event, point) != SUCCESS) {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_INVALID);
+        return false;
     }
-}
-
-void PrintEventParser::ParseTracePoint(uint64_t ts, uint32_t pid, TracePoint point) const
-{
     if (point.tgid_) {
         streamFilters_->processFilter_->GetOrCreateInternalPid(ts, point.tgid_);
     }
+    uint32_t index = 0;
     switch (point.phase_) {
         case 'B': {
-            if (streamFilters_->sliceFilter_->BeginSlice(ts, pid, point.tgid_, 0,
-                traceDataCache_->GetDataIndex(point.name_))) {
+            index = streamFilters_->sliceFilter_->BeginSlice(comm, ts, pid, point.tgid_, INVALID_DATAINDEX,
+                                                             traceDataCache_->GetDataIndex(point.name_));
+            if (index != INVALID_UINT32) {
                 // add distributed data
-                traceDataCache_->GetInternalSlicesData()->AppendDistributeInfo(
-                    point.chainId_, point.spanId_, point.parentSpanId_, point.flag_, point.args_);
+                traceDataCache_->GetInternalSlicesData()->SetDistributeInfo(
+                    index, point.chainId_, point.spanId_, point.parentSpanId_, point.flag_, point.args_);
             } else {
                 streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_LOST);
             }
@@ -57,13 +54,13 @@ void PrintEventParser::ParseTracePoint(uint64_t ts, uint32_t pid, TracePoint poi
             break;
         }
         case 'S': {
-            auto cookie = static_cast<int64_t>(point.value_);
+            auto cookie = static_cast<uint64_t>(point.value_);
             streamFilters_->sliceFilter_->StartAsyncSlice(ts, pid, point.tgid_, cookie,
                 traceDataCache_->GetDataIndex(point.name_));
             break;
         }
         case 'F': {
-            auto cookie = static_cast<int64_t>(point.value_);
+            auto cookie = static_cast<uint64_t>(point.value_);
             streamFilters_->sliceFilter_->FinishAsyncSlice(ts, pid, point.tgid_, cookie,
                 traceDataCache_->GetDataIndex(point.name_));
             break;
@@ -80,8 +77,9 @@ void PrintEventParser::ParseTracePoint(uint64_t ts, uint32_t pid, TracePoint poi
         }
         default:
             TS_LOGD("point missing!");
-            break;
+            return false;
     }
+    return true;
 }
 
 ParseResult PrintEventParser::CheckTracePoint(std::string_view pointStr) const
@@ -139,6 +137,10 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
         return SUCCESS;
     }
     // Resolve distributed calls
+    // the normal data mybe like:
+    // system-1298 ( 1298) [001] ...1 174330.287420: tracing_mark_write: B|1298|[8b00e96b2,2,1]:C$#decodeFrame$#"
+    //    "{\"Process\":\"DecodeVideoFrame\",\"frameTimestamp\":37313484466} \
+    //        system - 1298(1298)[001]... 1 174330.287622 : tracing_mark_write : E | 1298 \n
     const std::regex distributeMatcher =
         std::regex(R"((?:^\[([a-z0-9]+),(\d+),(\d+)\]:?([CS]?)\$#)?(.*)\$#(.*)$)");
     std::smatch matcheLine;
@@ -155,15 +157,18 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
     return SUCCESS;
 }
 
-ParseResult PrintEventParser::HandlerE(void) const
+ParseResult PrintEventParser::HandlerE(void)
 {
     return SUCCESS;
 }
 
-size_t PrintEventParser::GetNameLength(std::string_view pointStr, size_t nameIndex) const
+size_t PrintEventParser::GetNameLength(std::string_view pointStr, size_t nameIndex)
 {
     size_t namelength = 0;
     for (size_t i = nameIndex; i < pointStr.size(); i++) {
+        if (pointStr[i] == ' ') {
+            namelength = i - nameIndex;
+        }
         if (pointStr[i] == '|') {
             namelength = i - nameIndex;
             break;
@@ -241,7 +246,9 @@ ParseResult PrintEventParser::GetTracePoint(std::string_view pointStr, TracePoin
     }
 
     size_t tGidlength = 0;
-
+    // we may get wrong format data like tracing_mark_write: E
+    // while the format data must be E|call-tid
+    // please use a regular-format to get all the data
     outPoint.phase_ = pointStr.front();
     outPoint.tgid_ = GetThreadGroupId(pointStr, tGidlength);
 

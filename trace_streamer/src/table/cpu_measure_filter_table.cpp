@@ -14,6 +14,9 @@
  */
 
 #include "cpu_measure_filter_table.h"
+
+#include <cmath>
+
 #include "log.h"
 
 namespace SysTuning {
@@ -23,27 +26,150 @@ enum Index { ID = 0, TYPE, NAME, CPU };
 }
 CpuMeasureFilterTable::CpuMeasureFilterTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
-    tableColumn_.push_back(TableBase::ColumnInfo("id", "UNSIGNED INT"));
-    tableColumn_.push_back(TableBase::ColumnInfo("type", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("name", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("cpu", "UNSIGNED INT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("id", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("type", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("name", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("cpu", "INTEGER"));
     tablePriKey_.push_back("id");
 }
 
 CpuMeasureFilterTable::~CpuMeasureFilterTable() {}
 
-void CpuMeasureFilterTable::CreateCursor()
+void CpuMeasureFilterTable::EstimateFilterCost(FilterConstraints& fc, EstimatedIndexInfo& ei)
 {
-    cursor_ = std::make_unique<Cursor>(dataCache_);
+    constexpr double filterBaseCost = 1000.0; // set-up and tear-down
+    constexpr double indexCost = 2.0;
+    ei.estimatedCost = filterBaseCost;
+
+    auto rowCount = dataCache_->GetConstCpuMeasureData().Size();
+    if (rowCount == 0 || rowCount == 1) {
+        ei.estimatedRows = rowCount;
+        ei.estimatedCost += indexCost * rowCount;
+        return;
+    }
+
+    double filterCost = 0.0;
+    auto constraints = fc.GetConstraints();
+    if (constraints.empty()) { // scan all rows
+        filterCost = rowCount;
+    } else {
+        FilterByConstraint(fc, filterCost, rowCount);
+    }
+    ei.estimatedCost += filterCost;
+    ei.estimatedRows = rowCount;
+    ei.estimatedCost += rowCount * indexCost;
+
+    ei.isOrdered = true;
+    auto orderbys = fc.GetOrderBys();
+    for (auto i = 0; i < orderbys.size(); i++) {
+        switch (orderbys[i].iColumn) {
+            case ID:
+                break;
+            default: // other columns can be sorted by SQLite
+                ei.isOrdered = false;
+                break;
+        }
+    }
 }
 
-CpuMeasureFilterTable::Cursor::Cursor(const TraceDataCache* dataCache)
-    : TableBase::Cursor(dataCache, 0, static_cast<uint32_t>(dataCache->GetConstCpuMeasureData().Size())),
+void CpuMeasureFilterTable::FilterByConstraint(FilterConstraints& fc, double& filterCost, size_t rowCount)
+{
+    auto fcConstraints = fc.GetConstraints();
+    for (int i = 0; i < static_cast<int>(fcConstraints.size()); i++) {
+        if (rowCount <= 1) {
+            // only one row or nothing, needn't filter by constraint
+            filterCost += rowCount;
+            break;
+        }
+        const auto& c = fcConstraints[i];
+        switch (c.col) {
+            case ID: {
+                auto oldRowCount = rowCount;
+                if (CanFilterSorted(c.op, rowCount)) {
+                    fc.UpdateConstraint(i, true);
+                    filterCost += log2(oldRowCount); // binary search
+                } else {
+                    filterCost += oldRowCount;
+                }
+                break;
+            }
+            default:                    // other column
+                filterCost += rowCount; // scan all rows
+                break;
+        }
+    }
+}
+
+bool CpuMeasureFilterTable::CanFilterSorted(const char op, size_t& rowCount) const
+{
+    switch (op) {
+        case SQLITE_INDEX_CONSTRAINT_EQ:
+            rowCount = rowCount / log2(rowCount);
+            break;
+        case SQLITE_INDEX_CONSTRAINT_GT:
+        case SQLITE_INDEX_CONSTRAINT_GE:
+        case SQLITE_INDEX_CONSTRAINT_LE:
+        case SQLITE_INDEX_CONSTRAINT_LT:
+            rowCount = (rowCount >> 1);
+            break;
+        default:
+            return false;
+    }
+    return true;
+}
+
+std::unique_ptr<TableBase::Cursor> CpuMeasureFilterTable::CreateCursor()
+{
+    return std::make_unique<Cursor>(dataCache_, this);
+}
+
+CpuMeasureFilterTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* table)
+    : TableBase::Cursor(dataCache, table,
+        static_cast<uint32_t>(dataCache->GetConstCpuMeasureData().Size())),
       cpuMeasureObj_(dataCache->GetConstCpuMeasureData())
 {
 }
 
 CpuMeasureFilterTable::Cursor::~Cursor() {}
+
+int CpuMeasureFilterTable::Cursor::Filter(const FilterConstraints& fc, sqlite3_value** argv)
+{
+    // reset indexMap_
+    indexMap_ = std::make_unique<IndexMap>(0, rowCount_);
+
+    if (rowCount_ <= 0) {
+        return SQLITE_OK;
+    }
+
+    auto& cs = fc.GetConstraints();
+    for (size_t i = 0; i < cs.size(); i++) {
+        const auto& c = cs[i];
+        switch (c.col) {
+            case ID:
+                FilterSorted(c.col, c.op, argv[i]);
+                break;
+            case CPU:
+                indexMap_->MixRange(c.op, static_cast<uint32_t>(sqlite3_value_int(argv[i])), cpuMeasureObj_.CpuData());
+                break;
+            default:
+                break;
+        }
+    }
+
+    auto orderbys = fc.GetOrderBys();
+    for (auto i = orderbys.size(); i > 0;) {
+        i--;
+        switch (orderbys[i].iColumn) {
+            case ID:
+                indexMap_->SortBy(orderbys[i].desc);
+                break;
+            default:
+                break;
+        }
+    }
+
+    return SQLITE_OK;
+}
 
 int CpuMeasureFilterTable::Cursor::Column(int column) const
 {
@@ -68,6 +194,47 @@ int CpuMeasureFilterTable::Cursor::Column(int column) const
             break;
     }
     return SQLITE_OK;
+}
+
+void CpuMeasureFilterTable::Cursor::FilterSorted(int col, unsigned char op, sqlite3_value* argv)
+{
+    auto type = sqlite3_value_type(argv);
+    if (type != SQLITE_INTEGER) {
+        // other type consider it NULL, filter out nothing
+        indexMap_->Intersect(0, 0);
+        return;
+    }
+
+    switch (col) {
+        case ID: {
+            auto v = static_cast<uint64_t>(sqlite3_value_int64(argv));
+            auto getValue = [](const uint32_t& row) {
+                return row;
+            };
+            switch (op) {
+                case SQLITE_INDEX_CONSTRAINT_EQ:
+                    indexMap_->IntersectabcEqual(cpuMeasureObj_.IdsData(), v, getValue);
+                    break;
+                case SQLITE_INDEX_CONSTRAINT_GT:
+                    v++;
+                case SQLITE_INDEX_CONSTRAINT_GE: {
+                    indexMap_->IntersectGreaterEqual(cpuMeasureObj_.IdsData(), v, getValue);
+                    break;
+                }
+                case SQLITE_INDEX_CONSTRAINT_LE:
+                    v++;
+                case SQLITE_INDEX_CONSTRAINT_LT: {
+                    indexMap_->IntersectLessEqual(cpuMeasureObj_.IdsData(), v, getValue);
+                    break;
+                }
+                default:
+                    break;
+            } // end of switch (op)
+        } // end of case TS
+        default:
+            // can't filter, all rows
+            break;
+    }
 }
 } // namespace TraceStreamer
 } // namespace SysTuning

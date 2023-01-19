@@ -30,6 +30,15 @@ Process* TraceDataCacheWriter::GetProcessData(InternalPid internalPid)
     return &internalProcessesData_[internalPid];
 }
 
+uint32_t TraceDataCacheWriter::AppendNewProcessData(uint32_t pid, const std::string& name, uint64_t startTs)
+{
+    internalProcessesData_.emplace_back(pid);
+    auto& process = internalProcessesData_.back();
+    process.cmdLine_ = name;
+    process.startT_ = startTs;
+    return internalProcessesData_.size() - 1;
+}
+
 InternalTid TraceDataCacheWriter::NewInternalThread(uint32_t tid)
 {
     internalThreadsData_.emplace_back(tid);
@@ -45,8 +54,10 @@ Thread* TraceDataCacheWriter::GetThreadData(InternalTid internalTid)
 
 void TraceDataCacheWriter::UpdateTraceTime(uint64_t timestamp)
 {
-    traceStartTime_ = std::min(traceStartTime_, timestamp);
-    traceEndTime_ = std::max(traceEndTime_, timestamp);
+    if (timestamp) {
+        traceStartTime_ = std::min(traceStartTime_, timestamp);
+        traceEndTime_ = std::max(traceEndTime_, timestamp);
+    }
 }
 
 void TraceDataCacheWriter::MixTraceTime(uint64_t timestampMin, uint64_t timestampMax)
@@ -87,6 +98,15 @@ Raw* TraceDataCacheWriter::GetRawData()
 Measure* TraceDataCacheWriter::GetMeasureData()
 {
     return &measureData_;
+}
+
+Measure* TraceDataCacheWriter::GetSysMemMeasureData()
+{
+    return &sysMemMeasureData_;
+}
+Measure* TraceDataCacheWriter::GetProcessMeasureData()
+{
+    return &processMeasureData_;
 }
 
 ThreadState* TraceDataCacheWriter::GetThreadStateData()
@@ -161,21 +181,40 @@ LogInfo* TraceDataCacheWriter::GetHilogData()
     return &hilogData_;
 }
 
-HeapInfo* TraceDataCacheWriter::GetHeapData()
+NativeHook* TraceDataCacheWriter::GetNativeHookData()
 {
-    return &heapData_;
+    return &nativeHookData_;
 }
 
-HeapFrameInfo* TraceDataCacheWriter::GetHeapFrameData()
+NativeHookFrame* TraceDataCacheWriter::GetNativeHookFrameData()
 {
-    return &heapFrameData_;
+    return &nativeHookFrameData_;
 }
 
 Hidump* TraceDataCacheWriter::GetHidumpData()
 {
     return &hidumpData_;
 }
-
+PerfCallChain* TraceDataCacheWriter::GetPerfCallChainData()
+{
+    return &perfCallChain_;
+}
+PerfFiles* TraceDataCacheWriter::GetPerfFilesData()
+{
+    return &perfFiles_;
+}
+PerfSample* TraceDataCacheWriter::GetPerfSampleData()
+{
+    return &perfSample_;
+}
+PerfThread* TraceDataCacheWriter::GetPerfThreadData()
+{
+    return &perfThread_;
+}
+PerfReport* TraceDataCacheWriter::GetPerfReportData()
+{
+    return &perfReport_;
+}
 ArgSet* TraceDataCacheWriter::GetArgSetData()
 {
     return &argSet_;
@@ -189,6 +228,86 @@ DataType* TraceDataCacheWriter::GetDataTypeData()
 SysMeasureFilter* TraceDataCacheWriter::GetSysMeasureFilterData()
 {
     return &sysEvent_;
+}
+NetDetailData* TraceDataCacheWriter::GetNetworkData()
+{
+    return &networkData_;
+}
+NetDetailData* TraceDataCacheWriter::GetNetworkDetailData()
+{
+    return &networkDetailData_;
+}
+DiskIOData* TraceDataCacheWriter::GetDiskIOData()
+{
+    return &diskIOData_;
+}
+
+CpuUsageDetailData* TraceDataCacheWriter::GetCpuUsageInfoData()
+{
+    return &cpuUsageData_;
+}
+LiveProcessDetailData* TraceDataCacheWriter::GetLiveProcessData()
+{
+    return &liveProcessDetailData_;
+}
+FileSystemSample* TraceDataCacheWriter::GetFileSystemSample()
+{
+    return &fileSamplingTableData_;
+}
+EbpfCallStackData* TraceDataCacheWriter::GetEbpfCallStack()
+{
+    return &ebpfCallStackData_;
+}
+PagedMemorySampleData* TraceDataCacheWriter::GetPagedMemorySampleData()
+{
+    return &PagedMemorySampleData_;
+}
+#if WITH_EBPF_HELP
+EbpfProcessMaps* TraceDataCacheWriter::GetEbpfProcessMaps()
+{
+    return &ebpfProcessMaps_;
+}
+EbpfElf* TraceDataCacheWriter::GetEbpfElf()
+{
+    return &ebpfElf_;
+}
+EbpfElfSymbol* TraceDataCacheWriter::GetEbpfElfSymbol()
+{
+    return &ebpfElfSymbol_;
+}
+#endif
+AppNames* TraceDataCacheWriter::GetAppNamesData()
+{
+    return &appNames_;
+}
+SysEventMeasureData* TraceDataCacheWriter::GetSyseventMeasureData()
+{
+    return &sysEventMeasureData_;
+}
+DeviceStateData* TraceDataCacheWriter::GetDeviceStateData()
+{
+    return &deviceStateData_;
+}
+TraceConfigData* TraceDataCacheWriter::GetTraceConfigData()
+{
+    return &traceConfigData_;
+}
+SmapsData* TraceDataCacheWriter::GetSmapsData()
+{
+    return &smapsData_;
+}
+BioLatencySampleData* TraceDataCacheWriter::GetBioLatencySampleData()
+{
+    return &bioLatencySampleData_;
+}
+
+ClockSnapshotData* TraceDataCacheWriter::GetClockSnapshotData()
+{
+    return &clockSnapshotData_;
+}
+DataSourceClockIdData* TraceDataCacheWriter::GetDataSourceClockIdData()
+{
+    return &dataSourceClockIdData_;
 }
 void TraceDataCacheWriter::Clear()
 {
@@ -209,8 +328,8 @@ void TraceDataCacheWriter::Clear()
     callstackData_.Clear();
     irqData_.Clear();
     hilogData_.Clear();
-    heapData_.Clear();
-    heapFrameData_.Clear();
+    nativeHookData_.Clear();
+    nativeHookFrameData_.Clear();
     hidumpData_.Clear();
 
     internalProcessesData_.clear();
@@ -225,6 +344,29 @@ void TraceDataCacheWriter::Clear()
     argSet_.Clear();
     dataType_.Clear();
     sysEvent_.Clear();
+    networkData_.Clear();
+    networkDetailData_.Clear();
+    perfSample_.Clear();
+    perfCallChain_.Clear();
+    perfThread_.Clear();
+    perfFiles_.Clear();
+    perfReport_.Clear();
+    cpuUsageData_.Clear();
+    diskIOData_.Clear();
+    liveProcessDetailData_.Clear();
+    fileSamplingTableData_.Clear();
+    ebpfCallStackData_.Clear();
+    PagedMemorySampleData_.Clear();
+#if WITH_EBPF_HELP
+    ebpfProcessMaps_.Clear();
+    ebpfElf_.Clear();
+    ebpfElfSymbol_.Clear();
+#endif
+    appNames_.Clear();
+    sysEventMeasureData_.Clear();
+    deviceStateData_.Clear();
+    smapsData_.Clear();
+    bioLatencySampleData_.Clear();
 }
 } // namespace TraceStreamer
 } // namespace SysTuning

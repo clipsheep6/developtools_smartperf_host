@@ -22,22 +22,22 @@ enum Index { ID = 0, TYPE, NAME, INTERNAL_PID };
 }
 ProcessFilterTable::ProcessFilterTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
-    tableColumn_.push_back(TableBase::ColumnInfo("id", "UNSIGNED INT"));
-    tableColumn_.push_back(TableBase::ColumnInfo("type", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("name", "STRING"));
-    tableColumn_.push_back(TableBase::ColumnInfo("ipid", "UNSIGNED INT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("id", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("type", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("name", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("ipid", "INTEGER"));
     tablePriKey_.push_back("id");
 }
 
 ProcessFilterTable::~ProcessFilterTable() {}
 
-void ProcessFilterTable::CreateCursor()
+std::unique_ptr<TableBase::Cursor> ProcessFilterTable::CreateCursor()
 {
-    cursor_ = std::make_unique<Cursor>(dataCache_);
+    return std::make_unique<Cursor>(dataCache_, this);
 }
 
-ProcessFilterTable::Cursor::Cursor(const TraceDataCache* dataCache)
-    : TableBase::Cursor(dataCache, 0, static_cast<uint32_t>(dataCache->GetConstProcessFilterData().Size())),
+ProcessFilterTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* table)
+    : TableBase::Cursor(dataCache, table, static_cast<uint32_t>(dataCache->GetConstProcessFilterData().Size())),
       processFilterObj_(dataCache->GetConstProcessFilterData())
 {
 }

@@ -17,6 +17,7 @@
 #include <chrono>
 #include <csignal>
 #include <cstdint>
+#include <strings.h> // for macx
 #include <thread>
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -25,6 +26,7 @@
 #include <sys/socket.h>
 #endif
 #include "log.h"
+#include "string_to_numerical.h"
 namespace SysTuning {
 namespace TraceStreamer {
 void HttpServer::RegisterRpcFunction(RpcServer* rpc)
@@ -100,7 +102,7 @@ void HttpServer::Run(int port)
         }
     }
 
-    for (auto& it : clientThreads_) {
+    for (const auto& it : clientThreads_) {
         if (it->thread_.joinable()) {
             it->sock_.Close();
             it->thread_.join();
@@ -113,22 +115,25 @@ void HttpServer::Run(int port)
 #else
 void HttpServer::Run(int port)
 {
-    signal(SIGPIPE, SIG_IGN);
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+        return;
+    }
 
     if (!CreateSocket(port)) {
         return;
     }
     TS_LOGI("http server running");
-
-    struct pollfd fds[COUNT_SOCKET] = {{sockets_[0].GetFd(), POLLIN, 0}, {sockets_[1].GetFd(), POLLIN, 0}};
+    struct pollfd fds[COUNT_SOCKET];
+    for (int i = 0; i < COUNT_SOCKET; i++) {
+        fds[i] = {sockets_[i].GetFd(), POLLIN, 0};
+    }
     while (!isExit_) {
         ClearDeadClientThread();
-
-        if (poll(fds, sizeof(fds)/sizeof(pollfd), pollTimeOut_) <= 0) {
+        if (poll(fds, sizeof(fds) / sizeof(pollfd), pollTimeOut_) <= 0) {
             continue; // try again
         }
 
-        for (int i = 0; i < COUNT_SOCKET; i++) {
+        for (int i = 0; i < 1; i++) {
             if (fds[i].revents != POLLIN) {
                 continue;
             }
@@ -137,19 +142,22 @@ void HttpServer::Run(int port)
                 client->thread_ = std::thread(&HttpServer::ProcessClient, this, std::ref(client->sock_));
                 clientThreads_.push_back(std::move(client));
             } else {
-                TS_LOGE("http socket accept error");
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
     }
 
-    for (auto& it : clientThreads_) {
+    for (const auto& it : clientThreads_) {
         if (it->thread_.joinable()) {
             it->sock_.Close();
             it->thread_.join();
         }
     }
     clientThreads_.clear();
+
+    for (int i = 0; i < COUNT_SOCKET; i++) {
+        sockets_[i].Close();
+    }
     TS_LOGI("http server exit");
 }
 #endif
@@ -164,11 +172,11 @@ void HttpServer::Exit()
 
 bool HttpServer::CreateSocket(int port)
 {
-    if (!sockets_[0].CreateSocket(AF_INET) || !sockets_[1].CreateSocket(AF_INET6)) {
-        TS_LOGE("Create http socket error");
-        return false;
-    }
     for (int i = 0; i < COUNT_SOCKET; i++) {
+        if (!sockets_[i].CreateSocket(i == 0 ? AF_INET : AF_INET6)) {
+            TS_LOGE("Create http socket error");
+            return false;
+        }
         if (!sockets_[i].Bind(port)) {
             TS_LOGE("bind http socket error");
             return false;
@@ -260,7 +268,7 @@ void HttpServer::ProcessClient(HttpSocket& client)
 
     struct pollfd fd = {client.GetFd(), POLLIN, 0};
     while (!isExit_) {
-        int pollRet = poll(&fd, sizeof(fd)/sizeof(pollfd), pollTimeOut_);
+        int pollRet = poll(&fd, sizeof(fd) / sizeof(pollfd), pollTimeOut_);
         if (pollRet < 0) {
             TS_LOGE("poll client socket(%d) error: %d:%s", client.GetFd(), errno, strerror(errno));
             break;
@@ -275,6 +283,7 @@ void HttpServer::ProcessClient(HttpSocket& client)
             continue;
         }
         if (!client.Recv(recvBuf.data() + recvPos, recvLen)) {
+            TS_LOGI("client exit");
             break;
         }
         recvPos += recvLen;
@@ -289,6 +298,7 @@ void HttpServer::ProcessClient(HttpSocket& client)
     TS_LOGI("recive client thread exit. socket(%d)", client.GetFd());
 
     client.Close();
+    TS_LOGI("thread exit");
 }
 #endif
 
@@ -296,18 +306,19 @@ void HttpServer::ProcessRequest(HttpSocket& client, RequestST& request)
 {
     if (request.stat == RequstParseStat::RECVING) {
         TS_LOGE("http request data missing, client %d\n", client.GetFd());
-        HttpResponse(client, "408 Request Time-out");
+        HttpResponse(client, "408 Request Time-out\r\n");
         return;
     } else if (request.stat != RequstParseStat::OK) {
         TS_LOGE("bad http request, client %d\n", client.GetFd());
-        HttpResponse(client, "400 Bad Request");
+        HttpResponse(client, "400 Bad Request\r\n");
         return;
     }
     if (request.method == "OPTIONS") {
-        HttpResponse(client, "204 No Content\r\n"
-            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-            "Access-Control-Allow-Headers: *\r\n"
-            "Access-Control-Max-Age: 86400\r\n");
+        HttpResponse(client,
+                     "204 No Content\r\n"
+                     "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+                     "Access-Control-Allow-Headers: *\r\n"
+                     "Access-Control-Max-Age: 86400\r\n");
         return;
     } else if (request.method != "POST" && request.method != "GET") {
         TS_LOGE("method(%s) not allowed, client %d", request.method.c_str(), client.GetFd());
@@ -321,7 +332,7 @@ void HttpServer::ProcessRequest(HttpSocket& client, RequestST& request)
         return;
     }
     HttpResponse(client, "200 OK\r\n", true);
-    auto resultCallback = [&](const std::string result) {
+    auto resultCallback = [&client](const std::string& result, int) {
         std::stringstream chunkLenbuff;
         chunkLenbuff << std::hex << result.size() << "\r\n";
         if (!client.Send(chunkLenbuff.str().data(), chunkLenbuff.str().size())) {
@@ -366,8 +377,7 @@ void HttpServer::ParseRequest(const uint8_t* requst, size_t& len, RequestST& htt
     const size_t indexHttpUri = 1;
     const size_t indexHttpVersion = 2;
     const size_t countRequestItems = 3;
-    if (requestItems.size() != countRequestItems ||
-        requestItems[indexHttpVersion] != "HTTP/1.1") {
+    if (requestItems.size() != countRequestItems || requestItems[indexHttpVersion] != "HTTP/1.1") {
         len = 0;
         httpReq.stat = RequstParseStat::BAD;
         return;
@@ -376,16 +386,16 @@ void HttpServer::ParseRequest(const uint8_t* requst, size_t& len, RequestST& htt
     httpReq.uri = requestItems[indexHttpUri];
 
     for (size_t i = 1; i < headerlines.size(); i++) {
-        size_t tagPos = headerlines[i].find(": ");
+        size_t tagPos = headerlines[i].find(":");
         if (tagPos == std::string_view::npos) {
             len = 0;
             httpReq.stat = RequstParseStat::BAD;
             return;
         }
         std::string_view tag = headerlines[i].substr(0, tagPos);
-        if (strncasecmp(tag.data(), "content-length", tag.size()) == 0) {
-            std::string value(headerlines[i].data() + tagPos + strlen(": "),
-                headerlines[i].size() - tagPos - strlen(": "));
+        if (strncasecmp(tag.data(), "Content-Length", tag.size()) == 0) {
+            std::string value(headerlines[i].data() + tagPos + strlen(":"),
+                              headerlines[i].size() - tagPos - strlen(":"));
             size_t conterntLen = atoi(value.c_str());
             if (conterntLen > httpReq.bodyLen) {
                 httpReq.stat = RequstParseStat::RECVING;
@@ -411,16 +421,13 @@ void HttpServer::HttpResponse(HttpSocket& client, const std::string& status, boo
     res.reserve(maxLenResponse);
     res += "HTTP/1.1 ";
     res += status;
-    res += "\r\n";
 
     res += "Connection: Keep-Alive\r\n";
-
     if (hasBody) {
         res += "Content-Type: application/json\r\n";
         res += "Transfer-Encoding: chunked\r\n";
     }
     res += "\r\n";
-
     if (!client.Send(res.data(), res.size())) {
         TS_LOGE("send client socket(%d) error", client.GetFd());
     }

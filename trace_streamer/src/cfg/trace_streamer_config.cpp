@@ -89,6 +89,12 @@ void TraceStreamerConfig::PrintInfo() const
     }
     printf("\n");
 }
+
+uint32_t TraceStreamerConfig::GetStateValue(uint32_t state) const
+{
+    return (state > CPU_IDEL_INVALID_VALUE ? 0 : (state + 1));
+}
+
 void TraceStreamerConfig::InitEventNameMap()
 {
     eventNameMap_ = {{TRACE_EVENT_BINDER_TRANSACTION, TRACE_ACTION_BINDER_TRANSACTION},
@@ -106,6 +112,7 @@ void TraceStreamerConfig::InitEventNameMap()
                      {TRACE_EVENT_SCHED_WAKING, TRACE_ACTION_SCHED_WAKING},
                      {TRACE_EVENT_CPU_IDLE, TRACE_ACTION_CPU_IDLE},
                      {TRACE_EVENT_CPU_FREQUENCY, TRACE_ACTION_CPU_FREQUENCY},
+                     {TRACE_EVENT_CPU_FREQUENCY_LIMITS, TRACE_ACTION_CPU_FREQUENCY_LIMITS},
                      {TRACE_EVENT_SUSPEND_RESUME, TRACE_ACTION_SUSPEND_RESUME},
                      {TRACE_EVENT_WORKQUEUE_EXECUTE_START, TRACE_ACTION_WORKQUEUE_EXECUTE_START},
                      {TRACE_EVENT_WORKQUEUE_EXECUTE_END, TRACE_ACTION_WORKQUEUE_EXECUTE_END},
@@ -133,9 +140,6 @@ void TraceStreamerConfig::InitEventNameMap()
                      {TRACE_EVENT_PROCESS_EXIT, TRACE_ACTION_PROCESS_EXIT},
                      {TRACE_EVENT_PROCESS_FREE, TRACE_ACTION_PROCESS_FREE},
                      {TRACE_EVENT_CLOCK_SYNC, TRACE_ACTION_CLOCK_SYNC},
-                     {TRACE_MEMORY, TRACE_ACTION_MEMORY},
-                     {TRACE_SYS_MEMORY, TRACE_ACTION_SYS_MEMORY},
-                     {TRACE_SYS_VIRTUAL_MEMORY, TRACE_ACTION_SYS_VIRTUAL_MEMORY},
                      {TRACE_EVENT_SIGNAL_GENERATE, TRACE_ACTION_SIGNAL_GENERATE},
                      {TRACE_EVENT_SIGNAL_DELIVER, TRACE_ACTION_SIGNAL_DELIVER},
                      {TRACE_EVENT_BLOCK_BIO_BACKMERGE, TRACE_ACTION_BLOCK_BIO_BACKMERGE},
@@ -152,49 +156,64 @@ void TraceStreamerConfig::InitEventNameMap()
                      {TRACE_EVENT_BLOCK_RQ_REMAP, TRACE_ACTION_BLOCK_RQ_REMAP},
                      {TRACE_EVENT_BLOCK_RQ_ISSUE, TRACE_ACTION_BLOCK_RQ_ISSUE},
                      {TRACE_EVENT_OTHER, TRACE_ACTION_OTHER},
+                     {TRACE_MEMORY, TRACE_ACTION_MEMORY},
+                     {TRACE_SYS_MEMORY, TRACE_ACTION_SYS_MEMORY},
+                     {TRACE_SYS_VIRTUAL_MEMORY, TRACE_ACTION_SYS_VIRTUAL_MEMORY},
+                     {TRACE_DISKIO, TRACE_ACTION_DISKIO},
+                     {TRACE_PROCESS, TRACE_ACTION_PROCESS},
+                     {TRACE_CPU_USAGE, TRACE_ACTION_CPU_USAGE},
+                     {TRACE_NETWORK, TRACE_ACTION_NETWORK},
+                     {TRACE_PERF, TRACE_ACTION_PERF},
                      {TRACE_HILOG, TRACE_ACTION_HILOG},
                      {TRACE_HIDUMP_FPS, TRACE_ACTION_HIDUMP_FPS},
                      {TRACE_NATIVE_HOOK_MALLOC, TRACE_ACTION_NATIVE_HOOK_MALLOC},
-                     {TRACE_NATIVE_HOOK_FREE, TRACE_ACTION_NATIVE_HOOK_FREE}};
+                     {TRACE_NATIVE_HOOK_FREE, TRACE_ACTION_NATIVE_HOOK_FREE},
+                     {TRACE_NATIVE_HOOK_MMAP, TRACE_ACTION_NATIVE_HOOK_MMAP},
+                     {TRACE_HISYSEVENT, TRACE_ACTION_HISYS_EVENT},
+                     {TRACE_SMAPS, TRACE_ACTION_SMAPS},
+                     {TRACE_NATIVE_HOOK_MUNMAP, TRACE_ACTION_NATIVE_HOOK_MUNMAP},
+                     {TRACE_EVENT_EBPF, TRACE_ACTION_EBPF},
+                     {TRACE_EVENT_EBPF_FILE_SYSTEM, TRACE_ACTION_EBPF_FILE_SYSTEM},
+                     {TRACE_EVENT_EBPF_PAGED_MEMORY, TRACE_ACTION_EBPF_PAGED_MEMORY},
+                     {TRACE_EVENT_EBPF_BIO_LATENCY, TRACE_ACTION_EBPF_BIO_LATENCY}};
 }
 void TraceStreamerConfig::InitSysMemMap()
 {
-    sysMemNameMap_ = {
-        {SysMeminfoType::PMEM_UNSPECIFIED, SYS_MEMINFO_UNSPECIFIED_DESC},
-        {SysMeminfoType::PMEM_MEM_TOTAL, SYS_MEMINFO_MEM_TOTAL_DESC},
-        {SysMeminfoType::PMEM_MEM_FREE, SYS_MEMINFO_MEM_FREE_DESC},
-        {SysMeminfoType::PMEM_MEM_AVAILABLE, SYS_MEMINFO_MEM_AVAILABLE_DESC},
-        {SysMeminfoType::PMEM_BUFFERS, SYS_MEMINFO_BUFFERS_DESC},
-        {SysMeminfoType::PMEM_CACHED, SYS_MEMINFO_CACHED_DESC},
-        {SysMeminfoType::PMEM_SWAP_CACHED, SYS_MEMINFO_SWAP_CACHED_DESC},
-        {SysMeminfoType::PMEM_ACTIVE, SYS_MEMINFO_ACTIVE_DESC},
-        {SysMeminfoType::PMEM_INACTIVE, SYS_MEMINFO_INACTIVE_DESC},
-        {SysMeminfoType::PMEM_ACTIVE_ANON, SYS_MEMINFO_ACTIVE_ANON_DESC},
-        {SysMeminfoType::PMEM_INACTIVE_ANON, SYS_MEMINFO_INACTIVE_ANON_DESC},
-        {SysMeminfoType::PMEM_ACTIVE_FILE, SYS_MEMINFO_ACTIVE_FILE_DESC},
-        {SysMeminfoType::PMEM_INACTIVE_FILE, SYS_MEMINFO_INACTIVE_FILE_DESC},
-        {SysMeminfoType::PMEM_UNEVICTABLE, SYS_MEMINFO_UNEVICTABLE_DESC},
-        {SysMeminfoType::PMEM_MLOCKED, SYS_MEMINFO_MLOCKED_DESC},
-        {SysMeminfoType::PMEM_SWAP_TOTAL, SYS_MEMINFO_SWAP_TOTAL_DESC},
-        {SysMeminfoType::PMEM_SWAP_FREE, SYS_MEMINFO_SWAP_FREE_DESC},
-        {SysMeminfoType::PMEM_DIRTY, SYS_MEMINFO_DIRTY_DESC},
-        {SysMeminfoType::PMEM_WRITEBACK, SYS_MEMINFO_WRITEBACK_DESC},
-        {SysMeminfoType::PMEM_ANON_PAGES, SYS_MEMINFO_ANON_PAGES_DESC},
-        {SysMeminfoType::PMEM_MAPPED, SYS_MEMINFO_MAPPED_DESC},
-        {SysMeminfoType::PMEM_SHMEM, SYS_MEMINFO_SHMEM_DESC},
-        {SysMeminfoType::PMEM_SLAB, SYS_MEMINFO_SLAB_DESC},
-        {SysMeminfoType::PMEM_SLAB_RECLAIMABLE, SYS_MEMINFO_SLAB_RECLAIMABLE_DESC},
-        {SysMeminfoType::PMEM_SLAB_UNRECLAIMABLE, SYS_MEMINFO_SLAB_UNRECLAIMABLE_DESC},
-        {SysMeminfoType::PMEM_KERNEL_STACK, SYS_MEMINFO_KERNEL_STACK_DESC},
-        {SysMeminfoType::PMEM_PAGE_TABLES, SYS_MEMINFO_PAGE_TABLES_DESC},
-        {SysMeminfoType::PMEM_COMMIT_LIMIT, SYS_MEMINFO_COMMIT_LIMIT_DESC},
-        {SysMeminfoType::PMEM_COMMITED_AS, SYS_MEMINFO_COMMITED_AS_DESC},
-        {SysMeminfoType::PMEM_VMALLOC_TOTAL, SYS_MEMINFO_VMALLOC_TOTAL_DESC},
-        {SysMeminfoType::PMEM_VMALLOC_USED, SYS_MEMINFO_VMALLOC_USED_DESC},
-        {SysMeminfoType::PMEM_VMALLOC_CHUNK, SYS_MEMINFO_VMALLOC_CHUNK_DESC},
-        {SysMeminfoType::PMEM_CMA_TOTAL, SYS_MEMINFO_CMA_TOTAL_DESC},
-        {SysMeminfoType::PMEM_CMA_FREE, SYS_MEMINFO_CMA_FREE_DESC},
-    };
+    sysMemNameMap_ = {{SysMeminfoType::PMEM_UNSPECIFIED, SYS_MEMINFO_UNSPECIFIED_DESC},
+                      {SysMeminfoType::PMEM_MEM_TOTAL, SYS_MEMINFO_MEM_TOTAL_DESC},
+                      {SysMeminfoType::PMEM_MEM_FREE, SYS_MEMINFO_MEM_FREE_DESC},
+                      {SysMeminfoType::PMEM_MEM_AVAILABLE, SYS_MEMINFO_MEM_AVAILABLE_DESC},
+                      {SysMeminfoType::PMEM_BUFFERS, SYS_MEMINFO_BUFFERS_DESC},
+                      {SysMeminfoType::PMEM_CACHED, SYS_MEMINFO_CACHED_DESC},
+                      {SysMeminfoType::PMEM_SWAP_CACHED, SYS_MEMINFO_SWAP_CACHED_DESC},
+                      {SysMeminfoType::PMEM_ACTIVE, SYS_MEMINFO_ACTIVE_DESC},
+                      {SysMeminfoType::PMEM_INACTIVE, SYS_MEMINFO_INACTIVE_DESC},
+                      {SysMeminfoType::PMEM_ACTIVE_ANON, SYS_MEMINFO_ACTIVE_ANON_DESC},
+                      {SysMeminfoType::PMEM_INACTIVE_ANON, SYS_MEMINFO_INACTIVE_ANON_DESC},
+                      {SysMeminfoType::PMEM_ACTIVE_FILE, SYS_MEMINFO_ACTIVE_FILE_DESC},
+                      {SysMeminfoType::PMEM_INACTIVE_FILE, SYS_MEMINFO_INACTIVE_FILE_DESC},
+                      {SysMeminfoType::PMEM_UNEVICTABLE, SYS_MEMINFO_UNEVICTABLE_DESC},
+                      {SysMeminfoType::PMEM_MLOCKED, SYS_MEMINFO_MLOCKED_DESC},
+                      {SysMeminfoType::PMEM_SWAP_TOTAL, SYS_MEMINFO_SWAP_TOTAL_DESC},
+                      {SysMeminfoType::PMEM_SWAP_FREE, SYS_MEMINFO_SWAP_FREE_DESC},
+                      {SysMeminfoType::PMEM_DIRTY, SYS_MEMINFO_DIRTY_DESC},
+                      {SysMeminfoType::PMEM_WRITEBACK, SYS_MEMINFO_WRITEBACK_DESC},
+                      {SysMeminfoType::PMEM_ANON_PAGES, SYS_MEMINFO_ANON_PAGES_DESC},
+                      {SysMeminfoType::PMEM_MAPPED, SYS_MEMINFO_MAPPED_DESC},
+                      {SysMeminfoType::PMEM_SHMEM, SYS_MEMINFO_SHMEM_DESC},
+                      {SysMeminfoType::PMEM_SLAB, SYS_MEMINFO_SLAB_DESC},
+                      {SysMeminfoType::PMEM_SLAB_RECLAIMABLE, SYS_MEMINFO_SLAB_RECLAIMABLE_DESC},
+                      {SysMeminfoType::PMEM_SLAB_UNRECLAIMABLE, SYS_MEMINFO_SLAB_UNRECLAIMABLE_DESC},
+                      {SysMeminfoType::PMEM_KERNEL_STACK, SYS_MEMINFO_KERNEL_STACK_DESC},
+                      {SysMeminfoType::PMEM_PAGE_TABLES, SYS_MEMINFO_PAGE_TABLES_DESC},
+                      {SysMeminfoType::PMEM_COMMIT_LIMIT, SYS_MEMINFO_COMMIT_LIMIT_DESC},
+                      {SysMeminfoType::PMEM_COMMITED_AS, SYS_MEMINFO_COMMITED_AS_DESC},
+                      {SysMeminfoType::PMEM_VMALLOC_TOTAL, SYS_MEMINFO_VMALLOC_TOTAL_DESC},
+                      {SysMeminfoType::PMEM_VMALLOC_USED, SYS_MEMINFO_VMALLOC_USED_DESC},
+                      {SysMeminfoType::PMEM_VMALLOC_CHUNK, SYS_MEMINFO_VMALLOC_CHUNK_DESC},
+                      {SysMeminfoType::PMEM_CMA_TOTAL, SYS_MEMINFO_CMA_TOTAL_DESC},
+                      {SysMeminfoType::PMEM_CMA_FREE, SYS_MEMINFO_CMA_FREE_DESC},
+                      {SysMeminfoType::PMEM_KERNEL_RECLAIMABLE, SYS_MEMINFO_KERNEL_RECLAIMABLE_DESC}};
 }
 
 void TraceStreamerConfig::InitSysVmemMap()
@@ -475,6 +494,16 @@ void TraceStreamerConfig::InitSecurityMap()
         },
         {
             TRACE_EVENT_CPU_FREQUENCY,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_EVENT_CPU_FREQUENCY_LIMITS,
             {
                 {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
                 {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
@@ -804,6 +833,26 @@ void TraceStreamerConfig::InitSecurityMap()
             },
         },
         {
+            TRACE_NATIVE_HOOK_MMAP,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_NATIVE_HOOK_MUNMAP,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
             TRACE_SYS_MEMORY,
             {
                 {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
@@ -815,6 +864,56 @@ void TraceStreamerConfig::InitSecurityMap()
         },
         {
             TRACE_SYS_VIRTUAL_MEMORY,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_DISKIO,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_PROCESS,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_CPU_USAGE,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_NETWORK,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_PERF,
             {
                 {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
                 {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
@@ -965,6 +1064,66 @@ void TraceStreamerConfig::InitSecurityMap()
         },
         {
             TRACE_EVENT_BLOCK_RQ_ISSUE,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_EVENT_EBPF,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_EVENT_EBPF_FILE_SYSTEM,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_EVENT_EBPF_PAGED_MEMORY,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_EVENT_EBPF_BIO_LATENCY,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_HISYSEVENT,
+            {
+                {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},
+                {STAT_EVENT_NOTMATCH, STAT_SEVERITY_LEVEL_INFO},
+                {STAT_EVENT_NOTSUPPORTED, STAT_SEVERITY_LEVEL_WARN},
+                {STAT_EVENT_DATA_INVALID, STAT_SEVERITY_LEVEL_ERROR},
+            },
+        },
+        {
+            TRACE_SMAPS,
             {
                 {STAT_EVENT_RECEIVED, STAT_SEVERITY_LEVEL_INFO},
                 {STAT_EVENT_DATA_LOST, STAT_SEVERITY_LEVEL_ERROR},

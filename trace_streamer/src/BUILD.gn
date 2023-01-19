@@ -43,126 +43,38 @@ ohos_source_set("lib") {
     "parser/htrace_parser/htrace_event_parser",
     "parser/htrace_parser/htrace_cpu_parser",
     "//third_party/sqlite/include",
+    "//third_party/json-master/include",
+    "//third_party/json-master/include/nlohmann",
     "${OHOS_PROTO_GEN}/types/plugins/memory_data",
-    "${OHOS_PROTO_GEN}/types/plugins/ftrace_data",
+    "${OHOS_PROTO_GEN}/types/plugins/ftrace_data/${kernel_version}",
     "${OHOS_PROTO_GEN}/types/plugins/hilog_data",
     "${OHOS_PROTO_GEN}/types/plugins/native_hook",
     "${OHOS_PROTO_GEN}/types/plugins/hidump_data",
+    "${OHOS_PROTO_GEN}/types/plugins/network_data",
+    "${OHOS_PROTO_GEN}/types/plugins/cpu_data",
+    "${OHOS_PROTO_GEN}/types/plugins/diskio_data",
+    "${OHOS_PROTO_GEN}/types/plugins/process_data",
+    "${OHOS_PROTO_GEN}/types/plugins/hisysevent_data",
     "${OHOS_PROTO_GEN}",
     "//third_party/protobuf/src",
   ]
+  if (with_perf) {
+    include_dirs += [
+      "parser/hiperf_parser",
+      "parser/hiperf_parser/hiperf/include",
+      "parser/hiperf_parser/hiperf/include/linux",
+      "//third_party/perf_include",
+    ]
+  }
   public_deps = []
 }
 ohos_source_set("trace_streamer_source") {
   sources = [
     "cfg/trace_streamer_config.cpp",
     "cfg/trace_streamer_config.h",
-    "filter/args_filter.cpp",
-    "filter/args_filter.h",
-    "filter/binder_filter.cpp",
-    "filter/binder_filter.h",
-    "filter/clock_filter.cpp",
-    "filter/clock_filter.h",
-    "filter/cpu_filter.cpp",
-    "filter/filter_base.cpp",
-    "filter/filter_base.h",
-    "filter/filter_filter.cpp",
-    "filter/filter_filter.h",
-    "filter/irq_filter.cpp",
-    "filter/irq_filter.h",
-    "filter/measure_filter.cpp",
-    "filter/measure_filter.h",
-    "filter/process_filter.cpp",
-    "filter/process_filter.h",
-    "filter/slice_filter.cpp",
-    "filter/slice_filter.h",
-    "filter/stat_filter.cpp",
-    "filter/stat_filter.h",
-    "filter/symbols_filter.cpp",
-    "filter/symbols_filter.h",
-    "filter/system_event_measure_filter.cpp",
-    "filter/system_event_measure_filter.h",
-    "parser/bytrace_parser/bytrace_event_parser.cpp",
-    "parser/bytrace_parser/bytrace_event_parser.h",
-    "parser/bytrace_parser/bytrace_parser.cpp",
-    "parser/bytrace_parser/bytrace_parser.h",
-    "parser/common_types.h",
-    "parser/event_parser_base.cpp",
-    "parser/event_parser_base.h",
-    "parser/print_event_parser.cpp",
-    "parser/print_event_parser.h",
-    "parser/thread_state.cpp",
-    "parser/thread_state.h",
     "rpc/http_server.cpp",
     "rpc/http_socket.cpp",
     "rpc/rpc_server.cpp",
-    "table/args_table.cpp",
-    "table/args_table.h",
-    "table/callstack_table.cpp",
-    "table/callstack_table.h",
-    "table/clk_event_filter_table.cpp",
-    "table/clk_event_filter_table.h",
-    "table/clock_event_filter_table.cpp",
-    "table/clock_event_filter_table.h",
-    "table/cpu_measure_filter_table.cpp",
-    "table/cpu_measure_filter_table.h",
-    "table/data_dict_table.cpp",
-    "table/data_dict_table.h",
-    "table/data_type_table.cpp",
-    "table/data_type_table.h",
-    "table/filter_table.cpp",
-    "table/filter_table.h",
-    "table/heap_frame_table.cpp",
-    "table/heap_frame_table.h",
-    "table/heap_table.cpp",
-    "table/heap_table.h",
-    "table/hidump_table.cpp",
-    "table/hidump_table.h",
-    "table/instants_table.cpp",
-    "table/instants_table.h",
-    "table/irq_table.cpp",
-    "table/log_table.cpp",
-    "table/log_table.h",
-    "table/measure_filter_table.cpp",
-    "table/measure_filter_table.h",
-    "table/measure_table.cpp",
-    "table/measure_table.h",
-    "table/meta_table.cpp",
-    "table/meta_table.h",
-    "table/process_filter_table.cpp",
-    "table/process_filter_table.h",
-    "table/process_measure_filter_table.cpp",
-    "table/process_measure_filter_table.h",
-    "table/process_table.cpp",
-    "table/process_table.h",
-    "table/range_table.cpp",
-    "table/raw_table.cpp",
-    "table/raw_table.h",
-    "table/sched_slice_table.cpp",
-    "table/sched_slice_table.h",
-    "table/stat_table.cpp",
-    "table/stat_table.h",
-    "table/symbols_table.cpp",
-    "table/symbols_table.h",
-    "table/system_call_table.cpp",
-    "table/system_call_table.h",
-    "table/system_event_filter_table.cpp",
-    "table/table_base.cpp",
-    "table/thread_filter_table.cpp",
-    "table/thread_state_table.cpp",
-    "table/thread_table.cpp",
-    "trace_data/trace_data_cache.cpp",
-    "trace_data/trace_data_cache.h",
-    "trace_data/trace_data_cache_base.cpp",
-    "trace_data/trace_data_cache_base.h",
-    "trace_data/trace_data_cache_reader.cpp",
-    "trace_data/trace_data_cache_reader.h",
-    "trace_data/trace_data_cache_writer.cpp",
-    "trace_data/trace_data_cache_writer.h",
-    "trace_data/trace_data_db.cpp",
-    "trace_data/trace_data_db.h",
-    "trace_data/trace_stdtype.cpp",
-    "trace_data/trace_stdtype.h",
     "trace_streamer/trace_streamer_filters.cpp",
     "trace_streamer/trace_streamer_filters.h",
     "trace_streamer/trace_streamer_selector.cpp",
@@ -183,25 +95,78 @@ ohos_source_set("trace_streamer_source") {
     "parser/htrace_parser",
     "parser/htrace_parser/htrace_event_parser",
     "parser/htrace_parser/htrace_cpu_parser",
+    "parser/ebpf_parser",
     "//third_party/sqlite/include",
     "${OHOS_PROTO_GEN}/types/plugins/memory_data",
-    "${OHOS_PROTO_GEN}/types/plugins/ftrace_data",
+    "${OHOS_PROTO_GEN}/types/plugins/ftrace_data/${kernel_version}",
     "${OHOS_PROTO_GEN}/types/plugins/hilog_data",
     "${OHOS_PROTO_GEN}/types/plugins/native_hook",
     "${OHOS_PROTO_GEN}/types/plugins/hidump_data",
+    "${OHOS_PROTO_GEN}/types/plugins/network_data",
+    "${OHOS_PROTO_GEN}/types/plugins/cpu_data",
+    "${OHOS_PROTO_GEN}/types/plugins/diskio_data",
+    "${OHOS_PROTO_GEN}/types/plugins/process_data",
+    "${OHOS_PROTO_GEN}/types/plugins/hisysevent_data",
     "${OHOS_PROTO_GEN}",
     "//third_party/protobuf/src",
   ]
+  if (use_wasm) {
+    include_dirs +=
+        [ "../prebuilts/emsdk/emsdk/emscripten/cache/sysroot/include" ]
+  }
+  if (is_macx && !is_test) {
+    cflags = [ "-D_XOPEN_SOURCE=600" ]
+  }
+  if (is_test) {
+    include_dirs += [ "../prebuilts/emsdk/emsdk/emscripten/system/include" ]
+  }
+  include_dirs += [
+    "//third_party/libunwind/include",
+    "//third_party/libunwind/src",
+    "//third_party/json-master/include",
+    "//third_party/json-master/include/nlohmann",
+  ]
+  if (with_ebpf_help_table) {
+    sources += [
+      "table/ebpf_elf_symbol_table.cpp",
+      "table/ebpf_elf_symbol_table.h",
+      "table/ebpf_elf_table.cpp",
+      "table/ebpf_elf_table.h",
+      "table/ebpf_process_maps_table.cpp",
+      "table/ebpf_process_maps_table.h",
+    ]
+  }
+
+  if (with_perf) {
+    include_dirs += [
+      "parser/hiperf_parser",
+      "parser/hiperf_parser/hiperf/linux",
+      "parser/hiperf_parser/hiperf/kernel",
+      "parser/hiperf_parser/hiperf/include",
+      "parser/hiperf_parser/hiperf/include/linux",
+      "//third_party/perf_include/libbpf",
+      "//third_party/perf_include/musl",
+    ]
+  }
   deps = [
     "base:base",
     "ext:sqliteext",
+    "filter:filter",
     "include:ibase",
-    "parser/htrace_parser:htrace_parser",
+    "parser:parser",
+    "table:table",
+    "trace_data:trace_data",
     "//third_party/sqlite:sqlite",
   ]
+  if (with_perf) {
+    deps += [ "parser/hiperf_parser:hiperf_parser" ]
+  }
 
-  if (use_wasm) {
-    sources += [ "rpc/wasm_func.cpp" ]
+  if (use_wasm || enable_ts_utest) {
+    sources += [
+      "rpc/wasm_func.cpp",
+      "rpc/wasm_func.h",
+    ]
   }
   if (enable_ts_utest && !use_wasm) {
     cflags = [
@@ -213,6 +178,9 @@ ohos_source_set("trace_streamer_source") {
       "-ftest-coverage",
       "--coverage",
     ]
+    if (is_test) {
+      cflags += [ "-D IS_UT" ]
+    }
   }
   public_deps = []
 }
@@ -222,7 +190,9 @@ if (use_wasm) {
     deps = [ ":lib" ]
   }
 } else {
-  executable("trace_streamer") {
-    deps = [ ":lib" ]
+  if (!is_test && !is_fuzz) {
+    executable("trace_streamer") {
+      deps = [ ":lib" ]
+    }
   }
 }

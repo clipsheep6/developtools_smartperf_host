@@ -23,22 +23,14 @@
 namespace SysTuning {
 namespace TraceStreamer {
 HtraceMemParser::HtraceMemParser(TraceDataCache* dataCache, const TraceStreamerFilters* ctx)
-    : streamFilters_(ctx), traceDataCache_(dataCache)
+    : HtracePluginTimeParser(dataCache, ctx)
 {
-    if (!traceDataCache_) {
-        TS_LOGE("traceDataCache_ should not be null");
-        return;
-    }
-    if (!streamFilters_) {
-        TS_LOGE("streamFilters_ should not be null");
-        return;
-    }
     for (auto i = 0; i < MEM_MAX; i++) {
         memNameDictMap_.insert(
             std::make_pair(static_cast<MemInfoType>(i),
                            traceDataCache_->GetDataIndex(config_.memNameMap_.at(static_cast<MemInfoType>(i)))));
     }
-    for (auto i = 0; i < SysMeminfoType::PMEM_CMA_FREE + 1; i++) {
+    for (auto i = 0; i < SysMeminfoType::PMEM_KERNEL_RECLAIMABLE + 1; i++) {
         sysMemNameDictMap_.insert(
             std::make_pair(static_cast<SysMeminfoType>(i),
                            traceDataCache_->GetDataIndex(config_.sysMemNameMap_.at(static_cast<SysMeminfoType>(i)))));
@@ -52,24 +44,14 @@ HtraceMemParser::HtraceMemParser(TraceDataCache* dataCache, const TraceStreamerF
 
 HtraceMemParser::~HtraceMemParser()
 {
-    TS_LOGI("mem ts MIN:%llu, MAX:%llu", static_cast<unsigned long long>(traceStartTime_),
-            static_cast<unsigned long long>(traceEndTime_));
+    TS_LOGI("mem ts MIN:%llu, MAX:%llu", static_cast<unsigned long long>(GetPluginStartTime()),
+            static_cast<unsigned long long>(GetPluginEndTime()));
 }
 void HtraceMemParser::Parse(const MemoryData& tracePacket, uint64_t timeStamp, BuiltinClocks clock)
 {
-    if (!traceDataCache_) {
-        TS_LOGE("traceDataCache_ should not be null");
-        return;
-    }
-    if (!streamFilters_) {
-        TS_LOGE("streamFilters_ should not be null");
-        return;
-    }
     auto newTimeStamp = streamFilters_->clockFilter_->ToPrimaryTraceTime(clock, timeStamp);
-    if (newTimeStamp != timeStamp) { // record the time only when the time is valid
-        traceStartTime_ = std::min(traceStartTime_, newTimeStamp);
-        traceEndTime_ = std::max(traceEndTime_, newTimeStamp);
-    }
+    UpdatePluginTimeRange(clock, timeStamp, newTimeStamp);
+    zram_ = tracePacket.zram();
     if (tracePacket.processesinfo_size()) {
         ParseProcessInfo(tracePacket, newTimeStamp);
     }
@@ -88,24 +70,50 @@ void HtraceMemParser::ParseProcessInfo(const MemoryData& tracePacket, uint64_t t
     for (int i = 0; i < tracePacket.processesinfo_size(); i++) {
         auto memInfo = tracePacket.processesinfo(i);
         auto ipid = streamFilters_->processFilter_->UpdateOrCreateProcessWithName(memInfo.pid(), memInfo.name());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_SIZE), timeStamp,
-                                                                    memInfo.vm_size_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_RSS), timeStamp,
-                                                                    memInfo.vm_rss_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_ANON), timeStamp,
-                                                                    memInfo.rss_anon_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_RSS_FILE), timeStamp,
-                                                                    memInfo.rss_file_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_RSS_SHMEM), timeStamp,
-                                                                    memInfo.rss_shmem_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_SWAP), timeStamp,
-                                                                    memInfo.vm_swap_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_LOCKED), timeStamp,
-                                                                    memInfo.vm_locked_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_HWM), timeStamp,
-                                                                    memInfo.vm_hwm_kb());
-        streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_OOM_SCORE_ADJ),
-                                                                    timeStamp, memInfo.oom_score_adj());
+        uint32_t hasValue = 0;
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_SIZE),
+                                                                                timeStamp, memInfo.vm_size_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_RSS),
+                                                                                timeStamp, memInfo.vm_rss_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_ANON),
+                                                                                timeStamp, memInfo.rss_anon_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_RSS_FILE),
+                                                                                timeStamp, memInfo.rss_file_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_RSS_SHMEM),
+                                                                                timeStamp, memInfo.rss_shmem_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_SWAP),
+                                                                                timeStamp, memInfo.vm_swap_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_LOCKED),
+                                                                                timeStamp, memInfo.vm_locked_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(ipid, memNameDictMap_.at(MEM_VM_HWM),
+                                                                                timeStamp, memInfo.vm_hwm_kb());
+        hasValue += streamFilters_->processMeasureFilter_->AppendNewMeasureData(
+            ipid, memNameDictMap_.at(MEM_OOM_SCORE_ADJ), timeStamp, memInfo.oom_score_adj());
+        if (hasValue) {
+            streamFilters_->processFilter_->AddProcessMemory(ipid);
+        }
+        if (memInfo.smapinfo_size()) {
+            ParseSmapsInfoEasy(memInfo, timeStamp);
+        }
+    }
+}
+
+void HtraceMemParser::ParseSmapsInfoEasy(const ProcessMemoryInfo& memInfo, uint64_t timeStamp) const
+{
+    streamFilters_->statFilter_->IncreaseStat(TRACE_SMAPS, STAT_EVENT_RECEIVED);
+    for (auto itor = memInfo.smapinfo().begin(); itor != memInfo.smapinfo().end(); itor++) {
+        auto startAddr = "0x" + itor->start_addr();
+        auto endAddr = "0x" + itor->end_addr();
+        uint64_t dirty = itor->dirty();
+        uint64_t swapper = itor->swapper();
+        uint64_t rss = itor->rss();
+        uint64_t pss = itor->pss();
+        uint64_t size = itor->size();
+        double reside = itor->reside();
+        DataIndex protection = traceDataCache_->GetDataIndex(itor->permission());
+        DataIndex path = traceDataCache_->GetDataIndex(itor->path());
+        traceDataCache_->GetSmapsData()->AppendNewData(timeStamp, startAddr, endAddr, dirty, swapper, rss, pss, size,
+                                                       reside, protection, path);
     }
 }
 
@@ -284,6 +292,10 @@ void HtraceMemParser::ParseMemInfo(const MemoryData& tracePacket, uint64_t timeS
                 streamFilters_->sysEventMemMeasureFilter_->AppendNewMeasureData(
                     sysMemNameDictMap_.at(SysMeminfoType::PMEM_CMA_FREE), timeStamp, vMemInfo.value());
                 break;
+            case SysMeminfoType::PMEM_KERNEL_RECLAIMABLE:
+                streamFilters_->sysEventMemMeasureFilter_->AppendNewMeasureData(
+                    sysMemNameDictMap_.at(SysMeminfoType::PMEM_KERNEL_RECLAIMABLE), timeStamp, vMemInfo.value());
+                break;
             case SysMeminfoType_INT_MIN_SENTINEL_DO_NOT_USE_:
             case SysMeminfoType_INT_MAX_SENTINEL_DO_NOT_USE_:
             default:
@@ -291,6 +303,7 @@ void HtraceMemParser::ParseMemInfo(const MemoryData& tracePacket, uint64_t timeS
                 break;
         }
     }
+    streamFilters_->sysEventMemMeasureFilter_->AppendNewMeasureData(zramIndex_, timeStamp, zram_);
 }
 void HtraceMemParser::ParseVMemInfo(const MemoryData& tracePacket, uint64_t timeStamp) const
 {
@@ -857,7 +870,11 @@ void HtraceMemParser::ParseVMemInfo(const MemoryData& tracePacket, uint64_t time
 }
 void HtraceMemParser::Finish()
 {
-    traceDataCache_->MixTraceTime(traceStartTime_, traceEndTime_);
+    if (traceDataCache_->traceStartTime_ == INVALID_UINT64 || traceDataCache_->traceEndTime_ == 0) {
+        traceDataCache_->MixTraceTime(GetPluginStartTime(), GetPluginEndTime());
+    } else {
+        TS_LOGI("mem data time is not updated, maybe this trace file has other data");
+    }
 }
 } // namespace TraceStreamer
 } // namespace SysTuning
