@@ -1783,7 +1783,7 @@ void SmapsData::AppendNewData(uint64_t timeStamp,
                               DataIndex protectionId,
                               DataIndex pathId)
 {
-    timeStamps_.emplace_back(timeStamp);
+    smapTimeStamps_.emplace_back(timeStamp);
     startAddrs_.emplace_back(startAddr);
     endAddrs_.emplace_back(endAddr);
     dirtys_.emplace_back(dirty);
@@ -1918,19 +1918,27 @@ const std::deque<uint64_t>& BioLatencySampleData::DurPer4k() const
     return durPer4ks_;
 }
 DataSourceClockIdData::DataSourceClockIdData()
+    : dataSource2PluginNameMap_({{DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},
+                                 {DATA_SOURCE_TYPE_MEM, "memory-plugin"},
+                                 {DATA_SOURCE_TYPE_HILOG, "hilog-plugin"},
+                                 {DATA_SOURCE_TYPE_ALLOCATION, "nativehook"},
+                                 {DATA_SOURCE_TYPE_FPS, "hidump-plugin"},
+                                 {DATA_SOURCE_TYPE_NETWORK, "network-plugin"},
+                                 {DATA_SOURCE_TYPE_DISKIO, "diskio-plugin"},
+                                 {DATA_SOURCE_TYPE_CPU, "cpu-plugin"},
+                                 {DATA_SOURCE_TYPE_PROCESS, "process-plugin"},
+                                 {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}}),
+      dataSource2ClockIdMap_({{DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_MEM, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_HILOG, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_ALLOCATION, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_FPS, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_NETWORK, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_DISKIO, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_CPU, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_PROCESS, TS_CLOCK_UNKNOW},
+                              {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}})
 {
-    dataSource2PluginNameMap_ = {
-        {DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},    {DATA_SOURCE_TYPE_MEM, "memory-plugin"},
-        {DATA_SOURCE_TYPE_HILOG, "hilog-plugin"},     {DATA_SOURCE_TYPE_ALLOCATION, "nativehook"},
-        {DATA_SOURCE_TYPE_FPS, "hidump-plugin"},      {DATA_SOURCE_TYPE_NETWORK, "network-plugin"},
-        {DATA_SOURCE_TYPE_DISKIO, "diskio-plugin"},   {DATA_SOURCE_TYPE_CPU, "cpu-plugin"},
-        {DATA_SOURCE_TYPE_PROCESS, "process-plugin"}, {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}};
-    dataSource2ClockIdMap_ = {
-        {DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},   {DATA_SOURCE_TYPE_MEM, TS_CLOCK_UNKNOW},
-        {DATA_SOURCE_TYPE_HILOG, TS_CLOCK_UNKNOW},   {DATA_SOURCE_TYPE_ALLOCATION, TS_CLOCK_UNKNOW},
-        {DATA_SOURCE_TYPE_FPS, TS_CLOCK_UNKNOW},     {DATA_SOURCE_TYPE_NETWORK, TS_CLOCK_UNKNOW},
-        {DATA_SOURCE_TYPE_DISKIO, TS_CLOCK_UNKNOW},  {DATA_SOURCE_TYPE_CPU, TS_CLOCK_UNKNOW},
-        {DATA_SOURCE_TYPE_PROCESS, TS_CLOCK_UNKNOW}, {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}};
 }
 
 void DataSourceClockIdData::Finish()

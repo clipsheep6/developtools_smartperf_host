@@ -79,7 +79,6 @@ if [ ! -f "libunwind/BUILD.gn" ];then
     if [ -d "third_party_libunwind" ];then
         mv third_party_libunwind libunwind
         $patch -p0 libunwind/BUILD.gn ../prebuilts/patch_libunwind/libunwindbuild.gn.patch
-        $sed -i "/#define setcontext/s/^\(.*\)$/\/\/\1/g" libunwind/src/x86_64/unwind_i.h
     else
         echo 'third_party_libunwind not exist'
     fi

@@ -45,7 +45,7 @@ int32_t HtraceHisyseventParser::JGetData(json& jMessage,
             if (find(eventsAccordingAppNames.begin(), eventsAccordingAppNames.end(), i.value()) ==
                 eventsAccordingAppNames.end()) {
                 streamFilters_->statFilter_->IncreaseStat(TRACE_HISYSEVENT, STAT_EVENT_NOTMATCH);
-                std::cout << "find comming" << std::endl;
+                TS_LOGW("event source:%s not supported for hisysevent", i.value().c_str());
                 return -1;
             }
             jData.eventSource = i.value();
@@ -184,7 +184,6 @@ void HtraceHisyseventParser::Parse(HisyseventInfo& tracePacket, uint64_t ts)
         std::vector<size_t> noArrayIndex = {};
         std::vector<size_t> arrayIndex = {};
         if (JGetData(jMessage, jData, maxArraySize, noArrayIndex, arrayIndex) < 0) {
-            TS_LOGI("Json data acquisition failed");
             continue;
         }
         uint64_t serial = tracePacket.info(i).id();

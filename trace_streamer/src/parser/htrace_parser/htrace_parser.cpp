@@ -43,17 +43,17 @@ HtraceParser::HtraceParser(TraceDataCache* dataCache, const TraceStreamerFilters
       diskIOParser_(std::make_unique<HtraceDiskIOParser>(dataCache, filters)),
       processParser_(std::make_unique<HtraceProcessParser>(dataCache, filters)),
       ebpfDataParser_(std::make_unique<EbpfDataParser>(dataCache, filters)),
-      hisyseventParser_(std::make_unique<HtraceHisyseventParser>(dataCache, filters))
-{
+      hisyseventParser_(std::make_unique<HtraceHisyseventParser>(dataCache, filters)),
 #if WITH_PERF
-      perfDataParser_ = std::make_unique<PerfDataParser>(dataCache, filters);
+      perfDataParser_(std::make_unique<PerfDataParser>(dataCache, filters)),
 #endif
 #ifdef SUPPORTTHREAD
-    supportThread_ = true;
-    dataSegArray_ = std::make_unique<HtraceDataSegment[]>(MAX_SEG_ARRAY_SIZE);
+          supportThread_(true),
+      dataSegArray_(std::make_unique<HtraceDataSegment[]>(MAX_SEG_ARRAY_SIZE))
 #else
-    dataSegArray_ = std::make_unique<HtraceDataSegment[]>(1);
+      dataSegArray_(std::make_unique<HtraceDataSegment[]>(1))
 #endif
+{
 }
 
 HtraceParser::~HtraceParser()
@@ -632,7 +632,6 @@ bool HtraceParser::InitProfilerTraceFileHeader()
             profilerTraceFileHeader_.data.length, profilerTraceFileHeader_.data.dataType, profilerTraceFileHeader_.data.boottime);
 #if IS_WASM
     const int DATA_TYPE_CLOCK = 100;
-    int componentId = DATA_TYPE_CLOCK;
     TraceStreamer_Plugin_Out_SendData(reinterpret_cast<char*>(&profilerTraceFileHeader_), sizeof(profilerTraceFileHeader_), DATA_TYPE_CLOCK);
 #endif
     htraceClockDetailParser_->Parse(&profilerTraceFileHeader_);

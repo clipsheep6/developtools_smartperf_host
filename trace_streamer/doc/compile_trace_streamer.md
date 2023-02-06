@@ -1,9 +1,9 @@
 # 如何独立编译TraceStreamer
-尽管TraceStreamer是在ohos工具箱中的一员，但您依然可以独立编译此工具。
+尽管TraceStreamer是在ohos工具箱中的一员，但您依然可以独立编译此工具。 
 
-TraceStreamer可以编译为linux, mac, windows, WebAssembly版本。
+TraceStreamer可以编译为命令行下的可执行程序，或者WebAssembly程序。 
 
-本工具默认编译方式是使用gn。  
+本工具默认编译方式是使用gn。 
 ## 编译步骤  
 ### 处理第三方库
 处理第三方库，您可以使用pare_third_party.sh文件来下载第三方库并做适当的处理，您需要在码云上添加您的ssh公钥，也可以按下面的步骤。  
@@ -123,7 +123,7 @@ wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h
 ```
 #### 编译linux、mac、windows平台的TraceStreamer
 编译不同平台的程序，您需要在各自的PC环境编译，编译脚本会自行识别平台并编译程序。  
-目前wasm版本仅支持在linux或mac平台编译。  
+目前wasm版本仅支持在linux平台编译。  
 编译不同版本：linux, windows, mac  
 注意，windows上目前支持Mingw编译，使用的mingw版本为 gcc version 8.1.0 (i686-posix-dwarf-rev0, Built by MinGW-W64 project)  
 ```

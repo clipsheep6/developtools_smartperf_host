@@ -128,10 +128,6 @@ void CpuFilter::Finish() const
         traceDataCache_->GetSchedSliceData()->AppendInternalPid(
             traceDataCache_->GetThreadData(slice.InternalTidsData()[i])->internalPid_);
     }
-    traceDataCache_->OperateDatabase(
-        "update thread set ipid = \
-        (select id from process where \
-        thread.tid = process.pid) where thread.ipid is null;");
 }
 void CpuFilter::Clear()
 {

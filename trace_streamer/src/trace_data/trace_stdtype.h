@@ -1639,7 +1639,7 @@ public:
     void Clear() override
     {
         CacheBase::Clear();
-        timeStamps_.clear();
+        smapTimeStamps_.clear();
         startAddrs_.clear();
         endAddrs_.clear();
         dirtys_.clear();
@@ -1652,7 +1652,7 @@ public:
         pathIds_.clear();
     }
 private:
-    std::deque<uint64_t> timeStamps_ = {};
+    std::deque<uint64_t> smapTimeStamps_ = {};
     std::deque<std::string> startAddrs_ = {};
     std::deque<std::string> endAddrs_ = {};
     std::deque<uint64_t> dirtys_ = {};

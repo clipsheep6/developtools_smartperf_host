@@ -36,15 +36,12 @@ static void sqliteExtStdevFinalize(sqlite3_context* context)
 */
 static void sqliteExtStdevNextStep(sqlite3_context* context, int argc, sqlite3_value** argv)
 {
-    double deltaValue;
-    double x;
-
     TS_ASSERT(argc == 1);
     StdevCtx* ptr = static_cast<StdevCtx*>(sqlite3_aggregate_context(context, sizeof(StdevCtx)));
     if (SQLITE_NULL != sqlite3_value_numeric_type(argv[0])) {
         ptr->cntValue++;
-        x = sqlite3_value_double(argv[0]);
-        deltaValue = (x - ptr->rMValue);
+        double x = sqlite3_value_double(argv[0]);
+        double deltaValue = (x - ptr->rMValue);
         ptr->rMValue += deltaValue / ptr->cntValue;
         ptr->rSValue += deltaValue * (x - ptr->rMValue);
     }
@@ -206,7 +203,6 @@ public:
 void BuildJson(sqlite3_context* ctx, int argc, sqlite3_value** argv)
 {
     const int PAIR_ARGS_SIZE = 2;
-    const auto* fn_ctx = static_cast<const JsonBuild*>(sqlite3_user_data(ctx));
     if (argc % PAIR_ARGS_SIZE != 0) {
         TS_LOGI("BuildJson arg number error");
         sqlite3_result_error(ctx, "BuildJson arg number error", -1);

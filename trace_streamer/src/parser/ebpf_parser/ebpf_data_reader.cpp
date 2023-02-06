@@ -26,7 +26,8 @@ EbpfDataReader::EbpfDataReader(TraceDataCache* dataCache, const TraceStreamerFil
       pidAndStartAddrToMapsAddr_(nullptr),
       elfAddrAndStValueToSymAddr_(nullptr),
       tracerEventToStrIndex_(INVALID_UINT64),
-      kernelFilePath_(traceDataCache_->GetDataIndex("/proc/kallsyms"))
+      kernelFilePath_(traceDataCache_->GetDataIndex("/proc/kallsyms")),
+      ebpfDataHeader_(reinterpret_cast<EbpfDataHeader*>(startAddr_))
 {
 }
 bool EbpfDataReader::InitEbpfData(const std::deque<uint8_t>& dequeBuffer, uint64_t size)
@@ -69,9 +70,8 @@ bool EbpfDataReader::InitEbpfHeader()
 
 bool EbpfDataReader::ReadEbpfData()
 {
-    EbpfTypeAndLength* dataTitle;
     while (unresolvedLen_ > EBPF_TITLE_SIZE) {
-        dataTitle = reinterpret_cast<EbpfTypeAndLength*>(startAddr_);
+        EbpfTypeAndLength* dataTitle = reinterpret_cast<EbpfTypeAndLength*>(startAddr_);
         startAddr_ += EBPF_TITLE_SIZE;
         unresolvedLen_ -= EBPF_TITLE_SIZE;
         if (dataTitle->length > unresolvedLen_) {
@@ -183,7 +183,6 @@ void EbpfDataReader::ReadKernelSymAddrMap(const KernelSymbolInfoHeader* elfAddr,
                 elfAddr->strTabLen);
         return;
     }
-    auto strTabLen = elfAddr->strTabLen;
     auto symTabLen = elfAddr->symTabLen;
     auto sysItemSize = symTabLen / sizeof(KernelSymItem);
     auto start = reinterpret_cast<const KernelSymItem*>(elfAddr + 1);
@@ -197,7 +196,6 @@ void EbpfDataReader::ReadKernelSymAddrMap(const KernelSymbolInfoHeader* elfAddr,
         if (strncpy_s(strName, MAX_SYMBOL_LENGTH, strTab + item->nameOffset, MAX_SYMBOL_LENGTH) < 0) {
             TS_LOGE("get kernel symbol name error");
         }
-        TS_LOGD("kernelip:%lu", item->size);
         AddrDesc desc{item->size, traceDataCache_->dataDict_.GetStringIndex(std::string(strName))};
         kernelSymbolMap_.insert(std::make_pair(item->value, desc));
     }
@@ -355,7 +353,7 @@ SymbolAndFilePathIndex EbpfDataReader::GetSymbolNameIndexFromElfSym(uint64_t ip)
             symbolAndFilePathIndex.flag = true;
             symbolAndFilePathIndex.symbolIndex = end->second.name;
             symbolAndFilePathIndex.filePathIndex = kernelFilePath_;
-            TS_LOGD("ok for ip:%lu, kernelip:%lu, size:%lu", ip, end->first, end->second.size);
+            // TS_LOGD("ok for ip:%lu, kernelip:%lu, size:%lu", ip, end->first, end->second.size);
         } else {
             TS_LOGD("failed for ip:%lu, kernelip:%lu, size:%lu", ip, end->first, end->second.size);
         }

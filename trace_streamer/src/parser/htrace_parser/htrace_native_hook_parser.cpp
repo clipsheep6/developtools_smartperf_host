@@ -98,7 +98,6 @@ void HtraceNativeHookParser::FinishParseNativeHookData()
 }
 void HtraceNativeHookParser::GetCallIdToLastLibId()
 {
-    uint64_t lastLibId = INVALID_UINT64;
     auto size = static_cast<int64_t>(traceDataCache_->GetNativeHookFrameData()->Size());
     uint32_t lastCallChainId = INVALID_UINT32;
     bool foundLast = false;
@@ -285,9 +284,8 @@ void HtraceNativeHookParser::ParseThreadEvent(const NativeHookData* nativeHookDa
 void HtraceNativeHookParser::ParseNativeHookData(const uint64_t timeStamp, const NativeHookData* nativeHookData)
 {
     auto eventCase = nativeHookData->event_case();
-    uint64_t newTimeStamp = 0;
     if (eventCase >= NativeHookData::kAllocEvent && eventCase <= NativeHookData::kMunmapEvent) {
-        newTimeStamp = streamFilters_->clockFilter_->ToPrimaryTraceTime(TS_CLOCK_REALTIME, timeStamp);
+        uint64_t newTimeStamp = streamFilters_->clockFilter_->ToPrimaryTraceTime(TS_CLOCK_REALTIME, timeStamp);
         UpdatePluginTimeRange(TS_CLOCK_REALTIME, timeStamp, newTimeStamp);
         switch (eventCase) {
             case NativeHookData::kAllocEvent:

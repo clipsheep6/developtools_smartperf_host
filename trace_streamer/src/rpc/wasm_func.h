@@ -43,7 +43,7 @@ int TraceStreamerSqlOperateEx(int sqlLen);
 int TraceStreamerReset();
 int TraceStreamerSqlQuery(const uint8_t* sql, int sqlLen, uint8_t* out, int outLen);
 int TraceStreamer_Plugin_Out_SendData(const char* pluginData, int len, int componentId);
-int TraceStreamer_Plugin_Out_Filter(const char* pluginData, int len, const std::string componentName);
+int TraceStreamer_Plugin_Out_Filter(const char* pluginData, int len, const std::string& componentName);
 
 int TraceStreamerSqlQueryEx(int sqlLen);
 int TraceStreamerCancel();

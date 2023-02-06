@@ -533,7 +533,7 @@ private:
     void UpdateReportItemsAfterAdjust();
 
     // std out
-    unsigned int consoleWidth_ = 0;
+    int consoleWidth_ = 0;
     void PrepareConsole();
 
     void OutputStdStatistics(ReportEventConfigItem &);

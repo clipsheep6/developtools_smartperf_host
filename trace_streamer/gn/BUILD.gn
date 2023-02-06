@@ -53,7 +53,9 @@ config("default") {
     "-Wformat",
     "-Wno-unused-variable",
   ]
-
+  if (is_debug && is_win) {
+    ldflags = [ "-fstack-protector" ]
+  }
   if (is_linux || is_macx) {
     cflags += [
       "-Wa,--noexecstack",

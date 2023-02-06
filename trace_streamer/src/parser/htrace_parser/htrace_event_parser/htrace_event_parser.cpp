@@ -243,7 +243,6 @@ void HtraceEventParser::DealEvent(const FtraceEvent& event)
         InvokeFunc(TRACE_EVENT_SIGNAL_DELIVER, event.signal_deliver_format());
     } else {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_OTHER, STAT_EVENT_NOTSUPPORTED);
-        TS_LOGD("has_rpc_socket_shutdown_format\n");
     }
 }
 bool HtraceEventParser::BinderTractionAllocBufEvent(const MessageLite& event) const

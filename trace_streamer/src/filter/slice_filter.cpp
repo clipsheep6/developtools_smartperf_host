@@ -151,7 +151,6 @@ uint8_t SliceFilter::CurrentDepth(InternalTid internalTid)
     }
     auto& depthMap = depthHolder_.at(internalTid);
     auto depthSize = depthMap.size();
-    auto lastIndex = 0;
     for (int32_t i = depthSize - 1; i >= 0; i--) {
         if (depthMap.at(i)) {
             return i;
