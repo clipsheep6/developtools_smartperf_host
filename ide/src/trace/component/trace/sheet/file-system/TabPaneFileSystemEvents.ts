@@ -85,6 +85,7 @@ export class TabPaneFileSystemEvents extends BaseElement {
 
     setProcessFilter(){
         this.processList = ["All Process"];
+        this.pathList = ["All Path"]
         this.source.map(it => {
             if(this.processList!.findIndex(a => a === it.process) == -1){
                 this.processList!.push(it.process);
@@ -152,7 +153,7 @@ export class TabPaneFileSystemEvents extends BaseElement {
         this.filter = this.shadowRoot?.querySelector<TabPaneFilter>("#filter");
         this.eventList = ['All Event','All Open Event','All Close Event','All Read Event','All Write Event'];
         this.processList = ['All Process'];
-        this.pathList = ["All Path"]
+        this.pathList = ["All Path"];
         this.filter!.setSelectList(this.eventList,this.processList,"","",this.pathList,"");
         this.filter!.firstSelect = "0";
         this.filter!.getFilterData((data: FilterData) => {

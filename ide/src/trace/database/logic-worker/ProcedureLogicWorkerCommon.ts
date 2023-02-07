@@ -25,6 +25,7 @@ export class ChartStruct {
     dur:number = 0;
     parent: ChartStruct | undefined;
     children: Array<ChartStruct> = [];
+    isSearch: boolean = false;
 }
 
 export class Msg{
@@ -200,6 +201,7 @@ class MerageBeanDataSplit{
         this.clearSearchNode(currentTreeList)
         data.forEach((process) => {
             process.searchShow = true
+            process.isSearch = false
         })
         this.resetNewAllNode(data,currentTreeList)
         if (searchValue != "") {
@@ -236,6 +238,7 @@ class MerageBeanDataSplit{
         data.forEach((node) => {
             if ((node.symbolName!=undefined&&node.symbolName.includes(search)) || parentSearch) {
                 node.searchShow = true
+                node.isSearch = (node.symbolName!=undefined&&node.symbolName.includes(search))
                 let parentNode = node.currentTreeParentNode
                 while (parentNode != undefined && !parentNode.searchShow) {
                     parentNode.searchShow = true
@@ -243,6 +246,7 @@ class MerageBeanDataSplit{
                 }
             } else {
                 node.searchShow = false
+                node.isSearch = false
             }
             if (node.children.length > 0) {
                 this.findSearchNode(node.children, search, node.searchShow)
@@ -253,6 +257,7 @@ class MerageBeanDataSplit{
     clearSearchNode(currentTreeList:any[]) {
         currentTreeList.forEach((node) => {
             node.searchShow = true
+            node.isSearch = false
         })
     }
 

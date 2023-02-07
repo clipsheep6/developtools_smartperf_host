@@ -21,7 +21,6 @@ import {SportRuler} from "./timer-shaft/SportRuler.js";
 import {procedurePool} from "../../database/Procedure.js";
 import {Flag} from "./timer-shaft/Flag.js";
 import {info} from "../../../log/Log.js";
-import {LitIcon} from "../../../base-ui/icon/LitIcon";
 
 //随机生成十六位进制颜色
 export function randomRgbColor() {
@@ -368,7 +367,7 @@ export class TimerShaftElement extends BaseElement {
             box-sizing: border-box;
             display: flex;
             width: 100%;
-            height: 147px;
+            height: 148px;
             border-bottom: 1px solid var(--dark-background,#dadada);
             border-top: 1px solid var(--dark-background,#dadada);
         }
@@ -431,7 +430,6 @@ export class TimerShaftElement extends BaseElement {
                     <div class="time-collect">
                         <lit-icon class="time-collect-arrow" name="caret-down" size="17"></lit-icon>
                     </div>
-                    
                 </div>
             </div>
             <canvas class="panel"></canvas>
