@@ -1,6 +1,6 @@
---- protobuf/BUILD.gn	2023-01-04 16:29:38.034468696 +0800
-+++ ../prebuilts/buildprotobuf/protobufbuild.gn	2022-11-29 14:31:52.359999197 +0800
-@@ -12,508 +12,343 @@
+--- BUILD.gn	2023-02-07 11:25:55
++++ /Users/suze/tp/code/ohos_devtools_trace_resolver/third_party/protobuf/BUILD.gn	2023-01-29 14:53:33
+@@ -12,510 +12,343 @@ import("//build/ohos.gni")
  # limitations under the License.
  
  import("//build/ohos.gni")
@@ -39,7 +39,50 @@
 +  "$protobuf_dir/stubs/time.cc",
 +  "$protobuf_dir/wire_format_lite.cc",
 +]
-+
+ 
+-ohos_shared_library("protobuf_lite") {
+-  sources = [
+-    "src/google/protobuf/any_lite.cc",
+-    "src/google/protobuf/arena.cc",
+-    "src/google/protobuf/extension_set.cc",
+-    "src/google/protobuf/generated_enum_util.cc",
+-    "src/google/protobuf/generated_message_table_driven_lite.cc",
+-    "src/google/protobuf/generated_message_util.cc",
+-    "src/google/protobuf/implicit_weak_message.cc",
+-    "src/google/protobuf/io/coded_stream.cc",
+-    "src/google/protobuf/io/io_win32.cc",
+-    "src/google/protobuf/io/strtod.cc",
+-    "src/google/protobuf/io/zero_copy_stream.cc",
+-    "src/google/protobuf/io/zero_copy_stream_impl.cc",
+-    "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
+-    "src/google/protobuf/message_lite.cc",
+-    "src/google/protobuf/parse_context.cc",
+-    "src/google/protobuf/repeated_field.cc",
+-    "src/google/protobuf/stubs/bytestream.cc",
+-    "src/google/protobuf/stubs/common.cc",
+-    "src/google/protobuf/stubs/int128.cc",
+-    "src/google/protobuf/stubs/status.cc",
+-    "src/google/protobuf/stubs/statusor.cc",
+-    "src/google/protobuf/stubs/stringpiece.cc",
+-    "src/google/protobuf/stubs/stringprintf.cc",
+-    "src/google/protobuf/stubs/structurally_valid.cc",
+-    "src/google/protobuf/stubs/strutil.cc",
+-    "src/google/protobuf/stubs/time.cc",
+-    "src/google/protobuf/wire_format_lite.cc",
+-  ]
+-  version_script = "libprotobuf_lite.map"
+-  include_dirs = [
+-    "src/google/protobuf/**/*.h",
+-    "src/google/protobuf/**/*.inc",
+-    "src",
+-  ]
+-  if (!is_mingw) {
+-    if (current_toolchain != host_toolchain) {
+-      external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+-    }
+-  } else {
+-    defines = [ "_FILE_OFFSET_BITS_SET_LSEEK" ]
+-  }
 +protobuf_src = [
 +  "$protobuf_dir/any.cc",
 +  "$protobuf_dir/any.pb.cc",
@@ -103,66 +146,24 @@
 +      "src",
 +    ]
  
--ohos_shared_library("protobuf_lite") {
--  sources = [
--    "src/google/protobuf/any_lite.cc",
--    "src/google/protobuf/arena.cc",
--    "src/google/protobuf/extension_set.cc",
--    "src/google/protobuf/generated_enum_util.cc",
--    "src/google/protobuf/generated_message_table_driven_lite.cc",
--    "src/google/protobuf/generated_message_util.cc",
--    "src/google/protobuf/implicit_weak_message.cc",
--    "src/google/protobuf/io/coded_stream.cc",
--    "src/google/protobuf/io/io_win32.cc",
--    "src/google/protobuf/io/strtod.cc",
--    "src/google/protobuf/io/zero_copy_stream.cc",
--    "src/google/protobuf/io/zero_copy_stream_impl.cc",
--    "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
--    "src/google/protobuf/message_lite.cc",
--    "src/google/protobuf/parse_context.cc",
--    "src/google/protobuf/repeated_field.cc",
--    "src/google/protobuf/stubs/bytestream.cc",
--    "src/google/protobuf/stubs/common.cc",
--    "src/google/protobuf/stubs/int128.cc",
--    "src/google/protobuf/stubs/status.cc",
--    "src/google/protobuf/stubs/statusor.cc",
--    "src/google/protobuf/stubs/stringpiece.cc",
--    "src/google/protobuf/stubs/stringprintf.cc",
--    "src/google/protobuf/stubs/structurally_valid.cc",
--    "src/google/protobuf/stubs/strutil.cc",
--    "src/google/protobuf/stubs/time.cc",
--    "src/google/protobuf/wire_format_lite.cc",
--  ]
--  include_dirs = [
--    "src/google/protobuf/**/*.h",
--    "src/google/protobuf/**/*.inc",
--    "src",
--  ]
--  if (!is_mingw) {
--    if (current_toolchain != host_toolchain) {
--      external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
--    }
--  } else {
--    defines = [ "_FILE_OFFSET_BITS_SET_LSEEK" ]
--  }
--
 -  cflags_cc = [ "-Wno-sign-compare" ]
 -  cflags = [
 -    "-Wno-sign-compare",
 -    "-D HAVE_PTHREAD",
 -  ]
--
--  public_configs = [ ":protobuf_config" ]
--  install_enable = true
--  subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
--  part_name = "${OHOS_PROFILER_PART_NAME}"
--}
 +    cflags_cc = [ "-Wno-sign-compare" ]
 +    cflags = [
 +      "-Wno-sign-compare",
 +      "-D HAVE_PTHREAD",
 +      "-std=c++17",
 +    ]
+ 
+-  public_configs = [ ":protobuf_config" ]
+-  install_enable = true
+-  subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
+-  part_name = "${OHOS_PROFILER_PART_NAME}"
+-}
++    #configs = default_configs
  
 -ohos_static_library("protobuf_lite_static") {
 -  sources = [
@@ -207,8 +208,16 @@
 -    }
 -  } else {
 -    defines = [ "_FILE_OFFSET_BITS_SET_LSEEK" ]
--  }
-+    #configs = default_configs
++    public_configs = [ ":protobuf_config" ]
+   }
++} else {
++  source_set("protobuf_lite") {
++    sources = protobuf_lite_src
++    include_dirs = [
++      "$protobuf_dir/**/*.h",
++      "$protobuf_dir/**/*.inc",
++      "src",
++    ]
  
 -  cflags_cc = [ "-Wno-sign-compare" ]
 -  cflags = [
@@ -218,11 +227,16 @@
 -  if (is_mingw) {
 -    # ../../third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl.cc:60:9: error: 'lseek' macro redefined [-Werror,-Wmacro-redefined]
 -    cflags += [ "-Wno-macro-redefined" ]
-+    public_configs = [ ":protobuf_config" ]
-   }
+-  }
 -  public_configs = [ ":protobuf_config" ]
 -}
--
++    cflags_cc = [ "-Wno-sign-compare" ]
++    cflags = [
++      "-Wno-sign-compare",
++      "-D HAVE_PTHREAD",
++      "-std=c++17",
++    ]
+ 
 -ohos_shared_library("protobuf") {
 -  sources = [
 -    "src/google/protobuf/any.cc",
@@ -288,21 +302,31 @@
 -    "-Wno-sign-compare",
 -    "-D HAVE_PTHREAD",
 -  ]
--
++    # configs = default_configs
+ 
 -  deps = [ ":protobuf_lite" ]
+-  version_script = "libprotobuf.map"
 -
 -  public_configs = [ ":protobuf_config" ]
 -  install_enable = true
 -  subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
 -  part_name = "${OHOS_PROFILER_PART_NAME}"
--}
-+} else {
-+  source_set("protobuf_lite") {
-+    sources = protobuf_lite_src
++    public_configs = [ ":protobuf_config" ]
++  }
+ }
++if (use_wasm) {
++  source_set("protobuf") {
++    sources = protobuf_src
 +    include_dirs = [
 +      "$protobuf_dir/**/*.h",
 +      "$protobuf_dir/**/*.inc",
 +      "src",
++    ]
++    cflags_cc = [ "-Wno-sign-compare" ]
++    cflags = [
++      "-Wno-sign-compare",
++      "-D HAVE_PTHREAD",
++      "-std=c++17",
 +    ]
  
 -ohos_static_library("protobuf_static") {
@@ -370,20 +394,13 @@
 -    "-Wno-sign-compare",
 -    "-D HAVE_PTHREAD",
 -  ]
-+    cflags_cc = [ "-Wno-sign-compare" ]
-+    cflags = [
-+      "-Wno-sign-compare",
-+      "-D HAVE_PTHREAD",
-+      "-std=c++17",
-+    ]
++    deps = [ ":protobuf_lite" ]
  
 -  deps = [ ":protobuf_lite_static" ]
-+    # configs = default_configs
++    #configs = default_configs
  
 -  public_configs = [ ":protobuf_config" ]
-+    public_configs = [ ":protobuf_config" ]
-+  }
- }
+-}
 -
 -if (current_toolchain == host_toolchain) {
 -  ohos_shared_library("protoc_lib") {
@@ -470,7 +487,9 @@
 -      "src/google/protobuf/compiler/subprocess.cc",
 -      "src/google/protobuf/compiler/zip_writer.cc",
 -    ]
-+if (use_wasm) {
++    public_configs = [ ":protobuf_config" ]
++  }
++} else {
 +  source_set("protobuf") {
 +    sources = protobuf_src
      include_dirs = [
@@ -485,36 +504,7 @@
 -      "-Wno-unused-function",
 -      "-Wno-unused-private-field",
 -    ]
-+    cflags_cc = [ "-Wno-sign-compare" ]
-     cflags = [
-       "-Wno-sign-compare",
-       "-D HAVE_PTHREAD",
--      "-Wno-unused-function",
-+      "-std=c++17",
-     ]
- 
--    deps = [
--      ":protobuf",
--      ":protobuf_lite",
--    ]
-+    deps = [ ":protobuf_lite" ]
 +
-+    #configs = default_configs
- 
-     public_configs = [ ":protobuf_config" ]
--    subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
--    part_name = "${OHOS_PROFILER_PART_NAME}"
-   }
-+} else {
-+  source_set("protobuf") {
-+    sources = protobuf_src
-+    include_dirs = [
-+      "$protobuf_dir/**/*.h",
-+      "$protobuf_dir/**/*.inc",
-+      "src",
-+    ]
- 
--  ohos_static_library("protoc_static_lib") {
 +    #cflags_cc = [
 +    #  "-Wno-sign-compare",
 +    #  "-ftrapv",
@@ -523,18 +513,23 @@
 +    #  "-D_FORTIFY_SOURCE=2 -O2",
 +
 +    #]
-+    cflags = [
-+      "-Wno-sign-compare",
-+      "-D HAVE_PTHREAD",
+     cflags = [
+       "-Wno-sign-compare",
+       "-D HAVE_PTHREAD",
+-      "-Wno-unused-function",
+-    ]
 +      "-ftrapv",
 +      "-fstack-protector-strong",
 +      "-fstack-protector-all",
 +      "-D_FORTIFY_SOURCE=2 -O2",
 +      "-std=c++17",
-+
+ 
+-    deps = [
+-      ":protobuf",
+-      ":protobuf_lite",
 +      #    "-Wl,--disable-new-dtags,--rpath,/libpath1:/libpath2"
-+    ]
-+
+     ]
+ 
 +    ldflags = [ "-fstack-protector" ]
 +    if (!is_macx) {
 +      ldflags += [
@@ -555,8 +550,12 @@
 +
 +    deps = [ ":protobuf_lite" ]
 +
-+    public_configs = [ ":protobuf_config" ]
-+  }
+     public_configs = [ ":protobuf_config" ]
+-    subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
+-    part_name = "${OHOS_PROFILER_PART_NAME}"
+   }
+-
+-  ohos_static_library("protoc_static_lib") {
 +  source_set("protoc_lib") {
      sources = [
 -      "src/google/protobuf/compiler/code_generator.cc",
