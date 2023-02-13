@@ -12,14 +12,23 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-config("sqlite_config") {
-  include_dirs = [
-    "../../third_party/sqlite/include",
-    "../include",
+OHOS_PROTO_GEN = "//third_party/protogen"
+ohos_source_set("sdk_plugin") {
+  sources = [
+    "sdk_plugin_data_parser.cpp",
+    "sdk_plugin_data_parser.h",
   ]
-  cflags = [ "-Wno-writable-strings" ]
-}
-source_set("sqliteext") {
-  sources = [ "sqlite_ext_funcs.cpp" ]
-  public_configs = [ ":sqlite_config" ]
+  include_dirs = [
+    "base",
+    "..",
+    "../include",
+    "../filter",
+    "../trace_data",
+    "../base",
+    "//third_party/sqlite/include",
+    "${OHOS_PROTO_GEN}/types/plugins/mock_data",
+    "//third_party/protobuf/src",
+  ]
+
+  public_deps = []
 }
