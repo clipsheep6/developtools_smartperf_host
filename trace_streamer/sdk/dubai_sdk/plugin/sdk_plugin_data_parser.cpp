@@ -49,18 +49,13 @@ int sdk_plugin_data_parser(const uint8_t* data, int len)
 int sdk_plugin_parser(const uint8_t* data, int len, MockData mockData)
 {
     // 解析counterObject
-    int counterId = 0;
-    std::string counterName = 0;
     for (auto i = 0; i < mockData.counterobj_size(); i++) {
-        counterId = mockData.counterobj(i).id();
-        counterName = mockData.counterobj(i).name();
+        int counterId = mockData.counterobj(i).id();
+        std::string counterName = mockData.counterobj(i).name();
         SDK_AppendCounterObject(counterId, counterName.c_str());
     }
 
     // 解析counterInfo
-    int counterKey = 0;
-    int value = 0;
-    uint64_t ts = 0;
     for (auto i = 0; i < mockData.counterinfo_size(); i++) {
         CounterInfo counterInfo;
         counterInfo = mockData.counterinfo(i);
@@ -68,29 +63,22 @@ int sdk_plugin_parser(const uint8_t* data, int len, MockData mockData)
     }
 
     // 解析SliceObj
-    int sliceId = 0;
-    std::string sliceName = 0;
     for (auto i = 0; i < mockData.sliceobj_size(); i++) {
-        sliceId = mockData.sliceobj(i).id();
-        sliceName = mockData.sliceobj(i).name();
+        int sliceId = mockData.sliceobj(i).id();
+        std::string sliceName = mockData.sliceobj(i).name();
         SDK_AppendSliceObject(sliceId, sliceName.c_str());
     }
 
     // 解析SliceInfo
-    int sliceKey = 0;
-    double sliceValue = 0;
-    uint64_t startTime = 0;
-    uint64_t endTime = 0;
-    std::string start_time = 0;
-    std::string end_time = 0;
+    std::string end_time;
     for (auto i = 0; i < mockData.sliceinfo_size(); i++) {
-        sliceKey = mockData.sliceinfo(i).id();
-        sliceValue = mockData.sliceinfo(i).value();
-        startTime = mockData.sliceinfo(i).start_time();
-        endTime = mockData.sliceinfo(i).end_time();
-        start_time = mockData.sliceinfo(i).starting_time();
+        int sliceKey = mockData.sliceinfo(i).id();
+        double sliceValue = mockData.sliceinfo(i).value();
+        uint64_t startTime = mockData.sliceinfo(i).start_time();
+        uint64_t endTime = mockData.sliceinfo(i).end_time();
+        std::string start_time = mockData.sliceinfo(i).starting_time();
         TS_LOGI("start_time=%s", start_time.c_str());
-        end_time = mockData.sliceinfo(i).ending_time();
+        std::string end_time = mockData.sliceinfo(i).ending_time();
         TS_LOGI("end_time=%s", end_time.c_str());
         SDK_AppendSlice(sliceKey, startTime, endTime, start_time, end_time, sliceValue);
     }

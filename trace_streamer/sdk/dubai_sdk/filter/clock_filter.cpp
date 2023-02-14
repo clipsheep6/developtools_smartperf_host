@@ -77,8 +77,8 @@ void ClockFilter::AddConvertClockMap(ClockId srcClockId, ClockId dstClockId, uin
 void ClockFilter::AddClockSnapshot(const std::vector<SnapShot>& snapShot)
 {
     ClockId srcId, desId;
-    for (srcId = 0; srcId < snapShot.size() - 1; srcId++) {
-        for (desId = srcId + 1; desId < snapShot.size(); desId++) {
+    for (srcId = 0; srcId < snapShot.size() - 1; ++srcId) {
+        for (desId = srcId + 1; desId < snapShot.size(); ++desId) {
             ClockId srcClockId = snapShot[srcId].clockId;
             ClockId desClockId = snapShot[desId].clockId;
             uint64_t srcTs = snapShot[srcId].ts;

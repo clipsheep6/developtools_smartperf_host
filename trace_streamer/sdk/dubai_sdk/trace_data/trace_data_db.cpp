@@ -232,7 +232,6 @@ int TraceDataDB::SearchDatabase(const std::string& sql, bool print)
         printf("\n");
     }
 
-    std::string row;
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         rowCount++;
         for (int i = 0; i < colCount; i++) {
