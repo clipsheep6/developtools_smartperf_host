@@ -70,7 +70,6 @@ int sdk_plugin_parser(const uint8_t* data, int len, MockData mockData)
     }
 
     // 解析SliceInfo
-    std::string end_time;
     for (auto i = 0; i < mockData.sliceinfo_size(); i++) {
         int sliceKey = mockData.sliceinfo(i).id();
         double sliceValue = mockData.sliceinfo(i).value();
