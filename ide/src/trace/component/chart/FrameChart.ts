@@ -32,7 +32,7 @@ export class FrameChart extends BaseElement {
     private floatHint: HTMLDivElement | undefined | null;
 
     private rect: Rect = new Rect(0, 0, 0, 0);
-    private _mode = ChartMode.Call;
+    private _mode = ChartMode.Byte;
     private startX = 0; // canvas start x coord
     private startY = 0; // canvas start y coord
     private canvasX = -1; // canvas current x
@@ -157,7 +157,7 @@ export class FrameChart extends BaseElement {
     /**
      * calculate Data and draw chart
      */
-    async calculateChartData() {
+    public async calculateChartData() {
         this.clearCanvas();
         this.canvasContext?.beginPath();
         this.drawScale();
@@ -165,7 +165,7 @@ export class FrameChart extends BaseElement {
         switch (this._mode) {
             case ChartMode.Byte:
                 for (let node of this.currentData!) {
-                    let width = Math.ceil(node.size / this.currentSize * this.rect!.width);
+                    let width = Math.round(node.size / this.currentSize * this.rect!.width);
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
@@ -181,13 +181,15 @@ export class FrameChart extends BaseElement {
                         node.percent = node.size / this.currentSize;
                         draw(this.canvasContext!, node);
                     }
+                    this.setStructFuncFrame(node);
                     this.drawFrameChart(node);
                     x += width;
+
                 }
                 break;
             case ChartMode.Count:
                 for (let node of this.currentData!) {
-                    let width = Math.ceil(node.count / this.currentCount * this.rect!.width);
+                    let width = Math.round(node.count / this.currentCount * this.rect!.width);
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
@@ -203,13 +205,14 @@ export class FrameChart extends BaseElement {
                         node.percent = node.count / this.currentCount;
                         draw(this.canvasContext!, node);
                     }
+                    this.setStructFuncFrame(node);
                     this.drawFrameChart(node);
                     x += width;
                 }
                 break;
             case ChartMode.Duration:
                 for (let node of this.currentData!) {
-                    let width = Math.ceil(node.dur / this.currentDuration * this.rect!.width);
+                    let width = Math.round(node.dur / this.currentDuration * this.rect!.width);
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
@@ -225,6 +228,7 @@ export class FrameChart extends BaseElement {
                         node.percent = node.dur / this.currentDuration;
                         draw(this.canvasContext!, node);
                     }
+                    this.setStructFuncFrame(node);
                     this.drawFrameChart(node);
                     x += width;
                 }
@@ -296,7 +300,7 @@ export class FrameChart extends BaseElement {
     }
 
     /**
-     * draw top Scale Into 100 pieces
+     * draw top Scale Into 100 piece
      */
     private drawScale(): void {
         let spApplication = <SpApplication>document.getElementsByTagName("sp-application")[0];
@@ -348,17 +352,11 @@ export class FrameChart extends BaseElement {
         }
     }
 
-    /**
-     * draw chart
-     * @param node draw chart by every piece
-     */
-    drawFrameChart(node: ChartStruct) {
-        let effectChildList = [];
-        let ignoreSize,ignoreCount,ignoreDur;
-        ignoreSize = ignoreCount = ignoreDur = 0;
 
+    private setStructFuncFrame(node: ChartStruct) {
         if (node.children && node.children.length > 0) {
             for (let children of node.children) {
+                node.isDraw = false;
                 children.parent = node;
                 switch (this._mode) {
                     case ChartMode.Byte:
@@ -374,6 +372,22 @@ export class FrameChart extends BaseElement {
                         children.percent = children.dur / this.currentDuration;
                         break;
                 }
+                this.setStructFuncFrame(children);
+            }
+        }
+    }
+
+    /**
+     * draw chart
+     * @param node draw chart by every piece
+     */
+    private drawFrameChart(node: ChartStruct) {
+        let effectChildList = [];
+        let ignoreSize, ignoreCount, ignoreDur;
+        ignoreSize = ignoreCount = ignoreDur = 0;
+
+        if (node.children && node.children.length > 0) {
+            for (let children of node.children) {
                 // not draw when rect not in canvas
                 if ((children.frame!.x + children.frame!.width >= 0 && //less than canvas left 
                     children.frame!.x < this.canvas!.width && // more than canvas right
@@ -387,23 +401,32 @@ export class FrameChart extends BaseElement {
                 }
             }
             let x = node.frame!.x;
-            for (let children of effectChildList) {
-                children.frame!.x = x;
-                switch (this._mode) {
-                    case ChartMode.Byte:
-                        children.frame!.width = Math.ceil(children.size / (node.size - ignoreSize) * node.frame!.width);
-                        break;
-                    case ChartMode.Count:
-                        children.frame!.width = Math.ceil(children.count / (node.count - ignoreCount) * node.frame!.width);
-                        break;
-                    case ChartMode.Duration:
-                        children.frame!.width = Math.ceil(children.dur / (node.dur - ignoreDur) * node.frame!.width);
-                        break;
+            if (effectChildList.length > 0) {
+                for (let children of effectChildList) {
+                    children.frame!.x = x;
+                    switch (this._mode) {
+                        case ChartMode.Byte:
+                            children.frame!.width = children.size / (node.size - ignoreSize) * node.frame!.width;
+                            break;
+                        case ChartMode.Count:
+                            children.frame!.width = children.count / (node.count - ignoreCount) * node.frame!.width;
+                            break;
+                        case ChartMode.Duration:
+                            children.frame!.width = children.dur / (node.dur - ignoreDur) * node.frame!.width;
+                            break;
+                    }
+                    x += children.frame!.width;
+                    draw(this.canvasContext!, children);
+                    this.drawFrameChart(children);
                 }
-                x += children.frame!.width;
-                draw(this.canvasContext!, children);
-                this.drawFrameChart(children);
+            } else {
+                let firstChildren = node.children[0];
+                firstChildren.frame!.x = node.frame!.x
+                firstChildren.frame!.width = node.frame!.width;
+                draw(this.canvasContext!, firstChildren);
+                this.drawFrameChart(firstChildren);
             }
+
         }
     }
 
@@ -634,7 +657,7 @@ export class FrameChart extends BaseElement {
     private onMouseMove(): void {
         let lastNode = ChartStruct.hoverFuncStruct;
         let searchResult = this.searchData(this.currentData!, this.canvasX, this.canvasY);
-        if (searchResult && (searchResult.frame!.width > filterPixel ||
+        if (searchResult && (searchResult.isDraw ||
             searchResult.needShow || searchResult.depth == 0)) {
             ChartStruct.hoverFuncStruct = searchResult;
             // judge current node is hover redraw chart
@@ -757,6 +780,6 @@ export class FrameChart extends BaseElement {
             }
             </style>
             <canvas id="canvas"></canvas>
-            <div id ="float_hint" class="tip"></div>`; 
+            <div id ="float_hint" class="tip"></div>`;
     }
 }

@@ -32,6 +32,8 @@ import { ThreadStruct } from "../../../database/ui-worker/ProcedureWorkerThread.
 import { FuncStruct } from "../../../database/ui-worker/ProcedureWorkerFunc.js";
 import { ProcessMemStruct } from "../../../database/ui-worker/ProcedureWorkerMem.js";
 import {CpuStateStruct} from "../../../database/ui-worker/ProcedureWorkerCpuState.js";
+import {ClockStruct} from "../../../database/ui-worker/ProcedureWorkerClock.js";
+import {IrqStruct} from "../../../database/ui-worker/ProcedureWorkerIrq.js";
 
 
 @element("trace-sheet")
@@ -239,6 +241,11 @@ export class TraceSheet extends BaseElement {
         this.displayTab<TabPaneCurrentSelection>("current-selection").setThreadData(data, scrollCallback, scrollWakeUp)
     displayMemData = (data: ProcessMemStruct) =>
         this.displayTab<TabPaneCurrentSelection>("current-selection").setMemData(data);
+    displayClockData = (data: ClockStruct) =>
+        this.displayTab<TabPaneCurrentSelection>("current-selection").setClockData(data);
+    displayIrqData = (data: IrqStruct) =>
+        this.displayTab<TabPaneCurrentSelection>("current-selection").setIrqData(data);
+
     displayFuncData = (data: FuncStruct, scrollCallback: Function) =>
         this.displayTab<TabPaneCurrentSelection>("current-selection").setFunctionData(data, scrollCallback);
     displayCpuData = (data: CpuStruct, callback: ((data: WakeupBean | null) => void) | undefined = undefined, scrollCallback?: (data: CpuStruct) => void) =>

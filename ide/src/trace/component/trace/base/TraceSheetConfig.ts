@@ -29,7 +29,6 @@ import {TabPaneFps} from "../sheet/fps/TabPaneFps.js";
 import {TabPaneFlag} from "../timer-shaft/TabPaneFlag.js";
 import {TabPaneBoxChild} from "../sheet/cpu/TabPaneBoxChild.js";
 import {TabPaneNMStatstics} from "../sheet/native-memory/TabPaneNMStatstics.js";
-import {TabPaneNMCallInfo} from "../sheet/native-memory/TabPaneNMCallInfo.js";
 import {TabPaneNMemory} from "../sheet/native-memory/TabPaneNMemory.js";
 import {TabPaneNMSampleList} from "../sheet/native-memory/TabPaneNMSampleList.js";
 import {TabpanePerfProfile} from "../sheet/hiperf/TabPerfProfile.js";
@@ -65,6 +64,8 @@ import {TabPaneSmapsRecord} from "../sheet/smaps/TabPaneSmapsRecord.js";
 import {TabPaneFreqLimit} from "../sheet/freq/TabPaneFreqLimit.js";
 import {TabPaneCpuFreqLimits} from "../sheet/freq/TabPaneCpuFreqLimits.js";
 import {TabpaneNMCalltree} from "../sheet/native-memory/TabPaneNMCallTree.js";
+import {TabPaneClockCounter} from "../sheet/clock/TabPaneClockCounter.js";
+import {TabPaneIrqCounter} from "../sheet/irq/TabPaneIrqCounter.js";
 
 export let tabConfig: any = {
     "current-selection": {
@@ -118,6 +119,14 @@ export let tabConfig: any = {
     "box-counters": {
         title: "Counters", type: TabPaneCounter,
         require: (param: SelectionParam) => (param.processTrackIds.length > 0 || param.virtualTrackIds.length > 0),
+    },
+    "box-clock-counters": {
+        title: "Clock Counters", type: TabPaneClockCounter,
+        require: (param: SelectionParam) => (param.clockMapData.size > 0),
+    },
+    "box-irq-counters": {
+        title: "Irq Counters", type: TabPaneIrqCounter,
+        require: (param: SelectionParam) => (param.irqMapData.size > 0),
     },
     "box-fps": {
         title: "FPS", type: TabPaneFps,

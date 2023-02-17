@@ -87,9 +87,6 @@ export class TabPaneCallTree extends BaseElement {
         if(this.hasAttribute("flame-mode")){
             let mode = this.getAttribute("flame-mode")
             switch (mode){
-                case "Call":
-                    this.flameChartMode = ChartMode.Call
-                    break;
                 case "Byte":
                     this.flameChartMode = ChartMode.Byte
                     break;

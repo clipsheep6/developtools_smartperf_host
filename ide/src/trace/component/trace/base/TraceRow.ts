@@ -77,6 +77,10 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     static ROW_TYPE_POWER_ENERGY = "power-energy"
     static ROW_TYPE_STATE_ENERGY = "state-energy"
     static ROW_TYPE_SMAPS = "smaps"
+    static ROW_TYPE_CLOCK_GROUP = "clock-group"
+    static ROW_TYPE_CLOCK = "clock"
+    static ROW_TYPE_IRQ_GROUP = "irq-group"
+    static ROW_TYPE_IRQ = "irq"
     static range: TimeRange | undefined | null;
     static rangeSelectObject: RangeSelectStruct | undefined
     public obj: TraceRowObject<any> | undefined | null;

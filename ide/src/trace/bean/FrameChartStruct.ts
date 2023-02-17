@@ -16,7 +16,7 @@
 import { SpApplication } from "../SpApplication.js";
 import { BaseStruct } from "./BaseStruct.js";
 import { Rect } from "../component/trace/timer-shaft/Rect.js";
-import { info } from "../../log/Log.js";
+import { info, warn } from "../../log/Log.js";
 
 const padding: number = 1;
 const lightBlue = {
@@ -31,13 +31,13 @@ export class ChartStruct extends BaseStruct {
     static selectFuncStruct: ChartStruct | undefined;
     static lastSelectFuncStruct: ChartStruct | undefined;
     needShow = false;
+    isDraw = false;
     depth: number = 0;
     symbol: string = '';
     lib: string = '';
     size: number = 0;
     count: number = 0;
     dur: number = 0;
-    type: ChartMode = ChartMode.Call;
     parent: ChartStruct | undefined;
     children: Array<ChartStruct> = [];
     percent: number = 0;
@@ -47,10 +47,9 @@ export class ChartStruct extends BaseStruct {
 
 
 export enum ChartMode {
-    Call,
-    Byte,
-    Count,
-    Duration,
+    Byte, // Native Memory
+    Count, // Perf
+    Duration, // eBpf
 }
 
 export function setFuncFrame(node: ChartStruct, canvas_frame: Rect, total: number, mode: ChartMode) {
@@ -77,7 +76,7 @@ export function setFuncFrame(node: ChartStruct, canvas_frame: Rect, total: numbe
                 node.frame!.width = Math.floor(node.dur / total * canvas_frame.width);
                 break;
             default:
-                info('not match ChartMode');
+                warn('not match ChartMode');
         }
         node.frame!.y = node.parent.frame!.y + 20;
         node.frame!.height = 20;
@@ -133,6 +132,7 @@ export function draw(ctx: CanvasRenderingContext2D, data: ChartStruct) {
             }
             drawString(ctx, data.symbol || '', 5, data.frame);
         }
+        data.isDraw = true;
     }
 }
 

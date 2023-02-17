@@ -361,4 +361,26 @@ export class Utils {
         }, []);
     }
 
+    static getFrequencyWithUnit = (maxFreq:number) => {
+        let maxFreqObj = {
+            maxFreqName:" ",
+            maxFreq:0
+        }
+        let units: Array<string> = ["", "K", "M", "G", "T", "E"];
+        let sb = " ";
+        if (maxFreq > 0) {
+            let log10: number = Math.ceil(Math.log10(maxFreq));
+            let pow10: number = Math.pow(10, log10);
+            let afterCeil: number = Math.ceil(maxFreq / (pow10 / 4)) * (pow10 / 4);
+            maxFreqObj.maxFreq = afterCeil;
+            let unitIndex: number = Math.floor(log10 / 3);
+            sb = `${afterCeil / Math.pow(10, unitIndex * 3)}${units[unitIndex + 1]}`
+        }
+        maxFreqObj.maxFreqName = sb.toString();
+        return maxFreqObj;
+    }
+
+    public static getTimeIsCross(startTime: number, endTime: number,startTime1:number,endTime1:number){
+        return Math.max(startTime,startTime1)<Math.min(endTime,endTime1)
+    }
 }

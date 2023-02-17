@@ -59,6 +59,9 @@ import {CpuAbilityMonitorStruct} from "../database/ui-worker/ProcedureWorkerCpuA
 import {DiskAbilityMonitorStruct} from "../database/ui-worker/ProcedureWorkerDiskIoAbility.js";
 import {MemoryAbilityMonitorStruct} from "../database/ui-worker/ProcedureWorkerMemoryAbility.js";
 import {NetworkAbilityMonitorStruct} from "../database/ui-worker/ProcedureWorkerNetworkAbility.js";
+import {ClockStruct} from "../database/ui-worker/ProcedureWorkerClock.js";
+import {Utils} from "./trace/base/Utils.js";
+import {IrqStruct} from "../database/ui-worker/ProcedureWorkerIrq.js";
 
 @element('sp-system-trace')
 export class SpSystemTrace extends BaseElement {
@@ -369,6 +372,20 @@ export class SpSystemTrace extends BaseElement {
                     info("load anomaly Energy traceRow id is : ", it.rowId)
                 } else if (it.rowType == TraceRow.ROW_TYPE_SMAPS) {
                     selection.smapsType.push(it.rowId!)
+                } else if (it.rowType == TraceRow.ROW_TYPE_CLOCK){
+                    selection.clockMapData.set(it.rowId||"",it.dataList.filter((clockData)=>{
+                        return Utils.getTimeIsCross(clockData.startNS,clockData.startNS+clockData.dur,(TraceRow.rangeSelectObject?.startNS || 0),(TraceRow.rangeSelectObject?.endNS || 0))
+                    }))
+                } else if(it.rowType == TraceRow.ROW_TYPE_IRQ){
+                    it.dataList.forEach((irqData)=>{
+                        if (Utils.getTimeIsCross(irqData.startNS, irqData.startNS + irqData.dur, (TraceRow.rangeSelectObject?.startNS || 0), (TraceRow.rangeSelectObject?.endNS || 0))) {
+                            if (selection.irqMapData.has(irqData.name)) {
+                                selection.irqMapData.get(irqData.name)?.push(irqData)
+                            } else {
+                                selection.irqMapData.set(irqData.name,[irqData])
+                            }
+                        }
+                    })
                 }
             })
             if (selection.diskIOipids.length > 0 && !selection.diskIOLatency) {
@@ -600,14 +617,12 @@ export class SpSystemTrace extends BaseElement {
         this.canvasPanel!.style.transform = `translateY(${this.rowsPaneEL!.scrollTop}px)`;
         this.canvasFavoritePanel!.style.transform = `translateY(${this.favoriteRowsEL!.scrollTop}px)`;
         //draw trace row
-
         this.visibleRows.forEach((v, i) => {
             if (v.collect) {
                 v.translateY = v.getBoundingClientRect().top - 195;
             } else {
                 v.translateY = v.offsetTop - this.rowsPaneEL!.scrollTop;
             }
-
             v.draw(cache)
         })
         //draw flag line segment for canvas
@@ -618,7 +633,6 @@ export class SpSystemTrace extends BaseElement {
         drawFlagLineSegment(this.canvasFavoritePanelCtx, this.hoverFlag, this.selectFlag, {
             x: 0, y: 0, width: this.timerShaftEL?.canvas?.clientWidth, height: this.canvasFavoritePanel?.clientHeight
         });
-
         //draw wakeup for main canvas
         drawWakeUp(this.canvasPanelCtx, CpuStruct.wakeupBean, TraceRow.range!.startNS, TraceRow.range!.endNS, TraceRow.range!.totalNS, {
             x: 0, y: 0, width: this.timerShaftEL!.canvas!.clientWidth, height: this.canvasPanel!.clientHeight!
@@ -628,7 +642,6 @@ export class SpSystemTrace extends BaseElement {
             x: 0, y: 0, width: this.timerShaftEL!.canvas!.clientWidth, height: this.canvasFavoritePanel!.clientHeight!
         } as Rect);
     }
-
 
     documentOnMouseDown = (ev: MouseEvent) => {
         if (!this.loadTraceCompleted) return;
@@ -793,6 +806,8 @@ export class SpSystemTrace extends BaseElement {
         NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct = undefined;
         CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct = undefined;
         FpsStruct.hoverFpsStruct = undefined;
+        ClockStruct.hoverClockStruct = undefined;
+        IrqStruct.hoverIrqStruct = undefined;
     }
 
     selectStructNull() {
@@ -804,6 +819,8 @@ export class SpSystemTrace extends BaseElement {
         SpHiPerf.selectCpuStruct = undefined;
         CpuStateStruct.selectStateStruct = undefined;
         CpuFreqLimitsStruct.selectCpuFreqLimitsStruct = undefined
+        ClockStruct.selectClockStruct = undefined;
+        IrqStruct.selectIrqStruct = undefined;
     }
 
     documentOnClick = (ev: MouseEvent) => {
@@ -916,7 +933,16 @@ export class SpSystemTrace extends BaseElement {
             CpuFreqLimitsStruct.selectCpuFreqLimitsStruct = CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct
             this.traceSheetEL?.displayFreqLimitData()
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else {
+        } else if (ClockStruct.hoverClockStruct) {
+            ClockStruct.selectClockStruct = ClockStruct.hoverClockStruct
+            this.traceSheetEL?.displayClockData(ClockStruct.selectClockStruct)
+            this.timerShaftEL?.modifyFlagList(undefined);
+        } else if(IrqStruct.hoverIrqStruct){
+            IrqStruct.selectIrqStruct = IrqStruct.hoverIrqStruct;
+            this.traceSheetEL?.displayIrqData(IrqStruct.selectIrqStruct);
+            this.timerShaftEL?.modifyFlagList(undefined);
+
+        }else {
             this.observerScrollHeightEnable = false;
             this.selectFlag = null;
             this.timerShaftEL?.removeTriangle("inverted");

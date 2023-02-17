@@ -80,13 +80,14 @@ export class ColorUtils {
     }
 
     public static formatNumberComma(str: number): string {
-        if(!str) return "";
-        let l = str.toString().split("").reverse();
+        if(str === undefined||str === null) return "";
+        let unit = str>=0?'':'-'
+        let l = Math.abs(str).toString().split("").reverse();
         let t: string = "";
         for (let i = 0; i < l.length; i++) {
             t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
         }
-        return t.split("").reverse().join("")
+        return unit+t.split("").reverse().join("")
     }
 
     public static hashFunc(str: string, depth: number, max: number): number {

@@ -68,6 +68,9 @@ import {EnergyStateStruct} from "./ui-worker/ProcedureWorkerEnergyState.js";
 import {CounterStruct} from "./ui-worker/ProduceWorkerSdkCounter.js";
 import {SdkSliceStruct} from "./ui-worker/ProduceWorkerSdkSlice.js";
 import {SystemDetailsEnergy} from "../bean/EnergyStruct.js";
+import {ClockStruct} from "./ui-worker/ProcedureWorkerClock.js";
+import {IrqStruct} from "./ui-worker/ProcedureWorkerIrq.js";
+
 class DataWorkerThread extends Worker {
     taskMap: any = {};
     uuid(): string {
@@ -1005,6 +1008,10 @@ from thread_state AS B
          left join trace_range AS TR
          left join process AS IP on IP.id = A.ipid
 where B.tid = $tid;`, {$tid: tid})
+
+export const queryThreadStateArgs = (startDur:number,endState:string): Promise<Array<BinderArgBean>> =>
+    query("queryThreadStateArgs",` select args_view.* from args_view,
+     (select arg_setid from sched_slice where end_state = $endState and ts + dur = $startDur limit 1) s on s.arg_setid = argset`, {$startDur: startDur,$endState:endState})
 
 export const queryWakeUpThread_Desc = (): Promise<Array<any>> =>
     query("queryWakeUpThread_Desc", `This is the interval from when the task became eligible to run
@@ -2813,3 +2820,52 @@ export const queryConfigSysEventAppName = (): Promise<Array<{
 }>> =>
     query("queryConfigSysEventAppName", `
     SELECT value from trace_config where trace_source = 'hisys_event' and key = 'process_name'`)
+
+export const queryClockData = (): Promise<Array<{
+    name:string,num:number,srcname:string
+}>> =>
+    query("queryClockData", `
+    with freq as(
+    select measure.filter_id, measure.ts, measure.type, measure.value , clock_event_filter.name from clock_event_filter
+    left join measure
+    where  clock_event_filter.type = 'clock_set_rate' and clock_event_filter.id = measure.filter_id
+    order by measure.ts
+),state as (
+    select filter_id, ts, endts, endts-ts as dur, type, value,name from
+    (select measure.filter_id, measure.ts, lead(ts, 1, null) over( order by measure.ts) endts, measure.type, measure.value,clock_event_filter.name from clock_event_filter,trace_range
+    left join measure
+    where clock_event_filter.type != 'clock_set_rate' and clock_event_filter.id = measure.filter_id
+    order by measure.ts)
+),count_freq as (
+    select COUNT(*) num,name srcname from freq group by name
+),count_state as (
+    select COUNT(*) num,name srcname from state group by name
+)
+select count_freq.srcname||' Frequency' as name,* from count_freq union select count_state.srcname||' State' as name,* from count_state order by name`)
+
+export const queryClockFrequency = (clockName:string): Promise<Array<ClockStruct>> =>
+    query("queryClockFrequency",`with freq as (  select measure.filter_id, measure.ts, measure.type, measure.value from clock_event_filter
+left join measure
+where clock_event_filter.name = $clockName and clock_event_filter.type = 'clock_set_rate' and clock_event_filter.id = measure.filter_id
+order by measure.ts)
+select freq.filter_id as filterId,freq.ts - r.start_ts as startNS,freq.type,freq.value from freq,trace_range r order by startNS`, {$clockName: clockName})
+
+export const queryClockState = (clockName:string): Promise<Array<ClockStruct>> =>
+    query("queryClockState",`with state as (
+select filter_id, ts, endts, endts-ts as dur, type, value from
+(select measure.filter_id, measure.ts, lead(ts, 1, null) over( order by measure.ts) endts, measure.type, measure.value from clock_event_filter,trace_range
+left join measure
+where clock_event_filter.name = $clockName and clock_event_filter.type != 'clock_set_rate' and clock_event_filter.id = measure.filter_id
+order by measure.ts))
+select s.filter_id as filterId,s.ts-r.start_ts as startNS,s.type,s.value,s.dur from state s,trace_range r`, {$clockName: clockName})
+
+export const queryScreenState = (): Promise<Array<ClockStruct>> =>
+    query("queryScreenState",`select m.type, m.ts-r.start_ts as startNS, value, filter_id  as filterId from measure m,trace_range r where filter_id in (select id from process_measure_filter where name = 'ScreenState')  order by startNS;
+`)
+
+export const queryIrqList = (): Promise<Array<{name:string,cpu:number}>> =>
+    query("queryIrqList",`select cat as name,callid as cpu from irq group by cat,callid`)
+
+export const queryIrqData = (callid:number,cat:string): Promise<Array<IrqStruct>> =>
+    query("queryIrqData",`select i.ts - t.start_ts as startNS,i.dur,i.name,i.depth,argsetid as argSetId,i.id from irq i,
+trace_range t where i.callid = $callid and i.cat = $cat`,{$callid: callid,$cat: cat})

@@ -14,6 +14,8 @@
  */
 
 import {CpuFreqLimitsStruct} from "../database/ui-worker/ProcedureWorkerCpuFreqLimits.js";
+import {ClockStruct} from "../database/ui-worker/ProcedureWorkerClock.js";
+import {IrqStruct} from "../database/ui-worker/ProcedureWorkerIrq.js";
 
 export class SelectionParam {
     recordStartNs:number = 0
@@ -37,6 +39,8 @@ export class SelectionParam {
     threadIds: Array<number> = [];
     processTrackIds: Array<number> = [];
     virtualTrackIds: Array<number> = [];
+    clockMapData: Map<string,Array<ClockStruct>> = new Map<string, Array<ClockStruct>>()
+    irqMapData: Map<string,Array<IrqStruct>> = new Map<string,Array<IrqStruct>>()
     funTids: Array<number> = [];
     funAsync: Array<{name:string,pid:number}> = [];
     heapIds: Array<number> = [];
@@ -77,6 +81,7 @@ export class SelectionData {
     thread: string = ""
     tid: string = ""
     wallDuration: number = 0
+    wallDurationFormat:string = ""
     avgDuration: string = ""
     occurrences: number = 0
     state: string = ""
