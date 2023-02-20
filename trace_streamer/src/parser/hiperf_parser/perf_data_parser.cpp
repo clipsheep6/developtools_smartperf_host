@@ -28,7 +28,7 @@ PerfDataParser::PerfDataParser(TraceDataCache* dataCache, const TraceStreamerFil
     unkonwnStateIndex_(traceDataCache_->dataDict_.GetStringIndex("-"))
 {
 }
-void PerfDataParser::InitPerfDataAndLoad(const std::deque<uint8_t>& dequeBuffer, uint64_t size)
+void PerfDataParser::InitPerfDataAndLoad(const std::deque<uint8_t> dequeBuffer, uint64_t size)
 {
     bufferSize_ = size;
     buffer_ = std::make_unique<uint8_t[]>(size);

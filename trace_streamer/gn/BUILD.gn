@@ -68,7 +68,7 @@ config("default") {
         "-fstack-protector-strong",
         "-fstack-protector-all",
         "-D_FORTIFY_SOURCE=2 -O2",
-        "-D SUPPORTTHREAD",  # if support thread
+        # "-D SUPPORTTHREAD",  # if support thread
 
         # "-D HAVE_ELF_H",
         "-D target_cpu_x64",

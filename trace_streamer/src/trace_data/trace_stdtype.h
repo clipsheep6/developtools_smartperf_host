@@ -189,6 +189,7 @@ public:
                             uint64_t priority);
     void SetDuration(size_t index, uint64_t duration);
     void Update(uint64_t index, uint64_t ts, uint64_t state, uint64_t pior);
+    void UpdateArg(uint64_t index, uint32_t argsetId);
 
     const std::deque<uint64_t>& EndStatesData() const
     {
@@ -198,6 +199,11 @@ public:
     const std::deque<uint64_t>& PriorityData() const
     {
         return priority_;
+    }
+
+    const std::deque<uint32_t>& ArgSetData() const
+    {
+        return argSets_;
     }
     const std::deque<uint64_t>& TsEndData() const
     {
@@ -226,6 +232,7 @@ private:
     std::deque<uint64_t> tsEnds_ = {};
     std::deque<uint64_t> endStates_ = {};
     std::deque<uint64_t> priority_ = {};
+    std::deque<uint32_t> argSets_ = {};
 };
 
 class CallStack : public CacheBase, public CpuCacheBase {
@@ -1061,6 +1068,8 @@ public:
 private:
     std::hash<std::string_view> hashFun;
     std::mutex mutex_;
+    const int8_t SPASCII_START = 0;
+    const int8_t SPASCII_END = 32;
 };
 class NetDetailData : public CacheBase {
 public:
@@ -1639,7 +1648,6 @@ public:
     void Clear() override
     {
         CacheBase::Clear();
-        smapTimeStamps_.clear();
         startAddrs_.clear();
         endAddrs_.clear();
         dirtys_.clear();
@@ -1652,7 +1660,6 @@ public:
         pathIds_.clear();
     }
 private:
-    std::deque<uint64_t> smapTimeStamps_ = {};
     std::deque<std::string> startAddrs_ = {};
     std::deque<std::string> endAddrs_ = {};
     std::deque<uint64_t> dirtys_ = {};

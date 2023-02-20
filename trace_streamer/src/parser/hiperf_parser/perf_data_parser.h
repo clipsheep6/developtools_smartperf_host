@@ -36,7 +36,7 @@ class PerfDataParser : public HtracePluginTimeParser {
 public:
     PerfDataParser(TraceDataCache* dataCache, const TraceStreamerFilters* ctx);
     ~PerfDataParser();
-    void InitPerfDataAndLoad(const std::deque<uint8_t>& dequeBuffer, uint64_t size);
+    void InitPerfDataAndLoad(const std::deque<uint8_t> dequeBuffer, uint64_t size);
     void Finish();
 
 private:

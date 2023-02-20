@@ -346,6 +346,7 @@ void HtraceParser::ParseFtrace(const ProfilerPluginData& pluginData, HtraceDataS
             dataSeg.status = TS_PARSE_STATUS_INVALID;
             return;
         }
+        dataSeg.clockId = clock_;
         dataSeg.status = TS_PARSE_STATUS_PARSED;
         return;
     }

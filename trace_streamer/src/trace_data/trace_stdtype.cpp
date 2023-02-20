@@ -42,15 +42,17 @@ void ThreadState::SetDuration(TableRowId index, InternalTime dur)
 {
     durations_[index] = dur;
 }
-
 void DataDict::Finish()
 {
     std::string::size_type pos(0);
     for (auto i = 0; i < dataDict_.size(); i++) {
+        if (dataDict_[i].empty()) {
+            continue;
+        }
         while ((pos = dataDict_[i].find("\"")) != std::string::npos) {
             dataDict_[i].replace(pos, 1, "\'");
         }
-        while ((dataDict_[i].back() >= '\001' && dataDict_[i].back() <= '\007') || dataDict_[i].back() == '\n' ||
+        while ((dataDict_[i].back() >= SPASCII_START && dataDict_[i].back() <= SPASCII_END) ||
                dataDict_[i].back() == '\r') {
             dataDict_[i].pop_back();
         }
@@ -103,6 +105,7 @@ size_t SchedSlice::AppendSchedSlice(uint64_t ts,
     internalTids_.emplace_back(internalTid);
     endStates_.emplace_back(endState);
     priority_.emplace_back(priority);
+    argSets_.emplace_back(INVALID_UINT32);
     return Size() - 1;
 }
 
@@ -119,6 +122,10 @@ void SchedSlice::Update(uint64_t index, uint64_t ts, uint64_t state, uint64_t pi
     priority_[index] = pior;
 }
 
+void SchedSlice::UpdateArg(uint64_t index, uint32_t argsetId)
+{
+    argSets_[index] = argsetId;
+}
 size_t CallStack::AppendInternalAsyncSlice(uint64_t startT,
                                            uint64_t durationNs,
                                            InternalTid internalTid,
@@ -211,7 +218,7 @@ void CallStack::SetDuration(size_t index, uint64_t timestamp)
 
 void CallStack::SetIrqDurAndArg(size_t index, uint64_t timestamp, uint32_t argSetId)
 {
-    SetTimeStamp(index, timestamp);
+    SetDuration(index, timestamp);
     argSet_[index] = argSetId;
 }
 void CallStack::SetTimeStamp(size_t index, uint64_t timestamp)
@@ -1783,7 +1790,7 @@ void SmapsData::AppendNewData(uint64_t timeStamp,
                               DataIndex protectionId,
                               DataIndex pathId)
 {
-    smapTimeStamps_.emplace_back(timeStamp);
+    timeStamps_.emplace_back(timeStamp);
     startAddrs_.emplace_back(startAddr);
     endAddrs_.emplace_back(endAddr);
     dirtys_.emplace_back(dirty);
