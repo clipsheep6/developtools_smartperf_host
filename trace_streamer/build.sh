@@ -72,6 +72,9 @@ if [ "$#" -ne "0" ];then
     if [ "$1" == "sdkdemo" ];then
         target='sdkdemo'
     fi
+    if [ "$1" == "dubaisdk" ];then
+        target='dubaisdk'
+    fi
     if [ "$1" == "sdkdemotest" ];then
         target='sdkdemotest'
     fi

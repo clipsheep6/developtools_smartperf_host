@@ -23,13 +23,13 @@ kernel_version="."
 mock_data_dir="$proto_dir/types/plugins/mock_data"
 proto_array=("$mock_data_dir/mock_plugin_result.proto")
 
-export LD_LIBRARY_PATH=../../../out/linux
+export LD_LIBRARY_PATH=../../out/linux
 for ((i = 0; i < ${#proto_array[@]}; i ++))
 do
    newpath=$(dirname ${proto_array[$i]})
    newpath=${newpath:2}
-   cppout=../../../third_party/protogen/$newpath
+   cppout=../../third_party/protogen/$newpath
    mkdir -p $cppout
-   ../../../out/linux/protoc --proto_path=$mock_data_dir --cpp_out=$cppout ${proto_array[$i]}
+   ../../out/linux/protoc --proto_path=$mock_data_dir --cpp_out=$cppout ${proto_array[$i]}
 done
 echo "generate proto based files over"
