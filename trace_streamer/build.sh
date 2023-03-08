@@ -145,7 +145,7 @@ if [ ! -f "prebuilts/$gn_path/gn" ];then
 fi
 if [ ! -f "prebuilts/$gn_path/ninja" ];then
 	echo "you may get ninja for $target_os and place it in prebuilts/$target_os"
-	ehco "the file can be get at https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja, you need to download it manually"
+	echo "the file can be get at https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja, you need to download it manually"
     #wget "https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja"
 	#wget https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja
     #mv ninja prebuilts/$target_os/
