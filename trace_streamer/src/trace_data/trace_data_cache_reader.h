@@ -92,6 +92,8 @@ public:
     const BioLatencySampleData& GetConstBioLatencySampleData() const;
     const ClockSnapshotData& GetConstClockSnapshotData() const;
     const DataSourceClockIdData& GetConstDataSourceClockIdData() const;
+    const FrameSlice& GetConstFameSliceData() const;
+    const FrameMaps& GetConstFameMapsData() const;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

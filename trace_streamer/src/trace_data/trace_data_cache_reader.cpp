@@ -276,5 +276,13 @@ const DataSourceClockIdData& TraceDataCacheReader::GetConstDataSourceClockIdData
 {
     return dataSourceClockIdData_;
 }
+const FrameSlice& TraceDataCacheReader::GetConstFameSliceData() const
+{
+    return frameSliceData_;
+}
+const FrameMaps& TraceDataCacheReader::GetConstFameMapsData() const
+{
+    return frameMapsData_;
+}
 } // namespace TraceStreamer
 } // namespace SysTuning

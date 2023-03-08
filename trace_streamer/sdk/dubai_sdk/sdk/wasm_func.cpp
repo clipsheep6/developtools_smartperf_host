@@ -61,6 +61,12 @@ EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_PluginName(const uint8_t* pluginName, 
     g_wasmTraceStreamer.ts_->sdkDataParser_->GetPluginName(pluginName, len);
     return 0;
 }
+EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_PluginNameEx(int len)
+{
+    g_wasmTraceStreamer.ts_->sdkDataParser_->GetPluginName(g_reqBuf, len);
+    return 0;
+}
+
 
 EMSCRIPTEN_KEEPALIVE uint8_t* InitTraceRange(TraceRangeCallbackFunction traceRangeCallbackFunction,
                                              uint32_t reqBufferSize)
@@ -92,6 +98,13 @@ EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_JsonConfig()
 EMSCRIPTEN_KEEPALIVE int TraceStreamerSqlOperate(const uint8_t* sql, int sqlLen)
 {
     if (g_wasmTraceStreamer.SqlOperate(sql, sqlLen, nullptr)) {
+        return 0;
+    }
+    return -1;
+}
+EMSCRIPTEN_KEEPALIVE int TraceStreamerSqlOperateEx(int sqlLen)
+{
+    if (g_wasmTraceStreamer.SqlOperate(g_reqBuf, sqlLen, nullptr)) {
         return 0;
     }
     return -1;

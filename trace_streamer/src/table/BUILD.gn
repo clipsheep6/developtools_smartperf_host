@@ -15,6 +15,8 @@ import("//build/ohos.gni")
 
 import("//src/ts.gni")
 ohos_source_set("table") {
+  subsystem_name = "trace_streamer"
+  part_name = "table"
   sources = [
     "appname_table.cpp",
     "appname_table.h",
@@ -49,6 +51,10 @@ ohos_source_set("table") {
     "filter_constraints.cpp",
     "filter_table.cpp",
     "filter_table.h",
+    "frame_maps_table.cpp",
+    "frame_maps_table.h",
+    "frame_slice_table.cpp",
+    "frame_slice_table.h",
     "hidump_table.cpp",
     "hidump_table.h",
     "index_map.cpp",

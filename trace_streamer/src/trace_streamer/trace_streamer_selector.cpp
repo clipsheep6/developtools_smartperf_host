@@ -24,6 +24,7 @@
 #include "cpu_filter.h"
 #include "file.h"
 #include "filter_filter.h"
+#include "frame_filter.h"
 #include "hi_sysevent_measure_filter.h"
 #include "irq_filter.h"
 #include "measure_filter.h"
@@ -115,6 +116,7 @@ void TraceStreamerSelector::InitFilter()
     streamFilters_->binderFilter_ = std::make_unique<BinderFilter>(traceDataCache_.get(), streamFilters_.get());
     streamFilters_->argsFilter_ = std::make_unique<ArgsFilter>(traceDataCache_.get(), streamFilters_.get());
     streamFilters_->irqFilter_ = std::make_unique<IrqFilter>(traceDataCache_.get(), streamFilters_.get());
+    streamFilters_->frameFilter_ = std::make_unique<FrameFilter>(traceDataCache_.get(), streamFilters_.get());
     streamFilters_->clockRateFilter_ =
         std::make_unique<MeasureFilter>(traceDataCache_.get(), streamFilters_.get(), E_CLOCK_RATE_FILTER);
     streamFilters_->clockEnableFilter_ =

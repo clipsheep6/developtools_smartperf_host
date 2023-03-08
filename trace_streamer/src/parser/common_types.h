@@ -62,6 +62,7 @@ struct BytraceLine {
     std::string task;    // thread name
     std::string pidStr;  // thread str
     std::string tGidStr; // process thread_group
+    uint32_t tgid = 0;
     std::string eventName;
     std::string argsStr;
 };
@@ -125,6 +126,9 @@ public:
         parentSpanId_ = point.parentSpanId_;
         flag_ = point.flag_;
         args_ = point.args_;
+        funcPrefixId_ = point.funcPrefixId_;
+        funcPrefix_ = point.funcPrefix_;
+        funcArgs_ = point.funcArgs_;
     }
     char phase_ = '\0';
     uint32_t tgid_ = 0;
@@ -137,6 +141,9 @@ public:
     std::string parentSpanId_ = "";
     std::string flag_ = "";
     std::string args_ = "";
+    uint32_t funcPrefixId_ = 0;
+    std::string funcPrefix_ = "";
+    std::string funcArgs_ = "";
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

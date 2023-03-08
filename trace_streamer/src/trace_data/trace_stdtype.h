@@ -267,6 +267,7 @@ public:
                               const std::string& args);
     void AppendDistributeInfo();
     void SetDuration(size_t index, uint64_t timestamp);
+    void SetDurationEx(size_t index, uint32_t dur);
     void SetIrqDurAndArg(size_t index, uint64_t timestamp, uint32_t argSetId);
     void SetTimeStamp(size_t index, uint64_t timestamp);
     void SetDepth(size_t index, uint8_t depth);
@@ -363,6 +364,11 @@ public:
     {
         return valuesDeque_;
     }
+    const std::deque<uint64_t>& DursData() const
+    {
+        return durDeque_;
+    }
+    void SetDur(uint32_t row, uint64_t timestamp);
     const std::deque<uint32_t>& FilterIdData() const
     {
         return filterIdDeque_;
@@ -371,12 +377,14 @@ public:
     {
         CacheBase::Clear();
         typeDeque_.clear();
+        durDeque_.clear();
         valuesDeque_.clear();
         filterIdDeque_.clear();
     }
 
 private:
     std::deque<uint32_t> typeDeque_ = {};
+    std::deque<uint64_t> durDeque_ = {};
     std::deque<int64_t> valuesDeque_ = {};
     std::deque<uint32_t> filterIdDeque_ = {};
 };
@@ -1791,6 +1799,54 @@ private:
     std::deque<uint8_t> clockIds_ = {};
     std::map<DataSourceType, uint8_t> dataSource2ClockIdMap_ = {};
     std::map<DataSourceType, std::string> dataSource2PluginNameMap_ = {};
+};
+
+class FrameSlice : public CacheBase {
+public:
+    size_t AppendFrame(uint64_t ts, uint64_t ipid, uint64_t itid, uint32_t vsyncId, uint64_t callStackSliceRow);
+    size_t AppendFrame(uint64_t ts,
+                       uint64_t ipid,
+                       uint64_t itid,
+                       uint32_t vsyncId,
+                       uint64_t callStackSliceRow,
+                       uint64_t end,
+                       uint8_t type);
+    void SetEndTime(uint64_t row, uint64_t end);
+    void SetType(uint64_t row, uint8_t type);
+    void SetDst(uint64_t row, uint64_t type);
+    void SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices);
+    const std::deque<uint64_t> Ipids() const;
+    const std::deque<uint32_t> VsyncIds() const;
+    const std::deque<uint64_t> CallStackRows() const;
+    const std::deque<uint64_t> EndTss() const;
+    const std::deque<uint64_t> Dsts() const;
+    const std::deque<uint64_t> Durs() const;
+    const std::deque<uint8_t> Types() const;
+    const std::deque<uint8_t> Flags() const;
+    const std::deque<std::string>& Srcs() const;
+    void UpdateCallStackSliceRow(uint64_t row, uint64_t callStackSliceRow);
+    void SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur);
+
+private:
+    std::deque<uint64_t> ipids_ = {};
+    std::deque<uint64_t> dsts_ = {};
+    std::deque<std::string> srcs_ = {};
+    std::deque<uint32_t> vsyncIds_ = {};
+    std::deque<uint64_t> callStackRows_ = {};
+    std::deque<uint64_t> endTss_ = {};
+    std::deque<uint64_t> durs_ = {};
+    std::deque<uint8_t> types_ = {};
+    std::deque<uint8_t> flags_ = {};
+};
+class FrameMaps : public CacheBase {
+public:
+    size_t AppendNew(uint64_t src, uint64_t dst);
+    const std::deque<uint64_t>& SrcIndexs() const;
+    const std::deque<uint64_t>& DstIndexs() const;
+
+private:
+    std::deque<uint64_t> srcs_ = {};
+    std::deque<uint64_t> dsts_ = {};
 };
 } // namespace TraceStdtype
 } // namespace SysTuning

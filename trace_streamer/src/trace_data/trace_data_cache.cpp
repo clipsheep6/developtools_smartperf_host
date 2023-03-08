@@ -38,6 +38,8 @@
 #endif
 #include "file_system_sample_table.h"
 #include "filter_table.h"
+#include "frame_maps_table.h"
+#include "frame_slice_table.h"
 #include "hidump_table.h"
 #include "trace_config_table.h"
 #include "instants_table.h"
@@ -149,6 +151,8 @@ void TraceDataCache::InitDB()
     TableBase::TableDeclare<BioLatencySampleTable>(*db_, this, "bio_latency_sample");
     TableBase::TableDeclare<DataSourceClockIdTableTable>(*db_, this, "datasource_clockid");
     TableBase::TableDeclare<ClockSnapShotTable>(*db_, this, "clock_snapshot");
+    TableBase::TableDeclare<FrameSliceTable>(*db_, this, "frame_slice");
+    TableBase::TableDeclare<FrameMapsTable>(*db_, this, "frame_maps");
 
 #if WITH_PERF
     TableBase::TableDeclare<PerfReportTable>(*db_, this, "perf_report");
@@ -206,6 +210,8 @@ void TraceDataCache::InitDB()
     TableBase::TableDeclare<BioLatencySampleTable>(*db_, this, "_bio_latency_sample");
     TableBase::TableDeclare<DataSourceClockIdTableTable>(*db_, this, "_datasource_clockid");
     TableBase::TableDeclare<ClockSnapShotTable>(*db_, this, "_clock_snapshot");
+    TableBase::TableDeclare<FrameSliceTable>(*db_, this, "_frame_slice");
+    TableBase::TableDeclare<FrameMapsTable>(*db_, this, "_frame_maps");
 #if WITH_EBPF_HELP
     TableBase::TableDeclare<EbpfProcessMapsTable>(*db_, this, "_ebpf_process_maps");
     TableBase::TableDeclare<EbpfElfTable>(*db_, this, "_ebpf_elf");

@@ -45,8 +45,8 @@ public:
                            uint64_t prevState,
                            uint64_t nextPid,
                            uint64_t nextPior);
-    bool InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTid, bool iowait, DataIndex caller);
-    void InsertWakeupEvent(uint64_t ts, uint64_t internalTid);
+    bool InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTid, bool iowait, DataIndex caller, uint32_t delay);
+    void InsertWakeupEvent(uint64_t ts, uint64_t internalTid, bool isWaking = false);
     bool InsertProcessExitEvent(uint64_t ts, uint64_t cpu, uint64_t pid);
     bool InsertProcessFreeEvent(uint64_t ts, uint64_t pid);
     void Finish() const;
@@ -73,6 +73,7 @@ private:
     const DataIndex ioWait_ = traceDataCache_->GetDataIndex("iowait");
     const DataIndex caller_ = traceDataCache_->GetDataIndex("caller");
     const DataIndex delay_ = traceDataCache_->GetDataIndex("delay");
+    std::map<uint64_t, uint64_t> toRunnableTid_ = {};
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

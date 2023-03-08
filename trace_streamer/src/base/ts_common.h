@@ -16,15 +16,16 @@
 #ifndef SRC_TRACE_BASE_TS_COMMON_H
 #define SRC_TRACE_BASE_TS_COMMON_H
 
+#include <cstdint>
 #include <limits>
 #include <map>
-#include <cstdint>
 #include <string>
 
 const uint64_t INVALID_UTID = std::numeric_limits<uint32_t>::max();
 const uint64_t INVALID_UINT64 = std::numeric_limits<uint64_t>::max();
 const uint64_t MAX_UINT32 = std::numeric_limits<uint32_t>::max();
 const uint64_t MAX_UINT64 = std::numeric_limits<uint64_t>::max();
+const uint32_t INVALID_UINT8 = std::numeric_limits<uint8_t>::max();
 const uint32_t INVALID_UINT16 = std::numeric_limits<uint16_t>::max();
 const uint32_t INVALID_UINT32 = std::numeric_limits<uint32_t>::max();
 const uint32_t INVALID_INT32 = std::numeric_limits<int32_t>::max();
@@ -86,17 +87,18 @@ enum EndState {
     TASK_TRACED_KILL = 136,
     // (W) The process is in a deep sleep state and will be killed directly after waking up
     TASK_WAKEKILL = 256,
+    TASK_PARKED = 512,
     // (R+) Process groups in the foreground
     TASK_FOREGROUND = 2048,
     TASK_MAX = 4096,
     TASK_INVALID = 9999
 };
 enum TSLogLevel {
-    TS_DEBUG = 68, // Debug
-    TS_ERROR = 69, // Error
-    TS_INFO = 73, // Info
+    TS_DEBUG = 68,   // Debug
+    TS_ERROR = 69,   // Error
+    TS_INFO = 73,    // Info
     TS_VERBOSE = 86, // Verbose
-    TS_WARN = 87 // Warn
+    TS_WARN = 87     // Warn
 };
 enum SchedWakeType {
     SCHED_WAKING = 0, // sched_waking
@@ -123,12 +125,7 @@ using InternalTime = uint64_t;
 using FilterId = uint32_t;
 using InternalCpu = uint32_t; // how many cpus? could change to int8_t?
 
-enum BaseDataType {
-    BASE_DATA_TYPE_INT,
-    BASE_DATA_TYPE_STRING,
-    BASE_DATA_TYPE_DOUBLE,
-    BASE_DATA_TYPE_BOOLEAN
-};
+enum BaseDataType { BASE_DATA_TYPE_INT, BASE_DATA_TYPE_STRING, BASE_DATA_TYPE_DOUBLE, BASE_DATA_TYPE_BOOLEAN };
 namespace SysTuning {
 namespace TraceStreamer {
 struct ArgsData {

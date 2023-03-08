@@ -58,8 +58,9 @@ public:
     std::map<uint64_t, std::string> statusString_ = {
         {TASK_RUNNABLE, "R"},    {TASK_INTERRUPTIBLE, "S"}, {TASK_UNINTERRUPTIBLE, "D"}, {TASK_RUNNING, "Running"},
         {TASK_INTERRUPTED, "I"}, {TASK_TRACED, "T"},        {TASK_EXIT_DEAD, "X"},       {TASK_ZOMBIE, "Z"},
-        {TASK_KILLED, "I"},      {TASK_WAKEKILL, "R"},      {TASK_INVALID, "U"},         {TASK_CLONE, "I"},
-        {TASK_DK, "DK"},         {TASK_TRACED_KILL, "TK"},  {TASK_FOREGROUND, "R+"},     {TASK_MAX, "S"}};
+        {TASK_KILLED, "I"},      {TASK_WAKEKILL, "R"},      {TASK_PARKED, "P"},          {TASK_INVALID, "U"},
+        {TASK_CLONE, "I"},       {TASK_DK, "DK"},           {TASK_TRACED_KILL, "TK"},    {TASK_FOREGROUND, "R+"},
+        {TASK_MAX, "S"}};
     uint64_t traceStartTime_ = std::numeric_limits<uint64_t>::max();
     uint64_t traceEndTime_ = 0;
 
@@ -125,6 +126,8 @@ public:
     BioLatencySampleData bioLatencySampleData_;
     ClockSnapshotData clockSnapshotData_;
     DataSourceClockIdData dataSourceClockIdData_;
+    FrameSlice frameSliceData_;
+    FrameMaps frameMapsData_;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

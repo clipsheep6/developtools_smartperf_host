@@ -43,6 +43,15 @@ void IrqFilter::IrqHandlerExit(int64_t ts, uint32_t cpu, uint32_t ret)
     args.AppendArg(irqRet_, BASE_DATA_TYPE_STRING, irqRet);
     streamFilters_->sliceFilter_->IrqHandlerExit(ts, cpu, args);
 }
+
+void IrqFilter::IpiHandlerEntry(int64_t ts, uint32_t cpu, DataIndex nameId)
+{
+    streamFilters_->sliceFilter_->IpiHandlerEntry(ts, cpu, ipiCatalog_, nameId);
+}
+void IrqFilter::IpiHandlerExit(int64_t ts, uint32_t cpu)
+{
+    streamFilters_->sliceFilter_->IpiHandlerExit(ts, cpu);
+}
 void IrqFilter::SoftIrqEntry(int64_t ts, uint32_t cpu, uint32_t vec)
 {
     if (vec >= irqActionNames_.size()) {
@@ -58,6 +67,7 @@ void IrqFilter::SoftIrqExit(int64_t ts, uint32_t cpu, uint32_t vec)
     }
     ArgsSet args;
     args.AppendArg(irqRet_, BASE_DATA_TYPE_STRING, irqActionNameIds_[vec]);
+    args.AppendArg(irqVec_, BASE_DATA_TYPE_INT, vec);
     streamFilters_->sliceFilter_->SoftIrqExit(ts, cpu, args);
     return;
 }

@@ -47,9 +47,11 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
     }
 
     if (nextPid) {
-        CheckWakeupEvent(nextPid);
         auto lastRow = RowOfInternalTidInStateTable(nextPid);
         if (lastRow != INVALID_UINT64) {
+            // check if there are wakeup or waking events before
+            CheckWakeupEvent(nextPid);
+            lastRow = RowOfInternalTidInStateTable(nextPid);
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
         }
         index =
@@ -63,9 +65,10 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
     }
 
     if (prevPid) {
-        CheckWakeupEvent(prevPid);
         auto lastRow = RowOfInternalTidInStateTable(prevPid);
         if (lastRow != INVALID_UINT64) {
+            CheckWakeupEvent(prevPid);
+            lastRow = RowOfInternalTidInStateTable(prevPid);
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
             streamFilters_->processFilter_->AddCpuStateCount(prevPid);
             auto thread = traceDataCache_->GetThreadData(prevPid);
@@ -79,14 +82,13 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
     }
 }
 
-bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTid, bool iowait, DataIndex caller)
+bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTid, bool iowait, DataIndex caller, uint32_t delay)
 {
     if (!pidToSchedSliceRow.count(iTid)) {
         return false;
     }
     auto row = pidToSchedSliceRow.at(iTid);
     // ArgSet
-    auto delay = ts - traceDataCache_->GetSchedSliceData()->TimeStamData()[row] + traceDataCache_->GetSchedSliceData()->DursData()[row];
     ArgsSet args;
     args.AppendArg(ioWait_, BASE_DATA_TYPE_INT, iowait);
     args.AppendArg(caller_, BASE_DATA_TYPE_STRING, caller);
@@ -163,19 +165,12 @@ void CpuFilter::Clear()
     lastWakeUpMsg_.clear();
     internalTidToRowThreadState_.clear();
 }
-void CpuFilter::InsertWakeupEvent(uint64_t ts, uint64_t internalTid)
+// enter into runnable status
+void CpuFilter::InsertWakeupEvent(uint64_t ts, uint64_t internalTid, bool isWaking)
 {
-    uint64_t lastrow = RowOfInternalTidInStateTable(internalTid);
-    auto lastState = StateOfInternalTidInStateTable(internalTid);
-    if (lastState == TASK_RUNNING) {
-        return;
+    if (isWaking && !toRunnableTid_.count(internalTid)) {
+        toRunnableTid_[internalTid] = ts;
     }
-    if (lastrow != INVALID_UINT64) {
-        traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastrow), ts);
-    }
-    auto index = traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, INVALID_CPU,
-                                                                          internalTid, TASK_RUNNABLE);
-    RemberInternalTidInStateTable(internalTid, index, TASK_RUNNABLE);
 }
 uint64_t CpuFilter::RemberInternalTidInStateTable(uint64_t uid, uint64_t row, uint64_t state)
 {
@@ -206,6 +201,21 @@ uint64_t CpuFilter::StateOfInternalTidInStateTable(uint64_t uid) const
 
 void CpuFilter::CheckWakeupEvent(uint64_t internalTid)
 {
+    if (toRunnableTid_.count(internalTid)) {
+        uint64_t lastrow = RowOfInternalTidInStateTable(internalTid);
+        auto lastState = StateOfInternalTidInStateTable(internalTid);
+        if (lastState == TASK_RUNNING) {
+            toRunnableTid_.erase(internalTid);
+            return;
+        }
+        if (lastrow != INVALID_UINT64) {
+            traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastrow), toRunnableTid_.at(internalTid));
+        }
+        auto index = traceDataCache_->GetThreadStateData()->AppendThreadState(toRunnableTid_.at(internalTid), INVALID_TIME, INVALID_CPU,
+                                                                            internalTid, TASK_RUNNABLE);
+        RemberInternalTidInStateTable(internalTid, index, TASK_RUNNABLE);
+        toRunnableTid_.erase(internalTid);
+    }
     return;
 }
 } // namespace TraceStreamer

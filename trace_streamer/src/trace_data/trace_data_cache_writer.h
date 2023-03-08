@@ -91,6 +91,8 @@ public:
     BioLatencySampleData* GetBioLatencySampleData();
     ClockSnapshotData* GetClockSnapshotData();
     DataSourceClockIdData* GetDataSourceClockIdData();
+    FrameSlice* GetFrameSliceData();
+    FrameMaps* GetFrameMapsData();
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

@@ -15,12 +15,6 @@
 patch='patch'
 sed='sed'
 cp='cp'
-case "$OSTYPE" in
-  msys*)    patch='patch.exe' sed='sed.exe' cp="copy" ;;
-  darwin*)  out='../../out/macx' ;;
-  linux*)   out='../../out/linux'  ;;
-  *)        echo "other: $OSTYPE" ;;
-esac
 
 if [ ! -d "third_party" ];then
     mkdir third_party

@@ -215,6 +215,10 @@ void CallStack::SetDuration(size_t index, uint64_t timestamp)
 {
     durs_[index] = timestamp - timeStamps_[index];
 }
+void CallStack::SetDurationEx(size_t index, uint32_t dur)
+{
+    durs_[index] = dur;
+}
 
 void CallStack::SetIrqDurAndArg(size_t index, uint64_t timestamp, uint32_t argSetId)
 {
@@ -360,9 +364,14 @@ size_t Measure::AppendMeasureData(uint32_t type, uint64_t timestamp, int64_t val
     filterIdDeque_.emplace_back(filterId);
     typeDeque_.emplace_back(type);
     timeStamps_.emplace_back(timestamp);
+    durDeque_.emplace_back(INVALID_UINT64);
     return Size() - 1;
 }
 
+void Measure::SetDur(uint32_t row, uint64_t timestamp)
+{
+    durDeque_[row] = timestamp - timeStamps_[row];
+}
 size_t Raw::AppendRawData(uint32_t id, uint64_t timestamp, uint32_t name, uint32_t cpu, uint32_t internalTid)
 {
     ids_.emplace_back(id);
@@ -1960,6 +1969,121 @@ void DataSourceClockIdData::Finish()
 void DataSourceClockIdData::SetDataSourceClockId(DataSourceType source, uint32_t id)
 {
     dataSource2ClockIdMap_.at(source) = id;
+}
+size_t FrameSlice::AppendFrame(uint64_t ts, uint64_t ipid, uint64_t itid, uint32_t vsyncId, uint64_t callStackSliceRow)
+{
+    timeStamps_.emplace_back(ts);
+    ipids_.emplace_back(ipid);
+    internalTids_.emplace_back(itid);
+    vsyncIds_.emplace_back(vsyncId);
+    callStackRows_.emplace_back(callStackSliceRow);
+    endTss_.emplace_back(INVALID_UINT64);
+    dsts_.emplace_back(INVALID_UINT64);
+    ids_.emplace_back(ids_.size());
+    durs_.emplace_back(INVALID_UINT64);
+    types_.emplace_back(0);
+    flags_.emplace_back(INVALID_UINT8);
+    srcs_.emplace_back("");
+    return Size() - 1;
+}
+size_t FrameSlice::AppendFrame(uint64_t ts,
+                               uint64_t ipid,
+                               uint64_t itid,
+                               uint32_t vsyncId,
+                               uint64_t callStackSliceRow,
+                               uint64_t end,
+                               uint8_t type)
+{
+    auto row = AppendFrame(ts, ipid, itid, vsyncId, callStackSliceRow);
+    SetEndTime(row, end);
+    SetType(row, type);
+    durs_[row] = end - ts;
+    return row;
+}
+
+void FrameSlice::SetEndTime(uint64_t row, uint64_t end)
+{
+    endTss_[row] = end;
+}
+void FrameSlice::SetType(uint64_t row, uint8_t type)
+{
+    types_[row] = type;
+}
+void FrameSlice::SetDst(uint64_t row, uint64_t dst)
+{
+    dsts_[row] = dst;
+}
+
+void FrameSlice::SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices)
+{
+    std::string s = "";
+    for (auto&& i : fromSlices) {
+        s += std::to_string(i) + ",";
+    }
+    s.pop_back();
+    srcs_[row] = s;
+}
+const std::deque<uint64_t> FrameSlice::Ipids() const
+{
+    return ipids_;
+}
+const std::deque<uint32_t> FrameSlice::VsyncIds() const
+{
+    return vsyncIds_;
+}
+const std::deque<uint64_t> FrameSlice::CallStackRows() const
+{
+    return callStackRows_;
+}
+const std::deque<uint64_t> FrameSlice::EndTss() const
+{
+    return endTss_;
+}
+const std::deque<uint64_t> FrameSlice::Dsts() const
+{
+    return dsts_;
+}
+const std::deque<uint64_t> FrameSlice::Durs() const
+{
+    return durs_;
+}
+const std::deque<uint8_t> FrameSlice::Types() const
+{
+    return types_;
+}
+const std::deque<uint8_t> FrameSlice::Flags() const
+{
+    return flags_;
+}
+
+const std::deque<std::string>& FrameSlice::Srcs() const
+{
+    return srcs_;
+}
+void FrameSlice::UpdateCallStackSliceRow(uint64_t row, uint64_t callStackSliceRow)
+{
+    callStackRows_[row] = callStackSliceRow;
+}
+void FrameSlice::SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur)
+{
+    durs_[row] = ts - timeStamps_[row];
+    flags_[row] = durs_[row] > expectDur ? 1 : 0;
+}
+size_t FrameMaps::AppendNew(uint64_t src, uint64_t dst)
+{
+    timeStamps_.emplace_back(0);
+    ids_.emplace_back(ids_.size());
+    srcs_.push_back(src);
+    dsts_.push_back(dst);
+    return Size() - 1;
+}
+const std::deque<uint64_t>& FrameMaps::SrcIndexs() const
+{
+    return srcs_;
+}
+const std::deque<uint64_t>& FrameMaps::DstIndexs() const
+{
+    return dsts_;
 }
 } // namespace TraceStdtype
 } // namespace SysTuning

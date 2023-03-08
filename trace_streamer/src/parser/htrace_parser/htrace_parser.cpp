@@ -165,9 +165,9 @@ void HtraceParser::FilterData(HtraceDataSegment& seg)
         processParser_->Parse(seg.processInfo, seg.timeStamp);
     } else if (seg.dataType == DATA_SOURCE_TYPE_DISKIO) {
         diskIOParser_->Parse(seg.diskIOInfo, seg.timeStamp);
-    } else if (seg.dataType == DATA_SOURCE_TYPE_HISYSEVENT) {
+    } else if (seg.dataType == DATA_SOURCE_TYPE_HISYSEVENT) { //
         hisyseventParser_->Parse(seg.hisyseventInfo, seg.timeStamp);
-    } else if (seg.dataType == DATA_SOURCE_TYPE_HISYSEVENT_CONFIG) {
+    } else if (seg.dataType == DATA_SOURCE_TYPE_HISYSEVENT_CONFIG) { //
         hisyseventParser_->Parse(seg.hisyseventConfig, seg.timeStamp);
     }
     if (supportThread_) {
