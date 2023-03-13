@@ -22,7 +22,7 @@ import {SmapsRender, SmapsStruct} from "../../database/ui-worker/ProcedureWorker
 import {Utils} from "../trace/base/Utils.js";
 import {EmptyRender} from "../../database/ui-worker/ProcedureWorkerCPU.js";
 
-export class SmpsChart {
+export class SmapsChart {
     private trace: SpSystemTrace;
 
     constructor(trace: SpSystemTrace) {
@@ -52,7 +52,7 @@ export class SmpsChart {
         smapsRow.supplier = () => new Promise<Array<any>>((resolve) => resolve([]));
         smapsRow.onThreadHandler = (useCache) => {
             smapsRow.canvasSave(this.trace.canvasPanelCtx!);
-            if(smapsRow.expansion){
+            if (smapsRow.expansion) {
                 this.trace.canvasPanelCtx?.clearRect(0, 0, smapsRow.frame.width, smapsRow.frame.height);
             } else {
                 (renders["empty"] as EmptyRender).renderMainThread(
@@ -70,7 +70,7 @@ export class SmpsChart {
         return smapsRow;
     }
 
-    private initRows = async (nodeRow: TraceRow<BaseStruct>, rowName:string ) => {
+    private initRows = async (nodeRow: TraceRow<BaseStruct>, rowName: string) => {
         let traceRow = TraceRow.skeleton<SmapsStruct>();
         traceRow.rowParentId = `smapsRow`
         traceRow.rowHidden = !nodeRow.expansion
@@ -93,23 +93,23 @@ export class SmpsChart {
         traceRow.supplier = () => querySmapsData(columnName)
         let maxList = await querySmapsDataMax(columnName);
         let maxValue = maxList[0].max_value;
-        traceRow.focusHandler = (ev)=>{
-            this.trace?.displayTip(traceRow, SmapsStruct.hoverSmapsStruct, `<span>${Utils.getBinaryByteWithUnit((SmapsStruct.hoverSmapsStruct?.value||0) * 1024)}</span>`);
+        traceRow.focusHandler = (ev) => {
+            this.trace?.displayTip(traceRow, SmapsStruct.hoverSmapsStruct, `<span>${Utils.getBinaryByteWithUnit((SmapsStruct.hoverSmapsStruct?.value || 0) * 1024)}</span>`);
         };
         traceRow.onThreadHandler = (useCache) => {
             let context = traceRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
-            traceRow.canvasSave( context);
+            traceRow.canvasSave(context);
             (renders["smaps"] as SmapsRender).renderMainThread(
                 {
                     context: context,
                     useCache: useCache,
                     type: `smaps`,
                     rowName: columnName,
-                    maxValue:maxValue
+                    maxValue: maxValue
                 },
                 traceRow
             );
-            traceRow.canvasRestore( context);
+            traceRow.canvasRestore(context);
         }
         this.trace.rowsEL?.appendChild(traceRow)
     }

@@ -49,6 +49,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     static ROW_TYPE_FPS = "fps"
     static ROW_TYPE_NATIVE_MEMORY = "native-memory"
     static ROW_TYPE_HIPERF = "hiperf"
+    static ROW_TYPE_DELIVER_INPUT_EVENT = "DeliverInputEvent"
     static ROW_TYPE_HIPERF_CPU = "hiperf-cpu"
     static ROW_TYPE_HIPERF_PROCESS = "hiperf-process"
     static ROW_TYPE_HIPERF_THREAD = "hiperf-thread"
@@ -81,6 +82,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     static ROW_TYPE_CLOCK = "clock"
     static ROW_TYPE_IRQ_GROUP = "irq-group"
     static ROW_TYPE_IRQ = "irq"
+    static ROW_TYPE_JANK = "janks"
     static range: TimeRange | undefined | null;
     static rangeSelectObject: RangeSelectStruct | undefined
     public obj: TraceRowObject<any> | undefined | null;
@@ -703,6 +705,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                             if (this.onComplete) {
                                 this.onComplete();
                             }
+                            window.publish(window.SmartEvent.UI.TraceRowComplete, this);
                             this.isComplete = true;
                             this.isLoading = false;
                             this.draw(false);

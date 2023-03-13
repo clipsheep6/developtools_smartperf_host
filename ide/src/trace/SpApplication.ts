@@ -37,12 +37,14 @@ import "./component/SpRecordTrace.js";
 import "./component/SpMetrics.js";
 import "./component/SpInfoAndStas.js";
 import "./component/trace/base/TraceRow.js";
+import "./component/schedulingAnalysis/SpSchedulingAnalysis.js"
 import {info, log} from "../log/Log.js";
 import {LitMainMenuGroup} from "../base-ui/menu/LitMainMenuGroup.js";
 import {LitMainMenuItem} from "../base-ui/menu/LitMainMenuItem.js";
 import {LitIcon} from "../base-ui/icon/LitIcon.js";
 import {Cmd} from "../command/Cmd.js";
 import {TraceRow} from "./component/trace/base/TraceRow.js";
+import {SpSchedulingAnalysis} from "./component/schedulingAnalysis/SpSchedulingAnalysis.js";
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -342,6 +344,7 @@ export class SpApplication extends BaseElement {
                 </sp-system-trace>
                 <sp-record-trace style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 102" id="sp-record-trace">
                 </sp-record-trace>
+                <sp-scheduling-analysis style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;" id="sp-scheduling-analysis"></sp-scheduling-analysis>
                 <sp-metrics style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;z-index: 97" id="sp-metrics">
                 </sp-metrics>
                 <sp-query-sql style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;z-index: 98" id="sp-query-sql">
@@ -363,10 +366,10 @@ export class SpApplication extends BaseElement {
         let spMetrics = this.shadowRoot!.querySelector<SpMetrics>("#sp-metrics") as SpMetrics // new SpMetrics();
         let spQuerySQL = this.shadowRoot!.querySelector<SpQuerySQL>("#sp-query-sql") as SpQuerySQL // new SpQuerySQL();
         let spInfoAndStats = this.shadowRoot!.querySelector<SpInfoAndStats>("#sp-info-and-stats") as SpInfoAndStats // new SpInfoAndStats();
-
         let spSystemTrace = this.shadowRoot!.querySelector<SpSystemTrace>("#sp-system-trace")
         this.spHelp = this.shadowRoot!.querySelector<SpHelp>("#sp-help")
         let spRecordTrace = this.shadowRoot!.querySelector<SpRecordTrace>("#sp-record-trace")
+        let spSchedulingAnalysis = this.shadowRoot!.querySelector<SpSchedulingAnalysis>("#sp-scheduling-analysis") as SpSchedulingAnalysis
         let appContent = this.shadowRoot?.querySelector('#app-content') as HTMLDivElement;
         let mainMenu = this.shadowRoot?.querySelector('#main-menu') as LitMainMenu
         let menu = mainMenu.shadowRoot?.querySelector('.menu-button') as HTMLDivElement
@@ -374,7 +377,8 @@ export class SpApplication extends BaseElement {
         let litSearch = this.shadowRoot?.querySelector('#lit-search') as LitSearch
         let search = this.shadowRoot?.querySelector('.search-container') as HTMLElement
         let sidebarButton: HTMLDivElement | undefined | null = this.shadowRoot?.querySelector('.sidebar-button')
-        let childNodes = [spSystemTrace, spRecordTrace, spWelcomePage, spMetrics, spQuerySQL, spInfoAndStats, this.spHelp]
+        let childNodes = [spSystemTrace, spRecordTrace, spWelcomePage, spMetrics, spQuerySQL,spSchedulingAnalysis, spInfoAndStats, this.spHelp]
+        window.subscribe(window.SmartEvent.UI.MenuTrace,()=>showContent(spSystemTrace!))
         litSearch.addEventListener("focus", () => {
             spSystemTrace!.keyboardEnable = false
         })
@@ -726,6 +730,9 @@ export class SpApplication extends BaseElement {
 
         function openTraceFile(ev: any, isClickHandle?: boolean) {
             info("openTraceFile")
+            spSystemTrace!.clearPointPair();
+            that.freshMenuDisable(true)
+            SpSchedulingAnalysis.resetCpu();
             if (that.vs && isClickHandle) {
                 Cmd.openFileDialog().then((res: string) => {
                     if (res != "") {
@@ -1064,6 +1071,10 @@ export class SpApplication extends BaseElement {
         let mainMenu = this.shadowRoot?.querySelector('#main-menu') as LitMainMenu
         // @ts-ignore
         mainMenu.menus[0].children[0].disabled = disable
+        if(mainMenu.menus!.length >= 2){
+            // @ts-ignore
+            mainMenu.menus[1].children.map((it) => it.disabled = disable)
+        }
         mainMenu.menus = mainMenu.menus;
     }
 }

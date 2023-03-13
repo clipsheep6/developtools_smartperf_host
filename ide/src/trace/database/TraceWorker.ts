@@ -91,7 +91,7 @@ let convertJSON = ()=>{
     str = str.substring(str.indexOf("\n") + 1);
     if (!str) {
     }else{
-        let parse = JSON.parse(str);
+        let parse = JSON.parse(translateJsonString(str));
         let columns = parse.columns;
         let values = parse.values;
         for (let i = 0; i < values.length; i++) {

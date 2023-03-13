@@ -166,9 +166,8 @@ export class TimerShaftElement extends BaseElement {
         this.timeTotalEL = this.shadowRoot?.querySelector('.time-total')
         this.timeOffsetEL = this.shadowRoot?.querySelector('.time-offset')
         this.collecBtn = this.shadowRoot?.querySelector('.time-collect')
-        procedurePool.timelineChange = (a: any) => {
-            this.rangeChangeHandler?.(a);
-        }
+        procedurePool.timelineChange = (a: any) => this.rangeChangeHandler?.(a)
+        window.subscribe(window.SmartEvent.UI.TimeRange,(b)=> this.setRangeNS(b.startNS, b.endNS))
     }
 
     connectedCallback() {

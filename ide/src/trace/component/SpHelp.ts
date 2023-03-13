@@ -160,6 +160,15 @@ export class SpHelp extends BaseElement {
                                 + that.dark
                                 + " width=\"100%\" height=\"100%\"></object>"
                         }
+                    },
+                    {
+                        title: "sdk抓取和展示说明", icon: "", clickHandler: function (item: MenuItem) {
+                            that.appContent!.innerHTML =
+                                "<object type=\"text/html\" data="
+                                + "/application/doc/sdk_capture_display.html?"
+                                + that.dark
+                                + " width=\"100%\" height=\"100%\"></object>"
+                        }
                     }
                 ]
             },

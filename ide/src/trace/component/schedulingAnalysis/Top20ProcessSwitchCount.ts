@@ -1,0 +1,129 @@
+/*
+ * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+import {BaseElement, element} from "../../../base-ui/BaseElement.js";
+import {LitTable} from "../../../base-ui/table/lit-table.js";
+import {procedurePool} from "../../database/Procedure.js";
+import {info} from "../../../log/Log.js";
+import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
+import "../../../base-ui/progress-bar/LitProgressBar.js"
+import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+
+@element('top20-process-switch-count')
+export class Top20ProcessSwitchCount extends BaseElement {
+
+    traceChange:boolean = false;
+    private table:LitTable | null | undefined
+    private pie:LitChartPie | null | undefined
+    private progress:LitProgressBar | null | undefined;
+
+    initElements(): void {
+        this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
+        this.table = this.shadowRoot!.querySelector<LitTable>("#tb-process-switch-count")
+        this.pie = this.shadowRoot!.querySelector<LitChartPie>("#pie")
+    }
+
+    init(){
+        if(!this.traceChange){
+            if(this.table!.recycleDataSource.length > 0){
+                this.table?.reMeauseHeight();
+            }
+            return;
+        }
+        this.traceChange = false;
+        this.progress!.loading = true
+        this.queryLogicWorker("scheduling-Process SwitchCount","query Process Switch Count Analysis Time:",(res)=>{
+            this.table!.recycleDataSource = res;
+            this.table?.reMeauseHeight();
+            this.pie!.config = {
+                appendPadding: 10,
+                data:res,
+                angleField: 'switchCount',
+                colorField: 'pid',
+                radius: 0.8,
+                tip:undefined,
+                label: {
+                    type: 'outer',
+                },
+                interactions: [
+                    {
+                        type: 'element-active',
+                    },
+                ],
+            }
+            this.progress!.loading = false
+        })
+    }
+
+    clearData(){
+        this.traceChange = true;
+        this.pie!.dataSource = []
+        this.table!.recycleDataSource = []
+    }
+
+    queryLogicWorker(option:string,log:string,handler:(res:any) => void){
+        let time = new Date().getTime();
+        procedurePool.submitWithName("logic0", option, {}, undefined, handler)
+        let durTime = new Date().getTime() - time;
+        info(log, durTime)
+    }
+
+    initHtml(): string {
+        return `
+        <style>
+        :host {
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-background5,#F6F6F6);
+        }
+        .tb_switch_count{
+            flex: 1;        
+            overflow: auto ;
+            border-radius: 5px;
+            border: solid 1px #e0e0e0;
+            margin: 15px;
+            padding: 5px 15px
+        }
+        .pie-chart{
+            display: flex;
+            box-sizing: border-box;
+            width: 500px;
+            height: 500px;
+        }
+        .root{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: row;
+            box-sizing: border-box;
+        }
+        </style>
+        <lit-progress-bar id="loading" style="height: 1px;width: 100%" loading></lit-progress-bar>
+        <div class="root">
+            <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
+            <div class="tb_switch_count" >
+                <lit-table id="tb-process-switch-count" style="height: auto">
+                    <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start"></lit-table-column>
+                    <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
+                    <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
+                    <lit-table-column width="1fr" title="sched_switch count" data-index="switchCount" key="switchCount" align="flex-start"></lit-table-column>        
+                </lit-table>
+            </div>
+        </div>
+        
+        `;
+    }
+}

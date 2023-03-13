@@ -64,6 +64,7 @@ export class SelectionParam {
     anomalyEnergy: Array<string> = []
     smapsType:Array<string> = [];
     promiseList:Array<Promise<any>> = []
+    jankFramesData:Array<any> = []
 }
 
 export class BoxJumpParam {

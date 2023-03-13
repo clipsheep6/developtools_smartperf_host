@@ -14,8 +14,8 @@
  */
 
 import {SpSystemTrace} from "../SpSystemTrace.js";
-import {queryCpuData, queryCpuMax, threadPool} from "../../database/SqlLite.js";
-import {info, trace} from "../../../log/Log.js";
+import {queryCpuData, queryCpuMax} from "../../database/SqlLite.js";
+import {info} from "../../../log/Log.js";
 import {TraceRow} from "../trace/base/TraceRow.js";
 import {procedurePool} from "../../database/Procedure.js";
 import {CpuRender, CpuStruct} from "../../database/ui-worker/ProcedureWorkerCPU.js";
@@ -57,6 +57,7 @@ export class SpCpuChart {
                             context: context,
                             useCache: useCache,
                             type: `cpu-data-${i1}`,
+                            translateY:traceRow.translateY,
                         },
                         traceRow
                     );
