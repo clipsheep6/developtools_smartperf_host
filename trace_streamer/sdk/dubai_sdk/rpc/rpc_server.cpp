@@ -89,6 +89,16 @@ int RpcServer::WasmSqlQuery(const uint8_t* data, size_t len, uint8_t* out, int o
     int ret = ts_->SearchDatabase(sql, out, outLen);
     return ret;
 }
+
+int RpcServer::WasmGetPluginNameWithCallback(const uint8_t* data, size_t len) const
+{
+    std::string pluginName(reinterpret_cast<const char*>(data), len);
+    TS_LOGI("WASM pluginName(%zu:%s)", len, pluginName.c_str());
+
+    int ret = ts_->sdkDataParser_->GetPluginName(pluginName);
+    return ret;
+}
+
 int RpcServer::WasmSqlQueryWithCallback(const uint8_t* data, size_t len, ResultCallBack callback) const
 {
     ts_->SetCancel(false);

@@ -317,6 +317,11 @@ FrameMaps* TraceDataCacheWriter::GetFrameMapsData()
 {
     return &frameMapsData_;
 }
+
+GPUSlice* TraceDataCacheWriter::GetGPUSliceData()
+{
+    return &gpuSliceData_;
+}
 void TraceDataCacheWriter::Clear()
 {
     rawData_.Clear();

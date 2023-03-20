@@ -21,6 +21,8 @@ with_libunwind = false
 is_sdkdemo = false
 is_dubai_sdk = false
 is_sdkdemo_test = false
+is_spb = false
+is_pbreader = false
 target_cpu = "x64"
 declare_args() {
   ar = "ar"
@@ -33,6 +35,8 @@ declare_args() {
   testonly = false
   is_fuzz = false
   is_macx = false
+  is_spb = false
+  is_pbreader = false
   target = "trace_streamer"
 }
 if (target_os == "linux") {
@@ -68,6 +72,12 @@ if (target == "wasm") {
   testonly = true
 } else if (target == "trace_streamer" || target == "streamer") {
   print("build " + target)
+} else if (target == "spb") {
+  is_linux = true
+  is_spb = true
+} else if (target == "pbreader") {
+  is_linux = true
+  is_pbreader = true
 } else {
   print("unknown target " + target_os)
   exit(-1)

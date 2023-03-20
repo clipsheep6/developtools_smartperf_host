@@ -142,8 +142,8 @@ bool BytraceEventParser::SchedSwitchEvent(const ArgsMap& args, const BytraceLine
     if (!threadState.IsValid()) {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_SWITCH, STAT_EVENT_DATA_INVALID);
     }
-    auto nextInternalTid = 0;
-    auto uprevtid = 0;
+    uint32_t nextInternalTid = 0;
+    uint32_t uprevtid = 0;
     if (streamFilters_->processFilter_->isThreadNameEmpty(nextPidValue.value())) {
         nextInternalTid =
             streamFilters_->processFilter_->UpdateOrCreateThreadWithName(line.ts, nextPidValue.value(), nextCommStr);
@@ -260,16 +260,13 @@ bool BytraceEventParser::SchedWakingEvent(const ArgsMap& args, const BytraceLine
         return false;
     }
     std::optional<uint32_t> wakePidValue = base::StrToUInt32(args.at("pid"));
-    auto wakePidStr = std::string_view(args.at("comm"));
     if (!wakePidValue.has_value()) {
         TS_LOGD("Failed to convert wake_pid");
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_WAKING, STAT_EVENT_DATA_INVALID);
         return false;
     }
     auto instants = traceDataCache_->GetInstantsData();
-    DataIndex wakePidStrIndex = traceDataCache_->GetDataIndex(wakePidStr);
-    InternalTid internalTid = streamFilters_->processFilter_->UpdateOrCreateThreadWithNameIndex(
-        line.ts, wakePidValue.value(), wakePidStrIndex);
+    InternalTid internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(line.ts, wakePidValue.value());
 
     DataIndex wakeByPidStrIndex = traceDataCache_->GetDataIndex(line.task);
     InternalTid internalTidWakeup =
@@ -544,7 +541,8 @@ bool BytraceEventParser::IrqHandlerExitEvent(const ArgsMap& args, const BytraceL
     }
     traceDataCache_->GetStatAndInfo()->IncreaseStat(TRACE_EVENT_IRQ_HANDLER_EXIT, STAT_EVENT_RECEIVED);
     uint32_t ret = (args.at("ret") == "handled") ? 1 : 0;
-    streamFilters_->irqFilter_->IrqHandlerExit(line.ts, line.cpu, ret);
+    auto irq = base::StrToUInt32(args.at("irq"));
+    streamFilters_->irqFilter_->IrqHandlerExit(line.ts, line.cpu, irq.value(), ret);
     return true;
 }
 bool BytraceEventParser::SoftIrqRaiseEvent(const ArgsMap& args, const BytraceLine& line) const
@@ -694,7 +692,7 @@ void BytraceEventParser::FilterAllEventsTemp()
             }
         } else {
             traceDataCache_->GetStatAndInfo()->IncreaseStat(TRACE_EVENT_OTHER, STAT_EVENT_NOTSUPPORTED);
-            TS_LOGI("UnRecognizable event name:%s", event->line.eventName.c_str());
+            TS_LOGD("UnRecognizable event name:%s", event->line.eventName.c_str());
         }
         itor->reset();
     }
@@ -742,7 +740,7 @@ void BytraceEventParser::BeginFilterEvents(EventInfo* event)
         }
     } else {
         traceDataCache_->GetStatAndInfo()->IncreaseStat(TRACE_EVENT_OTHER, STAT_EVENT_NOTSUPPORTED);
-        TS_LOGI("UnRecognizable event name:%s", event->line.eventName.c_str());
+        TS_LOGD("UnRecognizable event name:%s", event->line.eventName.c_str());
     }
 }
 

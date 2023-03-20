@@ -614,7 +614,7 @@ bool HtraceParser::InitProfilerTraceFileHeader()
         return false;
     }
     uint8_t buffer[PACKET_HEADER_LENGTH];
-    memset_s(buffer, PACKET_HEADER_LENGTH, 0, PACKET_HEADER_LENGTH);
+    (void)memset_s(buffer, PACKET_HEADER_LENGTH, 0, PACKET_HEADER_LENGTH);
     int i = 0;
     for (auto it = packagesBuffer_.begin(); it != packagesBuffer_.begin() + PACKET_HEADER_LENGTH; ++it, ++i) {
         buffer[i] = *it;

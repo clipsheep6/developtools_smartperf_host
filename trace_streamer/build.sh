@@ -72,11 +72,17 @@ if [ "$#" -ne "0" ];then
     if [ "$1" == "sdkdemo" ];then
         target='sdkdemo'
     fi
+    if [ "$1" == "pbreader" ];then
+        target='pbreader'
+    fi
     if [ "$1" == "dubaisdk" ];then
         target='dubaisdk'
     fi
     if [ "$1" == "sdkdemotest" ];then
         target='sdkdemotest'
+    fi
+    if [ "$1" == "spb" ];then
+        target='spb'
     fi
 fi
 if [ $target == "wasm" ] && [ $target_os == "windows" ];then
@@ -145,7 +151,7 @@ if [ ! -f "prebuilts/$gn_path/gn" ];then
 fi
 if [ ! -f "prebuilts/$gn_path/ninja" ];then
 	echo "you may get ninja for $target_os and place it in prebuilts/$target_os"
-	echo "the file can be get at https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja, you need to download it manually"
+	ehco "the file can be get at https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja, you need to download it manually"
     #wget "https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja"
 	#wget https://gitee.com/su_ze1688/public_tools/raw/master/gn/$target_os/ninja
     #mv ninja prebuilts/$target_os/
@@ -158,7 +164,7 @@ if [ $target == 'test' ] || [ $target == 'fuzz' ] || [ $target='wasm' ] || [ $ta
 else
     target_dir=$target_os
 fi
-if [ $target == 'trace_streamer' ] || [ $target == 'trace' ];then
+if [ $target == 'trace_streamer' ] || [ $target == 'trace' ] || [ $target == 'spb' ]|| [ $target == 'pbreader' ];then
     target_dir=$target_os
 fi
 echo "target_dir:" $target_dir
