@@ -102,6 +102,7 @@ export class SpSystemTrace extends BaseElement {
     canvasPanel: HTMLCanvasElement | null | undefined; //绘制取消收藏后泳道图
     canvasPanelCtx: CanvasRenderingContext2D | undefined | null;
     linkNodes: PairPoint[][] = [];
+    public currentClickRow: HTMLDivElement | undefined | null;
 
     addPointPair(a: PairPoint, b: PairPoint) {
         this.linkNodes.push([a, b])
@@ -186,6 +187,25 @@ export class SpSystemTrace extends BaseElement {
             this.timerShaftEL?.displayCollect(this.collectRows.length !== 0)
             this.refreshFavoriteCanvas()
             this.refreshCanvas(true);
+            // 收藏夹元素拖动排序功能
+            this.currentClickRow = null;
+            currentRow.setAttribute("draggable", "true");
+            currentRow.addEventListener("dragstart", () => {
+                this.currentClickRow = currentRow;
+            });
+            currentRow.addEventListener("dragover", (event: any) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+            });
+            currentRow.addEventListener("drop", () => {
+                if (this.currentClickRow !== currentRow) {
+                    this.favoriteRowsEL?.insertBefore(this.currentClickRow!, currentRow);
+                    this.refreshFavoriteCanvas();
+                }
+            });
+            currentRow.addEventListener("dragend", () => {
+                this.currentClickRow = null;
+            });
         })
         SpSystemTrace.scrollViewWidth = this.getScrollWidth();
         this.rangeSelect.selectHandler = (rows, refreshCheckBox) => {
