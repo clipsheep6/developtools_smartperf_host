@@ -1803,7 +1803,7 @@ export class SpSystemTrace extends BaseElement {
         <div class="container">
             <timer-shaft-element class="timer-shaft" style="position: relative;top: 0"></timer-shaft-element>
             <div class="rows-pane" style="position: relative;display: block;flex-direction: column;overflow-x: hidden;">
-                <div class="favorite-rows" ondragstart="return false">
+                <div class="favorite-rows">
                     <canvas id="canvas-panel-favorite" class="panel-canvas-favorite" ondragstart="return false"></canvas>
                 </div>
                 <canvas id="canvas-panel" class="panel-canvas" ondragstart="return false"></canvas>
