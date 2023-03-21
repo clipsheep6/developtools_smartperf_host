@@ -200,11 +200,9 @@ export class SpSystemTrace extends BaseElement {
             currentRow.addEventListener("drop", (ev: any) => {
                 if (this.currentClickRow != null && this.currentClickRow !== currentRow) {
                     let rect = currentRow.getBoundingClientRect();
-                    if (ev.clientY >= rect.top && ev.clientY < rect.top + rect.height / 2) { //上面
-                        console.log("向上移动");
+                    if (ev.clientY >= rect.top && ev.clientY < rect.top + rect.height / 2) { //向上移动
                         this.favoriteRowsEL?.insertBefore(this.currentClickRow!, currentRow);
-                    } else if (ev.clientY <= rect.bottom && ev.clientY > rect.top + rect.height / 2) { //下面
-                        console.log("向下移动");
+                    } else if (ev.clientY <= rect.bottom && ev.clientY > rect.top + rect.height / 2) { //向下移动
                         this.favoriteRowsEL?.insertBefore(currentRow, this.currentClickRow!);
                     }
                     this.refreshFavoriteCanvas();
