@@ -45,7 +45,6 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
     } else {
         cpuToRowSched_.insert(std::make_pair(cpu, RowPos{nextPid, index}));
     }
-
     if (nextPid) {
         auto lastRow = RowOfInternalTidInStateTable(nextPid);
         if (lastRow != INVALID_UINT64) {
@@ -59,10 +58,12 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
         if (cpuToRowThreadState_.find(cpu) == cpuToRowThreadState_.end()) {
             cpuToRowThreadState_.insert(std::make_pair(cpu, index));
         } else {
-            if (!traceDataCache_->GetThreadStateData()->End(static_cast<TableRowId>(cpuToRowThreadState_.at(cpu)),
-                                                            ts)) {
-                ClearInternalTidInStateTable(
-                    traceDataCache_->GetThreadStateData()->ItidsData()[cpuToRowThreadState_.at(cpu)]);
+            if (traceDataCache_->GetThreadStateData()->ItidsData()[cpuToRowThreadState_.at(cpu)] != prevPid) {
+                if (!traceDataCache_->GetThreadStateData()->End(static_cast<TableRowId>(cpuToRowThreadState_.at(cpu)),
+                                                                ts)) {
+                    ClearInternalTidInStateTable(
+                        traceDataCache_->GetThreadStateData()->ItidsData()[cpuToRowThreadState_.at(cpu)]);
+                }
             }
             cpuToRowThreadState_.at(cpu) = index;
         }
@@ -76,7 +77,7 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
             streamFilters_->processFilter_->AddCpuStateCount(prevPid);
             auto thread = traceDataCache_->GetThreadData(prevPid);
-            if (thread){
+            if (thread && !thread->switchCount_){
                 thread->switchCount_ = 1;
             }
         }
