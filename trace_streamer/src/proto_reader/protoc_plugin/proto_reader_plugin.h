@@ -91,8 +91,9 @@ private:
     inline std::string GetDescriptorName(const T* descriptor)
     {
         if (!package_.empty()) {
-            return descriptor->full_name().substr(descriptor->full_name().find(package_ + ".") +
-                                                  sizeof(package_ + "."));
+            auto strTmp = package_ + ".";
+            return descriptor->full_name().substr(descriptor->full_name().find(strTmp) +
+                                                  sizeof(strTmp));
         } else {
             return descriptor->full_name();
         }

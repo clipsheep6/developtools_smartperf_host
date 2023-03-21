@@ -114,13 +114,8 @@ bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint64_t itid)
     // from now on, maybe we do not known where renderSlice is
     if (pos->second->dstFrameSliceId_ == INVALID_UINT64) {
         TS_LOGD("render service not run yet");
-        frame->second.erase(pos);
-    } else {
-        if (pos->second->dstFrameSliceId_ != INVALID_UINT64) {
-            // dstFrameSliceId has been set
-            frame->second.erase(pos);
-        }
     }
+    frame->second.erase(pos);
     return true;
 }
 bool FrameFilter::BeginRSTransactionData(uint64_t ts, uint64_t itid, uint32_t franeNum)

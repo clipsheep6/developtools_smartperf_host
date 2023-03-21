@@ -246,9 +246,7 @@ int ThreadStateTable::Cursor::Column(int col) const
             sqlite3_result_int64(context_, static_cast<sqlite3_int64>(threadStateObj_.TimeStamsData()[CurrentRow()]));
             break;
         case DUR:
-            if (static_cast<sqlite3_int64>(threadStateObj_.DursData()[CurrentRow()]) != INVALID_TIME) {
-                sqlite3_result_int64(context_, static_cast<sqlite3_int64>(threadStateObj_.DursData()[CurrentRow()]));
-            }
+            sqlite3_result_int64(context_, static_cast<sqlite3_int64>(threadStateObj_.DursData()[CurrentRow()]));
             break;
         case CPU:
             if (threadStateObj_.CpusData()[CurrentRow()] != INVALID_CPU) {

@@ -265,7 +265,6 @@ bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string& args, c
     TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
     std::smatch match;
     if (std::regex_search(args, match, transFlagPattern_)) {
-        std::string flag1 = match.str(1);
         std::string flag2 = match.str(2);
         auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
         return streamFilters_->frameFilter_->BeginRSTransactionData(line.ts, iTid, base::StrToUInt32(flag2).value());

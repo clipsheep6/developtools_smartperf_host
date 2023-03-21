@@ -114,7 +114,7 @@ bool ProtoReaderBase::ParseLengthDelimitedValue(ParseDataAreaResult& result,
         return true;
     }
     if (length > kMaxMessageLength) {
-        TS_LOGD("Skip this data, because it is too large. length: %d", dataAreaId, length);
+        TS_LOGD("Skip this data, because it is too large. length: %d", length);
         result.status = SKIP;
         return true;
     }
