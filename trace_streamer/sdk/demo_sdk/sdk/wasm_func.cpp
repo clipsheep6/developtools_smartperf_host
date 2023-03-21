@@ -35,6 +35,8 @@ uint8_t* g_reqBuf;
 uint32_t g_reqBufferSize;
 uint8_t* g_traceRangeBuf;
 uint32_t g_traceRangeSize;
+uint8_t* g_PluginNameBuf;
+uint32_t g_PluginNameSize;
 
 void QueryResultCallback(const std::string& jsonResult, int finish, int isConfig)
 {
@@ -56,15 +58,16 @@ EMSCRIPTEN_KEEPALIVE uint8_t* Init(QueryResultCallbackFunction queryResultCallba
 }
 
 // Get PluginName
-EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_PluginName(const uint8_t* pluginName, int len)
+EMSCRIPTEN_KEEPALIVE uint8_t* InitPluginName(uint32_t reqBufferSize)
 {
-    g_wasmTraceStreamer.ts_->sdkDataParser_->GetPluginName(pluginName, len);
-    return 0;
+    g_PluginNameBuf = new uint8_t[reqBufferSize];
+    g_PluginNameSize = reqBufferSize;
+    return g_PluginNameBuf;
 }
-EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_PluginNameEx(int len)
+
+EMSCRIPTEN_KEEPALIVE int TraceStreamerGetPluginNameEx(int pluginLen)
 {
-    g_wasmTraceStreamer.ts_->sdkDataParser_->GetPluginName(g_reqBuf, len);
-    return 0;
+    return g_wasmTraceStreamer.WasmGetPluginNameWithCallback(g_PluginNameBuf, pluginLen);
 }
 
 EMSCRIPTEN_KEEPALIVE uint8_t* InitTraceRange(TraceRangeCallbackFunction traceRangeCallbackFunction,

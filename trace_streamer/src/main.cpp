@@ -52,7 +52,7 @@ void ExportStatusToLog(const std::string& dbPath, TraceParserStatus status)
     std::string path = dbPath + ".ohos.ts";
     std::ofstream out(path, std::ios_base::trunc);
     out << (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()))
-               .count()
+        .count()
         << ":" << status << std::endl;
     using std::chrono::system_clock;
 

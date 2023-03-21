@@ -26,8 +26,15 @@ class FrameFilter : private FilterBase {
 public:
     FrameFilter(TraceDataCache* dataCache, const TraceStreamerFilters* filter);
     ~FrameFilter() override;
-    void BeginVsyncEvent(uint64_t ts, uint64_t ipid, uint64_t itid, uint64_t expectStart, uint64_t expectEnd, uint32_t vsyncId, uint32_t callStackSliceRow);
+    void BeginVsyncEvent(uint64_t ts,
+                         uint64_t ipid,
+                         uint64_t itid,
+                         uint64_t expectStart,
+                         uint64_t expectEnd,
+                         uint32_t vsyncId,
+                         uint32_t callStackSliceRow);
     bool BeginOnvsyncEvent(uint64_t ts, uint64_t itid, uint64_t expectStart, uint64_t callStackSliceRow);
+    bool MarkRSOnvsyncEvent(uint64_t ts, uint64_t itid);
     bool EndOnVsyncEvent(uint64_t ts, uint64_t itid);
     bool BeginRSTransactionData(uint64_t ts, uint64_t itid, uint32_t franeNum);
     typedef struct {
@@ -55,8 +62,9 @@ private:
         uint64_t endTs_ = INVALID_UINT64;
         FrameSliceType frameType_ = ACTURAL_SLICE;
         uint32_t vsyncId_ = INVALID_UINT32;
-        bool hasFrameQueue_ = false;
-        bool vsyncEnd_ = true;
+        uint64_t frameQueueStartTs_ = INVALID_UINT64;
+        bool vsyncEnd_ = false;
+        bool isRsMainThread_ = false;
         uint32_t frameNum_ = INVALID_UINT32;
         uint64_t callStackSliceRow_ = INVALID_UINT64;
         uint64_t frameSliceRow_ = INVALID_UINT64;
@@ -66,8 +74,8 @@ private:
         uint64_t dstFrameSliceId_ = INVALID_UINT64;
         uint64_t dstExpectedFrameSliceId_ = INVALID_UINT64;
     };
-    std::map<uint64_t/* tid */, std::map<uint32_t/* vsyncId */, std::shared_ptr<FrameSlice>>> vsyncRenderSlice_ = {};
-    std::map<uint64_t/* tid */, std::map<uint32_t/* frameNum */, std::shared_ptr<FrameSlice>>> dstRenderSlice_ = {};
+    std::map<uint64_t /* tid */, std::map<uint32_t /* vsyncId */, std::shared_ptr<FrameSlice>>> vsyncRenderSlice_ = {};
+    std::map<uint64_t /* tid */, std::map<uint32_t /* frameNum */, std::shared_ptr<FrameSlice>>> dstRenderSlice_ = {};
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

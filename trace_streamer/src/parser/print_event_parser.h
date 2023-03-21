@@ -46,6 +46,7 @@ private:
     size_t GetValueLength(std::string_view pointStr, size_t valueIndex) const;
     bool ReciveVsync( size_t callStackRow, std::string& args, const BytraceLine &line);
     bool ReciveOnVsync( size_t callStackRow, std::string& args, const BytraceLine &line);
+    bool RSReciveOnVsync( size_t callStackRow, std::string& args, const BytraceLine &line);
     bool OnRwTransaction( size_t callStackRow, std::string& args, const BytraceLine &line);
     bool OnMainThreadProcessCmd( size_t callStackRow, std::string& args, const BytraceLine &line);
     bool OnFrameQueueStart(uint64_t ts, size_t callStackRow, uint64_t pid);
@@ -56,6 +57,7 @@ private:
     TraceStreamerConfig config_{};
     const DataIndex recvievVsync_ = traceDataCache_->GetDataIndex("H:ReceiveVsync");
     const DataIndex onVsyncEvent_ = traceDataCache_->GetDataIndex("H:OnVsyncEvent");
+    const DataIndex rsOnVsyncEvent_ = traceDataCache_->GetDataIndex("H:RSMainThread::OnVsync");
     const std::string onFrameQueeuStartEvent_ = "H:M: Frame queued";
     const DataIndex marshRwTransactionData_ = traceDataCache_->GetDataIndex("H:MarshRSTransactionData");
     const DataIndex rsMainThreadProcessCmd_ = traceDataCache_->GetDataIndex("H:RSMainThread::ProcessCommandUni");

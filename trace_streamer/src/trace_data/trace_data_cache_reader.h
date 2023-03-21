@@ -63,6 +63,7 @@ public:
     const LogInfo& GetConstHilogData() const;
     const NativeHook& GetConstNativeHookData() const;
     const NativeHookFrame& GetConstNativeHookFrameData() const;
+    const NativeHookStatistic& GetConstNativeHookStatisticData() const;
     const Hidump& GetConstHidumpData() const;
     const PerfCallChain& GetConstPerfCallChainData() const;
     const PerfFiles& GetConstPerfFilesData() const;
@@ -94,6 +95,7 @@ public:
     const DataSourceClockIdData& GetConstDataSourceClockIdData() const;
     const FrameSlice& GetConstFameSliceData() const;
     const FrameMaps& GetConstFameMapsData() const;
+    const GPUSlice& GetConstGPUSliceData() const;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

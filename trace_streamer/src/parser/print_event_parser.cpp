@@ -26,6 +26,8 @@ PrintEventParser::PrintEventParser(TraceDataCache *dataCache, const TraceStreame
                              std::placeholders::_3)},
         {onVsyncEvent_, bind(&PrintEventParser::ReciveOnVsync, this, std::placeholders::_1, std::placeholders::_2,
                              std::placeholders::_3)},
+        {rsOnVsyncEvent_, bind(&PrintEventParser::RSReciveOnVsync, this, std::placeholders::_1, std::placeholders::_2,
+                               std::placeholders::_3)},
         {marshRwTransactionData_, bind(&PrintEventParser::OnRwTransaction, this, std::placeholders::_1,
                                        std::placeholders::_2, std::placeholders::_3)},
         {rsMainThreadProcessCmd_, bind(&PrintEventParser::OnMainThreadProcessCmd, this, std::placeholders::_1,
@@ -51,7 +53,9 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm, uint64_t ts, uin
                 // add distributed data
                 traceDataCache_->GetInternalSlicesData()->SetDistributeInfo(
                     index, point.chainId_, point.spanId_, point.parentSpanId_, point.flag_, point.args_);
-                HandleFrameSliceBeginEvent(point.funcPrefixId_, index, point.funcArgs_, line);
+                if (pid == point.tgid_) {
+                    HandleFrameSliceBeginEvent(point.funcPrefixId_, index, point.funcArgs_, line);
+                }
             } else {
                 streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_LOST);
             }
@@ -59,7 +63,9 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm, uint64_t ts, uin
         }
         case 'E': {
             uint32_t index = streamFilters_->sliceFilter_->EndSlice(ts, pid, point.tgid_);
-            HandleFrameSliceEndEvent(ts, point.tgid_, pid, index);
+            if (pid == point.tgid_) {
+                HandleFrameSliceEndEvent(ts, point.tgid_, pid, index);
+            }
             break;
         }
         case 'S': {
@@ -83,6 +89,7 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm, uint64_t ts, uin
             uint32_t internalPid = streamFilters_->processFilter_->GetInternalPid(point.tgid_);
             if (internalPid != INVALID_ID) {
                 streamFilters_->processMeasureFilter_->AppendNewMeasureData(internalPid, nameIndex, ts, point.value_);
+                streamFilters_->processFilter_->AddProcessMemory(internalPid);
             } else {
                 streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_INVALID);
             }
@@ -160,6 +167,8 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
             outPoint.funcPrefix_ = outPoint.name_.substr(0, space);
             outPoint.funcPrefixId_ = traceDataCache_->GetDataIndex(outPoint.funcPrefix_);
             outPoint.funcArgs_ =  outPoint.name_.substr(space + 1, -1);
+        } else {
+            outPoint.funcPrefixId_ = traceDataCache_->GetDataIndex(outPoint.name_);
         }
         return SUCCESS;
     }
@@ -242,12 +251,21 @@ bool PrintEventParser::ReciveOnVsync(size_t callStackRow, std::string& args, con
     }
     return true;
 }
+bool PrintEventParser::RSReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine &line)
+{
+    streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_RECEIVED);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
+    (void)streamFilters_->frameFilter_->MarkRSOnvsyncEvent(line.ts, iTid);
+    return true;
+}
 bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string& args, const BytraceLine &line)
 {
     // H:MarshRSTransactionData cmdCount:20 transactionFlag:[3799,8] isUni:1
     TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
     std::smatch match;
     if (std::regex_search(args, match, transFlagPattern_)) {
+        std::string flag1 = match.str(1);
         std::string flag2 = match.str(2);
         auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
         return streamFilters_->frameFilter_->BeginRSTransactionData(line.ts, iTid, base::StrToUInt32(flag2).value());

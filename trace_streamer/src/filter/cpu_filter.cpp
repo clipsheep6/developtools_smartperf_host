@@ -24,10 +24,10 @@ CpuFilter::CpuFilter(TraceDataCache* dataCache, const TraceStreamerFilters* filt
 CpuFilter::~CpuFilter() = default;
 void CpuFilter::InsertSwitchEvent(uint64_t ts,
                                   uint64_t cpu,
-                                  uint64_t prevPid,
+                                  uint32_t prevPid,
                                   uint64_t prevPior,
                                   uint64_t prevState,
-                                  uint64_t nextPid,
+                                  uint32_t nextPid,
                                   uint64_t nextPior)
 {
     auto index = traceDataCache_->GetSchedSliceData()->AppendSchedSlice(ts, 0, cpu, nextPid, 0, nextPior);
@@ -54,12 +54,16 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
             lastRow = RowOfInternalTidInStateTable(nextPid);
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
         }
-        index =
-            traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, cpu, nextPid, TASK_RUNNING);
+        index = traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, cpu, nextPid, TASK_RUNNING);
         RemberInternalTidInStateTable(nextPid, index, TASK_RUNNING);
         if (cpuToRowThreadState_.find(cpu) == cpuToRowThreadState_.end()) {
             cpuToRowThreadState_.insert(std::make_pair(cpu, index));
         } else {
+            if (!traceDataCache_->GetThreadStateData()->End(static_cast<TableRowId>(cpuToRowThreadState_.at(cpu)),
+                                                            ts)) {
+                ClearInternalTidInStateTable(
+                    traceDataCache_->GetThreadStateData()->ItidsData()[cpuToRowThreadState_.at(cpu)]);
+            }
             cpuToRowThreadState_.at(cpu) = index;
         }
     }
@@ -82,7 +86,7 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
     }
 }
 
-bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTid, bool iowait, DataIndex caller, uint32_t delay)
+bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint32_t iTid, bool iowait, DataIndex caller, uint32_t delay)
 {
     if (!pidToSchedSliceRow.count(iTid)) {
         return false;
@@ -99,7 +103,7 @@ bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint64_t iTi
     pidToSchedSliceRow.erase(iTid);
     return true;
 }
-bool CpuFilter::InsertProcessExitEvent(uint64_t ts, uint64_t cpu, uint64_t pid)
+bool CpuFilter::InsertProcessExitEvent(uint64_t ts, uint64_t cpu, uint32_t pid)
 {
     UNUSED(cpu);
     auto thread = traceDataCache_->GetThreadData(static_cast<InternalTid>(pid));
@@ -110,7 +114,7 @@ bool CpuFilter::InsertProcessExitEvent(uint64_t ts, uint64_t cpu, uint64_t pid)
     return false;
 }
 
-bool CpuFilter::InsertProcessFreeEvent(uint64_t ts, uint64_t pid)
+bool CpuFilter::InsertProcessFreeEvent(uint64_t ts, uint32_t pid)
 {
     auto thread = traceDataCache_->GetThreadData(static_cast<InternalTid>(pid));
     if (thread) {
@@ -165,14 +169,13 @@ void CpuFilter::Clear()
     lastWakeUpMsg_.clear();
     internalTidToRowThreadState_.clear();
 }
-// enter into runnable status
-void CpuFilter::InsertWakeupEvent(uint64_t ts, uint64_t internalTid, bool isWaking)
+void CpuFilter::InsertWakeupEvent(uint64_t ts, uint32_t internalTid, bool isWaking)
 {
-    if (isWaking && !toRunnableTid_.count(internalTid)) {
+    if (!isWaking && !toRunnableTid_.count(internalTid)) {
         toRunnableTid_[internalTid] = ts;
     }
 }
-uint64_t CpuFilter::RemberInternalTidInStateTable(uint64_t uid, uint64_t row, uint64_t state)
+uint64_t CpuFilter::RemberInternalTidInStateTable(uint32_t uid, uint64_t row, uint64_t state)
 {
     if (internalTidToRowThreadState_.find(uid) != internalTidToRowThreadState_.end()) {
         internalTidToRowThreadState_.at(uid) = TPthread{row, state};
@@ -181,7 +184,7 @@ uint64_t CpuFilter::RemberInternalTidInStateTable(uint64_t uid, uint64_t row, ui
     }
     return 0;
 }
-uint64_t CpuFilter::RowOfInternalTidInStateTable(uint64_t uid) const
+uint64_t CpuFilter::RowOfInternalTidInStateTable(uint32_t uid) const
 {
     auto row = internalTidToRowThreadState_.find(uid);
     if (row != internalTidToRowThreadState_.end()) {
@@ -189,8 +192,14 @@ uint64_t CpuFilter::RowOfInternalTidInStateTable(uint64_t uid) const
     }
     return INVALID_UINT64;
 }
-
-uint64_t CpuFilter::StateOfInternalTidInStateTable(uint64_t uid) const
+void CpuFilter::ClearInternalTidInStateTable(uint32_t uid)
+{
+    auto row = internalTidToRowThreadState_.find(uid);
+    if (row != internalTidToRowThreadState_.end()) {
+        internalTidToRowThreadState_.erase(row);
+    }
+}
+uint64_t CpuFilter::StateOfInternalTidInStateTable(uint32_t uid) const
 {
     auto row = internalTidToRowThreadState_.find(uid);
     if (row != internalTidToRowThreadState_.end()) {
@@ -199,7 +208,7 @@ uint64_t CpuFilter::StateOfInternalTidInStateTable(uint64_t uid) const
     return TASK_INVALID;
 }
 
-void CpuFilter::CheckWakeupEvent(uint64_t internalTid)
+void CpuFilter::CheckWakeupEvent(uint32_t internalTid)
 {
     if (toRunnableTid_.count(internalTid)) {
         uint64_t lastrow = RowOfInternalTidInStateTable(internalTid);
@@ -209,10 +218,11 @@ void CpuFilter::CheckWakeupEvent(uint64_t internalTid)
             return;
         }
         if (lastrow != INVALID_UINT64) {
-            traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastrow), toRunnableTid_.at(internalTid));
+            traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastrow),
+                                                                  toRunnableTid_.at(internalTid));
         }
-        auto index = traceDataCache_->GetThreadStateData()->AppendThreadState(toRunnableTid_.at(internalTid), INVALID_TIME, INVALID_CPU,
-                                                                            internalTid, TASK_RUNNABLE);
+        auto index = traceDataCache_->GetThreadStateData()->AppendThreadState(
+            toRunnableTid_.at(internalTid), INVALID_TIME, INVALID_CPU, internalTid, TASK_RUNNABLE);
         RemberInternalTidInStateTable(internalTid, index, TASK_RUNNABLE);
         toRunnableTid_.erase(internalTid);
     }

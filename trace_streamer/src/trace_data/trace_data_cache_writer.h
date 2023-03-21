@@ -93,6 +93,7 @@ public:
     DataSourceClockIdData* GetDataSourceClockIdData();
     FrameSlice* GetFrameSliceData();
     FrameMaps* GetFrameMapsData();
+    GPUSlice* GetGPUSliceData();
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

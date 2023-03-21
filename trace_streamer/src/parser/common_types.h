@@ -19,6 +19,23 @@
 #include <atomic>
 #include <string>
 #include <unordered_map>
+#if IS_PBREADER
+#include "cpu_plugin_result.pbreader.h"
+#include "diskio_plugin_result.pbreader.h"
+#include "hidump_plugin_result.pbreader.h"
+#include "hilog_plugin_result.pbreader.h"
+#include "hisysevent_plugin_config.pbreader.h"
+#include "hisysevent_plugin_result.pbreader.h"
+#include "memory_plugin_result.pbreader.h"
+#include "native_hook_result.pbreader.h"
+#include "network_plugin_result.pbreader.h"
+#include "process_plugin_result.pbreader.h"
+#include "proto_reader_help.h"
+#include "services/common_types.pbreader.h"
+#include "trace_plugin_result.pbreader.h"
+#include "ts_common.h"
+#include "native_hook_result.pbreader.h"
+#else
 #include "cpu_plugin_result.pb.h"
 #include "diskio_plugin_result.pb.h"
 #include "hidump_plugin_result.pb.h"
@@ -32,27 +49,13 @@
 #include "services/common_types.pb.h"
 #include "trace_plugin_result.pb.h"
 #include "ts_common.h"
+#endif
 
 namespace SysTuning {
 namespace TraceStreamer {
 enum ParseResult { ERROR = 0, SUCCESS };
 enum RawType { RAW_CPU_IDLE = 1, RAW_SCHED_WAKEUP = 2, RAW_SCHED_WAKING = 3 };
-enum Stat : uint32_t {
-    RUNNABLE = 0,
-    INTERRUPTABLESLEEP = 1,
-    UNINTERRUPTIBLESLEEP = 2,
-    STOPPED = 4,
-    TRACED = 8, // the process is being debug
-    EXITDEAD = 16,
-    EXITZOMBIE = 32,
-    TASKDEAD = 64,
-    WAKEKILL = 128,
-    WAKING = 256,
-    PARKED = 512,
-    NOLOAD = 1024,
-    TASKNEW = 2048,
-    VALID = 0X8000,
-};
+
 
 struct BytraceLine {
     uint64_t ts = 0;
@@ -79,6 +82,16 @@ struct DataSegment {
     std::atomic<ParseStatus> status{TS_PARSE_STATUS_INIT};
 };
 // 注意使用完之后恢复初始化状态，保证下次使用不会出现数据混乱。
+#if IS_PBREADER
+struct HtraceDataSegment {
+    std::shared_ptr<std::string> seg;
+    uint64_t timeStamp;
+    BuiltinClocks clockId;
+    DataSourceType dataType;
+    std::atomic<ParseStatus> status{TS_PARSE_STATUS_INIT};
+    ProtoReader::BytesView protoData;
+};
+#else
 struct HtraceDataSegment {
     std::string seg;
     MemoryData memData;
@@ -97,6 +110,7 @@ struct HtraceDataSegment {
     DataSourceType dataType;
     std::atomic<ParseStatus> status{TS_PARSE_STATUS_INIT};
 };
+#endif
 
 class TracePoint {
 public:
@@ -145,6 +159,17 @@ public:
     std::string funcPrefix_ = "";
     std::string funcArgs_ = "";
 };
+#if IS_PBREADER
+struct NativeHookMetaData {
+    NativeHookMetaData(const std::shared_ptr<const std::string>& seg,
+                        std::unique_ptr<ProtoReader::NativeHookData_Reader> reader)
+        : seg_(seg), reader_(std::move(reader))
+    {
+    }
+    std::shared_ptr<const std::string> seg_;
+    std::unique_ptr<ProtoReader::NativeHookData_Reader> reader_;
+};
+#endif
 } // namespace TraceStreamer
 } // namespace SysTuning
 #endif // _BYTRACE_COMMON_TYPES_H_

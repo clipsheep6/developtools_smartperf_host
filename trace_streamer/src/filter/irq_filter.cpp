@@ -31,7 +31,7 @@ void IrqFilter::IrqHandlerEntry(int64_t ts, uint32_t cpu, DataIndex nameId)
 {
     streamFilters_->sliceFilter_->IrqHandlerEntry(ts, cpu, irqCatalog_, nameId);
 }
-void IrqFilter::IrqHandlerExit(int64_t ts, uint32_t cpu, uint32_t ret)
+void IrqFilter::IrqHandlerExit(int64_t ts, uint32_t cpu, uint32_t irq, uint32_t ret)
 {
     DataIndex irqRet = INVALID_DATAINDEX;
     if (ret == 1) {
@@ -41,6 +41,7 @@ void IrqFilter::IrqHandlerExit(int64_t ts, uint32_t cpu, uint32_t ret)
     }
     ArgsSet args;
     args.AppendArg(irqRet_, BASE_DATA_TYPE_STRING, irqRet);
+    args.AppendArg(irq_, BASE_DATA_TYPE_INT, irq);
     streamFilters_->sliceFilter_->IrqHandlerExit(ts, cpu, args);
 }
 

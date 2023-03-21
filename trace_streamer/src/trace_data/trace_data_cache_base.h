@@ -83,6 +83,7 @@ public:
     LogInfo hilogData_;
     NativeHook nativeHookData_;
     NativeHookFrame nativeHookFrameData_;
+    NativeHookStatistic nativeHookStatisticData_;
     Hidump hidumpData_;
     PerfSample perfSample_;
     PerfCallChain perfCallChain_;
@@ -128,6 +129,7 @@ public:
     DataSourceClockIdData dataSourceClockIdData_;
     FrameSlice frameSliceData_;
     FrameMaps frameMapsData_;
+    GPUSlice gpuSliceData_;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

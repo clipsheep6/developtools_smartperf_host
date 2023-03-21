@@ -407,7 +407,11 @@ bool HtraceEventParser::ParsePrintEvent(const MessageLite& event)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_PRINT, STAT_EVENT_RECEIVED);
     const auto msg = static_cast<const PrintFormat&>(event);
-    printEventParser_.ParsePrintEvent(comm_, eventTimestamp_, eventTid_, msg.buf().c_str(), BytraceLine());
+    BytraceLine line;
+    line.tgid = eventPid_;
+    line.pid = eventTid_;
+    line.ts = eventTimestamp_;
+    printEventParser_.ParsePrintEvent(comm_, eventTimestamp_, eventTid_, msg.buf().c_str(), line);
     if (!tids_.count(eventTid_)) {
         tids_.insert(eventTid_);
     }
@@ -438,8 +442,8 @@ bool HtraceEventParser::SchedWakeupNewEvent(const MessageLite& event) const
     const auto msg = static_cast<const SchedWakeupNewFormat&>(event);
     auto instants = traceDataCache_->GetInstantsData();
 
-    InternalTid internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, msg.pid());
-    InternalTid wakeupFromPid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, eventTid_);
+    auto internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, msg.pid());
+    auto wakeupFromPid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, eventTid_);
     instants->AppendInstantEventData(eventTimestamp_, schedWakeupNewName_, internalTid, wakeupFromPid);
     streamFilters_->cpuFilter_->InsertWakeupEvent(eventTimestamp_, internalTid);
     std::optional<uint32_t> targetCpu = msg.target_cpu();
@@ -462,9 +466,9 @@ bool HtraceEventParser::SchedWakingEvent(const MessageLite& event) const
         return false;
     }
     auto instants = traceDataCache_->GetInstantsData();
-    InternalTid internalTid =
+    auto internalTid =
         streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, wakePidValue.value());
-    InternalTid wakeupFromPid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, eventTid_);
+    auto wakeupFromPid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimestamp_, eventTid_);
     streamFilters_->cpuFilter_->InsertWakeupEvent(eventTimestamp_, internalTid, true);
     instants->AppendInstantEventData(eventTimestamp_, schedWakingName_, internalTid, wakeupFromPid);
     std::optional<uint32_t> targetCpu = msg.target_cpu();
@@ -638,7 +642,7 @@ bool HtraceEventParser::IrqHandlerExitEvent(const MessageLite& event) const
 {
     traceDataCache_->GetStatAndInfo()->IncreaseStat(TRACE_EVENT_IRQ_HANDLER_EXIT, STAT_EVENT_RECEIVED);
     const auto msg = static_cast<const IrqHandlerExitFormat&>(event);
-    streamFilters_->irqFilter_->IrqHandlerExit(eventTimestamp_, eventCpu_, static_cast<uint32_t>(msg.ret()));
+    streamFilters_->irqFilter_->IrqHandlerExit(eventTimestamp_, eventCpu_, msg.irq(), static_cast<uint32_t>(msg.ret()));
     return true;
 }
 bool HtraceEventParser::IpiHandlerEntryEvent(const MessageLite& event) const

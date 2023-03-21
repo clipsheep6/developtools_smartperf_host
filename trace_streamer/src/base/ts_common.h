@@ -31,6 +31,7 @@ const uint32_t INVALID_UINT32 = std::numeric_limits<uint32_t>::max();
 const uint32_t INVALID_INT32 = std::numeric_limits<int32_t>::max();
 const int64_t INVALID_INT64 = std::numeric_limits<int64_t>::max();
 const uint64_t INVALID_DATAINDEX = std::numeric_limits<uint64_t>::max();
+const uint64_t INVALID_CALL_CHAIN_ID = std::numeric_limits<uint64_t>::max();
 const size_t MAX_SIZE_T = std::numeric_limits<size_t>::max();
 const uint32_t INVALID_ID = std::numeric_limits<uint32_t>::max();
 const uint64_t SEC_TO_NS = 1000 * 1000 * 1000;
@@ -104,6 +105,21 @@ enum SchedWakeType {
     SCHED_WAKING = 0, // sched_waking
     SCHED_WAKEUP = 1, // sched_wakeup
 };
+#if IS_PBREADER
+enum DataSourceType {
+    DATA_SOURCE_TYPE_TRACE,
+    DATA_SOURCE_TYPE_MEM,
+    DATA_SOURCE_TYPE_HILOG,
+    DATA_SOURCE_TYPE_NATIVEHOOK,
+    DATA_SOURCE_TYPE_FPS,
+    DATA_SOURCE_TYPE_NETWORK,
+    DATA_SOURCE_TYPE_DISKIO,
+    DATA_SOURCE_TYPE_CPU,
+    DATA_SOURCE_TYPE_PROCESS,
+    DATA_SOURCE_TYPE_HISYSEVENT,
+    DATA_SOURCE_TYPE_HISYSEVENT_CONFIG
+};
+#else
 enum DataSourceType {
     DATA_SOURCE_TYPE_TRACE,
     DATA_SOURCE_TYPE_MEM,
@@ -117,6 +133,7 @@ enum DataSourceType {
     DATA_SOURCE_TYPE_HISYSEVENT,
     DATA_SOURCE_TYPE_HISYSEVENT_CONFIG
 };
+#endif
 using DataIndex = uint64_t;
 using TableRowId = int32_t;
 using InternalPid = uint32_t;
