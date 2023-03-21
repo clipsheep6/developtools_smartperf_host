@@ -193,13 +193,18 @@ export class SpSystemTrace extends BaseElement {
             currentRow.addEventListener("dragstart", () => {
                 this.currentClickRow = currentRow;
             });
-            currentRow.addEventListener("dragover", (event: any) => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = "move";
+            currentRow.addEventListener("dragover", (ev: any) => {
+                ev.preventDefault();
+                ev.dataTransfer.dropEffect = "move";
             });
-            currentRow.addEventListener("drop", () => {
-                if (this.currentClickRow !== currentRow) {
-                    this.favoriteRowsEL?.insertBefore(this.currentClickRow!, currentRow);
+            currentRow.addEventListener("drop", (ev: any) => {
+                if (this.currentClickRow != null && this.currentClickRow !== currentRow) {
+                    let rect = currentRow.getBoundingClientRect();
+                    if (ev.clientY >= rect.top && ev.clientY < rect.top + rect.height / 2) { //向上移动
+                        this.favoriteRowsEL?.insertBefore(this.currentClickRow!, currentRow);
+                    } else if (ev.clientY <= rect.bottom && ev.clientY > rect.top + rect.height / 2) { //向下移动
+                        this.favoriteRowsEL?.insertBefore(currentRow, this.currentClickRow!);
+                    }
                     this.refreshFavoriteCanvas();
                 }
             });
