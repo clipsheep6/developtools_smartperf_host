@@ -198,12 +198,12 @@ export class SpSystemTrace extends BaseElement {
                 ev.dataTransfer.dropEffect = "move";
             });
             currentRow.addEventListener("drop", (ev: any) => {
-                if (this.currentClickRow != null && this.currentClickRow !== currentRow) {
+                if (this.favoriteRowsEL != null && this.currentClickRow != null && this.currentClickRow !== currentRow) {
                     let rect = currentRow.getBoundingClientRect();
                     if (ev.clientY >= rect.top && ev.clientY < rect.top + rect.height / 2) { //向上移动
-                        this.favoriteRowsEL?.insertBefore(this.currentClickRow!, currentRow);
+                        this.favoriteRowsEL.insertBefore(this.currentClickRow, currentRow);
                     } else if (ev.clientY <= rect.bottom && ev.clientY > rect.top + rect.height / 2) { //向下移动
-                        this.favoriteRowsEL?.insertBefore(currentRow, this.currentClickRow!);
+                        this.favoriteRowsEL.insertBefore(this.currentClickRow, currentRow.nextSibling);
                     }
                     this.refreshFavoriteCanvas();
                 }
