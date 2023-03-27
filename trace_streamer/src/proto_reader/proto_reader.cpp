@@ -14,6 +14,7 @@
  */
 
 #include "proto_reader.h"
+#include "optimize.h"
 
 namespace SysTuning {
 namespace ProtoReader {
@@ -39,17 +40,6 @@ ProtoReaderBase::ProtoReaderBase(DataArea* storage, uint32_t dataAreasCount, con
                                             std::placeholders::_2, std::placeholders::_3)},
         {ProtoWireType::kFixed32, std::bind(&ProtoReaderBase::ParseFixed32Value, this, std::placeholders::_1,
                                             std::placeholders::_2, std::placeholders::_3)}};
-}
-ProtoReaderBase::ProtoReaderBase(const std::string& str)
-    : startAddr_(reinterpret_cast<const uint8_t*>(str.data())),
-      endAddr_(reinterpret_cast<const uint8_t*>(str.data() + str.length())),
-      currentReadAddr_(startAddr_)
-{
-}
-
-ProtoReaderBase::ProtoReaderBase(const BytesView& byteView)
-    : startAddr_(byteView.data_), endAddr_(byteView.data_ + byteView.size_), currentReadAddr_(startAddr_)
-{
 }
 
 // return next parse addr and dataAreaTag. if failed returns nullptr
@@ -84,12 +74,6 @@ bool ProtoReaderBase::ParseVarIntValue(ParseDataAreaResult& result,
     }
     result.dataArea.SetDataAreaIntValue(intValue);
     result.next = cursor;
-    auto id = result.dataArea.DataAreaId();
-    if (id > std::numeric_limits<uint16_t>::max()) {
-        TS_LOGD("Skip dataArea %d because its too big", id);
-        result.status = ParseProtoStatus::SKIP;
-        return true;
-    }
     result.status = OK;
     return true;
 }
@@ -107,12 +91,6 @@ bool ProtoReaderBase::ParseLengthDelimitedValue(ParseDataAreaResult& result,
     result.dataArea.SetDataAreaIntValue(dataStartAddr);
     result.dataArea.SetDataAreaSize(length);
     result.next = cursor + length;
-    auto id = result.dataArea.DataAreaId();
-    if (id > std::numeric_limits<uint16_t>::max()) {
-        TS_LOGD("Skip dataArea %d because its too big", id);
-        result.status = ParseProtoStatus::SKIP;
-        return true;
-    }
     if (length > kMaxMessageLength) {
         TS_LOGD("Skip this data, because it is too large. length: %d", length);
         result.status = SKIP;
@@ -135,12 +113,6 @@ bool ProtoReaderBase::ParseFixed64Value(ParseDataAreaResult& result,
     (void*)memcpy_s(&intValue, sizeof(uint64_t), startAddr, sizeof(uint64_t));
     result.dataArea.SetDataAreaIntValue(intValue);
     result.next = cursor;
-    auto id = result.dataArea.DataAreaId();
-    if (id > std::numeric_limits<uint16_t>::max()) {
-        TS_LOGD("Skip dataArea %d because its too big", id);
-        result.status = ParseProtoStatus::SKIP;
-        return true;
-    }
     result.status = OK;
     return true;
 }
@@ -157,12 +129,6 @@ bool ProtoReaderBase::ParseFixed32Value(ParseDataAreaResult& result,
     (void*)memcpy_s(&intValue, sizeof(uint64_t), startAddr, sizeof(uint32_t));
     result.dataArea.SetDataAreaIntValue(intValue);
     result.next = cursor;
-    auto id = result.dataArea.DataAreaId();
-    if (id > std::numeric_limits<uint16_t>::max()) {
-        TS_LOGD("Skip dataArea %d because its too big", id);
-        result.status = ParseProtoStatus::SKIP;
-        return true;
-    }
     result.status = OK;
     return true;
 }
@@ -180,6 +146,12 @@ ParseDataAreaResult ProtoReaderBase::ParseOneDataArea(const uint8_t* const start
     }
     uint32_t dataAreaId = static_cast<uint32_t>(dataAreaTag >> DATA_AREA_TYPE_BITS);
     if (dataAreaId == 0) {
+        return result;
+    }
+
+    if (TS_UNLIKELY(dataAreaId > std::numeric_limits<uint16_t>::max())) {
+        TS_LOGD("Skip dataArea %d because its too big", dataAreaId);
+        result.status = ParseProtoStatus::SKIP;
         return result;
     }
     result.dataArea.SetDataAreaId(dataAreaId);
@@ -209,7 +181,7 @@ DataArea ProtoReaderBase::FindDataArea(uint32_t dataAreaId)
     currentReadAddr_ = temp;
     return dataArea;
 }
-
+TS_INLINE
 DataArea ProtoReaderBase::ReadNextDataArea()
 {
     ParseDataAreaResult result = {ABORT, currentReadAddr_, DataArea{}};

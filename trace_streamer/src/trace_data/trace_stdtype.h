@@ -1853,19 +1853,19 @@ private:
 
 class FrameSlice : public CacheBase {
 public:
-    size_t AppendFrame(uint64_t ts, uint64_t ipid, uint64_t itid, uint32_t vsyncId, uint64_t callStackSliceRow);
+    size_t AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceRow);
     size_t AppendFrame(uint64_t ts,
-                       uint64_t ipid,
-                       uint64_t itid,
+                       uint32_t ipid,
+                       uint32_t itid,
                        uint32_t vsyncId,
                        uint64_t callStackSliceRow,
                        uint64_t end,
-                       uint32_t type);
+                       uint8_t type);
     void SetEndTime(uint64_t row, uint64_t end);
-    void SetType(uint64_t row, uint32_t type);
+    void SetType(uint64_t row, uint8_t type);
     void SetDst(uint64_t row, uint64_t dst);
     void SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices);
-    const std::deque<uint64_t> Ipids() const;
+    const std::deque<uint32_t> Ipids() const;
     const std::deque<uint32_t> VsyncIds() const;
     const std::deque<uint64_t> CallStackRows() const;
     const std::deque<uint64_t> EndTss() const;
@@ -1879,7 +1879,7 @@ public:
     void Erase(uint64_t row);
 
 private:
-    std::deque<uint64_t> ipids_ = {};
+    std::deque<uint32_t> ipids_ = {};
     std::deque<uint64_t> dsts_ = {};
     std::deque<std::string> srcs_ = {};
     std::deque<uint32_t> vsyncIds_ = {};

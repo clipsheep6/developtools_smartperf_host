@@ -1,6 +1,6 @@
 # 1、SDK接口说明
 
-### 1.1 SDK对开发者开放的接口（位于文件sdk/sdk/ts_sdk_api.h）
+### 1.1 SDK对开发者开放的接口（位于文件sdk/sdk/ts_sdk_api.h,示例代码位于plugin目录下）
 
 ###### **设置对应的表名称** ，用户可选择调用。如不调用该接口，则默认的表名分别为counter_table, gpu_counter_object, slice_table, slice_object_table
 

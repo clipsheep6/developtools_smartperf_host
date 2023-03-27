@@ -2082,7 +2082,7 @@ void DataSourceClockIdData::SetDataSourceClockId(DataSourceType source, uint32_t
 {
     dataSource2ClockIdMap_.at(source) = id;
 }
-size_t FrameSlice::AppendFrame(uint64_t ts, uint64_t ipid, uint64_t itid, uint32_t vsyncId, uint64_t callStackSliceRow)
+size_t FrameSlice::AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceRow)
 {
     timeStamps_.emplace_back(ts);
     ipids_.emplace_back(ipid);
@@ -2099,12 +2099,12 @@ size_t FrameSlice::AppendFrame(uint64_t ts, uint64_t ipid, uint64_t itid, uint32
     return Size() - 1;
 }
 size_t FrameSlice::AppendFrame(uint64_t ts,
-                               uint64_t ipid,
-                               uint64_t itid,
+                               uint32_t ipid,
+                               uint32_t itid,
                                uint32_t vsyncId,
                                uint64_t callStackSliceRow,
                                uint64_t end,
-                               uint32_t type)
+                               uint8_t type)
 {
     auto row = AppendFrame(ts, ipid, itid, vsyncId, callStackSliceRow);
     SetEndTime(row, end);
@@ -2117,7 +2117,7 @@ void FrameSlice::SetEndTime(uint64_t row, uint64_t end)
 {
     endTss_[row] = end;
 }
-void FrameSlice::SetType(uint64_t row, uint32_t type)
+void FrameSlice::SetType(uint64_t row, uint8_t type)
 {
     types_[row] = type;
 }
@@ -2135,7 +2135,7 @@ void FrameSlice::SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices)
     s.pop_back();
     srcs_[row] = s;
 }
-const std::deque<uint64_t> FrameSlice::Ipids() const
+const std::deque<uint32_t> FrameSlice::Ipids() const
 {
     return ipids_;
 }

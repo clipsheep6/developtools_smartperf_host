@@ -204,11 +204,12 @@ int ThreadStateTable::Cursor::Filter(const FilterConstraints& fc, sqlite3_value*
                 indexMapBack->MixRange(c.op, static_cast<uint32_t>(sqlite3_value_int(argv[i])),
                                        threadStateObj_.CpusData());
                 break;
-            case STATE: {
-                auto threadState =
-                    TraceStreamer::ThreadState(std::string(reinterpret_cast<const char*>(sqlite3_value_text(argv[i]))));
-                indexMapBack->MixRange(c.op, static_cast<DataIndex>(threadState.State()), threadStateObj_.StatesData());
-            } break;
+            case STATE:
+                indexMapBack->MixRange(c.op,
+                                       static_cast<DataIndex>(dataCache_->GetThreadStateValue(
+                                           std::string(reinterpret_cast<const char*>(sqlite3_value_text(argv[i]))))),
+                                       threadStateObj_.StatesData());
+                break;
             default:
                 break;
         }

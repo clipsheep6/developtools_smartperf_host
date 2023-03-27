@@ -213,7 +213,7 @@ export class CpuStruct extends BaseStruct {
     tid: number | undefined
     type: string | undefined
     v: boolean = false
-
+    nofinish:boolean = false
     static draw(ctx: CanvasRenderingContext2D, data: CpuStruct,translateY:number) {
         if (data.frame) {
             let width = data.frame.width || 0;
@@ -260,6 +260,17 @@ export class CpuStruct extends BaseStruct {
                     ctx.textBaseline = "top";
                     ctx.fillText(thread.substring(0, chatNum - 4) + '...', x1, y + 2, width - textPadding * 2)
                 }
+            }
+            if(data.nofinish){
+                ctx.fillStyle = "#FFFFFF"
+                let ruptureWidth = 4;
+                let ruptureNode = 8;
+                ctx.moveTo(data.frame.x+data.frame.width-1, data.frame.y)
+                for (let i = 1; i <=ruptureNode; i++) {
+                    ctx.lineTo(data.frame.x+data.frame.width-1-(i%2==0?0:ruptureWidth), data.frame.y+(data.frame.height/ruptureNode*i));
+                }
+                ctx.closePath()
+                ctx.fill()
             }
             if (CpuStruct.selectCpuStruct && CpuStruct.equals(CpuStruct.selectCpuStruct, data)) {
                 ctx.strokeStyle = '#232c5d'

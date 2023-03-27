@@ -105,7 +105,7 @@ bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint64_t itid)
     if (pos->second->frameNum_ == INVALID_UINT32) {
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameSliceRow_);
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameExpectedSliceRow_);
-        frame->second.erase(frame->second.begin());
+        frame->second.erase(pos);
         return false;
     }
     pos->second->endTs_ = ts;
@@ -135,12 +135,15 @@ bool FrameFilter::BeginRSTransactionData(uint64_t ts, uint64_t itid, uint32_t fr
     frame->second.begin()->second.get()->frameNum_ = franeNum;
     if (!dstRenderSlice_.count(itid)) {
         std::map<uint32_t /* vsyncId */, std::shared_ptr<FrameSlice>> frameMap;
-        dstRenderSlice_.insert(std::make_pair(itid, std::move(frameMap)));
+        dstRenderSlice_.emplace(std::make_pair(itid, std::move(frameMap)));
     }
     dstRenderSlice_.at(itid).emplace(std::make_pair(franeNum, frame->second.begin()->second));
     return true;
 }
-bool FrameFilter::BeginProcessCommandUni(uint64_t ts, uint64_t itid, std::vector<FrameMap>& frames, uint32_t sliceIndex)
+bool FrameFilter::BeginProcessCommandUni(uint64_t ts,
+                                         uint64_t itid,
+                                         const std::vector<FrameMap>& frames,
+                                         uint32_t sliceIndex)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {

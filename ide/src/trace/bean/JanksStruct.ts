@@ -39,4 +39,5 @@ export class JanksStruct extends BaseStruct {
     rs_dur: number | undefined;
     rs_pid: number | undefined;
     rs_name: string |undefined
+    gpu_dur:number | undefined;
 }

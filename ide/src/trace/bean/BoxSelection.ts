@@ -43,8 +43,8 @@ export class SelectionParam {
     irqMapData: Map<string,Array<IrqStruct>> = new Map<string,Array<IrqStruct>>()
     funTids: Array<number> = [];
     funAsync: Array<{name:string,pid:number}> = [];
-    heapIds: Array<number> = [];
     nativeMemory: Array<String> = [];
+    nativeMemoryStatistic: Array<String> = [];
     cpuAbilityIds: Array<string> = []
     memoryAbilityIds: Array<string> = []
     diskAbilityIds: Array<string> = []

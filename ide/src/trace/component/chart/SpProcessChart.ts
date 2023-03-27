@@ -177,10 +177,14 @@ export class SpProcessChart {
         let processList = Utils.removeDuplicates(processes, processFromTable, "pid")
         let allJankProcessData = await queryAllJankProcess();
         let allJankProcess: Array<number> = [];
+        let allExpectedProcess: Array<any> = [];
+        let allActualProcess: Array<any> = [];
         if (allJankProcessData.length > 0) {
             allJankProcessData.forEach((name, index) => {
                 allJankProcess.push(name.pid!)
             })
+            allExpectedProcess = await queryAllExpectedData()
+            allActualProcess = await queryAllActualData()
         }
         info("ProcessList Data size is: ", processList!.length)
         for (let i = 0; i < processList.length; i++) {
@@ -225,20 +229,21 @@ export class SpProcessChart {
              */
             let actualRow: TraceRow<JankStruct> | null = null;
             let expectedRow: TraceRow<JankStruct> | null = null;
-            if (allJankProcess.indexOf(it.pid) > -1) {
-                let expectedData = await queryAllExpectedData(it.pid);
+            if (allJankProcess.indexOf(it.pid) > -1 && allExpectedProcess.length > 0) {
+                let expectedData = allExpectedProcess.filter(ite => ite.pid == it.pid)
                 if (expectedData.length > 0) {
                     // @ts-ignore
                     let isIntersect = (a: JanksStruct, b: JanksStruct) => (Math.max(a.ts + a.dur, b.ts + b.dur) - Math.min(a.ts, b.ts) < a.dur + b.dur);
                     let depthArray: any = [];
-                    expectedData.forEach((it, i) => {
+                    for (let j = 0; j < expectedData.length; j++) {
+                        let it = expectedData[j]
                         if(it.cmdline != 'render_service'){
                             it.frame_type = 'app'
                         } else {
                             it.frame_type = it.cmdline
                         }
-                        if (it.dur == -1) {
-                            it.dur = (TraceRow.range?.endNS || 0) - it.ts!;
+                        if (!it.dur || it.dur < 0) {
+                            continue;
                         }
                         if (depthArray.length === 0) {
                             it.depth = 0;
@@ -254,7 +259,7 @@ export class SpProcessChart {
                                 depthArray = [it];
                             }
                         }
-                    });
+                    }
                     let max = Math.max(...expectedData.map(it => it.depth || 0)) + 1
                     let maxHeight = max * 20;
                     expectedRow = TraceRow.skeleton<JankStruct>();
@@ -289,18 +294,19 @@ export class SpProcessChart {
                         expectedRow!.canvasRestore(context);
                     }
                     this.insertAfter(expectedRow, processRow)
-                    let actualData = await queryAllActualData(it.pid);
+                    let actualData = allActualProcess.filter(ite => ite.pid == it.pid)
                     if (actualData.length > 0) {
                         let isIntersect = (a: any, b: any) => (Math.max(a.ts + a.dur, b.ts + b.dur) - Math.min(a.ts, b.ts) < a.dur + b.dur);
                         let depthArray: any = []
-                        actualData.forEach((it) => {
+                        for (let j = 0; j < actualData.length; j++) {
+                            let it = actualData[j]
                             if(it.cmdline != 'render_service'){
                                 it.frame_type = 'app'
                             } else {
                                 it.frame_type = it.cmdline
                             }
                             if (!it.dur || it.dur < 0) {
-                                it.dur = 1
+                               continue;
                             }
                             if (depthArray.length === 0) {
                                 it.depth = 0;
@@ -316,7 +322,7 @@ export class SpProcessChart {
                                     depthArray = [it];
                                 }
                             }
-                        });
+                        }
                         let max = Math.max(...actualData.map(it => it.depth || 0)) + 1
                         let maxHeight = max * 20;
                         actualRow = TraceRow.skeleton<JankStruct>();
@@ -369,7 +375,8 @@ export class SpProcessChart {
                                             y: actualRow!.translateY! + (linkNode[0].offsetY * 2),
                                             offsetY: (linkNode[0].offsetY * 2),
                                             ns: linkNode[0].ns,
-                                            rowEL:actualRow!
+                                            rowEL:actualRow!,
+                                            isRight: true
                                         }
                                     } else if (linkNode[1].rowEL.rowId == e.detail.rowId) {
                                         linkNode[1] =  {
@@ -377,7 +384,8 @@ export class SpProcessChart {
                                             y: actualRow!.translateY! + (linkNode[1].offsetY * 2),
                                             offsetY: (linkNode[1].offsetY * 2),
                                             ns: linkNode[1].ns,
-                                            rowEL:actualRow!
+                                            rowEL:actualRow!,
+                                            isRight: true
                                         }
                                     }
                                 })
@@ -394,7 +402,8 @@ export class SpProcessChart {
                                             y: processRow!.translateY! + (linkNode[0].offsetY / 2),
                                             offsetY: (linkNode[0].offsetY /2),
                                             ns: linkNode[0].ns,
-                                            rowEL:processRow
+                                            rowEL:processRow,
+                                            isRight: true
                                         }
                                     } else if (linkNode[1].rowEL.rowParentId == e.detail.rowId) {
                                         linkNode[1] = {
@@ -402,7 +411,8 @@ export class SpProcessChart {
                                             y: processRow!.translateY! + (linkNode[1].offsetY / 2),
                                             offsetY: (linkNode[1].offsetY / 2),
                                             ns: linkNode[1].ns,
-                                            rowEL:processRow
+                                            rowEL:processRow,
+                                            isRight: true
                                         }
                                     }
                                 })

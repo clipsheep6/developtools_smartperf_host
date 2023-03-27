@@ -29,7 +29,8 @@ export interface LitChartPieConfig {
             fontSize: number
             textAlign: string
         }
-    }
+    },
+    showChartLine?:boolean,
     tip:((a:any)=>string)|undefined
     interactions: {
         type: string //element-active | element-selected

@@ -174,7 +174,11 @@ bool BytraceEventParser::BlockedReason(const ArgsMap& args, const BytraceLine& l
         return false;
     }
     auto tid = base::StrToInt32(args.at("pid"));
-    auto iowait = base::StrToInt32(args.at("iowait"));
+    auto iowaitIt = args.find("iowait");
+    if (iowaitIt == args.end()) {
+        iowaitIt = args.find("io_wait");
+    }
+    auto iowait = base::StrToInt32(iowaitIt->second);
     uint32_t delayValue = INVALID_UINT32;
     if (args.find("delay") != args.end()) {
         auto delay = base::StrToInt32(args.at("delay"));
@@ -246,7 +250,7 @@ bool BytraceEventParser::SchedWakeupEvent(const ArgsMap& args, const BytraceLine
     instants->AppendInstantEventData(line.ts, schedWakeupName_, internalTid, wakeupFromPid);
     std::optional<uint32_t> targetCpu = base::StrToUInt32(args.at("target_cpu"));
     if (targetCpu.has_value()) {
-        traceDataCache_->GetRawData()->AppendRawData(0, line.ts, RAW_SCHED_WAKEUP, targetCpu.value(), internalTid);
+        traceDataCache_->GetRawData()->AppendRawData(0, line.ts, RAW_SCHED_WAKEUP, targetCpu.value(), wakeupFromPid);
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_WAKEUP, STAT_EVENT_RECEIVED);
     }
     return true;
@@ -267,7 +271,6 @@ bool BytraceEventParser::SchedWakingEvent(const ArgsMap& args, const BytraceLine
     }
     auto instants = traceDataCache_->GetInstantsData();
     InternalTid internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(line.ts, wakePidValue.value());
-
     DataIndex wakeByPidStrIndex = traceDataCache_->GetDataIndex(line.task);
     InternalTid internalTidWakeup =
         streamFilters_->processFilter_->UpdateOrCreateThreadWithNameIndex(line.ts, line.pid, wakeByPidStrIndex);
@@ -347,8 +350,17 @@ bool BytraceEventParser::CpuFrequencyLimitsEvent(const ArgsMap& args, const Bytr
         return false;
     }
     std::optional<uint32_t> eventCpuValue = base::StrToUInt32(args.at("cpu_id"));
-    std::optional<int64_t> minValue = base::StrToInt64(args.at("min"));
-    std::optional<int64_t> maxValue = base::StrToInt64(args.at("max"));
+
+    auto minIt = args.find("min");
+    if (minIt == args.end()) {
+        minIt = args.find("min_freq");
+    }
+    auto maxIt = args.find("max");
+    if (maxIt == args.end()) {
+        maxIt = args.find("max_freq");
+    }
+    std::optional<int64_t> minValue = base::StrToInt64(minIt->second);
+    std::optional<int64_t> maxValue = base::StrToInt64(maxIt->second);
 
     if (!minValue.has_value()) {
         TS_LOGD("Failed to get frequency minValue");

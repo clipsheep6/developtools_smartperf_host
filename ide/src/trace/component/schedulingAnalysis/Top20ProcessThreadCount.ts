@@ -22,6 +22,8 @@ import '../../../base-ui/chart/pie/LitChartPie.js'
 import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
 import "../../../base-ui/progress-bar/LitProgressBar.js"
 import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+import "./TableNoData.js"
+import {TableNoData} from "./TableNoData.js";
 
 @element('top20-process-thread-count')
 export class Top20ProcessThreadCount extends BaseElement {
@@ -30,8 +32,10 @@ export class Top20ProcessThreadCount extends BaseElement {
     private table:LitTable | null | undefined
     private pie:LitChartPie | null | undefined
     private progress:LitProgressBar | null | undefined;
+    private nodata:TableNoData | null | undefined;
 
     initElements(): void {
+        this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
         this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-process-thread-count")
         this.pie = this.shadowRoot!.querySelector<LitChartPie>("#pie")
@@ -47,6 +51,7 @@ export class Top20ProcessThreadCount extends BaseElement {
         this.traceChange = false;
         this.progress!.loading = true
         this.queryLogicWorker("scheduling-Process ThreadCount","query Process Thread Count Analysis Time:",(res)=>{
+            this.nodata!.noData = res === undefined || res.length === 0
             this.table!.recycleDataSource = res;
             this.table?.reMeauseHeight()
             this.pie!.config = {
@@ -55,9 +60,16 @@ export class Top20ProcessThreadCount extends BaseElement {
                 angleField: 'threadNumber',
                 colorField: 'pid',
                 radius: 0.8,
-                tip:undefined,
                 label: {
                     type: 'outer',
+                },
+                tip:(obj)=>{
+                    return `<div>
+                             <div>pid:${obj.obj.pid}</div> 
+                             <div>p_name:${obj.obj.pName}</div> 
+                             <div>thread number:${obj.obj.threadNumber}</div> 
+                        </div>
+                `;
                 },
                 interactions: [
                     {
@@ -94,7 +106,7 @@ export class Top20ProcessThreadCount extends BaseElement {
             flex: 1;
             overflow: auto ;
             border-radius: 5px;
-            border: solid 1px #e0e0e0;
+            border: solid 1px var(--dark-border1,#e0e0e0);
             margin: 15px;
             padding: 5px 15px
         }
@@ -113,18 +125,22 @@ export class Top20ProcessThreadCount extends BaseElement {
         }
         </style>
         <lit-progress-bar id="loading" style="height: 1px;width: 100%" loading></lit-progress-bar>
+        <table-no-data id="nodata" contentHeight="500px">
         <div class="root">
-            <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
+            <div style="display: flex;flex-direction: column;align-items: center">
+                <div>Statistics By Thread Count</div>
+                <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
+            </div>
             <div class="tb_thread_count">
                 <lit-table id="tb-process-thread-count" style="height: auto">
                     <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start"></lit-table-column>
                     <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
                     <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="thread number" data-index="threadNumber" key="threadNumber" align="flex-start"></lit-table-column>        
+                    <lit-table-column width="1fr" title="thread count" data-index="threadNumber" key="threadNumber" align="flex-start"></lit-table-column>        
                 </lit-table>
             </div>
         </div>
-        
+        </table-no-data>
         `;
     }
 }

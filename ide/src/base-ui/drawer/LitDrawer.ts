@@ -221,7 +221,7 @@ export class LitDrawer extends BaseElement {
                 <label id="drawer-tittle-text">${this.title}</label>
                 <lit-icon class="close-icon" name="close"></lit-icon>
             </div>
-            <div style="overflow: auto;">
+            <div style="overflow-x: hidden;overflow-y: auto">
                 <slot></slot>
             </div>
         </div>

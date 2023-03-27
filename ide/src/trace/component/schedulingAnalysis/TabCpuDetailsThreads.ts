@@ -16,68 +16,98 @@
 import {BaseElement, element} from "../../../base-ui/BaseElement.js";
 import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
 import {procedurePool} from "../../database/Procedure.js";
-import {SpSchedulingAnalysis} from "./SpSchedulingAnalysis.js";
-import {info} from "../../../log/Log.js";
 import {LitTable} from "../../../base-ui/table/lit-table.js";
+import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+import "../../../base-ui/progress-bar/LitProgressBar.js"
+import {getDataNo} from "./utils/Utils.js";
+import "./TableNoData.js"
+import {TableNoData} from "./TableNoData.js";
 
 @element('tab-cpu-details-threads')
 export class TabCpuDetailsThreads extends BaseElement {
 
+    private tableNoData:TableNoData | null | undefined;
     private table:LitTable | null | undefined;
-
+    private progress:LitProgressBar | null | undefined;
+    private pie:LitChartPie | null | undefined
     private data:Array<any> = [];
 
     initElements(): void {
+        this.tableNoData = this.shadowRoot!.querySelector<TableNoData>("#table-no-data")
+        this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
+        this.pie = this.shadowRoot!.querySelector<LitChartPie>("#chart-pie")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-cpu-usage")
 
         this.shadowRoot!.querySelector<HTMLDivElement>(".go-back")!.onclick = (e)=>{
-            this.parentNode!.querySelector<HTMLDivElement>(".d-box")!.style.display = "flex";
-            this.setShow = false;
+            if (!this.progress!.loading) {
+                this.parentNode!.querySelector<HTMLDivElement>(".d-box")!.style.display = "flex";
+                this.setShow = false;
+            }
         }
     }
 
-    init(){
-        this.queryPieChartDataByType("CPU Frequency",0)
+    init(cpu:number,it:any){
+        this.shadowRoot!.querySelector<HTMLDivElement>(".subheading")!.textContent = ("Threads in Freq " + it.value);
+        this.progress!.loading = true;
+        procedurePool.submitWithName("logic1", "scheduling-CPU Frequency Thread", { cpu:cpu,freq:(it as any).value }, undefined, (res:any)=>{
+            this.progress!.loading = false;
+            this.queryPieChartDataByType(res)
+        })
     }
 
     set setShow(v:boolean){
         if (v) {
             this.style.display = "flex";
         }else {
+            this.clearData();
             this.style.display = "none";
         }
     }
 
-    queryPieChartDataByType(type: string,cpu:number) {
-        this.queryLoginWorker(`scheduling-${type}`, "query Cpu Frequency Analysis Time:", (res) => {
-            this.data = res.get(cpu) || [];
-            this.shadowRoot!.querySelector<LitChartPie>("#chart-pie")!.config = {
-                appendPadding: 0,
-                data: res.get(cpu) || [],
-                angleField: 'sum',
-                colorField: 'value',
-                radius: 1,
-                label: {
-                    type: 'outer',
+    queryPieChartDataByType(res:any) {
+        this.data = res || [];
+        this.data = getDataNo(this.data);
+        this.tableNoData!.noData = (this.data.length == 0);
+        this.noData(this.data.length == 0);
+        this.pie!.config = {
+            appendPadding: 0,
+            data: res || [],
+            angleField: 'dur',
+            colorField: 'tName',
+            radius: 1,
+            label: {
+                type: 'outer',
+            },
+            tip:(obj)=>{
+                return `<div>
+                                <div>t_name:${obj.obj.tName}</div> 
+                                <div>tid:${obj.obj.tid}</div>
+                                <div>p_name:${obj.obj.pName}</div>
+                                <div>p_pid:${obj.obj.pid}</div>
+                                <div>duration:${obj.obj.durStr}</div>
+                                <div>ratio:${obj.obj.ratio}%</div>
+                            </div>
+                                `
+            },
+            interactions: [
+                {
+                    type: 'element-active',
                 },
-                tip:undefined,
-                interactions: [
-                    {
-                        type: 'element-active',
-                    },
-                ],
-            }
-            this.table!.recycleDataSource = this.data;
-            this.table?.reMeauseHeight()
-
-        })
+            ],
+        }
+        this.table!.recycleDataSource = this.data;
+        this.table?.reMeauseHeight()
     }
 
-    queryLoginWorker(option:string,log:string,handler:(res:any) => void){
-        let time = new Date().getTime();
-        procedurePool.submitWithName("logic1", option, { endTs:SpSchedulingAnalysis.endTs,total:SpSchedulingAnalysis.totalDur }, undefined, handler)
-        let durTime = new Date().getTime() - time;
-        info(log, durTime)
+    noData(value:boolean){
+        this.shadowRoot!.querySelector<HTMLDivElement>(".chart-box")!.style.display = value?"none":"block"
+        this.shadowRoot!.querySelector<HTMLDivElement>(".table-box")!.style.width = value?"100%":"60%"
+    }
+
+    clearData(){
+        this.pie!.dataSource = []
+        this.table!.recycleDataSource = []
+        this.noData(false)
     }
 
     initHtml(): string {
@@ -86,7 +116,7 @@ export class TabCpuDetailsThreads extends BaseElement {
         :host {
             width: 100%;
             height: 100%;
-            background: var(--dark-background5,#F6F6F6);
+            background-color: var(--dark-background,#FFFFFF);
             display: none;
         }
         .d-box{
@@ -111,24 +141,50 @@ export class TabCpuDetailsThreads extends BaseElement {
             padding: 10px;
         }
         #chart-pie{
-            height: calc(100vh - 235px);
+            height: 360px;
+        }
+        .go-back{
+            display:flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .back-box{
+            background-color: var(--bark-expansion,#0C65D1);
+            border-radius: 5px;
+            color: #fff;
+            display: flex;
+            margin-right: 10px;
+            width: 40px;
+            height: 20px;
+            justify-content: center;
+            align-items: center;
         }
         </style>
+        <lit-progress-bar id="loading" style="height: 1px;width: 100%"></lit-progress-bar>
         <div class="d-box">
             <div class="chart-box">
-                <div class="go-back" style="display: flex;">
-                    <div>返回箭头</div>
-                    <div class="subheading">Threads in Freq 884000.0</div>
+                <div class="go-back">
+                    <div class="back-box">
+                        <lit-icon name="arrowleft"></lit-icon>
+                    </div>
+                    <!--<lit-icon name="arrowleft"></lit-icon>-->
+                    <div class="subheading">Threads in Freq</div>
                 </div>
+                <div style="margin-top:15px;text-align: center">Statistics By Duration</div>
                 <lit-chart-pie  id="chart-pie"></lit-chart-pie>
             </div>
             <div class="table-box">
-                <lit-table id="tb-cpu-usage">
-                    <lit-table-column width="150px" title="frequency" data-index="value" key="value" align="flex-start"></lit-table-column>
-                    <lit-table-column width="100px" title="min" data-index="min" key="min" align="flex-start"></lit-table-column>
-                    <lit-table-column width="100px" title="max" data-index="max" key="max" align="flex-start"></lit-table-column>
-                    <lit-table-column width="200px" title="ratio" data-index="ratio" key="ratio" align="flex-start"></lit-table-column>
-                </lit-table>
+                <table-no-data id="table-no-data">
+                    <lit-table id="tb-cpu-usage">
+                        <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start"></lit-table-column>
+                        <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
+                        <lit-table-column width="200px" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="p_pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="duration" data-index="durStr" key="durStr" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="%" data-index="ratio" key="ratio" align="flex-start"></lit-table-column>
+                    </lit-table>
+                </table-no-data>
             </div>
         </div>
         `;

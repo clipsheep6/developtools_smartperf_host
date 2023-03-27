@@ -84,7 +84,7 @@ export class ClockStruct extends BaseStruct {
             if(drawHeight === 0){
                 drawHeight = 1;
             }
-            if (data.startNS === ClockStruct.hoverClockStruct?.startNS || data.startNS === ClockStruct.selectClockStruct?.startNS) {
+            if ( data.startNS === ClockStruct.hoverClockStruct?.startNS || data.startNS === ClockStruct.selectClockStruct?.startNS) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = 0.6;
                 ctx.fillRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight)

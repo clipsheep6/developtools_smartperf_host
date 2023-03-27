@@ -16,11 +16,7 @@
 import {BaseElement, element} from "../../base-ui/BaseElement.js";
 import "./trace/TimerShaftElement.js";
 import "./trace/base/TraceRow.js";
-import {
-    queryEbpfSamplesCount,
-    querySearchFunc,
-    threadPool
-} from "../database/SqlLite.js";
+import {queryEbpfSamplesCount, querySearchFunc, threadPool} from "../database/SqlLite.js";
 import {RangeSelectStruct, TraceRow} from "./trace/base/TraceRow.js";
 import {TimerShaftElement} from "./trace/TimerShaftElement.js";
 import "./trace/base/TraceSheet.js";
@@ -36,10 +32,15 @@ import {SpHiPerf} from "./chart/SpHiPerf.js";
 import {SearchSdkBean, SearchThreadProcessBean} from "../bean/SearchFuncBean.js";
 import {error, info} from "../../log/Log.js";
 import {
-    BaseStruct,
     drawFlagLineSegment,
-    drawLines, drawLinkLines,
-    drawWakeUp, isFrameContainPoint, ns2x, ns2xByTimeShaft, PairPoint, Rect
+    drawLines,
+    drawLinkLines,
+    drawWakeUp,
+    isFrameContainPoint,
+    ns2x,
+    ns2xByTimeShaft,
+    PairPoint,
+    Rect
 } from "../database/ui-worker/ProcedureWorkerCommon.js";
 import {SpChartManager} from "./chart/SpChartManager.js";
 import {CpuStruct} from "../database/ui-worker/ProcedureWorkerCPU.js";
@@ -65,6 +66,10 @@ import {IrqStruct} from "../database/ui-worker/ProcedureWorkerIrq.js";
 import {JanksStruct} from "../bean/JanksStruct.js";
 import {JankStruct} from "../database/ui-worker/ProcedureWorkerJank.js";
 
+function dpr(){
+    return window.devicePixelRatio||1;
+}
+
 @element('sp-system-trace')
 export class SpSystemTrace extends BaseElement {
     static scrollViewWidth = 0
@@ -72,6 +77,8 @@ export class SpSystemTrace extends BaseElement {
     static SPT_DATA: Array<SPT> = [];
     static DATA_DICT: Map<number, string> = new Map<number, string>();
     static SDK_CONFIG_MAP: any;
+    static sliceRangeMark: any;
+    intersectionObserver: IntersectionObserver | undefined;
     tipEL: HTMLDivElement | undefined | null;
     rowsEL: HTMLDivElement | undefined | null;
     rowsPaneEL: HTMLDivElement | undefined | null;
@@ -105,6 +112,18 @@ export class SpSystemTrace extends BaseElement {
     public currentClickRow: HTMLDivElement | undefined | null;
 
     addPointPair(a: PairPoint, b: PairPoint) {
+        if (a.rowEL.collect) {
+            a.rowEL.translateY = a.rowEL.getBoundingClientRect().top - 195;
+        } else {
+            a.rowEL.translateY = a.rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+        }
+        if (b.rowEL.collect) {
+            b.rowEL.translateY = b.rowEL.getBoundingClientRect().top - 195;
+        } else {
+            b.rowEL.translateY = b.rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+        }
+        a.y = a.rowEL!.translateY! + a.offsetY
+        b.y = b.rowEL!.translateY! + b.offsetY
         this.linkNodes.push([a, b])
     }
 
@@ -218,7 +237,6 @@ export class SpSystemTrace extends BaseElement {
                 this.shadowRoot!.querySelectorAll<TraceRow<any>>("trace-row").forEach(it => {
                     it.checkType = "-1"
                 })
-                this.getVisibleRows();
                 this.refreshCanvas(true);
                 this.traceSheetEL?.setAttribute("mode", 'hidden');
                 return;
@@ -277,7 +295,11 @@ export class SpSystemTrace extends BaseElement {
                     this.shadowRoot?.querySelectorAll<TraceRow<any>>(`trace-row[row-parent-id='${it.rowId}']`).forEach(th => {
                         th.rangeSelect = true;
                         th.checkType = "2"
-                        selection.nativeMemory.push(th.rowId!);
+                        if(th.getAttribute("heap-type") === "native_hook_statistic"){
+                            selection.nativeMemoryStatistic.push(it.rowId!);
+                        }else{
+                            selection.nativeMemory.push(it.rowId!);
+                        }
                     })
                     info("load nativeMemory traceRow id is : ", it.rowId)
                 } else if (it.rowType == TraceRow.ROW_TYPE_THREAD) {
@@ -304,13 +326,12 @@ export class SpSystemTrace extends BaseElement {
                     selection.hasFps = true;
                     info("load FPS traceRow id is : ", it.rowId)
                 } else if (it.rowType == TraceRow.ROW_TYPE_HEAP) {
-                    if (native_memory.indexOf(it.rowId ?? "") != -1) {
+                    if(it.getAttribute("heap-type") === "native_hook_statistic"){
+                        selection.nativeMemoryStatistic.push(it.rowId!);
+                    }else{
                         selection.nativeMemory.push(it.rowId!);
-                        info("load nativeMemory traceRow id is : ", it.rowId)
-                    } else {
-                        selection.heapIds.push(parseInt(it.rowId!))
-                        info("load heap traceRow id is : ", it.rowId)
                     }
+                    info("load nativeMemory traceRow id is : ", it.rowId)
                 } else if (it.rowType == TraceRow.ROW_TYPE_CPU_ABILITY) {
                     selection.cpuAbilityIds.push(it.rowId!)
                     info("load CPU Ability traceRow id is : ", it.rowId)
@@ -465,21 +486,37 @@ export class SpSystemTrace extends BaseElement {
                 this.timerShaftEL?.removeTriangle("triangle")
             }
             this.refreshFavoriteCanvas()
-            this.getVisibleRows();
             this.refreshCanvas(true)
 
         }).observe(this.rowsPaneEL!);
-        // new MutationObserver((mutations, observer) => {
-        //     for (const mutation of mutations) {
-        //         if (mutation.type === "attributes") {
-        //             if (this.style.visibility === "visible") {
-        //                 if (TraceRow.rangeSelectObject) {
-        //                     this.timerShaftEL?.setSlicesMark((TraceRow.rangeSelectObject.startNS || 0), (TraceRow.rangeSelectObject.endNS || 0));
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }).observe(this, {attributes: true, childList: false, subtree: false});
+        new MutationObserver((mutations, observer) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "attributes") {
+                    if (this.style.visibility === "visible") {
+                        if (TraceRow.rangeSelectObject && SpSystemTrace.sliceRangeMark) {
+                            this.timerShaftEL?.setSlicesMark((TraceRow.rangeSelectObject.startNS || 0), (TraceRow.rangeSelectObject.endNS || 0));
+                            SpSystemTrace.sliceRangeMark = undefined;
+                            window.publish(window.SmartEvent.UI.RefreshCanvas, {});
+                        }
+                    }
+                }
+            }
+        }).observe(this, {attributes: true, childList: false, subtree: false});
+
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(it => {
+                let tr = it.target as TraceRow<any>;
+                if (!it.isIntersecting) {
+                    tr.sleeping = true;
+                    this.visibleRows = this.visibleRows.filter(it => !it.sleeping)
+                } else {
+                    this.visibleRows.push(tr);
+                    tr.sleeping = false;
+                }
+                if (this.handler) clearTimeout(this.handler);
+                this.handler = setTimeout(() => this.refreshCanvas(false), 100);
+            })
+        });
         window.addEventListener("keydown", ev => {
             if (ev.key.toLocaleLowerCase() === "escape") {
                 this.shadowRoot?.querySelectorAll<TraceRow<any>>("trace-row").forEach((it) => {
@@ -501,6 +538,9 @@ export class SpSystemTrace extends BaseElement {
         window.subscribe(window.SmartEvent.UI.SliceMark, this.sliceMarkEventHandler)
         window.subscribe(window.SmartEvent.UI.TraceRowComplete, (tr) => {
         })
+        window.subscribe(window.SmartEvent.UI.RefreshCanvas, () => {
+            this.refreshCanvas(false)
+        });
     }
 
     refreshFavoriteCanvas() {
@@ -523,9 +563,9 @@ export class SpSystemTrace extends BaseElement {
         this.spacerEL!.style.height = height + "px"
         this.canvasFavoritePanel!.style.height = this.favoriteRowsEL!.style.height;
         this.canvasFavoritePanel!.style.width = this.canvasPanel?.offsetWidth + 'px'
-        this.canvasFavoritePanel!.width = this.canvasFavoritePanel!.offsetWidth * window.devicePixelRatio;
-        this.canvasFavoritePanel!.height = this.canvasFavoritePanel!.offsetHeight * window.devicePixelRatio;
-        this.canvasFavoritePanel!.getContext('2d')!.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.canvasFavoritePanel!.width = this.canvasFavoritePanel!.offsetWidth * dpr();
+        this.canvasFavoritePanel!.height = this.canvasFavoritePanel!.offsetHeight * dpr();
+        this.canvasFavoritePanel!.getContext('2d')!.scale(dpr(), dpr());
     }
 
     expansionAllParentRow(currentRow: TraceRow<any>) {
@@ -541,15 +581,14 @@ export class SpSystemTrace extends BaseElement {
 
     canvasPanelConfig() {
         this.canvasPanel!.style.left = `${this.timerShaftEL!.canvas!.offsetLeft!}px`
-        this.canvasPanel!.width = this.canvasPanel!.offsetWidth * window.devicePixelRatio;
-        this.canvasPanel!.height = this.canvasPanel!.offsetHeight * window.devicePixelRatio;
-        this.canvasPanelCtx!.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.canvasPanel!.width = this.canvasPanel!.offsetWidth * dpr();
+        this.canvasPanel!.height = this.canvasPanel!.offsetHeight * dpr();
+        this.canvasPanelCtx!.scale(dpr(), dpr());
         this.canvasFavoritePanel!.style.left = `${this.timerShaftEL!.canvas!.offsetLeft!}px`;
-        this.canvasFavoritePanel!.width = this.canvasFavoritePanel!.offsetWidth * window.devicePixelRatio;
-        this.canvasFavoritePanel!.height = this.canvasFavoritePanel!.offsetHeight * window.devicePixelRatio;
-        this.canvasFavoritePanelCtx!.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.canvasFavoritePanel!.width = this.canvasFavoritePanel!.offsetWidth * dpr();
+        this.canvasFavoritePanel!.height = this.canvasFavoritePanel!.offsetHeight * dpr();
+        this.canvasFavoritePanelCtx!.scale(dpr(), dpr());
     }
-
 
     getScrollWidth() {
         let totalScrollDiv, scrollDiv, overflowDiv = document.createElement('div');
@@ -559,55 +598,6 @@ export class SpSystemTrace extends BaseElement {
         scrollDiv = overflowDiv.clientWidth;
         document.body.removeChild(overflowDiv);
         return totalScrollDiv - scrollDiv;
-    }
-
-    fillTranslateY(tr: TraceRow<any>) {
-        if (tr.collect) {
-            tr.translateY = tr.getBoundingClientRect().top - 195;
-        } else {
-            tr.translateY = tr.offsetTop - this.rowsPaneEL!.scrollTop;
-        }
-    }
-
-    getVisibleRows(): Array<TraceRow<any>> {
-        let scrollTop = this.rowsPaneEL?.scrollTop || 0;
-        let scrollHeight = this.rowsPaneEL?.clientHeight || 0;
-        let res = [...this.rowsEL!.querySelectorAll<TraceRow<any>>("trace-row")].filter((it) => {
-            let tr = (it as TraceRow<any>);
-            this.fillTranslateY(tr)
-            let top = it.offsetTop - (this.rowsEL?.offsetTop || 0);
-            if ((top + it.clientHeight > scrollTop && top + it.clientHeight < scrollTop + scrollHeight + it.clientHeight)) {
-                it.sleeping = false;
-                return true
-            } else {
-                if (!it.hasAttribute("collect-type")) {
-                    it.sleeping = true;
-                }
-                return false;
-            }
-        })
-
-        let favoriteScrollTop = this.favoriteRowsEL?.scrollTop || 0;
-        let favoriteScrollHeight = this.favoriteRowsEL?.clientHeight || 0;
-        let favoriteRes = [...this.favoriteRowsEL!.querySelectorAll<TraceRow<any>>("trace-row")].filter((it) => {
-            let tr = (it as TraceRow<any>);
-            this.fillTranslateY(tr)
-            let top = it.offsetTop
-            if ((top + it.clientHeight > favoriteScrollTop && top + it.clientHeight < favoriteScrollTop + favoriteScrollHeight + it.clientHeight)) {
-                it.sleeping = false;
-                return true
-            } else {
-                it.sleeping = true;
-                return false;
-            }
-        })
-        this.visibleRows = [...res, ...favoriteRes];
-        info("Visible TraceRow size is :", this.visibleRows!.length)
-        this.linkNodes.forEach(it => {
-            it[0].y = it[0].rowEL.translateY + it[0].offsetY;
-            it[1].y = it[1].rowEL.translateY + it[1].offsetY;
-        })
-        return this.visibleRows;
     }
 
     timerShaftELFlagClickHandler = (flag: Flag | undefined | null) => {
@@ -639,21 +629,23 @@ export class SpSystemTrace extends BaseElement {
     }
     tim: number = -1;
     top: number = 0;
+    handler:any=undefined;
     rowsElOnScroll = (e: any) => {
-        this.hoverStructNull();
-        if (TraceRow.range) {
-            TraceRow.range.refresh = true;
-        }
-        this.visibleRows = this.getVisibleRows();
-        for (let index = 0; index < this.visibleRows.length; index++) {
-            if (index == 0 || index == this.visibleRows.length - 1) {
-                this.visibleRows[index].isHover = false;
+        this.linkNodes.forEach(itln => {
+            if (itln[0].rowEL.collect) {
+                itln[0].rowEL.translateY = itln[0].rowEL.getBoundingClientRect().top - 195;
+            } else {
+                itln[0].rowEL.translateY = itln[0].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
             }
-        }
-        requestAnimationFrame(() => {
-            this.refreshCanvas(false);
+            if (itln[1].rowEL.collect) {
+                itln[1].rowEL.translateY = itln[1].rowEL.getBoundingClientRect().top - 195;
+            } else {
+                itln[1].rowEL.translateY = itln[1].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+            }
+            itln[0].y = itln[0].rowEL.translateY + itln[0].offsetY;
+            itln[1].y = itln[1].rowEL.translateY + itln[1].offsetY;
         })
-
+        requestAnimationFrame(() => this.refreshCanvas(false))
     }
 
     favoriteRowsElOnScroll = (e: any) => {
@@ -815,7 +807,6 @@ export class SpSystemTrace extends BaseElement {
 
     favoriteChangeHandler = (row: TraceRow<any>) => {
         info("favoriteChangeHandler", row.frame, row.offsetTop, row.offsetHeight);
-        this.getVisibleRows();
     }
 
     selectChangeHandler = (rows: Array<TraceRow<any>>) => {
@@ -862,7 +853,6 @@ export class SpSystemTrace extends BaseElement {
                 }
                 tr.focusHandler?.(ev);
             })
-            this.refreshCanvas(true);
         }
     }
 
@@ -972,11 +962,11 @@ export class SpSystemTrace extends BaseElement {
             if (threadRow) {
                 this.scrollToProcess(`${d.tid}`, `${d.processId}`, "process", false);
                 this.scrollToProcess(`${d.tid}`, `${d.processId}`, "thread", true);
-            }
-            if (threadRow!.isComplete) {
-                task()
-            } else {
-                threadRow!.onComplete = task
+                if (threadRow!.isComplete) {
+                    task()
+                } else {
+                    threadRow!.onComplete = task
+                }
             }
         }
 
@@ -1073,7 +1063,12 @@ export class SpSystemTrace extends BaseElement {
             this.timerShaftEL?.drawTriangle(JankStruct.selectJankStruct!.ts || 0, "inverted");
             this.traceSheetEL?.displayJankData(JankStruct.selectJankStruct, (datas) => {
                 datas.forEach(data => {
-                    let endParentRow = this.shadowRoot?.querySelector<TraceRow<any>>(`trace-row[row-id='${data.pid}'][folder]`);
+                    let endParentRow;
+                    if (data.frame_type == "frameTime") {
+                        endParentRow = this.shadowRoot?.querySelector<TraceRow<JankStruct>>(`trace-row[row-id='frameTime'][row-type='janks']`);
+                    } else {
+                        endParentRow = this.shadowRoot?.querySelector<TraceRow<any>>(`trace-row[row-id='${data.pid}'][folder]`);
+                    }
                     this.drawJankLine(endParentRow, JankStruct.selectJankStruct!, data);
                 })
             }, jankClickHandler);
@@ -1089,7 +1084,7 @@ export class SpSystemTrace extends BaseElement {
                 this.refreshCanvas(true);
             }
         }
-        if (!JankStruct.selectJankStruct && JankStruct.delJankLineFlag) {
+        if (!JankStruct.selectJankStruct) {
             this.clearPointPair();
         }
     }
@@ -1101,7 +1096,7 @@ export class SpSystemTrace extends BaseElement {
         } else {
             startRow = this.shadowRoot?.querySelector<TraceRow<JankStruct>>(`trace-row[row-id='${selectJankStruct?.type + '-' + selectJankStruct?.pid}'][row-type='janks']`);
         }
-        let startPointNS = selectJankStruct.ts! + selectJankStruct.dur!;
+        let startPointNS: number;
         if (endParentRow) {
             endParentRow.expansion = true;
             let endRowStruct: any;
@@ -1113,19 +1108,44 @@ export class SpSystemTrace extends BaseElement {
             let task = () => {
                 if (endRowStruct) {
                     let findJankEntry = endRowStruct!.dataList!.find((dat: any) => dat.name == data.name && dat.pid == data.pid);
-                    this.addPointPair({
-                        x: ns2xByTimeShaft(startPointNS, this.timerShaftEL!),
-                        y: startRow!.translateY! + (20 * (selectJankStruct!.depth! + 0.5)),
-                        offsetY: (20 * (selectJankStruct!.depth! + 0.5)),
-                        ns: startPointNS,
-                        rowEL: startRow!
-                    }, {
-                        x: ns2xByTimeShaft(findJankEntry!.ts!, this.timerShaftEL!),
-                        y: endRowStruct!.translateY! + (20 * (findJankEntry!.depth! + 0.5)),
-                        offsetY: (20 * (findJankEntry!.depth! + 0.5)),
-                        ns: findJankEntry!.ts!,
-                        rowEL: endRowStruct!
-                    });
+                    //连线规则：frametimeline的头----app的头，app的尾----renderservice的头
+                    let tts: number = 0
+                    if (selectJankStruct.frame_type == 'app') {
+                        tts = findJankEntry.frame_type == 'frameTime' ? selectJankStruct.ts! : (selectJankStruct.ts! + selectJankStruct.dur!)
+                        this.addPointPair({
+                            x: ns2xByTimeShaft(tts, this.timerShaftEL!),
+                            y: startRow!.translateY! + (20 * (selectJankStruct!.depth! + 0.5)),
+                            offsetY: (20 * (selectJankStruct!.depth! + 0.5)),
+                            ns: tts,
+                            rowEL: startRow!,
+                            isRight: selectJankStruct.ts == tts
+                        }, {
+                            x: ns2xByTimeShaft(findJankEntry.ts!, this.timerShaftEL!),
+                            y: endRowStruct!.translateY! + (20 * (findJankEntry!.depth! + 0.5)),
+                            offsetY: (20 * (findJankEntry!.depth! + 0.5)),
+                            ns: findJankEntry.ts!,
+                            rowEL: endRowStruct!,
+                            isRight: true
+                        });
+                    }
+                    if (findJankEntry.frame_type == 'app') {
+                        tts = selectJankStruct.frame_type == 'frameTime' ? findJankEntry.ts : (findJankEntry.ts! + findJankEntry.dur!)
+                        this.addPointPair({
+                            x: ns2xByTimeShaft(selectJankStruct.ts!, this.timerShaftEL!),
+                            y: startRow!.translateY! + (20 * (selectJankStruct!.depth! + 0.5)),
+                            offsetY: (20 * (selectJankStruct!.depth! + 0.5)),
+                            ns: selectJankStruct.ts!,
+                            rowEL: startRow!,
+                            isRight: true
+                        }, {
+                            x: ns2xByTimeShaft(tts, this.timerShaftEL!),
+                            y: endRowStruct!.translateY! + (20 * (findJankEntry!.depth! + 0.5)),
+                            offsetY: (20 * (findJankEntry!.depth! + 0.5)),
+                            ns: tts,
+                            rowEL: endRowStruct!,
+                            isRight: selectJankStruct.ts == tts
+                        });
+                    }
                     if (data.children.length >= 1) {
                         let endP;
                         if (data.children[0].frame_type == "frameTime") {
@@ -1139,17 +1159,28 @@ export class SpSystemTrace extends BaseElement {
                     this.refreshCanvas(true);
                 }
             }
-            if (endRowStruct!.isComplete) {
-                task();
-            } else {
-                window.subscribeOnce(window.SmartEvent.UI.TraceRowComplete, (tr) => {
-                    let row = tr as TraceRow<JankStruct>
-                    if (row.rowId == endRowStruct.rowId && row.rowType == endRowStruct.rowType) {
-                        task();
+            if (endRowStruct) {
+                if (endRowStruct!.isComplete) {
+                    task();
+                    let jankRow: any;
+                    if (JankStruct.selectJankStruct!.frame_type == "frameTime") {
+                        jankRow = this.shadowRoot?.querySelector<TraceRow<JankStruct>>(`trace-row[row-id='actual frameTime'][row-type='janks']`);
+                    } else {
+                        jankRow = this.shadowRoot?.querySelector<TraceRow<JankStruct>>(`trace-row[row-id='${JankStruct.selectJankStruct?.type + '-' + JankStruct.selectJankStruct?.pid}'][row-type='janks']`);
                     }
-                })
-                endRowStruct!.sleeping = false;
-                endRowStruct!.draw(false);
+                    if (jankRow) {
+                        this.scrollToProcess(jankRow.rowId!, jankRow.rowParentId!, jankRow.rowType!, true);
+                    }
+                } else {
+                    window.subscribe(window.SmartEvent.UI.TraceRowComplete, (tr) => {
+                        let row = tr as TraceRow<JankStruct>
+                        if (row.rowId == endRowStruct.rowId && row.rowType == endRowStruct.rowType) {
+                            task();
+                        }
+                    })
+                    endRowStruct!.sleeping = false;
+                    endRowStruct!.draw(false);
+                }
             }
         }
     }
@@ -1206,7 +1237,7 @@ export class SpSystemTrace extends BaseElement {
 
     scrollToDepth(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true, depth: number) {
         let rootRow = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowId}'][row-type='${rowType}']`);
-        if (rootRow!.collect) {
+        if (rootRow &&　rootRow!.collect) {
             this.favoriteRowsEL!.scroll({
                 top: (rootRow?.offsetTop || 0) - this.canvasFavoritePanel!.offsetHeight + ((++depth) * 20 || 0),
                 left: 0,
@@ -1281,10 +1312,11 @@ export class SpSystemTrace extends BaseElement {
         this.removeEventListener('mouseout', this.documentOnMouseOut)
         document.removeEventListener('keypress', this.documentOnKeyPress)
         document.removeEventListener('keyup', this.documentOnKeyUp)
-        window.unsubscribe(window.SmartEvent.UI.SliceMark, this.sliceMarkEventHandler);
+        window.unsubscribe(window.SmartEvent.UI.SliceMark, this.sliceMarkEventHandler.bind(this));
     }
 
     sliceMarkEventHandler(ev: any) {
+        SpSystemTrace.sliceRangeMark = ev;
         let startNS = (ev).timestamp - ((window as any).recordStartNS)
         let endNS = (ev).maxDuration + startNS;
         TraceRow.rangeSelectObject = {startX: 0, startNS: startNS, endNS: endNS, endX: 0}
@@ -1341,7 +1373,7 @@ export class SpSystemTrace extends BaseElement {
                 }
             }
         })
-        this.getVisibleRows().forEach(it => it.rowHidden = false && it.draw(true))
+        this.visibleRows.forEach(it => it.rowHidden = false && it.draw(true))
     }
 
     searchCPU(query: string): Array<CpuStruct> {
@@ -1676,15 +1708,15 @@ export class SpSystemTrace extends BaseElement {
         await this.chartManager?.init(progress);
         this.rowsEL?.querySelectorAll<TraceRow<any>>("trace-row").forEach((it: any) => {
             it.addEventListener('expansion-change', () => {
-                this.getVisibleRows();
                 this.refreshCanvas(true);
             })
         })
         progress("completed", 100);
         info("All TraceRow Data initialized")
         this.loadTraceCompleted = true;
-        this.getVisibleRows();
-        this.refreshCanvas(false);
+        this.rowsEL!.querySelectorAll<TraceRow<any>>("trace-row").forEach(it => {
+            this.intersectionObserver?.observe(it);
+        })
         return {status: true, msg: "success"}
     }
 

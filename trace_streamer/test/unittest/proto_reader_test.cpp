@@ -373,13 +373,11 @@ HWTEST_F(ProtoReaderTest, ParserNoDataByVarInt, TestSize.Level1)
     testParser.SerializeToString(&str);
 
     auto kCountFieldNumber = TestParser_Reader::kCountFieldNumber;
-    ProtoReaderBase protoReader(str);
     uint64_t count = 0;
     auto tsTag = CreateTagVarInt(kCountFieldNumber);
     if (str.size() > 10 && str.data()[0] == tsTag) {
         const uint8_t* nextData = VarIntDecode(reinterpret_cast<const uint8_t*>(str.data() + 1),
                                                reinterpret_cast<const uint8_t*>(str.data() + 11), &count);
-        protoReader.ResetCurrentAddr(nextData);
     }
     EXPECT_EQ(0, count);
 }
@@ -413,13 +411,11 @@ HWTEST_F(ProtoReaderTest, ParserDataByVarInt, TestSize.Level1)
     testParser.SerializeToString(&str);
 
     auto kCountFieldNumber = TestParser_Reader::kCountFieldNumber;
-    ProtoReaderBase protoReader(str);
     uint64_t count = 0;
     auto tsTag = CreateTagVarInt(kCountFieldNumber);
     if (str.size() > 10 && str.data()[0] == tsTag) {
         const uint8_t* nextData = VarIntDecode(reinterpret_cast<const uint8_t*>(str.data() + 1),
                                                reinterpret_cast<const uint8_t*>(str.data() + 11), &count);
-        protoReader.ResetCurrentAddr(nextData);
     }
     EXPECT_EQ(COUNT, count);
 }

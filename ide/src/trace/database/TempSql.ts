@@ -404,6 +404,6 @@ let temp_init_sql_list = [
 ];
 let translateJsonString = (str: string): string => {
     return str
-        .replace(/[\t|\r|\n]/g, "")
+        .replace(/[\t\r\n]/g, "")
         .replace(/\\/g, "\\\\")
 }

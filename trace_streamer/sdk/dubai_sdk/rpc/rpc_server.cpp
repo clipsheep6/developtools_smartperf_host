@@ -83,9 +83,7 @@ int RpcServer::WasmSqlQuery(const uint8_t* data, size_t len, uint8_t* out, int o
 {
     ts_->SetCancel(false);
     std::string sql(reinterpret_cast<const char*>(data), len);
-    TS_LOGI("WASM RPC SqlQuery out(%p:%d) sql(%zu:%s)", reinterpret_cast<void*>(out), outLen,
-        len, sql.c_str());
-
+    TS_LOGI("WASM RPC SqlQuery outlen(%d) sql(%zu:%s)", outLen, len, sql.c_str());
     int ret = ts_->SearchDatabase(sql, out, outLen);
     return ret;
 }

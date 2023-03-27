@@ -19,10 +19,10 @@ import './TabThreadAnalysis.js'
 import './TabCpuAnalysis.js'
 import {TabCpuAnalysis} from "./TabCpuAnalysis.js";
 import {TabThreadAnalysis} from "./TabThreadAnalysis.js";
-import {queryCpuMax, queryTotalTime} from "../../database/SqlLite.js";
 import {LitTabs} from "../../../base-ui/tabs/lit-tabs.js";
 import {CheckCpuSetting} from "./CheckCpuSetting.js";
 import {Top20FrequencyThread} from "./Top20FrequencyThread.js";
+import {procedurePool} from "../../database/Procedure.js";
 
 @element('sp-scheduling-analysis')
 export class SpSchedulingAnalysis extends BaseElement {
@@ -45,18 +45,17 @@ export class SpSchedulingAnalysis extends BaseElement {
         SpSchedulingAnalysis.traceChange = true;
         CheckCpuSetting.resetCpuSettings()
         Top20FrequencyThread.threads = undefined
+        procedurePool.submitWithName("logic1", "scheduling-clearData", { }, undefined, (res:any)=>{})
     }
 
-    async init(){
+    init(){
         if(SpSchedulingAnalysis.traceChange){
             SpSchedulingAnalysis.traceChange = false;
             this.tabs!.activekey = "1"
-            let timeRange = await queryTotalTime();
-            let arr = await queryCpuMax();
-            SpSchedulingAnalysis.startTs = timeRange.length > 0 ? timeRange[0].recordStartNS : 0;
-            SpSchedulingAnalysis.endTs = timeRange.length > 0 ? timeRange[0].recordEndNS : 0;
-            SpSchedulingAnalysis.totalDur = timeRange.length > 0 ? timeRange[0].total : 0;
-            SpSchedulingAnalysis.cpuCount = arr.length > 0 ? arr[0].cpu + 1 : 0;
+            SpSchedulingAnalysis.startTs = (window as any).recordStartNS;
+            SpSchedulingAnalysis.endTs = (window as any).recordEndNS;
+            SpSchedulingAnalysis.totalDur = SpSchedulingAnalysis.endTs - SpSchedulingAnalysis.startTs;
+            SpSchedulingAnalysis.cpuCount =(window as any).cpuCount;
             this.tabCpuAnalysis?.init();
             this.tabThreadAnalysis?.init();
         }

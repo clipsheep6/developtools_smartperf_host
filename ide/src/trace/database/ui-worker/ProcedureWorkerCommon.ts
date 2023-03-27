@@ -309,10 +309,12 @@ export class Rect {
 export class Point {
     x: number = 0
     y: number = 0
+    isRight: boolean = true;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, isRight: boolean = true) {
         this.x = x;
         this.y = y;
+        this.isRight = isRight;
     }
 }
 
@@ -322,13 +324,16 @@ export class PairPoint {
     y: number = 0
     offsetY: number = 0;
     rowEL: TraceRow<any>
+    isRight: boolean = true;
 
-    constructor(rowEL: TraceRow<any>, x: number, y: number, ns: number, offsetY:number) {
+
+    constructor(rowEL: TraceRow<any>, x: number, y: number, ns: number, offsetY:number, isRight: boolean) {
         this.rowEL = rowEL;
         this.x = x;
         this.y = y;
         this.ns = ns;
         this.offsetY =offsetY
+        this.isRight = isRight
     }
 }
 
@@ -533,20 +538,46 @@ export function drawLinkLines(context: CanvasRenderingContext2D, nodes: Point[][
             y0 = (start.y ?? 0);
             x3 = end.x ?? 0
             y3 = (end.y ?? 0)
-            x2 = x3 + 100 * percentage
+            if(end.isRight){
+                x2 = x3 - 100 * percentage
+            } else {
+                x2 = x3 + 100 * percentage
+            }
             y2 = y3 - 40 * percentage
-            x1 = x0 - 100 * percentage
+            if(start.isRight){
+                x1 = x0 - 100 * percentage
+            } else {
+                x1 = x0 + 100 * percentage
+            }
             y1 = y0 + 40 * percentage
+            //向右箭头终点在x轴正向有偏移
+            if(!start.isRight){
+                x0 -= 5;
+            }
             context.moveTo(x0, y0)
-            context.lineTo(x0 - wid, y0 + wid)
-            context.moveTo(x0, y0)
-            context.lineTo(x0 - wid, y0 - wid)
+            //箭头向左还是向右
+            if(start.isRight){
+                context.lineTo(x0 - wid, y0 + wid)
+                context.moveTo(x0, y0)
+                context.lineTo(x0 - wid, y0 - wid)
+            } else {
+                context.lineTo(x0 + wid, y0 + wid)
+                context.moveTo(x0, y0)
+                context.lineTo(x0 + wid, y0 - wid)
+            }
             context.moveTo(x0, y0)
             context.bezierCurveTo(x1, y1, x2, y2, x3, y3)
             context.moveTo(x3, y3)
-            context.lineTo(x3 + wid, y3 + wid)
-            context.moveTo(x3, y3)
-            context.lineTo(x3 + wid, y3 - wid)
+            //箭头向左还是向右
+            if(end.isRight){
+                context.lineTo(x3 - wid, y3 + wid)
+                context.moveTo(x3, y3)
+                context.lineTo(x3 - wid, y3 - wid)
+            }else {
+                context.lineTo(x3 + wid, y3 + wid)
+                context.moveTo(x3, y3)
+                context.lineTo(x3 + wid, y3 - wid)
+            }
             context.moveTo(x3, y3)
             context.stroke();
             context.closePath();

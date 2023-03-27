@@ -590,7 +590,7 @@ bool HtraceParser::ParseDataRecursively(std::deque<uint8_t>::iterator& packagesB
             hasGotHeader_ = false;
             packagesBuffer_.erase(packagesBuffer_.begin(), packagesBegin);
             profilerTraceFileHeader_.data.dataType = ProfilerTraceFileHeader::UNKNOW_TYPE;
-            TS_LOGW("read proto finished!");
+            TS_LOGD("read proto finished!");
             return ParseDataRecursively(packagesBegin, currentLength);
         }
     }

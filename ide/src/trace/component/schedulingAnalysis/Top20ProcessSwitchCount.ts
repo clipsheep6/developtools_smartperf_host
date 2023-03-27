@@ -21,6 +21,8 @@ import {info} from "../../../log/Log.js";
 import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
 import "../../../base-ui/progress-bar/LitProgressBar.js"
 import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+import "./TableNoData.js"
+import {TableNoData} from "./TableNoData.js";
 
 @element('top20-process-switch-count')
 export class Top20ProcessSwitchCount extends BaseElement {
@@ -29,8 +31,10 @@ export class Top20ProcessSwitchCount extends BaseElement {
     private table:LitTable | null | undefined
     private pie:LitChartPie | null | undefined
     private progress:LitProgressBar | null | undefined;
+    private nodata:TableNoData | null | undefined;
 
     initElements(): void {
+        this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
         this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-process-switch-count")
         this.pie = this.shadowRoot!.querySelector<LitChartPie>("#pie")
@@ -46,6 +50,7 @@ export class Top20ProcessSwitchCount extends BaseElement {
         this.traceChange = false;
         this.progress!.loading = true
         this.queryLogicWorker("scheduling-Process SwitchCount","query Process Switch Count Analysis Time:",(res)=>{
+            this.nodata!.noData = res === undefined || res.length === 0
             this.table!.recycleDataSource = res;
             this.table?.reMeauseHeight();
             this.pie!.config = {
@@ -54,7 +59,14 @@ export class Top20ProcessSwitchCount extends BaseElement {
                 angleField: 'switchCount',
                 colorField: 'pid',
                 radius: 0.8,
-                tip:undefined,
+                tip:(obj)=>{
+                    return `<div>
+                             <div>pid:${obj.obj.tid}</div> 
+                             <div>p_name:${obj.obj.tName}</div> 
+                             <div>sched_switch count:${obj.obj.switchCount}</div> 
+                        </div>
+                `;
+                },
                 label: {
                     type: 'outer',
                 },
@@ -76,7 +88,7 @@ export class Top20ProcessSwitchCount extends BaseElement {
 
     queryLogicWorker(option:string,log:string,handler:(res:any) => void){
         let time = new Date().getTime();
-        procedurePool.submitWithName("logic0", option, {}, undefined, handler)
+        procedurePool.submitWithName("logic1", option, {}, undefined, handler)
         let durTime = new Date().getTime() - time;
         info(log, durTime)
     }
@@ -93,7 +105,7 @@ export class Top20ProcessSwitchCount extends BaseElement {
             flex: 1;        
             overflow: auto ;
             border-radius: 5px;
-            border: solid 1px #e0e0e0;
+            border: solid 1px var(--dark-border1,#e0e0e0);
             margin: 15px;
             padding: 5px 15px
         }
@@ -112,18 +124,24 @@ export class Top20ProcessSwitchCount extends BaseElement {
         }
         </style>
         <lit-progress-bar id="loading" style="height: 1px;width: 100%" loading></lit-progress-bar>
+        <table-no-data id="nodata" contentHeight="500px">
         <div class="root">
-            <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
+            <div style="display: flex;flex-direction: column;align-items: center">
+                <div>Statistics By Sched_Switch Count</div>
+                <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
+            </div>
             <div class="tb_switch_count" >
                 <lit-table id="tb-process-switch-count" style="height: auto">
                     <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start"></lit-table-column>
+                    <lit-table-column width="1fr" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
+                    <lit-table-column width="1fr" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
                     <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
                     <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
                     <lit-table-column width="1fr" title="sched_switch count" data-index="switchCount" key="switchCount" align="flex-start"></lit-table-column>        
                 </lit-table>
             </div>
         </div>
-        
+        </table-no-data>
         `;
     }
 }

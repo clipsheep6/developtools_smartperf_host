@@ -353,9 +353,9 @@ export class TimerShaftElement extends BaseElement {
 
     displayCollect(showCollect: boolean){
         if(showCollect){
-            this.collecBtn!.style.visibility = 'visible'
+            this.collecBtn!.style.display = 'flex'
         }else {
-            this.collecBtn!.style.visibility = 'hidden'
+            this.collecBtn!.style.display = 'none'
         }
     }
 
@@ -412,8 +412,7 @@ export class TimerShaftElement extends BaseElement {
             right:5px;
             bottom:5px;
             color: #5291FF;
-            visibility: hidden;
-            display: flex;
+            display: none;
         }
         .time-collect[close] > .time-collect-arrow{
             transform: rotateZ(-180deg);

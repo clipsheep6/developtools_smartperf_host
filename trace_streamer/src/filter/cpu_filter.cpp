@@ -46,10 +46,10 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
         cpuToRowSched_.insert(std::make_pair(cpu, RowPos{nextPid, index}));
     }
     if (nextPid) {
+        CheckWakeupEvent(nextPid);
         auto lastRow = RowOfInternalTidInStateTable(nextPid);
         if (lastRow != INVALID_UINT64) {
             // check if there are wakeup or waking events before
-            CheckWakeupEvent(nextPid);
             lastRow = RowOfInternalTidInStateTable(nextPid);
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
         }

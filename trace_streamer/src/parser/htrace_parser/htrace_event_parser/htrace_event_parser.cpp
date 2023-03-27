@@ -430,7 +430,7 @@ bool HtraceEventParser::SchedWakeupEvent(const MessageLite& event) const
     std::optional<uint32_t> targetCpu = msg.target_cpu();
     if (targetCpu.has_value()) {
         traceDataCache_->GetRawData()->AppendRawData(0, eventTimestamp_, RAW_SCHED_WAKEUP, targetCpu.value(),
-                                                     internalTid);
+                                                     wakeupFromPid);
     } else {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_WAKEUP, STAT_EVENT_DATA_INVALID);
     }
@@ -449,7 +449,7 @@ bool HtraceEventParser::SchedWakeupNewEvent(const MessageLite& event) const
     std::optional<uint32_t> targetCpu = msg.target_cpu();
     if (targetCpu.has_value()) {
         traceDataCache_->GetRawData()->AppendRawData(0, eventTimestamp_, RAW_SCHED_WAKEUP, targetCpu.value(),
-                                                     internalTid);
+                                                     wakeupFromPid);
     } else {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_WAKEUP_NEW, STAT_EVENT_DATA_INVALID);
     }

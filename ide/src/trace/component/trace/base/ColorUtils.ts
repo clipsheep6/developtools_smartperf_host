@@ -88,6 +88,11 @@ export class ColorUtils {
         return ColorUtils.MD_PALETTE[colorIdx];
     }
 
+    public static colorForName(name: string): string {
+        let colorIdx: number = ColorUtils.hash(name, ColorUtils.MD_PALETTE.length);
+        return ColorUtils.MD_PALETTE[colorIdx];
+    }
+
     public static formatNumberComma(str: number): string {
         if(str === undefined||str === null) return "";
         let unit = str>=0?'':'-'

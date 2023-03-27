@@ -188,17 +188,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         this._rangeSelect = value;
     }
 
-    get sleeping(): boolean {
-        return this.hasAttribute("sleeping");
-    }
-
-    set sleeping(value: boolean) {
-        if (value) {
-            this.setAttribute("sleeping", "")
-        } else {
-            this.removeAttribute("sleeping")
-        }
-    }
+    sleeping:boolean = false
 
     get rowType(): string | undefined | null {
         return this.getAttribute("row-type");
@@ -262,7 +252,13 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         } else {
             this.removeAttribute('expansion')
         }
+        const fragment = document.createDocumentFragment()
+        let node;
         this.parentElement?.querySelectorAll<TraceRow<any>>(`trace-row[row-parent-id='${this.rowId}']`).forEach(it => {
+            node = it
+            fragment.appendChild(node)
+        })
+        Array.prototype.slice.call(fragment.childNodes).forEach(it => {
             if (!it.collect) {
                 it.rowHidden = !this.expansion;
             }
@@ -270,6 +266,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                 it.expansion = value;
             }
         })
+        this.insertAfter(fragment,this)
         this.dispatchEvent(new CustomEvent("expansion-change", {
             detail: {
                 expansion: this.expansion,
@@ -278,6 +275,15 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                 rowParentId: this.rowParentId
             }
         }))
+    }
+
+    insertAfter(newEl: DocumentFragment, targetEl: HTMLElement) {
+        let parentEl = targetEl.parentNode;
+        if (parentEl!.lastChild == targetEl) {
+            parentEl!.appendChild(newEl);
+        } else {
+            parentEl!.insertBefore(newEl, targetEl.nextSibling);
+        }
     }
 
     set tip(value: string) {
@@ -398,7 +404,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                 let canvas = document.createElement('canvas');
                 canvas.className = "panel";
                 this.canvas.push(canvas);
-                this.canvasContainer!.appendChild(canvas);
+                if(this.canvasContainer){
+                    this.canvasContainer.appendChild(canvas);
+                }
             }
         }
         this.describeEl?.addEventListener('click', () => {

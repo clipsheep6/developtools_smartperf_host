@@ -41,6 +41,12 @@ class Event{
         }
         this.subscribe(event, f);
     }
+
+    clearTraceRowComplete(){
+        if(this.map[window.SmartEvent.UI.TraceRowComplete].length > 0){
+            this.map[window.SmartEvent.UI.TraceRowComplete] = [];
+        }
+    }
 }
 
 export const EventCenter = new Event();

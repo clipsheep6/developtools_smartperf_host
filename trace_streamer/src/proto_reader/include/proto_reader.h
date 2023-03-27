@@ -190,8 +190,6 @@ class ProtoReaderBase {
 public:
     ProtoReaderBase() : startAddr_(0), endAddr_(0) {}
     ProtoReaderBase(DataArea* storage, uint32_t dataAreasCount, const uint8_t* buffer, size_t length);
-    ProtoReaderBase(const std::string& str);
-    ProtoReaderBase(const BytesView& byteView);
     const uint8_t* GetStartAddr() const
     {
         return startAddr_;

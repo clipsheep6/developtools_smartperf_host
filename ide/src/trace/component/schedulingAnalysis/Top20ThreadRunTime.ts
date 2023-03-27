@@ -21,6 +21,8 @@ import {procedurePool} from "../../database/Procedure.js";
 import {info} from "../../../log/Log.js";
 import "../../../base-ui/progress-bar/LitProgressBar.js"
 import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+import "./TableNoData.js"
+import {TableNoData} from "./TableNoData.js";
 
 @element('top20-thread-run-time')
 export class Top20ThreadRunTime extends BaseElement {
@@ -28,24 +30,12 @@ export class Top20ThreadRunTime extends BaseElement {
     traceChange:boolean = false;
     private table:LitTable | null | undefined;
     private progress:LitProgressBar | null | undefined;
-    private defaultColumns = `
-            <lit-table-column width="90px" title="NO" data-index="no" key="no" align="flex-start"></lit-table-column>
-            <lit-table-column width="140px" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
-            <lit-table-column width="240px" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
-            <lit-table-column width="140px" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
-            <lit-table-column width="240px" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
-            <lit-table-column width="140px" title="max duration" data-index="maxDuration" key="maxDuration" align="flex-start"></lit-table-column>
-            <lit-table-column width="140px" title="timestamp" data-index="timestamp" key="timestamp" align="flex-start">
-                <template>
-                    <div onclick="{
-                        window.publish(window.SmartEvent.UI.SliceMark,this.parentElement.parentElement.data)
-                    }">{{timestamp}}</div>
-                </template>
-            </lit-table-column>
-        `
+    private nodata:TableNoData | null | undefined;
+
     initElements(): void {
         this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-thread-run-time")
+        this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
     }
 
     init(){
@@ -57,16 +47,8 @@ export class Top20ThreadRunTime extends BaseElement {
         }
         this.progress!.loading = true
         this.traceChange = false;
-        this.table!.innerHTML = ''
-        let columns = `${this.defaultColumns}`
-        for(let i =0; i < SpSchedulingAnalysis.cpuCount;i++){
-            columns = `
-                ${columns}
-                <lit-table-column width="120px" title="cpu${i}(us)" data-index="cpu${i}" key="cpu${i}" align="flex-start"></lit-table-column>
-            `
-        }
-        this.table!.innerHTML = columns;
         this.queryLogicWorker(`scheduling-Thread RunTime`,`query Thread Cpu Run Time Analysis Time:`,(res)=>{
+            this.nodata!.noData = res === undefined || res.length === 0;
             this.table!.recycleDataSource = res;
             this.table?.reMeauseHeight();
             this.progress!.loading = false
@@ -80,7 +62,7 @@ export class Top20ThreadRunTime extends BaseElement {
 
     queryLogicWorker(option:string,log:string,handler:(res:any) => void){
         let time = new Date().getTime();
-        procedurePool.submitWithName("logic0", option,
+        procedurePool.submitWithName("logic1", option,
             { cpuMax:SpSchedulingAnalysis.cpuCount - 1 }, undefined, handler)
         let durTime = new Date().getTime() - time;
         info(log, durTime)
@@ -97,16 +79,34 @@ export class Top20ThreadRunTime extends BaseElement {
         .tb_run_time{
             overflow: auto ;
             border-radius: 5px;
-            border: solid 1px #e0e0e0;
-            margin: 10px;
+            border: solid 1px var(--dark-border1,#e0e0e0);
+            margin: 10px 10px 0 10px;
             padding: 5px 15px
         }
         </style>
         <lit-progress-bar id="loading" style="height: 1px;width: 100%" loading></lit-progress-bar>
         <div style="height: 5px"></div>
         <div class="tb_run_time" >
-             <lit-table id="tb-thread-run-time" style="height: auto;"></lit-table>
+            <table-no-data id="nodata" contentHeight="500px">
+                <lit-table id="tb-thread-run-time" style="height: auto;">
+                    <lit-table-column width="90px" title="NO" data-index="no" key="no" align="flex-start"></lit-table-column>
+                    <lit-table-column width="140px" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
+                    <lit-table-column width="240px" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
+                    <lit-table-column width="140px" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
+                    <lit-table-column width="240px" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
+                    <lit-table-column width="140px" title="max duration" data-index="maxDurationStr" key="maxDurationStr" align="flex-start"></lit-table-column>
+                    <lit-table-column width="200px" title="timestamp" data-index="timestamp" key="timestamp" align="flex-start">
+                        <template>
+                            <div onclick="{
+                                window.publish(window.SmartEvent.UI.SliceMark,this.parentElement.parentElement.data)
+                            }">{{timestamp}}</div>
+                        </template>
+                    </lit-table-column>
+                    <lit-table-column width="140px" title="cpu" data-index="cpu" key="cpu" align="flex-start"></lit-table-column>
+                </lit-table>
+            </table-no-data>
         </div>
+        <div style="height: 10px"></div>
         `;
     }
 }

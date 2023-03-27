@@ -89,6 +89,9 @@ export class SpChartManager {
         info("cpu Data initialized")
         progress("process/thread state", 73);
         await this.cpu.initProcessThreadStateData(progress);
+        await this.cpu.initCpuIdle0Data(progress);
+        await this.cpu.initSchedulingPTData(progress);
+        await this.cpu.initSchedulingFreqData(progress);
         info("ProcessThreadState Data initialized")
         progress("cpu rate", 75);
         await this.initCpuRate();
@@ -147,6 +150,7 @@ export class SpChartManager {
             this.trace.timerShaftEL.totalNS = total;
             (window as any).recordStartNS = startNS;
             (window as any).recordEndNS = endNS;
+            (window as any).totalNS = total;
             this.trace.timerShaftEL.loadComplete = true;
         }
     }

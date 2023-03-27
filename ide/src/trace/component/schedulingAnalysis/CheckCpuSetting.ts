@@ -149,12 +149,11 @@ export class CheckCpuSetting extends BaseElement {
         :host {
             width: 100%;
             height: 100%;
-            background: var(--dark-background5,#F6F6F6);
         }
         .cpu_setting_div{
             overflow: auto ;
             border-radius: 5px;
-            border: solid 1px #e0e0e0;
+            border: solid 1px var(--dark-border1,#e0e0e0);
             display: grid;
             margin: 10px;
             padding-right: 10px;
@@ -173,7 +172,7 @@ export class CheckCpuSetting extends BaseElement {
             padding-left: 15px;
             padding-right: 15px;
             justify-content: space-between;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--dark-border1,#e0e0e0);
         }
         .upload_bt{
             height: 35px;
@@ -190,7 +189,7 @@ export class CheckCpuSetting extends BaseElement {
             display: flex;
             flex-direction: column;
             margin: 10px;
-            background-color: white;
+            background-color: var(--dark-background,#FFFFFF);
         }
         </style>
         <div class="bg" >

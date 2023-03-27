@@ -75,29 +75,33 @@ export class SpFrameTimeChart {
         if (frameExpectedData.length > 0) {
             let isIntersect = (a: JanksStruct, b: JanksStruct) => (Math.max(a.ts! + a.dur!, b.ts! + b.dur!) - Math.min(a.ts!, b.ts!) < a.dur! + b.dur!);
             let depthArray: any = [];
-            frameExpectedData.forEach(it => {
+            for (let i = 0; i < frameExpectedData.length; i++) {
+                let it = frameExpectedData[i]
                 if (!it.dur || it.dur < 0) {
-                    it.dur = 1; //38258000
+                   continue;
                 }
                 if (depthArray.length == 0) {
                     it.depth = 0;
                     depthArray[0] = it
                 } else {
-                    for (let index = 0; index < 50; index++) {
+                    let index = 0;
+                    let isContinue = true;
+                    while (isContinue) {
                         if (isIntersect(depthArray[index], it)) {
                             if (depthArray[index + 1] == undefined || !depthArray[index + 1]) {
                                 it.depth = index + 1;
                                 depthArray[index + 1] = it;
-                                break;
+                                isContinue = false;
                             }
                         } else {
                             it.depth = index;
                             depthArray[index] = it;
-                            break;
+                            isContinue = false;
                         }
+                        index++
                     }
                 }
-            })
+            }
         }
         let max = Math.max(...frameExpectedData.map(it => it.depth || 0)) + 1
         let maxHeight = max * 20;
@@ -138,29 +142,33 @@ export class SpFrameTimeChart {
         if (frameActualData.length > 0) {
             let isIntersect = (a: JanksStruct, b: JanksStruct) => (Math.max(a.ts! + a.dur!, b.ts! + b.dur!) - Math.min(a.ts!, b.ts!) < a.dur! + b.dur!);
             let depthArray: any = [];
-            frameActualData.forEach(it => {
+            for (let i = 0; i < frameActualData.length; i++) {
+                let it = frameActualData[i]
                 if (!it.dur || it.dur < 0) {
-                    it.dur = 1
+                    continue;
                 }
                 if (depthArray.length == 0) {
                     it.depth = 0;
                     depthArray[0] = it
                 } else {
-                    for (let index = 0; index < 50; index++) {
+                    let index = 0;
+                    let isContinue = true;
+                    while (isContinue) {
                         if (isIntersect(depthArray[index], it)) {
                             if (depthArray[index + 1] == undefined || !depthArray[index + 1]) {
                                 it.depth = index + 1;
                                 depthArray[index + 1] = it;
-                                break;
+                                isContinue = false;
                             }
                         } else {
                             it.depth = index;
                             depthArray[index] = it;
-                            break;
+                            isContinue = false;
                         }
+                        index++
                     }
                 }
-            })
+            }
         }
 
         let max = Math.max(...frameActualData.map(it => it.depth || 0)) + 1
@@ -214,7 +222,8 @@ export class SpFrameTimeChart {
                             y: actualTimeLineRow!.translateY! + (linkNode[0].offsetY * 2),
                             offsetY: (linkNode[0].offsetY * 2),
                             ns: linkNode[0].ns,
-                            rowEL:actualTimeLineRow!
+                            rowEL:actualTimeLineRow!,
+                            isRight: true
                         }
                     } else if (linkNode[1].rowEL.rowId == e.detail.rowId) {
                         linkNode[1] =  {
@@ -222,7 +231,8 @@ export class SpFrameTimeChart {
                             y: actualTimeLineRow!.translateY! + (linkNode[1].offsetY * 2),
                             offsetY: (linkNode[1].offsetY * 2),
                             ns: linkNode[1].ns,
-                            rowEL:actualTimeLineRow!
+                            rowEL:actualTimeLineRow!,
+                            isRight: true
                         }
                     }
                 })
@@ -239,7 +249,8 @@ export class SpFrameTimeChart {
                             y: frameTimeLineRow!.translateY! + (linkNode[0].offsetY / 2),
                             offsetY: (linkNode[0].offsetY /2),
                             ns: linkNode[0].ns,
-                            rowEL:frameTimeLineRow
+                            rowEL:frameTimeLineRow,
+                            isRight: true
                         }
                     } else if (linkNode[1].rowEL.rowParentId == e.detail.rowId) {
                         linkNode[1] = {
@@ -247,7 +258,8 @@ export class SpFrameTimeChart {
                             y: frameTimeLineRow!.translateY! + (linkNode[1].offsetY / 2),
                             offsetY: (linkNode[1].offsetY / 2),
                             ns: linkNode[1].ns,
-                            rowEL:frameTimeLineRow
+                            rowEL:frameTimeLineRow,
+                            isRight: true
                         }
                     }
                 })

@@ -41,11 +41,12 @@ public:
         uint64_t sourceItid;
         uint32_t frameNum;
     } FrameMap;
-    bool BeginProcessCommandUni(uint64_t ts, uint64_t itid, std::vector<FrameMap>& frame, uint32_t sliceIndex);
+    bool BeginProcessCommandUni(uint64_t ts, uint64_t itid, const std::vector<FrameMap>& frame, uint32_t sliceIndex);
     bool EndVsyncEvent(uint64_t ts, uint64_t itid);
     bool StartFrameQueue(uint64_t ts, uint64_t itid);
     bool EndFrameQueue(uint64_t ts, uint64_t itid);
     void Finish();
+
 private:
     typedef enum FrameSliceType {
         ACTURAL_SLICE,

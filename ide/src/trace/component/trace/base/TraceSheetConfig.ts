@@ -48,6 +48,7 @@ import {TabPaneSdkSlice} from "../sheet/sdk/TabPaneSdkSlice.js";
 import {TabPaneSdkCounter} from "../sheet/sdk/TabPaneSdkCounter.js";
 import {TabPaneCounterSample} from "../sheet/cpu/TabPaneCounterSample.js";
 import {TabPaneThreadStates} from "../sheet/process/TabPaneThreadStates.js";
+import {TabPaneThreadUsage} from "../sheet/process/TabPaneThreadUsage.js";
 import {TabPaneFrequencySample} from "../sheet/cpu/TabPaneFrequencySample.js";
 import {TabPaneEnergyAnomaly} from "../sheet/energy/TabPaneEnergyAnomaly.js";
 import {TabPaneSystemDetails} from "../sheet/energy/TabPaneSystemDetails.js";
@@ -205,6 +206,10 @@ export let tabConfig: any = {
     },
     "box-thread-states": {
         title: "Thread States", type: TabPaneThreadStates,
+        require: (param: SelectionParam) => param.threadIds.length > 0,
+    },
+    "box-thread-usage": {
+        title: "Thread Usage", type: TabPaneThreadUsage,
         require: (param: SelectionParam) => param.threadIds.length > 0,
     },
     "box-frequency-sample": {

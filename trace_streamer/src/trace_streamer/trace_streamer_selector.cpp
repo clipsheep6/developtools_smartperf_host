@@ -210,11 +210,13 @@ void TraceStreamerSelector::SetCleanMode(bool cleanMode)
 {
     g_cleanMode = true;
 }
-int TraceStreamerSelector::ExportDatabase(const std::string& outputName) const
+
+int TraceStreamerSelector::ExportDatabase(const std::string& outputName, TraceDataDB::ResultCallBack resultCallBack)
 {
     traceDataCache_->UpdateTraceRange();
-    return traceDataCache_->ExportDatabase(outputName);
+    return traceDataCache_->ExportDatabase(outputName, resultCallBack);
 }
+
 void TraceStreamerSelector::Clear()
 {
     traceDataCache_->Prepare();

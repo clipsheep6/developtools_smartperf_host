@@ -40,9 +40,9 @@ export class DrawerCpuTabs extends BaseElement {
 
         this.tabs!.onTabClick = (e:any)=>{
             if (e.detail.key == "1") {
-                this.tabCpuDetailsFrequency?.init(this.cpuNumber)
-            } else if (e.detail.key == "2") {
                 this.tabCpuDetailsIdle?.init(this.cpuNumber)
+            } else if (e.detail.key == "2") {
+                this.tabCpuDetailsFrequency?.init(this.cpuNumber)
             } else if (e.detail.key == "3") {
                 this.tabCpuDetailsIrq?.init(this.cpuNumber)
             }
@@ -53,12 +53,18 @@ export class DrawerCpuTabs extends BaseElement {
         this.tabs!.activekey = value;
         this.cpuNumber = cpu;
         if (value == "1") {
-            this.tabCpuDetailsFrequency?.init(this.cpuNumber)
-        } else if (value == "2") {
             this.tabCpuDetailsIdle?.init(this.cpuNumber)
+        } else if (value == "2") {
+            this.tabCpuDetailsFrequency?.init(this.cpuNumber)
         } else if (value == "3") {
             this.tabCpuDetailsIrq?.init(this.cpuNumber)
         }
+    }
+
+    clearData(){
+        this.tabCpuDetailsFrequency!.clearData()
+        this.tabCpuDetailsIdle!.clearData()
+        this.tabCpuDetailsIrq!.clearData()
     }
 
     initHtml(): string {
@@ -81,11 +87,11 @@ export class DrawerCpuTabs extends BaseElement {
         </style>
         <div >
             <lit-tabs id="tabs" position="top-left" activekey="1" mode="card" >
-                    <lit-tabpane key="1" tab="CPU Frequency" class="tab-pane">
-                        <tab-cpu-details-frequency id="tab-cpu-details-frequency"></tab-cpu-details-frequency>
-                    </lit-tabpane>
-                    <lit-tabpane key="2" tab="CPU Idle" class="tab-pane">
+                    <lit-tabpane key="1" tab="CPU Idle" class="tab-pane">
                         <tab-cpu-details-idle id="tab-cpu-details-idle"></tab-cpu-details-idle>
+                    </lit-tabpane>
+                    <lit-tabpane key="2" tab="CPU Frequency" class="tab-pane">
+                        <tab-cpu-details-frequency id="tab-cpu-details-frequency"></tab-cpu-details-frequency>
                     </lit-tabpane>
                     <lit-tabpane key="3" tab="CPU Irq" class="tab-pane">
                         <tab-cpu-details-irq id="tab-cpu-details-irq"></tab-cpu-details-irq>

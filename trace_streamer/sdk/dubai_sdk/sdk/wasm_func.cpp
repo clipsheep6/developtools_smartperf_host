@@ -65,6 +65,14 @@ EMSCRIPTEN_KEEPALIVE uint8_t* InitPluginName(uint32_t reqBufferSize)
     return g_PluginNameBuf;
 }
 
+// @deprecated recommand to use TraceStreamerGetPluginNameEx api
+EMSCRIPTEN_KEEPALIVE int TraceStreamer_In_PluginName(const uint8_t* pluginName, int len)
+{
+    std::string pluginNameStr(reinterpret_cast<const char*>(pluginName), len);
+    g_wasmTraceStreamer.ts_->sdkDataParser_->GetPluginName(pluginNameStr);
+    return 0;
+}
+
 EMSCRIPTEN_KEEPALIVE int TraceStreamerGetPluginNameEx(int pluginLen)
 {
     return g_wasmTraceStreamer.WasmGetPluginNameWithCallback(g_PluginNameBuf, pluginLen);

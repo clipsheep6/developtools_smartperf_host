@@ -24,8 +24,9 @@ export class JankRender extends Render {
         jank(list, filter, TraceRow.range!.startNS, TraceRow.range!.endNS, TraceRow.range!.totalNS, row.frame, req.useCache || !TraceRow.range!.refresh);
         req.context.beginPath();
         let find = false;
+        let nsScale = ((TraceRow.range!.endNS || 0) - (TraceRow.range!.startNS || 0)) / ( TraceRow.range!.totalNS * 9);
         for (let re of filter) {
-            JankStruct.draw(req.context, re)
+            JankStruct.draw(req.context, re, nsScale)
             if (row.isHover) {
                 if (re.dur == 0 || re.dur == null || re.dur == undefined) {
                     if (re.frame && row.hoverX >= re.frame.x - 5 && row.hoverX <= re.frame.x + 5 && row.hoverY >= re.frame.y && row.hoverY <= re.frame.y + re.frame.height) {
@@ -100,6 +101,7 @@ export class JankStruct extends BaseStruct {
     rs_dur: number | undefined;
     rs_pid: number | undefined;
     rs_name: string |undefined
+    gpu_dur:number | undefined;
 
     static setJankFrame(node: any, padding: number, startNS: number, endNS: number, totalNS: number, frame: any) {
         let x1: number, x2: number;
@@ -123,15 +125,14 @@ export class JankStruct extends BaseStruct {
         node.frame.height = 20;
     }
 
-
-    static draw(ctx: CanvasRenderingContext2D, data: JankStruct) {
+    static draw(ctx: CanvasRenderingContext2D, data: JankStruct, nsScale: number) {
         if (data.frame) {
             if (data.dur == undefined || data.dur == null || data.dur == 0) {
             } else {
                 ctx.globalAlpha = 1;
-                ctx.fillStyle = ColorUtils.JANK_COLOR[0]
+                ctx.fillStyle = ColorUtils.JANK_COLOR[0];
                 if(data.jank_tag){
-                    ctx.fillStyle = ColorUtils.JANK_COLOR[2]
+                    ctx.fillStyle = ColorUtils.JANK_COLOR[2];
                 }
                 let miniHeight = 20
                 if (JankStruct.hoverJankStruct && data.name == JankStruct.hoverJankStruct.name
@@ -139,7 +140,34 @@ export class JankStruct extends BaseStruct {
                     && JankStruct.hoverJankStruct.frame_type == data.frame_type) {
                     ctx.globalAlpha = 0.7;
                 }
-                ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, miniHeight - padding * 2)
+                if (data.type == '0') {
+                    ctx.fillStyle = ColorUtils.JANK_COLOR[0];
+                    if(data.jank_tag){
+                        ctx.fillStyle = ColorUtils.JANK_COLOR[2];
+                    }
+                    ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, miniHeight - padding * 2);
+                } else {
+                    if(data.frame.width * nsScale < 1.5){
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(data.frame.x, data.frame.y, data.frame.width * nsScale, miniHeight - padding * 2);
+                        ctx.fillStyle = ColorUtils.JANK_COLOR[0];
+                        if(data.jank_tag){
+                            ctx.fillStyle = ColorUtils.JANK_COLOR[2];
+                        }
+                        ctx.fillRect(data.frame.x + data.frame.width * nsScale, data.frame.y, data.frame.width - (nsScale * 2), miniHeight - padding * 2);
+                        ctx.fillStyle = '#FFFFFF'
+                        ctx.fillRect(data.frame.x + data.frame.width * nsScale + data.frame.width - (nsScale * 2), data.frame.y, data.frame.width * nsScale, miniHeight - padding * 2);
+
+
+                    } else {
+                        ctx.fillStyle = ColorUtils.JANK_COLOR[0];
+                        if(data.jank_tag){
+                            ctx.fillStyle = ColorUtils.JANK_COLOR[2];
+                        }
+                        ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, miniHeight - padding * 2);
+                    }
+                }
+
                 if (data.frame.width > 10) {
                     ctx.fillStyle = "#fff"
                     JankStruct.drawString(ctx, `${data.name || ''}`, 5, data.frame)

@@ -244,7 +244,7 @@ export class LitTable extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['scroll-y', 'selectable', 'no-head', 'grid-line', 'defaultOrderColumn']
+        return ['scroll-y', 'selectable', 'no-head', 'grid-line', 'defaultOrderColumn','download']
     }
 
     get download() {

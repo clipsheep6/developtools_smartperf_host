@@ -87,8 +87,7 @@ export class TabThreadAnalysis extends BaseElement {
         if(this.currentTabID){
             let clickTab = this.shadowRoot!.querySelector<HTMLDivElement>(`#${this.currentTabID}`);
             if(clickTab){
-                clickTab.style.backgroundColor = '#fff'
-                clickTab.style.color = '#333'
+                clickTab.className = "tag_bt";
             }
         }
         if(this.currentTab){
@@ -100,12 +99,10 @@ export class TabThreadAnalysis extends BaseElement {
         if(this.currentTabID){
             let clickTab = this.shadowRoot!.querySelector<HTMLDivElement>(`#${this.currentTabID}`);
             if(clickTab){
-                clickTab.style.backgroundColor = '#fff'
-                clickTab.style.color = '#333'
+                clickTab.className = "tag_bt"
             }
         }
-        tab.style.backgroundColor = '#0d47a1'
-        tab.style.color = '#fff'
+        tab.className = "tab_click"
         if(tab.id !== this.currentTabID){
             this.currentTabID = tab.id
             if(this.currentTab){
@@ -128,19 +125,37 @@ export class TabThreadAnalysis extends BaseElement {
         .tag_bt{
             height: 45px;
             border-radius: 10px;
-            border: solid 1px #e0e0e0;
+            border: solid 1px var(--dark-border1,#e0e0e0);
             line-height: 45px;
             text-align: center;
-            color: #333;
+            color: var(--dark-color,#000000);
+            background-color: var(--dark-background5,#FFFFFF);
             cursor: pointer;
         }
+        .tab_click{
+            height: 45px;
+            border-radius: 10px;
+            border: solid 1px var(--dark-border1,#e0e0e0);
+            line-height: 45px;
+            text-align: center;
+            color: #FFFFFF;
+            background-color: #0d47a1;
+            cursor: pointer;
+        }
+        #content{
+            background-color: var(--dark-background,#FFFFFF);
+        }
+        .grid-box{
+            display: grid;grid-template-columns: auto auto auto auto auto;grid-column-gap: 15px;padding: 10px;
+            background-color: var(--dark-background,#FFFFFF);
+        }
         </style>
-        <div style="display: grid;grid-template-columns: auto auto auto auto auto;grid-column-gap: 15px;padding: 10px">
+        <div class="grid-box">
             <div class="tag_bt" id="tab1">Top20线程大中小核占用率</div>
+            <div class="tag_bt" id="tab5">单个线程频点分布</div>
             <div class="tag_bt" id="tab2">Top20单次运行超长线程</div>
-            <div class="tag_bt" id="tab5">单个线程Top20频点分布</div>
             <div class="tag_bt" id="tab3">Top20进程线程数</div>
-            <div class="tag_bt" id="tab4">Top20切换次数进程</div>
+            <div class="tag_bt" id="tab4">Top20切换次数线程</div>
         </div>
         <div id="content">
             <top20-thread-cpu-usage id="top20_thread_cpu_usage" style="display: none"></top20-thread-cpu-usage>

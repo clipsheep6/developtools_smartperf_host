@@ -26,6 +26,7 @@ import {info} from "../../../log/Log.js";
 import {LitSelect} from "../../../base-ui/select/LitSelect";
 import "../../../base-ui/progress-bar/LitProgressBar.js"
 import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
+import {pieChartColors} from "../../../base-ui/chart/pie/LitChartPieData.js";
 
 @element('tab-cpu-analysis')
 export class TabCpuAnalysis extends BaseElement {
@@ -51,6 +52,9 @@ export class TabCpuAnalysis extends BaseElement {
             this.progress!.loading = (this.loadingUsage || this.loadingPieData)
             this.queryPieChartDataByType((e as any).detail.text)
         }
+        this.drawer!.onClose = (e:any)=>{
+            this.drawerCpuTabs!.clearData()
+        };
     }
 
     init(){
@@ -61,7 +65,7 @@ export class TabCpuAnalysis extends BaseElement {
         this.cpuUsageGrid!.append(this.createUsageItem("usage", "%"))
         for (let i = 0; i < SpSchedulingAnalysis.cpuCount; i++) {
             let cpuPie = new LitChartPie();
-            cpuPie.className='pie-chart'
+            cpuPie.className='pie-chart';
             this.cpuPieMap.set(i,cpuPie)
             this.cpuUsageGrid!.append(this.createUsageItem(`CPU: ${i}`, 0))
             this.cpuUsageChart!.append(this.createUsageChartItem(i,cpuPie))
@@ -70,17 +74,19 @@ export class TabCpuAnalysis extends BaseElement {
         this.loadingPieData = true;
         this.progress!.loading = (this.loadingUsage || this.loadingPieData)
         this.queryLogicWorker("scheduling-getCpuUsage","query Cpu Usage Time:",(res)=>{
-            this.cpuUsageGrid!.innerHTML = ''
-            this.cpuUsageGrid!.append(this.createUsageItem("usage", "%"))
-            if(res instanceof Array){
-                for (let re of res) {
-                    this.cpuUsageGrid!.append(this.createUsageItem(`CPU: ${re.cpu}`, ((re.usage || 0) * 100).toFixed(2)))
+            if(res && res.length > 0){
+                this.cpuUsageGrid!.innerHTML = ''
+                this.cpuUsageGrid!.append(this.createUsageItem("usage", "%"))
+                if(res instanceof Array){
+                    for (let re of res) {
+                        this.cpuUsageGrid!.append(this.createUsageItem(`CPU: ${re.cpu}`, ((re.usage || 0) * 100).toFixed(2)))
+                    }
                 }
             }
             this.loadingUsage = false;
             this.progress!.loading = (this.loadingUsage || this.loadingPieData)
         })
-        this.queryPieChartDataByType("CPU Frequency")
+        this.queryPieChartDataByType("CPU Idle")
     }
 
     queryPieChartDataByType(type:string){
@@ -109,6 +115,9 @@ export class TabCpuAnalysis extends BaseElement {
                     },
                     label: {
                         type: 'outer',
+                        color:type !== "CPU Idle" ? undefined : (it )=>{
+                            return pieChartColors[(it as any).value]
+                        }
                     },
                     interactions: [
                         {
@@ -145,6 +154,9 @@ export class TabCpuAnalysis extends BaseElement {
         `
         div.append(pie)
         div.addEventListener("click",(event)=>{
+            if(this.loadingUsage || this.loadingPieData){
+                return;
+            }
             this.drawer!.title = `CPU: ${cpu}`;
             this.drawer!.visible = true;
             this.drawerCpuTabs!.init(cpu,this.schedulingSelect!.value)
@@ -211,10 +223,10 @@ export class TabCpuAnalysis extends BaseElement {
             <lit-progress-bar id="loading" style="height: 1px;width: 100%"></lit-progress-bar>
             <div class="cpu_usage" id="cpu_usage_table"></div>
             <div class="cpu-statistics">
-                <div>CPU Statistics</div>
+                <div>CPU Statistics By Duration</div>
                 <lit-select default-value="1" id="scheduling_select">
-                    <lit-select-option value="1">CPU Frequency</lit-select-option>
-                    <lit-select-option value="2">CPU Idle</lit-select-option>
+                    <lit-select-option value="1">CPU Idle</lit-select-option>
+                    <lit-select-option value="2">CPU Frequency</lit-select-option>
                     <lit-select-option value="3">CPU Irq</lit-select-option>
                 </lit-select>
             </div>

@@ -205,13 +205,13 @@ int FrameSliceTable::Cursor::Column(int column) const
             sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.TimeStamData()[CurrentRow()]));
             break;
         case VSYNC:
-            sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.VsyncIds()[CurrentRow()]));
+            sqlite3_result_int64(context_, static_cast<int32_t>(frameSliceObj_.VsyncIds()[CurrentRow()]));
             break;
         case IPID:
-            sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.Ipids()[CurrentRow()]));
+            sqlite3_result_int64(context_, static_cast<int32_t>(frameSliceObj_.Ipids()[CurrentRow()]));
             break;
         case ITID:
-            sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.InternalTidsData()[CurrentRow()]));
+            sqlite3_result_int64(context_, static_cast<int32_t>(frameSliceObj_.InternalTidsData()[CurrentRow()]));
             break;
         case CALLSTACK_ROW:
             sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.CallStackRows()[CurrentRow()]));

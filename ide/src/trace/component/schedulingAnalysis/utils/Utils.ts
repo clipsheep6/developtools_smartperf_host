@@ -29,3 +29,14 @@ export const getFormatData=(data:Array<any>)=>{
     })
     return arrData;
 };
+
+export const getDataNo=(data:Array<any>)=>{
+    let arrData:Array<any> = [];
+    data.forEach((item,idx)=>{
+        arrData.push({
+            index:idx+1,
+            ...item,
+        })
+    })
+    return arrData;
+};
