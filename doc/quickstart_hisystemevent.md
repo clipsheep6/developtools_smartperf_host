@@ -33,7 +33,7 @@ System Details的Tab页如图：
 ![GitHub Logo](../figures/HiSystemEvent/hisystemdetails.jpg)
 +     Event Name： 事件名称，事件包括后台任务，应用锁，GPS定位
 +     Time： 时间戳信息
-点击事件名会显示该事件的详细信息的Tab页
+点击事件名会显示该事件的详细信息的Tab页。
 ![GitHub Logo](../figures/HiSystemEvent/systemselectdetals.jpg)
 +     EVENT_NAME：事件名称
 +     PID：应用PID
