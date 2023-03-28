@@ -33,7 +33,7 @@ patch -p0 third_party/protobuf/BUILD.gn prebuilts/patch_protobuf/protobufbuild.g
 ```
 patch -p0 third_party/googletest/BUILD.gn prebuilts/patch_googletest/googletestbuild.gn.patch
 ```
-4. 处理一系列public权限问题，处理原则是，但凡是有问题头文件的上下添加  
+4. 处理一系列public权限问题，处理原则是，但凡是有问题头文件的上下添加如下内容：  
 ```
 #undef private
 #define private private
@@ -41,7 +41,7 @@ patch -p0 third_party/googletest/BUILD.gn prebuilts/patch_googletest/googletestb
 #undef private
 #define private public
 ```
-目前已知的需处理的地方有
+目前已知的需处理的地方有：
 ```
 gtest-message.h文件
 +#undef private
@@ -88,12 +88,12 @@ gtest-port.h文件
 patch -p0 third_party/libunwind/BUILD.gn prebuilts/patch_libunwind/libunwindbuild.gn.patch
 ```
 third_party/libunwind/src/x86_64/unwind_i.h
-第60行，注释
+第60行，注释掉。
 ```
 // #define setcontext                      UNW_ARCH_OBJ (setcontext)
 ```
 #### 其他文件
-为了独立编译trace_streamer，你还需要在third_party目录下有2个文件
+为了独立编译trace_streamer，你还需要在third_party目录下有2个文件：
 ```
 third_party/perf_include/
 ├── libbpf
@@ -102,11 +102,9 @@ third_party/perf_include/
 └── musl
     └── elf.h
 ```
-perf_event.h文件位于如下目录，需打补丁
-wget https://gitee.com/openharmony/third_party_libbpf/raw/master/include/uapi/linux/perf_event.h
-patch -p0 perf_event.h prebuilts/patch_perf_event/perf_event.h.patch
-elf.h文件来自于musl/include/elf.h 使用原始文件，不用打补丁
-wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h
+perf_event.h文件位于如下目录，获取方式：wget https://gitee.com/openharmony/third_party_libbpf/raw/master/include/uapi/linux/perf_event.h 。需打补丁：patch -p0 perf_event.h prebuilts/patch_perf_event/perf_event.h.patch 。
+
+elf.h文件来自于musl/include/elf.h，使用原始文件，不用打补丁。获取方式：wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h 。
 
 ### 开始编译
 #### 预置条件
@@ -116,7 +114,7 @@ wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h
 ```  
 来生成可用的protoc可执行的程序。
 
-2. 生成proto相关文件对应的pb.h或pb.cc文件  
+2. 生成proto相关文件对应的pb.h或pb.cc文件。
 可执行如下脚本来完成：  
 ```
 ./src/protos/protogen.sh
@@ -124,8 +122,8 @@ wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h
 #### 编译linux、mac、windows平台的TraceStreamer
 编译不同平台的程序，您需要在各自的PC环境编译，编译脚本会自行识别平台并编译程序。  
 目前wasm版本仅支持在linux平台编译。  
-编译不同版本：linux, windows, mac  
-注意，windows上目前支持Mingw编译，使用的mingw版本为 gcc version 8.1.0 (i686-posix-dwarf-rev0, Built by MinGW-W64 project)  
+编译不同版本：linux, windows, mac。
+注意，windows上目前支持Mingw编译，使用的mingw版本为 gcc version 8.1.0 (i686-posix-dwarf-rev0, Built by MinGW-W64 project)。
 ```
 ./build.sh
 ```
@@ -149,7 +147,7 @@ ___来生成out/linux/protoc可执行文件。___
 #### 编译WebAssembly版本
 如果需要编译WebAssembly版本，您需要在prebuilts/目录下安装emsdk。
 步骤如下：  
-1. 在任何目录下载emsdk  
+1. 在任何目录下载emsdk。
 ```
 git clone https://github.com/juj/emsdk.git --depth=1
 cd emsdk
