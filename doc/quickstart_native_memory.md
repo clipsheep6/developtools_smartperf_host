@@ -54,7 +54,7 @@ Statistics的Tab页，主要显示了统计明细类型。
 +     Exsiting/Total：框选区间内剩余的内存比上申请的内存，其中浅紫色是框选区间内申请的大小/整个时间轴（申请+释放的总大小)，深紫色是框选区间内(申请+释放)的大小/整个时间轴（申请+释放的总大小）
 
 Call Info的Tab页，主要显示了调用树详细类型。
-![GitHub Logo](../figures/NativeMemory/Callinfo.jpg)
+![GitHub Logo](../figures/NativeMemory/CallInfo.jpg)
 +     Symble Name：每个内存分配的调用栈
 +     Size：分配的总大小
 +     Count：相同调用栈出现的次数
