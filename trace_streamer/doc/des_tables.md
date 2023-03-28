@@ -122,7 +122,9 @@ thread表通过ipid字段关联process表的id字段，可以查询线程归属�
 ![GitHub Logo](../figures/process_thread.png) 
 ### 查询举例
 已知pid = 123,查看当前进程下的所有线程信息,可以使用如下SQL语句：  
-```select thread.* from thread, process where process.pid = 123 and thread.ipid = process.id```
+```
+select thread.* from thread, process where process.pid = 123 and thread.ipid = process.id
+```
 
 ### 线程表与线程运行状态表关系图
 thread_state表记录所有线程的运行状态信息，包含ts(状态起始时间)，dur(状态持续时间)，cpu, itid, state（线程状态）。 thread表的id字段与thread_state表的itid字段相关联。  
@@ -141,9 +143,13 @@ native_hook_frame表记录内存申请/释放的调用堆栈。通过callChainId
 ![GitHub Logo](../figures/dump_and_mem.png) 
 ### 查询举例
 - 已知tid = 123, 查看当前线程的所有堆内存变化信息，可以使用如下SQL语句：  
-```select native_hook.* from thread, native_hook where thread.tid = 123 and thread.id = native_hook.itid```
+```
+select native_hook.* from thread, native_hook where thread.tid = 123 and thread.id = native_hook.itid
+```
 - 已知callchainid = 0, 查看当前内存变化调用堆栈  
-```select * from native_hook_frame where callChainId = 0```
+```
+select * from native_hook_frame where callChainId = 0
+```
 
 ### 日志表与进程线程表关系图
 log表记录日志信息。可以根据seq字段的连续性，来判断是否存在日志丢失的情况。  
@@ -167,16 +173,16 @@ Perf_files：此表格主要存放着获取到的函数符号表和文件信息�
 - 已知同步后的时间戳为28463134340470，查询采样数据对应的的调用栈信息  
 ```select A.* from perf_callchain as A, perf_sample as B where B.timestamp_trace = 28463134340470 and A.sample_id = B.sample_id```  
 
-已知同步后的时间戳为28463134277762，查询采样数据的函数名及文件路径  
+- 已知同步后的时间戳为28463134277762，查询采样数据的函数名及文件路径  
 ```select A.*, B.name, C.path from perf_sample as A, perf_callchain as B, perf_files as C where A.timestamp_trace = 28463134277762 and B.sample_id = A.sample_id and B.callchain_id = 0 and B.file_id = C.file_id and C.serial_id = 0```
 
-已知线程号为6700，查询所有的采样记录  
+- 已知线程号为6700，查询所有的采样记录  
 ```select * from perf_sample where thread_id = 6700```
 
-已知进程号为7863，查询所有的采样记录  
+- 已知进程号为7863，查询所有的采样记录  
 ```select A.* from perf_sample as A, perf_thread as B where B.process_id = 7863 and A.thread_id = B.thread_id```
 
-查询所有采样对应的事件类型  
+- 查询所有采样对应的事件类型  
 ```select A.*, B.report_value from perf_sample as A, perf_report as B where A.event_type_id = B.id```
 
 ### 帧渲染表之间的关系图
@@ -185,13 +191,16 @@ gpu_slice: 记录RS的帧对应的gpu渲染时长。
 frame_maps:记录应用到RS的帧的映射关系。  
 ![GitHub Logo](../figures/frames.jpg) 
 ### 查询示例
-已知进程，查询进程对应的实际渲染帧
+- 已知进程，查询进程对应的实际渲染帧
+
 ```select * from frame_slice where ipid = 1```
 
-已知进程的实际渲染帧的dst为12，求其对应的RS进程的渲染帧
+- 已知进程的实际渲染帧的dst为12，求其对应的RS进程的渲染帧
+
 ```select * from frame_slice where id = 12 ```
 
-已知RS的渲染帧在frame_slice中所在行是14，求其对应的GPU渲染时长
+- 已知RS的渲染帧在frame_slice中所在行是14，求其对应的GPU渲染时长
+
 ```select * from gpu_slice where frame_row = 14```
 ## TraceStreamer输出数据库表格详细介绍
 ### app_name表
@@ -219,7 +228,7 @@ app_key：对应的事件的APPNAME字段的信息ID
 |value         |INT       |
 |argset        |INT       |
 #### 表描述
-记录方法的参数集合
+记录方法的参数集合。
 #### 字段详细描述
 key：键  
 datatype：数据类型  
@@ -245,7 +254,7 @@ argset：参数集合
 |path          |TEXT      |
 |dur_per_4k    |INT       |
 #### 表描述
-记录IO操作相关方法调用，及调用栈数据
+记录IO操作相关方法调用，及调用栈数据。
 #### 字段详细描述
 callchain_id：调用栈的唯一标识。与ebpf_callstack表中Callchain_id字段关联  
 type：事件类型其取值为枚举类型（DATA_READ，DATA_WRITE，METADATA_READ，METADATA_WRITE，PAGE_IN，PAGE_OUT）  
@@ -302,7 +311,7 @@ args：分布式调用函数参数
 |name          |TEXT      |
 |cpu           |INT       |
 #### 表描述
-记录时钟信息
+记录时钟信息。
 #### 字段详细描述
 Type：时钟事件类型  
 Name：时钟事件名称
@@ -316,7 +325,7 @@ Name：时钟事件名称
 |name          |TEXT      |
 |cpu           |INT       |
 #### 表描述
-此结构用来维护时钟事件，cpu与唯一的ID做关联
+此结构用来维护时钟事件，cpu与唯一的ID做关联。
 #### 主要字段描述
 Type：时钟事件类型  
 Name：时钟事件名称
@@ -330,7 +339,7 @@ Name：时钟事件名称
 |name          |TEXT      |
 |cpu           |INT       |
 #### 表描述
-将cpu号作为key1，cpu的频率，空闲等状态作为key2，唯一确定一个filter_id
+将cpu号作为key1，cpu的频率，空闲等状态作为key2，唯一确定一个filter_id。
 #### 主要字段描述
 Id(filterid), cpu：事件名称，cpu号
 
@@ -345,7 +354,7 @@ Id(filterid), cpu：事件名称，cpu号
 |system_load   |REAL      |
 |process_num   |INT       |
 #### 表描述
-记录了与CPU使用率相关的数据
+记录了与CPU使用率相关的数据。
 #### 主要字段描述
 total_load：总负荷  
 user_load：用户负载  
@@ -392,7 +401,7 @@ Desc：数据类型描述
 |rd_count_speed  |REAL      |
 |wr_count_speed  |REAL      |
 #### 表描述
-记录了与磁盘读写相关的数据
+记录了与磁盘读写相关的数据。
 #### 主要字段描述
 rd_sectors_kb：读数据的速度  
 wr_sectors_kb：写入数据的速度  
@@ -409,7 +418,7 @@ ts：时间戳
 |symbols_id    |INT       |
 |file_path_id  |INT       |
 #### 表描述
-记录了与磁盘读写相关的数据
+记录了与磁盘读写相关的数据。
 #### 主要字段描述
 callchain_id：调用栈的唯一标识。与ebpf_callstack表中Callchain_id字段关联  
 depth：调用栈深度。取值为零时表示栈顶  
