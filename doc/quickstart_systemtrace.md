@@ -10,7 +10,7 @@
 ## 导入trace文件后显示页面
 ![GitHub Logo](../figures/Web/trace.jpg)
 说明：
-+ 操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w放大，s为缩小，a为左移，d为右移
++ 操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w为放大，s为缩小，a为左移，d为右移
 ## trace功能介绍
 trace模块从上往下主要展示时间轴、cpu使用率、cpu使用情况、进程间通讯数据的方法调用情况、进程、线程和方法调用情况。
 ### 时间轴和cpu使用率
@@ -26,24 +26,24 @@ trace模块从上往下主要展示时间轴、cpu使用率、cpu使用情况、
 ![GitHub Logo](../figures/Web/gray.jpg)
 #### cpu使用情况的框选功能
 可以对cpu的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格,总共有七个tab页。
-CPU by thread的Tab页，主要显示了在框选时间区间内的进程名，进程号，线程名，线程号，总运行时长，平均运行时长和调度次数信息。
+CPU by thread的Tab页，主要显示了在框选时间区间内的进程名、进程号、线程名、线程号、总运行时长、平均运行时长和调度次数信息。
 ![GitHub Logo](../figures/Web/cpubythread.jpg)
-CPU by process的Tab页，主要显示了在框选时间区间内的进程名，进程号，总运行时长，平均运行时长和调度次数信息。
+CPU by process的Tab页，主要显示了在框选时间区间内的进程名、进程号、总运行时长、平均运行时长和调度次数信息。
 ![GitHub Logo](../figures/Web/cpubyprocess.jpg)
-CPUUsage的Tab页，主要显示了在框选时间区间内，该频率时间占比前三的信息。
+CPU Usage的Tab页，主要显示了在框选时间区间内，该频率时间占比前三的信息。
 ![GitHub Logo](../figures/Web/cpusage.jpg)
-States List的Tab页，按状态>进程>线程的维度去统计，需要呈现该状态的下线程名，进入该状态次数、该状态下时长、最大最小时长，平均时长、最大时长。
+States List的Tab页，按状态>进程>线程的维度去统计，需要呈现该状态下的线程名、进入该状态次数、该状态下时长、最大最小时长，平均时长、最大时长。
 ![GitHub Logo](../figures/Web/StatesList.jpg)
-Switches List的Tab页，按照进程>线程>状态、统计对应状态下的次数。
+Switches List的Tab页，按照进程>线程>状态，统计对应状态下的次数。
 ![GitHub Logo](../figures/Web/Switchlist.jpg)
-Thread States的Tab页，按进程>线程>状态的维度去统计，需要呈现该状态的下线程名，进入该状态次数、该状态下时长、最小时长，平均时长、最大时长。
+Thread States的Tab页，按进程>线程>状态的维度去统计，需要呈现该状态下的线程名、进入该状态次数、该状态下时长、最小时长，平均时长、最大时长。
 ![GitHub Logo](../figures/Web/threadstates.jpg)
-Thread Switches的Tab页，按照状态>进程>线程、统计对应状态下的次数。
+Thread Switches的Tab页，按照状态>进程>线程，统计对应状态下的次数。
 ![GitHub Logo](../figures/Web/threadswitches.jpg)
-States List、Switches List、Thread States、Thread Switches的4个Tab页，点击移动到某一行，鼠标会变成一个小手的标志，点击一下，就会进入辅助信息界面，会将选中行的辅助信息展示出来，包括开始时间，进程，线程，线程状态，对应的CPU，优先级等信息如下图。
+States List、Switches List、Thread States、Thread Switches的4个Tab页，点击移动到某一行，鼠标会变成一个小手的标志，点击一下，就会进入辅助信息界面，会将选中行的辅助信息展示出来，包括开始时间、进程、线程、线程状态、对应的CPU、优先级等信息如下图。
 ![GitHub Logo](../figures/Web/details.jpg)
 #### cpu使用情况的单选功能
-单选CPU使用情况数据会在选中的色块外层加上深色边框，能够突出当前选中色块，弹出层中会展示当前CPU上的进程名，线程名，开始时间和运行时长，线程运行状态等信息。
+单选CPU使用情况数据会在选中的色块外层加上深色边框，能够突出当前选中色块，弹出层中会展示当前CPU上的进程名、线程名、开始时间和运行时长、线程运行状态等信息。
 ![GitHub Logo](../figures/Web/cpuclick.jpg)
 ### 进程、线程和方法数据
 下图是进程数据，左边部分展示进程名称和id，右边显示线程切换关系，线程的调用方法，进程间内存信息等。
@@ -51,15 +51,15 @@ States List、Switches List、Thread States、Thread Switches的4个Tab页，点
 点击进程名前面向下箭头可以展开对应的线程进行查看，展开后的线程如下图，如果存在堆内存占用情况，就会显示在第一行，如果出现两个名字和id一样的线程，则第一个为线程的使用情况，第二为线程内的方法栈调用情况。
 ![GitHub Logo](../figures/Web/threadinfo.jpg)
 #### 进程、线程和方法数据的框选功能
-可以对线程的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，包含线程运行状态，线程调用栈的统计情况。当框选的数据中同时存在线程运行状态和线程调用栈数据，下方的弹出层中就会出现多个tab选项，可以进行切换。
+可以对线程的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，包含线程运行状态、线程调用栈的统计情况。当框选的数据中同时存在线程运行状态和线程调用栈数据，下方的弹出层中就会出现多个tab选项，可以进行切换。
 
-下图是线程运行状态框选统计信息,包括进程名，进程号，线程名，线程号，线程状态，状态持续时间，平均持续时间，该线程状态发生的次数。
+下图是线程运行状态框选统计信息，包括进程名、进程号、线程名、线程号、线程状态、状态持续时间、平均持续时间、该线程状态发生的次数。
 ![GitHub Logo](../figures/Web/threadselect.jpg)
 
-下图是线程调用栈框选统计信息,包括方法名，持续时间，平均持续时间，调用的次数。
+下图是线程调用栈框选统计信息，包括方法名、持续时间、平均持续时间、调用的次数。
 ![GitHub Logo](../figures/Web/callstackselect.jpg)
 #### 进程、线程和方法数据的单选功能
-单选线程的state数据时，会展示当前选中线程的状态数据，开始时间和持续时长，线程状态，所在进程名称。
+单选线程的state数据时，会展示当前选中线程的状态数据、开始时间和持续时长、线程状态、所在进程名称。
 ![GitHub Logo](../figures/Web/threadclick.jpg)
 单选调用栈数据，单击方法会在选中的方法外层加上黑色边框，能够突出当前选中的方法，弹出层中会展示当前方法的名称、开始时间和运行时长信息。
 ![GitHub Logo](../figures/Web/callstackclick.jpg)
