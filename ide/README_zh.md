@@ -77,6 +77,7 @@
 参照《[如何独立编译Trace Streamer](../trace_streamer/doc/compile_trace_streamer.md)》编译出wasm 、linux、Windows版本的二进制文件。将获取到二进制文件放入到项目bin目录下，如果项目目录中无bin目录，先创建bin目录，然后将trace_streamer的二进制文件放入bin目录中。
 	   
 ![](../figures/deploy/put_bin.png)
+
 ![](../figures/deploy/bin_files.png)
 
 
@@ -90,6 +91,7 @@
       npm run compile 
 ```                
 ![](../figures/deploy/compile.png)
+
 编译成功后会有main 可执行文件生成。
     
 ## 项目部署
@@ -100,6 +102,7 @@ linux 版本部署需要给trace_stream程序赋予执行权限，cd dist/bin �
 ![](../figures/deploy/chomd+x.png)          
 
 直接运行 ./main 可执行程序,完成项目的部署。
+
 ![](../figures/deploy/run_main.png)
  ## 访问项目    
 在浏览器上打开 https://[部署机器ip地址]:9000/application/ 
