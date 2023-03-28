@@ -138,7 +138,7 @@ TraceStreamer设计过程中使用了流式处理的思想，数据从入口进�
 ![GitHub Logo](../figures/filters.png)
 
 ## Stat表设计
-具体内容参见 [des_stat](des_stat.md)
+具体内容参见 [des_stat](des_stat.md)。
 ## TraceStreamer开发环境搭建和编译运行指引
 
 本应用使用gn作为构建工具。
@@ -147,11 +147,11 @@ TraceStreamer设计过程中使用了流式处理的思想，数据从入口进�
 在windows平台上，需使用支持c++17标准的clang编译器。  
 # 对外部的依赖
 本应用依赖与sqlite、protobuf(htrace解析部分依赖)、nlohmann_json。  
-本应用同时依赖于src/protos/protogen.sh目录下文件来生成相关pb.h，pb.cc文件
+本应用同时依赖于src/protos/protogen.sh目录下文件来生成相关pb.h，pb.cc文件。
 _____ 
 
 ### 编译linux和Mac应用
-在目录下有build.sh脚本，在不同的平台上会判断系统版本，编译相应系统的应用
+在目录下有build.sh脚本，在不同的平台上会判断系统版本，编译相应系统的应用。
 ```
 ./build.sh linux
 ./build.sh macx
