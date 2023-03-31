@@ -499,8 +499,8 @@ describe('ProcedureLogicWorkerPerf Test', ()=> {
     });
     it('PerfCallChainMerageDataTest01', function () {
         let perfCallChainMerageData = new PerfCallChainMerageData();
-        expect(perfCallChainMerageData.constructor()).toEqual({"canCharge": true, "children": [], "count": 0, "currentTreeParentNode": undefined,
-            "depth": 0, "dur": 0, "id": "", "initChildren": [], "isSelected": false, "isStore": 0, "libName": "",
+        expect(perfCallChainMerageData.constructor()).toEqual({"addr": "", "canCharge": true, "children": [], "count": 0, "currentTreeParentNode": undefined,
+            "depth": 0, "dur": 0, "id": "", "initChildren": [],"isSearch": false, "isSelected": false, "isStore": 0,"lib": "", "libName": "",
             "parentId": "", "path": "", "pid": 0, "searchShow": true, "self": "0s", "selfDur": 0, "size": 0, "symbol": "",
             "symbolName": "", "tid": 0, "type": 0, "vaddrInFile": 0, "weight": "", "weightPercent": ""});
     });

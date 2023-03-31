@@ -18,12 +18,14 @@ export class Utils {
     private static instance: Utils | null = null;
 
     constructor() {
-        Utils.statusMap.set("D", "Uninterruptible Sleep");
+        Utils.statusMap.set("D", "Uninterruptible Sleep(non-IO)");
+        Utils.statusMap.set("D-IO", "Uninterruptible Sleep");
         Utils.statusMap.set("S", "Sleeping");
         Utils.statusMap.set("R", "Runnable");
         Utils.statusMap.set("Running", "Running");
         Utils.statusMap.set("R+", "Runnable (Preempted)");
-        Utils.statusMap.set("DK", "Uninterruptible Sleep + Wake Kill");
+        Utils.statusMap.set("DK", "Uninterruptible Sleep(non-IO) + Wake Kill");
+        Utils.statusMap.set("DK-IO", "Uninterruptible Sleep + Wake Kill");
         Utils.statusMap.set("I", "Task Dead");
         Utils.statusMap.set("T", "Traced");
         Utils.statusMap.set("t", "Traced");
@@ -42,9 +44,9 @@ export class Utils {
         return Utils.instance
     }
 
-    public static getEndState(state: string): string | null | undefined {
+    public static getEndState(state: string): string{
         if (Utils.getInstance().getStatusMap().has(state)) {
-            return Utils.getInstance().getStatusMap().get(state);
+            return Utils.getInstance().getStatusMap().get(state) || "Unknown State";
         } else {
             if ("" == state || state == null) {
                 return "";
@@ -55,6 +57,8 @@ export class Utils {
 
     public static getStateColor(state: string): string {
         if (state == "D" || state == "DK") {
+            return "#795548"
+        }else if(state == "D-IO" || state == "DK-IO"){
             return "#f19b38"
         } else if (state == "R" || state == "R+") {
             return "#a0b84d"

@@ -92,4 +92,12 @@ describe('TabPerfProfile Test', () => {
         tabpanePerfProfile.sortTree.sort = jest.fn(()=>true)
         expect(tabpanePerfProfile.setLTableData()).toBeUndefined()
     });
+    it('TabpanePerfProfileTest10 ', function () {
+        tabpanePerfProfile.getDataByWorker = jest.fn();
+        tabpanePerfProfile.data = [{
+            leftNs:  2565,
+            rightNs: 2632
+        }]
+        expect(tabpanePerfProfile.data).toBeUndefined();
+    });
 })

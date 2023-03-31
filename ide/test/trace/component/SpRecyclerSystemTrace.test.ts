@@ -20,6 +20,12 @@ window.ResizeObserver = window.ResizeObserver ||
         unobserve: jest.fn(),
     }));
 
+jest.mock("../../../dist/trace/component/trace/TimerShaftElement.js", () => {
+    return {}
+});
+
+// @ts-ignore
+import {TraceRow} from "../../../dist/trace/component/trace/base/TraceRow.js";
 // @ts-ignore
 import {SpRecyclerSystemTrace} from "../../../dist/trace/component/SpRecyclerSystemTrace.js"
 
@@ -33,7 +39,6 @@ describe('SpRecyclerSystemTrace Test', ()=>{
     }
 
     spRecyclerSystemTrace.initElements = jest.fn(()=> true)
-
 
     it('SpRecyclerSystemTraceTest01', function () {
         expect(spRecyclerSystemTrace.getScrollWidth()).toBe(1)
@@ -53,6 +58,11 @@ describe('SpRecyclerSystemTrace Test', ()=>{
     });
 
     it('SpRecyclerSystemTraceTest05', function () {
+        let htmlElement = document.createElement('div');
+        spRecyclerSystemTrace.rangeSelect.rowsPaneEL = htmlElement;
+        //spRecyclerSystemTrace.rangeSelect.rowsPaneEL.spacerEL = htmlElement;
+        //spRecyclerSystemTrace.rangeSelect = jest.fn(()=>true)
+        spRecyclerSystemTrace.rangeSelect.MouseDown = jest.fn(()=>{})
         expect(spRecyclerSystemTrace.documentOnMouseDown('MouseDown')).toBeUndefined()
     });
 

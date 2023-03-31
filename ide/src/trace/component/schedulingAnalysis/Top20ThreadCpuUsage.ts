@@ -47,6 +47,16 @@ export class Top20ThreadCpuUsage extends BaseElement {
     private progress:LitProgressBar | null | undefined;
     private nodata:TableNoData | null | undefined;
     private map:Map<string,{chart:LitChartColumn,table:LitTable}> | undefined
+    private data:Array<any> = [];
+    private dataBig:Array<any> = [];
+    private dataMid:Array<any> = [];
+    private dataSmall:Array<any> = [];
+    private sort:any = {
+        total:{key:"", sort:0,},
+        small:{key:"", sort:0,},
+        mid:{key:"", sort:0,},
+        big:{key:"", sort:0,},
+    };
 
     private publicColumns = `
                 <lit-table-column width="50px" title=" " data-index="no" key="no" align="flex-start"></lit-table-column>
@@ -60,22 +70,22 @@ export class Top20ThreadCpuUsage extends BaseElement {
                         }"></lit-icon>
                     </template>
                 </lit-table-column>
-                <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
-                <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
-                <lit-table-column width="100px" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
-                <lit-table-column width="200px" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
+                <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
+                <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>
+                <lit-table-column width="100px" title="pid" data-index="pid" key="pid" align="flex-start" order></lit-table-column>
+                <lit-table-column width="200px" title="p_name" data-index="pName" key="pName" align="flex-start" order></lit-table-column>
         `
     private bigColumn = `
-                <lit-table-column width="100px" title="big core" data-index="bigTimeStr" key="bigTimeStr" align="flex-start"></lit-table-column>
-                <lit-table-column width="100px" title="%" data-index="bigPercent" key="bigPercent" align="flex-start"></lit-table-column>
+                <lit-table-column width="100px" title="big core" data-index="bigTimeStr" key="bigTimeStr" align="flex-start" order></lit-table-column>
+                <lit-table-column width="100px" title="%" data-index="bigPercent" key="bigPercent" align="flex-start" order></lit-table-column>
         `
     private midColumn = `
-                <lit-table-column width="100px" title="middle core" data-index="midTimeStr" key="midTimeStr" align="flex-start"></lit-table-column>
-                <lit-table-column width="100px" title="%" data-index="midPercent" key="midPercent" align="flex-start"></lit-table-column>
+                <lit-table-column width="100px" title="middle core" data-index="midTimeStr" key="midTimeStr" align="flex-start" order></lit-table-column>
+                <lit-table-column width="100px" title="%" data-index="midPercent" key="midPercent" align="flex-start" order></lit-table-column>
         `
     private smallColumn = `
-                <lit-table-column width="100px" title="small core" data-index="smallTimeStr" key="smallTimeStr" align="flex-start"></lit-table-column>
-                <lit-table-column width="100px" title="%" data-index="smallPercent" key="smallPercent" align="flex-start"></lit-table-column>
+                <lit-table-column width="100px" title="small core" data-index="smallTimeStr" key="smallTimeStr" align="flex-start" order></lit-table-column>
+                <lit-table-column width="100px" title="%" data-index="smallPercent" key="smallPercent" align="flex-start" order></lit-table-column>
         `
 
     initElements(): void {
@@ -111,6 +121,65 @@ export class Top20ThreadCpuUsage extends BaseElement {
             this.cpuSetting!.style.display = "inline"
             this.cpuSetting?.init()
         })
+
+        for (let key of this.map!.keys()) {
+            let tab = this.map!.get(key)!.table;
+            tab!.addEventListener('row-click', (evt: any) => {
+                let data = evt.detail.data;
+                data.isSelected = true;
+                // @ts-ignore
+                if ((evt.detail as any).callBack) {
+                    // @ts-ignore
+                    (evt.detail as any).callBack(true)
+                }
+            })
+            tab!.addEventListener('column-click', (evt:any) => {
+                this.sort[key].key = evt.detail.key;
+                this.sort[key].sort = evt.detail.sort;
+                if (key == "total") {
+                    this.sortByColumn(evt.detail,tab,this.data)
+                }else if (key == "small") {
+                    this.sortByColumn(evt.detail,tab,this.dataSmall)
+                }else if (key == "mid") {
+                    this.sortByColumn(evt.detail,tab,this.dataMid)
+                }else if (key == "big") {
+                    this.sortByColumn(evt.detail,tab,this.dataBig)
+                }
+            });
+        }
+    }
+
+    sortByColumn(detail: any,table:LitTable|null|undefined,data:Array<any>) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+        let type = "number";
+
+        if (detail.key === 'bigTimeStr') {
+            detail.key = "big";
+        }else if (detail.key === 'midTimeStr') {
+            detail.key = "mid";
+        }else if (detail.key === 'smallTimeStr') {
+            detail.key = "small";
+        }else if (detail.key === 'bigPercent' || detail.key === 'ratio' || detail.key === 'tid' || detail.key === 'pid'|| detail.key === 'midPercent'
+            || detail.key.includes("cpu") ) {
+        } else {
+            type = "string";
+        }
+        data.sort(compare(detail.key, detail.sort, type))
+        table!.recycleDataSource = data;
     }
 
     init() {
@@ -128,7 +197,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
             for(let i =0; i < SpSchedulingAnalysis.cpuCount;i++){
                 columns = `
                 ${columns}
-                <lit-table-column width="120px" title="cpu${i}(us)" data-index="cpu${i}" key="cpu${i}" align="flex-start"></lit-table-column>
+                <lit-table-column width="120px" title="cpu${i}(us)" data-index="cpu${i}" key="cpu${i}" align="flex-start" order></lit-table-column>
             `
             }
             table.innerHTML = columns;
@@ -230,7 +299,20 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     },
                     label: null,
                 }
-                obj.table.recycleDataSource =source
+                if (key == "total") {
+                    this.data = source;
+                }else if (key == "small") {
+                    this.dataSmall = source;
+                }else if (key == "mid") {
+                    this.dataMid = source;
+                }else if (key == "big") {
+                    this.dataBig = source;
+                }
+                if (this.sort[key].key != ""){
+                    this.sortByColumn(this.sort[key],obj.table,source);
+                }else {
+                    obj.table.recycleDataSource =source;
+                }
             }
             this.progress!.loading = false
         })

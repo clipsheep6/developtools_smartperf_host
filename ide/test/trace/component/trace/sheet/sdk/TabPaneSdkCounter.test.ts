@@ -39,21 +39,21 @@ describe('TabPaneSdkCounter Test', () => {
         let tabPaneSdkCounter = new TabPaneSdkCounter()
         tabPaneSdkCounter.tbl = jest.fn(() => litTable)
         let a = new Map();
-        let config = `{"tableConfig":{"showType":[{"tableName":"gpu_counter","inner":{"tableName":"gpu_counter_object",
-        "columns":[{"column":"counter_name","type":"STRING","displayName":"","showType":[0]},{"column":"counter_id",
-        "type":"INTEGER","displayName":"","showType":[0]}]},"columns":[{"column":"ts","type":"INTEGER","displayName":
-        "TimeStamp","showType":[1,3]},{"column":"counter_id","type":"INTEGER","displayName":"MonitorValue","showType":
-        [1,3]},{"column":"value","type":"INTEGER","displayName":"Value","showType":[1,3]}]},{"tableName":"slice_table",
-        "inner":{"tableName":"slice_object_table","columns":[{"column":"slice_name","type":"STRING","displayName":"",
-        "showType":[0]},{"column":"slice_id","type":"INTEGER","displayName":"","showType":[0]}]},"columns":[{"column":
-        "start_ts","type":"INTEGER","displayName":"startts","showType":[2,3]},{"column":"end_ts","type":"INTEGER",
-        "displayName":"endts","showType":[2,3]},{"column":"slice_id","type":"INTEGER","displayName":"slice_id",
-        "showType":[2,3]},{"column":"value","type":"INTEGER","displayName":"Value","showType":[2,3]}]}]},
-        "settingConfig":{"name":"mailG77","configuration":{"version":{"type":"number","default":"1","description":
-        "gatord version"},"counters":{"type":"string","enum":["ARM_Mali-TTRx_JS1_ACTIVE","ARM_Mali-TTRx_JS0_ACTIVE",
-        "ARM_Mali-TTRx_GPU_ACTIVE","ARM_Mali-TTRx_FRAG_ACTIVE"]},"stop_gator":{"type":"boolean","default":"true",
-        "description":"stop_gator"}}}}`
-        a.set("1", config)
+        let jsonCofigStr = "{\"settingConfig\":{\"configuration\":{\"counters\":{\"enum\":[\"ARM_Mali-TTRx_JS1_ACTIVE\",\"ARM_Mali-TTRx_JS0_ACTIVE\",\"ARM_Mali-TTRx_GPU_ACTIVE\",\"ARM_Mali-TTRx_FRAG_ACTIVE\"],\n" +
+            "    \"type\":\"string\"},\"stop_gator\":{\"default\":\"true\",\"description\":\"stop_gator\",\"type\":\"boolean\"},\"version\":{\"default\":\"1\",\"description\":\"gatordversion\",\"type\":\"number\"}},\"name\":\"mailG77\"},\n" +
+            "    \"tableConfig\":{\"showType\":[{\"columns\":[{\"column\":\"ts\",\"displayName\":\"TimeStamp\",\"showType\":[1,3],\"type\":\"INTEGER\"},{\"column\":\"counter_id\",\"displayName\":\"MonitorValue\",\"showType\":[1,3],\"type\":\"INTEGER\"},\n" +
+            "    {\"column\":\"value\",\"displayName\":\"Value\",\"showType\":[1,3],\"type\":\"INTEGER\"}],\"inner\":{\"columns\":[{\"column\":\"counter_name\",\"displayName\":\"\",\"showType\":[0],\"type\":\"STRING\"},\n" +
+            "    {\"column\":\"counter_id\",\"displayName\":\"\",\"showType\":[0],\"type\":\"INTEGER\"}],\"tableName\":\"mock_plugin_counterobj_table\"},\"tableName\":\"mock_plugin_counter_table\"},\n" +
+            "    {\"columns\":[{\"column\":\"start_ts\",\"displayName\":\"startts\",\"showType\":[2,3],\"type\":\"INTEGER\"},{\"column\":\"end_ts\",\"displayName\":\"endts\",\"showType\":[2,3],\"type\":\"INTEGER\"},\n" +
+            "    {\"column\":\"slice_id\",\"displayName\":\"slice_id\",\"showType\":[2,3],\"type\":\"INTEGER\"},{\"column\":\"value\",\"displayName\":\"Value\",\"showType\":[2,3],\"type\":\"INTEGER\"}],\n" +
+            "    \"inner\":{\"columns\":[{\"column\":\"slice_name\",\"displayName\":\"\",\"showType\":[0],\"type\":\"STRING\"},{\"column\":\"slice_id\",\"displayName\":\"\",\"showType\":[0],\"type\":\"INTEGER\"}],\n" +
+            "    \"tableName\":\"mock_plugin_sliceobj_table\"},\"tableName\":\"mock_plugin_slice_table\"}]}}"
+        let datamap = {
+            jsonConfig: jsonCofigStr,
+            disPlayName : "common_mock",
+            pluginName: "mock-plugin"
+        }
+        a.set(1, datamap);
         SpSystemTrace.SDK_CONFIG_MAP = a
         let startTime = sqlite.queryStartTime;
         let dataTime: Array<any> = [{
@@ -117,7 +117,7 @@ describe('TabPaneSdkCounter Test', () => {
             perfProcess: [],
             perfThread: [],
             perfAll: false,
-            sdkCounterIds: ["a-b","b-c","d-e"]
+            sdkCounterIds: ["a-1","b-1","d-1"]
         }
         tabPaneSdkCounter.tbl.recycleDataSource = jest.fn(() => d)
         tabPaneSdkCounter.tbl.appendChild = jest.fn(() => true)
@@ -127,7 +127,7 @@ describe('TabPaneSdkCounter Test', () => {
 
     it('TabPaneSdkCounterTest01', () => {
         let tabPaneSdkCounter = new TabPaneSdkCounter()
-        expect(tabPaneSdkCounter.parseJson([])).toBe("");
+        expect(tabPaneSdkCounter.parseJson(new Map())).toBe("");
     });
 
     it('TabPaneSdkCounterTest02', () => {

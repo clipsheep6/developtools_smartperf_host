@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {state,EnergyStateStruct,EnergyStateRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerEnergyState.js"
 

@@ -94,6 +94,7 @@ describe(" SearchTest", () => {
             align-items: center;
             border: 1px solid var(--dark-border,#c5c5c5);
             width: 35vw;
+            overflow: hidden;
             }
         .root input{
             outline: none;
@@ -122,6 +123,11 @@ describe(" SearchTest", () => {
           color: #4f7ab3;
           font-size: 1em;
         }
+        .text-Roll::placeholder {
+          font-weight: 700;
+          color: #DB5860;
+          font-size: 1em;
+        }
         :host([show-search-info]) .search-info{
             display: inline-flex;
         }
@@ -134,7 +140,25 @@ describe(" SearchTest", () => {
         .search-info lit-icon{
             font-weight: bold;
         }
-
+        
+        :host([textRoll]) input {
+            position: relative;
+            animation: textRoll 5s ease-in-out 0s backwards;
+            white-space: nowrap;
+            overflow: hidden;
+            display: block;
+            text-overflow: ellipsis;
+        }
+      
+        @keyframes textRoll {
+            0% {
+                left: 0;
+            }
+            100% {
+                left: 100%;
+            }
+        }       
+        
         </style>
         <div class=\\"root\\" style=\\"display: none\\">
             <lit-icon id=\\"search-icon\\" name=\\"search\\" size=\\"20\\" color=\\"#aaaaaa\\">

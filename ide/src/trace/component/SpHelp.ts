@@ -55,7 +55,7 @@ export class SpHelp extends BaseElement {
                 describe: '',
                 children: [
                     {
-                        title: "设备端抓取trace指导", icon: "", clickHandler: function (item: MenuItem) {
+                        title: "设备端抓取trace说明", icon: "", clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 "<object type=\"text/html\" data=" + "/application/doc/quickstart_hiprofiler_cmd.html?"
                                 + that.dark
@@ -63,7 +63,7 @@ export class SpHelp extends BaseElement {
                         }
                     },
                     {
-                        title: "web端抓取trace指导", icon: "", clickHandler: function (item: MenuItem) {
+                        title: "web端抓取trace说明", icon: "", clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 "<object type=\"text/html\" data="
                                 + "/application/doc/capture_online.html?"
@@ -72,7 +72,7 @@ export class SpHelp extends BaseElement {
                         }
                     },
                     {
-                        title: "网页加载trace说明", icon: "", clickHandler: function (item: MenuItem) {
+                        title: "web端加载trace说明", icon: "", clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 "<object type=\"text/html\" data="
                                 + "/application/doc/quickstart_smartperf.html?"
@@ -166,6 +166,24 @@ export class SpHelp extends BaseElement {
                             that.appContent!.innerHTML =
                                 "<object type=\"text/html\" data="
                                 + "/application/doc/sdk_capture_display.html?"
+                                + that.dark
+                                + " width=\"100%\" height=\"100%\"></object>"
+                        }
+                    },
+                    {
+                        title: "Frame timeline抓取和展示说明", icon: "", clickHandler: function (item: MenuItem) {
+                            that.appContent!.innerHTML =
+                                "<object type=\"text/html\" data="
+                                + "/application/doc/quickstart_Frametimeline.html?"
+                                + that.dark
+                                + " width=\"100%\" height=\"100%\"></object>"
+                        }
+                    },
+                    {
+                        title: "Scheduling analysis抓取和展示说明", icon: "", clickHandler: function (item: MenuItem) {
+                            that.appContent!.innerHTML =
+                                "<object type=\"text/html\" data="
+                                + "/application/doc/quickstart_schedulinganalysis.html?"
                                 + that.dark
                                 + " width=\"100%\" height=\"100%\"></object>"
                         }
@@ -266,13 +284,13 @@ export class SpHelp extends BaseElement {
                 ]
             },
         ]
-        mainMenu.style.width = '290px'
+        mainMenu.style.width = '300px'
         let body = mainMenu.shadowRoot?.querySelector('.menu-body') as HTMLDivElement
         let groups = body.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group')
         groups.forEach(value => {
             let items = value.querySelectorAll<LitMainMenuItem>('lit-main-menu-item')
             items.forEach(item => {
-                item.style.width = '290px'
+                item.style.width = '300px'
             })
             if(value.title == 'TraceStreamer'){
                 let items = value.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');

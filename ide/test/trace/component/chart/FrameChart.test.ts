@@ -135,12 +135,16 @@ describe('FrameChart Test', () => {
                 width: auto;
                 font-size: 8px;
                 color: #50809e;
-                flex-direction: column;
-                justify-content: center;
-                align-items: flex-start;
                 padding: 2px 10px;
                 display: none;
-                user-select: none;
+                max-width:400px;
+            }
+            .bold{
+                font-weight: bold;
+            }
+            .text{
+                max-width:350px;
+                word-break: break-all;
             }
             </style>
             <canvas id=\\"canvas\\"></canvas>

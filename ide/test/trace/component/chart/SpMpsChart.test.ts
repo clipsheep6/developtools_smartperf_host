@@ -14,10 +14,9 @@
  */
 
 // @ts-ignore
-import {SmpsChart} from "../../../../dist/trace/component/chart/SmpsChart.js"
+import {SmapsChart} from "../../../../dist/trace/component/chart/SmapsChart.js"
 // @ts-ignore
 import {SpChartManager} from "../../../../dist/trace/component/chart/SpChartManager.js";
-import {querySmapsDataMax} from "../../../../src/trace/database/SqlLite.js";
 
 const sqlit = require("../../../../dist/trace/database/SqlLite.js")
 jest.mock("../../../../dist/trace/database/SqlLite.js");
@@ -41,10 +40,10 @@ describe('SpMpsChart Test', () => {
         max_value: 11111,
     }])
     let trace = new SpChartManager();
-    let spMapsChart = new SmpsChart(trace);
+    let spMapsChart = new SmapsChart(trace);
     it('SpMpsChart01', function () {
         spMapsChart.init()
-        expect(SmpsChart).toBeInstanceOf(Function);
+        expect(SmapsChart).toBeInstanceOf(Function);
     });
 
 })

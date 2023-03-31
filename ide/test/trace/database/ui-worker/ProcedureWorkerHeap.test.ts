@@ -13,8 +13,12 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
-import {heap, HeapStruct,NativeMemoryRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerHeap.js";
+import {heap, HeapStruct,NativeMemoryRender, HeapRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerHeap.js";
 // @ts-ignore
 import {Rect} from "../../../../dist/trace/component/trace/timer-shaft/Rect.js";
 
@@ -86,7 +90,7 @@ describe(' Test', () => {
     })
 
     it('HeapTest05', function () {
-        let nativeMemoryRender = new NativeMemoryRender()
+        let nativeMemoryRender = new HeapRender()
         let  req = {
             lazyRefresh:true,
             type:"",

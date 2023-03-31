@@ -35,6 +35,11 @@ export class SpAllocations extends BaseElement {
     private filterMemoryUnit: HTMLSelectElement | null | undefined;
     private fpUnWind: LitSwitch | null | undefined;
 
+    private recordAccurately: LitSwitch | null | undefined;
+    private offlineSymbol: LitSwitch | null | undefined;
+    private recordStatistics: LitSwitch | null | undefined;
+    private statisticsInterval: HTMLDivElement | null | undefined;
+    private statisticsIntervalInput: HTMLInputElement | null | undefined;
     get appProcess(): string {
         return this.processId!.value || "";
     }
@@ -69,6 +74,38 @@ export class SpAllocations extends BaseElement {
             return value;
         }
         return true
+    }
+
+    get record_accurately(): boolean {
+        let value = this.recordAccurately?.checked
+        if (value != undefined) {
+            return value;
+        }
+        return true
+    }
+
+    get offline_symbolization(): boolean {
+        let value = this.offlineSymbol?.checked
+        if (value != undefined) {
+            return value;
+        }
+        return true
+    }
+
+    get record_statistics(): boolean {
+        let value = this.recordStatistics?.checked
+        if (value != undefined) {
+            return value;
+        }
+        return true
+    }
+
+    get statistics_interval(): number {
+        let value = this.statisticsIntervalInput?.value || "";
+        if (value != "") {
+            return Number(value);
+        }
+        return 5;
     }
 
     initElements(): void {
@@ -146,6 +183,18 @@ export class SpAllocations extends BaseElement {
         this.filterMemory = this.shadowRoot?.getElementById("filterSized") as HTMLInputElement
         this.filterMemoryUnit = this.shadowRoot?.getElementById("filterSizedUnit") as HTMLSelectElement
         this.fpUnWind = this.shadowRoot?.getElementById("use_fp_unwind") as LitSwitch
+        this.recordAccurately = this.shadowRoot?.getElementById("use_record_accurately") as LitSwitch
+        this.offlineSymbol = this.shadowRoot?.getElementById("use_offline_symbolization") as LitSwitch
+        this.recordStatistics = this.shadowRoot?.getElementById("use_record_statistics") as LitSwitch
+        this.statisticsInterval = this.shadowRoot?.getElementById("interval_id") as HTMLDivElement
+        this.recordStatistics.addEventListener('change', (ev) => {
+            if (this.recordStatistics!.checked) {
+                this.statisticsInterval!.style.display = 'flex'
+            } else {
+                this.statisticsInterval!.style.display = 'none'
+            }
+        })
+        this.statisticsIntervalInput = this.shadowRoot?.getElementById("statistics_interval") as HTMLInputElement
     }
 
     initHtml(): string {
@@ -184,6 +233,10 @@ export class SpAllocations extends BaseElement {
             text-align: left;
             line-height: 20px;
             font-weight: 400;
+            display:flex;
+            width:75%; 
+            margin-top: 3px;
+           
         }
         input {
            width: 72%;
@@ -221,11 +274,6 @@ export class SpAllocations extends BaseElement {
         .switchstyle{
            margin-top: 40px;
            display: flex;
-        }
-        #fp-unwind {
-          display:flex;
-          width:25%; 
-          margin-top: 3px;
         }
         .inputstyle{
             background: var(--dark-background5,#FFFFFF);
@@ -299,8 +347,27 @@ export class SpAllocations extends BaseElement {
             </div>
           </div>
           <div class="switchstyle">
-              <span class="inner-font-style" id="fp-unwind">Use Fp Unwind :</span> 
-              <lit-switch id="use_fp_unwind" title="fp unwind" checked="true"></lit-switch>
+              <span class="inner-font-style" id="fp-unwind">Use Fp Unwind :</span>               
+              <lit-switch class="lts" id="use_fp_unwind" title="fp unwind" checked="true"></lit-switch>
+          </div>
+          <div class="switchstyle">
+              <span class="inner-font-style" id="record_accurately ">Use Record Accurately  :</span> 
+              <lit-switch   class="lts" id="use_record_accurately" title="record_accurately" checked="true"></lit-switch>
+          </div>
+          <div class="switchstyle">
+              <span class="inner-font-style" id="offline_symbolization">Use Offline Symbolization  :</span> 
+              <lit-switch   class="lts" id="use_offline_symbolization" title="offline_symbolization" checked="true"></lit-switch>
+          </div>
+          <div class="switchstyle">
+              <span class="inner-font-style" id="record_statistics">Use Record Statistics   :</span> 
+              <lit-switch  class="lts" id="use_record_statistics" title="record_statistics " checked="true"></lit-switch>
+          </div>
+          <div class="application" id="interval_id">
+            <span class="inner-font-style">statistics interval</span>
+            <span class="value-range">Use Record Statistics, statistics interval(unit is seconds)  </span> 
+            <div>
+                <input id="statistics_interval" class="inputstyle" type="text" placeholder="Enter the statistics interval" oninput="if(this.value > 2147483647) this.value = '5'" onkeyup="this.value=this.value.replace(/\\\\D/g,'')" value="5">
+            </div>
           </div>
         </div>
         `;

@@ -672,8 +672,8 @@ export const getTabCpuByThread = (cpus: Array<number>, leftNS: number, rightNS: 
       IP.pid as pid,
       A.name as thread,
       A.tid as tid,
-      sum(B.dur) as wallDuration,
-      avg(B.dur) as avgDuration,
+      B.cpu,
+      sum( min(${rightNS},(B.ts - TR.start_ts + B.dur)) - max(${leftNS},B.ts - TR.start_ts)) wallDuration,
       count(A.tid) as occurrences
     from
       thread_state AS B
@@ -692,6 +692,7 @@ export const getTabCpuByThread = (cpus: Array<number>, leftNS: number, rightNS: 
     and
       not ((B.ts - TR.start_ts + B.dur < $leftNS) or (B.ts - TR.start_ts > $rightNS))
     group by
+      B.cpu,
       IP.name,
       IP.pid,
       A.name,
@@ -796,9 +797,9 @@ export const getTabThreadStates = (tIds: Array<number>, leftNS: number, rightNS:
 
 export const getTabThreadStatesCpu = (tIds: Array<number>, leftNS: number, rightNS: number): Promise<Array<any>> =>{
     let sql = `
-select IP.name                                         as process,
+select ifnull(IP.name,'null')                                         as process,
        B.pid,
-       A.name                                          as thread,
+       ifnull(A.name,'null')                                          as thread,
        B.tid,
        B.cpu,
        sum( min(${rightNS},(B.ts - TR.start_ts + B.dur)) - max(${leftNS},B.ts - TR.start_ts)) wallDuration
@@ -1052,36 +1053,6 @@ export const queryWakeUpThread_Desc = (): Promise<Array<any>> =>
     query("queryWakeUpThread_Desc", `This is the interval from when the task became eligible to run
 (e.g.because of notifying a wait queue it was a suspended on) to when it started running.`)
 
-/*-------------------------------------------------------------------------------------*/
-export const queryWakeUpFromThread_WakeThread = (wakets: number): Promise<Array<WakeupBean>> =>
-    query("queryWakeUpFromThread_WakeThread", `select TB.tid,TB.name as thread,TA.cpu,(TA.ts - TR.start_ts) as ts,TC.pid,TC.name as process
-from sched_slice TA
-left join thread TB on TA.itid = TB.id
-left join process TC on TB.ipid = TC.id
-left join trace_range TR
-where TA.itid = (select itid from raw where name = 'sched_waking' and ts = $wakets )
-    and TA.ts < $wakets
-    and TA.ts + Ta.dur >= $wakets`, {$wakets: wakets})
-
-/*-------------------------------------------------------------------------------------*/
-export const queryWakeUpFromThread_WakeTime = (itid: number, startTime: number): Promise<Array<WakeUpTimeBean>> => {
-        let sql_waking = `
-select * from
-    ( select ts as wakeTs,start_ts as startTs from instant,trace_range
-       where name = 'sched_waking'
-       and ref = ${itid}
-       and ts < start_ts + ${startTime}
-       order by ts desc limit 1) TA
-       left join
-    (select ts as preRow from sched_slice,trace_range
-       where itid = ${itid}
-       and ts < start_ts + ${startTime}
-       order by ts desc limit 1) TB
-        `
-        return query("queryWakeUpFromThread_WakeTime",sql_waking,{})
-    }
-/*-------------------------------------------------------------------------------------*/
-
 export const queryThreadWakeUp = (itid: number, startTime: number,dur:number): Promise<Array<WakeupBean>> =>
     query("queryThreadWakeUp", `
 select TA.tid,min(TA.ts - TR.start_ts) as ts,TA.pid
@@ -1099,29 +1070,45 @@ where TA.ts > TW.wakeTs
 group by TA.tid,TA.pid;
     `, {$itid: itid, $startTime: startTime,$dur:dur})
 
-
-export const queryThreadWakeUpFrom = (itid: number, startTime: number,dur:number): Promise<Array<WakeupBean>> =>{
+export const queryRunnableTimeByRunning = (tid: number, startTime: number): Promise<Array<WakeupBean>> =>{
     let sql = `
-select (A.ts - B.start_ts) as ts,tid,pid,cpu,dur from thread_state A,trace_range B
-where state = 'Running'
-and itid = (select wakeup_from from instant where ts = ${startTime} and ref = ${itid} limit 1)
-and ts < ${startTime}
+select ts from thread_state,trace_range where ts + dur -start_ts = ${startTime} and state = 'R' and tid=${tid} limit 1
+    `
+    return query("queryRunnableTimeByRunning",sql,{})
+}
+
+export const queryThreadWakeUpFrom = (itid: number, startTime: number): Promise<Array<WakeupBean>> =>{
+    let sql = `
+select (A.ts - B.start_ts) as ts,A.tid,A.pid,A.cpu,A.dur,P.name process,T.name thread from thread_state A,trace_range B
+left join process P on A.pid = P.pid
+left join Thread T on A.tid = T.tid
+where A.state = 'Running'
+and A.itid = (select wakeup_from from instant where ts = ${startTime} and ref = ${itid} limit 1)
+and (A.ts - B.start_ts) < (${startTime} - B.start_ts)
 order by ts desc limit 1
     `
-    console.log(sql)
     return query("queryThreadWakeUpFrom",sql,{})
 }
 /*-------------------------------------------------------------------------------------*/
 
-export const queryHeapGroupByEvent = (): Promise<Array<NativeEventHeap>> =>
-    query("queryHeapGroupByEvent", `
-    select
-      event_type as eventType,
-      sum(heap_size) as sumHeapSize
-    from
-      native_hook
-    where event_type = 'AllocEvent' or event_type = 'MmapEvent'
-    group by event_type`, {})
+export const queryHeapGroupByEvent = (type:string): Promise<Array<NativeEventHeap>> =>{
+    let sql1 = `
+        select
+            event_type as eventType,
+            sum(heap_size) as sumHeapSize
+        from native_hook
+        where event_type = 'AllocEvent' or event_type = 'MmapEvent'
+        group by event_type
+    `
+    let sql2 = `
+        select (case when type = 0 then 'AllocEvent' else 'MmapEvent' end) eventType,
+            sum(apply_size) sumHeapSize
+        from native_hook_statistic
+        group by eventType;
+    `
+    return  query("queryHeapGroupByEvent", type === "native_hook" ? sql1 : sql2, {})
+}
+
 
 export const queryAllHeapByEvent = (): Promise<Array<NativeEvent>> =>
     query("queryAllHeapByEvent", `
@@ -1251,18 +1238,26 @@ export const queryNativeHookEventTid = (leftNs: number, rightNs: number, types: 
     between ${leftNs} and ${rightNs} and A.event_type in (${types.join(",")})`
         , {$leftNs: leftNs, $rightNs: rightNs, $types: types})
 
-export const queryNativeHookProcess = (): Promise<Array<NativeHookProcess>> =>
-    query("queryNativeHookProcess", `
+export const queryNativeHookStatisticsCount = (): Promise<Array<NativeHookProcess>> =>
+     query("queryNativeHookStatisticsCount", `select count(1) num from native_hook_statistic`, {})
+
+
+export const queryNativeHookProcess = (table:string): Promise<Array<NativeHookProcess>> =>{
+    let sql = `
     select
-      distinct native_hook.ipid,
+      distinct ${table}.ipid,
       pid,
       name
     from
-      native_hook
+      ${table}
     left join
       process p
     on
-      native_hook.ipid = p.id`, {})
+      ${table}.ipid = p.id
+    `;
+    return query("queryNativeHookProcess", sql, {})
+}
+
 
 export const queryNativeHookSnapshotTypes = (): Promise<Array<NativeHookSampleQueryInfo>> =>
     query("queryNativeHookSnapshotTypes", `
@@ -2118,9 +2113,17 @@ export const queryCPuAbilityMaxData = (): Promise<Array<any>> =>
 export const querySearchFunc = (search:string):Promise<Array<SearchFuncBean>> =>
     query("querySearchFunc",`
    select c.cookie,c.id,c.name as funName,c.ts - r.start_ts as startTime,c.dur,c.depth,t.tid,t.name as threadName
-   ,p.pid ,'func' as type from callstack c left join thread t on c.callid = t.id left join process p on t.ipid = p.id 
+   ,p.pid ,'func' as type from callstack c left join thread t on c.callid = t.id left join process p on t.ipid = p.id
    left join trace_range r 
    where c.name like '%${search}%' and startTime > 0;
+    `,{$search:search})
+
+export const querySceneSearchFunc = (search:string, processList: Array<string>):Promise<Array<SearchFuncBean>> =>
+    query("querySearchFunc",`
+   select c.cookie,c.id,c.name as funName,c.ts - r.start_ts as startTime,c.dur,c.depth,t.tid,t.name as threadName
+   ,p.pid ,'func' as type from callstack c left join thread t on c.callid = t.id left join process p on t.ipid = p.id
+   left join trace_range r
+   where c.name like '%${search}%' and startTime > 0 and p.pid in (${processList.join(",")});
     `,{$search:search})
 
 export const queryBinderBySliceId = (id:number): Promise<Array<any>> =>
@@ -2904,8 +2907,17 @@ export const queryIrqList = (): Promise<Array<{name:string,cpu:number}>> =>
     query("queryIrqList",`select cat as name,callid as cpu from irq where cat!= 'ipi' group by cat,callid`)
 
 export const queryIrqData = (callid:number,cat:string): Promise<Array<IrqStruct>> =>
-    query("queryIrqData",`select i.ts - t.start_ts as startNS,i.dur,i.name,i.depth,argsetid as argSetId,i.id from irq i,
-trace_range t where i.callid = $callid and i.cat = $cat`,{$callid: callid,$cat: cat})
+{
+    let sqlSoftIrq = `
+    select i.ts - t.start_ts as startNS,i.dur,i.name,i.depth,argsetid as argSetId,i.id from irq i,
+trace_range t where i.callid = ${callid} and i.cat = 'softirq'
+    `;
+    let sqlIrq = `
+    select i.ts - t.start_ts as startNS,i.dur,case when i.cat = 'ipi' then 'IPI' || i.name else i.name end as name,i.depth,argsetid as argSetId,i.id from irq i,
+trace_range t where i.callid = ${callid} and ((i.cat = 'irq' and i.flag ='1') or i.cat = 'ipi') 
+    `
+    return query("queryIrqData",cat === "irq" ? sqlIrq:sqlSoftIrq,{})
+}
 
 export const queryAllJankProcess = (): Promise<Array<{
     pid: number

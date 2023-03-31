@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {convertJSON, getProbablyTime, getTimeString, LogicHandler} from "./ProcedureLogicWorkerCommon.js";
+import {convertJSON, getProbablyTime, LogicHandler} from "./ProcedureLogicWorkerCommon.js";
 
 export class ProcedureLogicWorkerSchedulingAnalysis extends LogicHandler {
     currentEventId: string = ""
@@ -268,9 +268,23 @@ where cmf.name = 'cpu_idle' and value != 0
 
     getCpuIrq(){
         this.queryData("scheduling-CPU Irq", `
-select callid as cpu,cat as block,name as value,sum(dur) sum,min(dur) min,max(dur) max,avg(dur) avg
-from irq
-group by callid ,cat,name;`, {});
+        SELECT callid AS cpu,
+        CASE WHEN cat = 'ipi' THEN 'irq' ELSE cat END AS block,
+        CASE WHEN cat = 'ipi' THEN 'IPI' || name ELSE name END AS value,
+	    sum( dur ) sum,
+	    min( dur ) min,
+	    max( dur ) max,
+	    avg( dur ) avg 
+    FROM
+	    irq 
+    WHERE
+        cat = 'ipi' 
+        OR cat = 'softirq' 
+        OR ( cat = 'irq' AND flag = '1' ) 
+    GROUP BY
+        callid,
+        cat,
+        name;`, {});
     }
 
     queryThreadCpuUsage(bigCores:number[],midCores:number[],smallCores:number[]){
@@ -352,6 +366,9 @@ where cpu not null
                     min: getProbablyTime(it.min),
                     max: getProbablyTime(it.max),
                     avg: getProbablyTime(it.avg),
+                    minValue:it.min,
+                    maxValue:it.max,
+                    avgValue:it.avg,
                     ratio: ((it.sum / (sumMap.get(key) || 1)) * 100).toFixed(2),
                     block: it.block
                 } as any
@@ -489,7 +506,10 @@ where cpu not null
                     sum: it.sum,
                     sumTimeStr:getProbablyTime(it.sum),
                     min: getProbablyTime(it.min),
+                    minValue:it.min,
                     max: getProbablyTime(it.max),
+                    maxValue:it.max,
+                    avgValue:it.avg,
                     avg: getProbablyTime(it.avg),
                     count: it.count,
                     ratio: ((it.sum / (sumMap.get(key)||1)) * 100).toFixed(2),
@@ -623,15 +643,15 @@ where cpu not null
                         time: fa.dur,
                         timeStr:getProbablyTime(fa.dur),
                         ratio: ((fa.dur / sumDur) * 100).toFixed(2),
+                        totalDur:sumDur
                     };
                 }
             }
             return group;
         },{})
-        let target: {cpu:number,freq:number,time:number,ratio:string}[] = Object.values(obj);
-        return target.sort((a,b) => b.time - a.time).slice(0,20);
+        let target: {cpu:number,freq:number,time:number,ratio:string,totalDur:number}[] = Object.values(obj);
+        return target.sort((a,b) => b.time - a.time)
     }
-
 }
 
 export class CpuUsage{

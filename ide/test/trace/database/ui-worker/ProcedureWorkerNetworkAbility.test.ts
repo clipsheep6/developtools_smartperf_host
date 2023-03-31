@@ -12,8 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 //@ts-ignore
-import {NetworkAbilityMonitorStruct,networkAbility,NetworkAbilityRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerNetworkAbility.js";
+import {NetworkAbilityMonitorStruct,NetworkAbilityRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerNetworkAbility.js";
 
 describe('ProcedureWorkerNetworkAbility Test', () => {
     const canvas = document.createElement('canvas');
@@ -47,20 +52,6 @@ describe('ProcedureWorkerNetworkAbility Test', () => {
     });
 
     it('ProcedureWorkerNetworkAbilityTest02', function () {
-        let dataList = new Array();
-        dataList.push({startNS: 0, dur: 10, frame: {x:0, y:9, width:10, height:10}})
-        dataList.push({startNS: 1, dur: 1})
-        networkAbility(dataList, [{length:1}], 1, 9, 8, "",true)
-    });
-
-    it('ProcedureWorkerNetworkAbilityTest03', function () {
-        let dataList = new Array();
-        dataList.push({startNS: 0, dur: 10, frame: {x:0, y:9, width:10, height:10}})
-        dataList.push({startNS: 1, dur: 1})
-        networkAbility(dataList, [{length:0}], 1, 9, 8, "",false)
-    });
-
-    it('ProcedureWorkerNetworkAbilityTest04', function () {
         let networkAbilityRender = new NetworkAbilityRender()
         let  req = {
             lazyRefresh:true,

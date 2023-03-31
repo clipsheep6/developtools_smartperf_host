@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {EnergyPowerStruct,EnergyPowerRender,power} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerEnergyPower.js"
 
@@ -44,9 +48,10 @@ describe('ProcedureWorkerEnergyPower Test', () => {
                 height: 100
             }
         }
+        let row = {frame:20}
         EnergyPowerStruct.drawHistogram = jest.fn(()=>true)
         EnergyPowerStruct.drawPolyline = jest.fn(()=>true)
-        expect(EnergyPowerStruct.draw(req, 3, data)).toBeUndefined()
+        expect(EnergyPowerStruct.draw(req, 3, data, row)).toBeUndefined()
     });
 
     it('ProcedureWorkerEnergyPowerTest02', function () {

@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {fps, FpsStruct,FpsRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerFPS.js";
 // @ts-ignore

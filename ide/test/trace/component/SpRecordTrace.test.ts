@@ -49,7 +49,7 @@ describe('SpRecordTrace Test', () => {
         spRecordTrace.spAllocations.appProcess.indexOf = jest.fn(()=>"")
         spRecordTrace.spAllocations.appProcess.lastIndexOf = jest.fn(()=>1)
         spRecordTrace.spAllocations.appProcess.slice = jest.fn(()=>1)
-        expect(spRecordTrace.createNativePluginConfig(1)).toEqual({"configData": {"fileName": "",
+        expect(spRecordTrace.createNativePluginConfig(1)).toEqual({"configData": {"blocked": true, "fileName": "",
                 "filterSize": undefined, "fpUnwind": undefined, "mallocFreeMatchingCnt": 1000,
                 "mallocFreeMatchingInterval": 1000, "maxStackDepth": undefined, "pid": 1,"processName": "",
                 "saveFile": false, "smbPages": undefined, "stringCompressed": true}, "pluginName": "nativehook", "sampleInterval": 1000})
@@ -109,7 +109,7 @@ describe('SpRecordTrace Test', () => {
     it('SpRecordTraceTest16', function () {
         expect(spRecordTrace.createSessionRequest()).toStrictEqual({"pluginConfigs": [], "requestId": 1, "sessionConfig": {"buffers":
                     [{"pages": 16384, "policy": 0}], "keepAliveTime": 0, "resultFile": "/data/local/tmp/hiprofiler_data.htrace", "resultMaxSize": 0,
-                "sampleDuration": 50000, "sessionMode": 0}})
+                "sampleDuration": 30000, "sessionMode": 0}})
     });
     it('SpRecordTraceTest17', function () {
         let that = {

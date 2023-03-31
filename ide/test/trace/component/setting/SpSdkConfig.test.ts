@@ -129,6 +129,6 @@ describe('spSdkConfig Test', () => {
         expect(spSdkConfig.initConfig()).toBeUndefined();
     });
     it('spSdkConfigTest19', function () {
-        expect(spSdkConfig.getGpuConfig()).toStrictEqual({"aa": "11", "cc": 0, "ee": 12, "ff": true, "ss": "strsadsa",});
+        expect(spSdkConfig.getGpuConfig()).toStrictEqual({"aa": "11", "cc": 0, "ee": 12, "ff": false, "ss": "strsadsa",});
     });
 })

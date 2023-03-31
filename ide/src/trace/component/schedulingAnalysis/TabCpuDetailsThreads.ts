@@ -31,6 +31,8 @@ export class TabCpuDetailsThreads extends BaseElement {
     private progress:LitProgressBar | null | undefined;
     private pie:LitChartPie | null | undefined
     private data:Array<any> = [];
+    private sortColumn: string = '';
+    private sortType: number = 0;
 
     initElements(): void {
         this.tableNoData = this.shadowRoot!.querySelector<TableNoData>("#table-no-data")
@@ -44,6 +46,24 @@ export class TabCpuDetailsThreads extends BaseElement {
                 this.setShow = false;
             }
         }
+
+        this.table!.addEventListener('row-click', (evt: any) => {
+            // @ts-ignore
+            let data = evt.detail.data;
+            data.isSelected = true;
+            // @ts-ignore
+            if ((evt.detail as any).callBack) {
+                // @ts-ignore
+                (evt.detail as any).callBack(true)
+            }
+        })
+
+        this.table!.addEventListener('column-click', (evt:any) => {
+            this.sortColumn = evt.detail.key;
+            this.sortType = evt.detail.sort;
+            // @ts-ignore
+            this.sortByColumn(evt.detail)
+        });
     }
 
     init(cpu:number,it:any){
@@ -95,7 +115,11 @@ export class TabCpuDetailsThreads extends BaseElement {
                 },
             ],
         }
-        this.table!.recycleDataSource = this.data;
+        if (this.sortColumn != ""){
+            this.sortByColumn({key:this.sortColumn,sort:this.sortType});
+        }else {
+            this.table!.recycleDataSource = this.data;
+        }
         this.table?.reMeauseHeight()
     }
 
@@ -108,6 +132,34 @@ export class TabCpuDetailsThreads extends BaseElement {
         this.pie!.dataSource = []
         this.table!.recycleDataSource = []
         this.noData(false)
+    }
+
+    sortByColumn(detail: any) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+
+        if (detail.key === 'durStr') {
+            detail.key = "dur";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'value' || detail.key === 'ratio' || detail.key === 'index' || detail.key === 'tid' || detail.key === 'pid') {
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        } else {
+            this.data.sort(compare(detail.key, detail.sort, 'string'))
+        }
+        this.table!.recycleDataSource = this.data;
     }
 
     initHtml(): string {
@@ -176,13 +228,13 @@ export class TabCpuDetailsThreads extends BaseElement {
             <div class="table-box">
                 <table-no-data id="table-no-data">
                     <lit-table id="tb-cpu-usage">
-                        <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start"></lit-table-column>
-                        <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
-                        <lit-table-column width="200px" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="p_pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="duration" data-index="durStr" key="durStr" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="%" data-index="ratio" key="ratio" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="200px" title="p_name" data-index="pName" key="pName" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="p_pid" data-index="pid" key="pid" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="duration" data-index="durStr" key="durStr" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="%" data-index="ratio" key="ratio" align="flex-start" order></lit-table-column>
                     </lit-table>
                 </table-no-data>
             </div>

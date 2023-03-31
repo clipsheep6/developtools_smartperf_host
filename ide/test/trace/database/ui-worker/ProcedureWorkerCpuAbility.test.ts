@@ -12,6 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
 // @ts-ignore
 import {CpuAbilityMonitorStruct,cpuAbility,CpuAbilityRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerCpuAbility.js";
 //@ts-ignore

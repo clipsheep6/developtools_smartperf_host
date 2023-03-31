@@ -516,10 +516,16 @@ export function drawWakeUp(context: CanvasRenderingContext2D | any, wake: Wakeup
 
 const wid = 5;
 const linkLineColor = "#ff0000";
-export function drawLinkLines(context: CanvasRenderingContext2D, nodes: Point[][], tm: TimerShaftElement) {
+export function drawLinkLines(context: CanvasRenderingContext2D, nodes: PairPoint[][], tm: TimerShaftElement, isFavorite: boolean) {
     let percentage = (tm.getRange()!.totalNS - Math.abs(tm.getRange()!.endNS - tm.getRange()!.startNS)) / tm.getRange()!.totalNS
     let maxWidth = tm.getBoundingClientRect().width - 248
-    nodes.forEach(it => {
+    for (let i = 0; i < nodes.length; i++) {
+        let it = nodes[i]
+        if (isFavorite) {
+            if (!it[0].rowEL.collect && !it[1].rowEL.collect) {
+                continue;
+            }
+        }
         let start = it[0].x > it[1].x ? it[1] : it[0];
         let end = it[0].x > it[1].x ? it[0] : it[1];
         if (start && end) {
@@ -582,7 +588,7 @@ export function drawLinkLines(context: CanvasRenderingContext2D, nodes: Point[][
             context.stroke();
             context.closePath();
         }
-    })
+    }
 }
 
 export function drawLoading(ctx: CanvasRenderingContext2D, startNS: number, endNS: number, totalNS: number, frame: any, left: number, right: number) {

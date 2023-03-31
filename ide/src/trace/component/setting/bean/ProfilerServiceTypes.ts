@@ -81,6 +81,7 @@ export interface CreateSessionRequest {
 
 export interface ProfilerPluginConfig<T> {
     pluginName: string;
+    serialize_optimize: boolean;
     sampleInterval?: number;
     configData: T;
 }
@@ -858,6 +859,10 @@ export interface NativeHookConfig {
     stringCompressed: boolean
     fpUnwind: boolean
     blocked: boolean
+    recordAccurately:boolean
+    offlineSymbolization:boolean
+    callframeCompressed:boolean
+    statisticsInterval:number
 }
 
 export interface FpsConfig {

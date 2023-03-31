@@ -96,6 +96,7 @@ export class SelectionData {
     min: string = ""
     max: string = ""
     stateJX: string = ""
+    cpu:number = 0
 }
 
 export class Counter {

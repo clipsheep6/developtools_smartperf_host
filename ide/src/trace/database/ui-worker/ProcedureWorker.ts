@@ -55,7 +55,6 @@ let dataFilter: any = {}
 let canvasList: any = {}
 let contextList: any = {}
 export let renders: any = {
-    // "timeline": new TimelineRender(),
     "cpu-data": new CpuRender(),
     "cpu-state": new CpuStateRender(),
     "cpu-limit-freq": new CpuFreqLimitRender(),

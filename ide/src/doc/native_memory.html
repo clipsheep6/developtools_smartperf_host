@@ -5,7 +5,7 @@
     <title>native_memory</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      
+
 
     <style>
         code[class*="smartperf-"],
@@ -775,6 +775,11 @@
         <li>Max unwind level：抓取的栈的最大深度</li>
         <li>Shared Memory Size：native_daemon和native_hook进程之间存储数据的共享内存大小</li>
         <li>Filter Memory Size：只抓取大于该size的malloc数据（free不受影响）</li>
+        <li>Use Fp Unwind：Fp回栈</li>
+        <li>Use Record Accurately：不过滤数据，上报全量的</li>
+        <li>Use Offline Symbolization：离线符号化</li>
+        <li>Use Record Statistics：统计数据上报</li>
+        <li>statistics interval：统计数据上报周期</li>
     </ul>
     <p class="fontColor">再点击Record setting，在output file path输入文件名hiprofiler_data_nativememory.htrace，拖动滚动条设置buffer
         size大小是64M，抓取时长是50s。<br>
@@ -991,6 +996,11 @@
         <img src="../figures/nativeMemory/nativeflameshow.jpg" alt="GitHub Logo"><br>
         鼠标左键火焰图，会进入下一级界面，右键回到上一级。<br>
         <img src="../figures/nativeMemory/nativeflamelevel2.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">Native Memory数据统计功能</h3>
+
+    <p class="fontColor">选择Use Record Statistics和statistics interval配置项抓取的数据，只会显示Call Info的Tab页，Call
+        Info相关功能同上。<br>
+        <img src="../figures/nativeMemory/statiscsCallInfo.jpg" alt="GitHub Logo"></p>
 
 </div>
 

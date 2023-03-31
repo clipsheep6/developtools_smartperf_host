@@ -30,7 +30,7 @@ describe('SpRecordSetting Test', ()=>{
         let spEle = document.querySelector("#setting") as SpRecordSetting
         expect(spEle.recordMod).toBeTruthy();
         expect(spEle.bufferSize).toEqual(64)
-        expect(spEle.maxDur).toEqual(50)
+        expect(spEle.maxDur).toEqual(30)
     });
 
     it(' SpRecordSetting test', function () {
@@ -217,7 +217,7 @@ describe('SpRecordSetting Test', ()=>{
             <lit-slider id=\\"max-duration\\" defaultColor=\\"var(--dark-color4,#61CFBE)\\" open dir=\\"right\\">
             </lit-slider>
             <div class='resultValue'>
-                <input class=\\"max_duration_result\\" type=\\"text\\" value = '00:00:50' >
+                <input class=\\"max_duration_result\\" type=\\"text\\" value = '00:00:30' >
                 <span style=\\"text-align: center; margin: 8px 8px 8px 0\\"> h:m:s </span>
             </div>
             

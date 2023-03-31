@@ -146,7 +146,7 @@ export let tabConfig: any = {
     },
     "box-native-calltree": {
         title: "Call Info", type: TabpaneNMCalltree,
-        require: (param: SelectionParam) => param.nativeMemory.length > 0,
+        require: (param: SelectionParam) => param.nativeMemory.length > 0 || param.nativeMemoryStatistic.length > 0,
     },
     // "box-native-callinfo": {
     //     title: "Call Info", type: TabPaneNMCallInfo,

@@ -191,7 +191,7 @@ describe('LitSwitch Test', ()=>{
             display: flex;
             position: relative;
             height: 38px;
-            z-index: 3;
+            z-index: auto;
             /*justify-content: center;*/
             /*align-items: center;*/
         }

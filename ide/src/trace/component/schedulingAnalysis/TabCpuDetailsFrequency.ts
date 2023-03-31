@@ -38,6 +38,8 @@ export class TabCpuDetailsFrequency extends BaseElement {
     private tabCpuDetailsThreads:TabCpuDetailsThreads | null | undefined;
     private cpu:number = 0;
     private data:Array<any> = [];
+    private sortColumn: string = '';
+    private sortType: number = 0;
 
     initElements(): void {
         this.tableNoData = this.shadowRoot!.querySelector<TableNoData>("#table-no-data")
@@ -45,6 +47,23 @@ export class TabCpuDetailsFrequency extends BaseElement {
         this.pie = this.shadowRoot!.querySelector<LitChartPie>("#chart-pie")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-cpu-usage")
         this.tabCpuDetailsThreads = this.shadowRoot!.querySelector<TabCpuDetailsThreads>("#tab-cpu-details-threads")
+
+        this.table!.addEventListener('row-click', (evt: any) => {
+            let data = evt.detail.data;
+            data.isSelected = true;
+            // @ts-ignore
+            if ((evt.detail as any).callBack) {
+                // @ts-ignore
+                (evt.detail as any).callBack(true)
+            }
+        })
+
+        this.table!.addEventListener('column-click', (evt:any) => {
+            this.sortColumn = evt.detail.key;
+            this.sortType = evt.detail.sort;
+            // @ts-ignore
+            this.sortByColumn(evt.detail)
+        });
     }
 
     init(cpu:number){
@@ -93,7 +112,11 @@ export class TabCpuDetailsFrequency extends BaseElement {
                     },
                 ],
             }
-            this.table!.recycleDataSource = this.data;
+            if (this.sortColumn != ""){
+                this.sortByColumn({key:this.sortColumn,sort:this.sortType});
+            }else {
+                this.table!.recycleDataSource = this.data;
+            }
             this.table?.reMeauseHeight()
         })
     }
@@ -125,6 +148,43 @@ export class TabCpuDetailsFrequency extends BaseElement {
         procedurePool.submitWithName("logic1", option, { endTs:SpSchedulingAnalysis.endTs,total:SpSchedulingAnalysis.totalDur }, undefined, handler)
         let durTime = new Date().getTime() - time;
         info(log, durTime)
+    }
+
+    sortByColumn(detail: any) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+
+        if (detail.key === 'min') {
+            detail.key = "minValue";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'max') {
+            detail.key = "maxValue";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'avg') {
+            detail.key = "avgValue";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'sumTimeStr') {
+            detail.key = "sum";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'value' || detail.key === 'ratio' || detail.key === 'index') {
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        } else {
+            this.data.sort(compare(detail.key, detail.sort, 'string'))
+        }
+        this.table!.recycleDataSource = this.data;
     }
 
     initHtml(): string {
@@ -166,13 +226,13 @@ export class TabCpuDetailsFrequency extends BaseElement {
             <div class="table-box">
                 <table-no-data id="table-no-data">
                     <lit-table id="tb-cpu-usage">
-                        <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start"></lit-table-column>
-                        <lit-table-column width="150px" title="frequency" data-index="value" key="value" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="min" data-index="min" key="min" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="max" data-index="max" key="max" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="average" data-index="avg" key="avg" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="duration" data-index="sumTimeStr" key="sumTimeStr" align="flex-start"></lit-table-column>
-                        <lit-table-column width="100px" title="%" data-index="ratio" key="ratio" align="flex-start"></lit-table-column>
+                        <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="150px" title="frequency" data-index="value" key="value" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="min" data-index="min" key="min" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="max" data-index="max" key="max" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="average" data-index="avg" key="avg" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="duration" data-index="sumTimeStr" key="sumTimeStr" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="100px" title="%" data-index="ratio" key="ratio" align="flex-start" order></lit-table-column>
                     </lit-table>
                 </table-no-data>
             </div>

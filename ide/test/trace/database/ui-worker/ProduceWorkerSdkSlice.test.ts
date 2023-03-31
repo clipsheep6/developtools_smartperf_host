@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {SdkSliceRender,SdkSliceStruct} from "../../../../dist/trace/database/ui-worker/ProduceWorkerSdkSlice.js"
 

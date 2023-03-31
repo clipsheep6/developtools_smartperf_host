@@ -85,10 +85,6 @@ describe('RangeRuler Test', () => {
     });
 
     it('RangeRulerTest03', function () {
-        // window.requestAnimationFrame = window.requestAnimationFrame ||
-        //     jest.fn().mockImplementation(() => ({
-        //
-        //     }));
         expect(rangeRuler.keyPress({
             key: 'w'
         })).toBeUndefined();
@@ -219,8 +215,6 @@ describe('RangeRuler Test', () => {
     it('RangeRulerTest17', () => {
         rangeRuler.notifyHandler = jest.fn(() => true)
         rangeRuler.movingMark.inspectionFrame.x = jest.fn(() => false)
-        // rangeRuler.c = jest.fn(()=>true)
-        // rangeRuler.c.clearRect = jest.fn(()=>true)
         rangeRuler.frame = jest.fn(() => true)
         rangeRuler.frame.x = jest.fn(() => true)
         rangeRuler.frame.y = jest.fn(() => true)

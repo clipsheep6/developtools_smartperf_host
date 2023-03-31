@@ -761,7 +761,7 @@
 </head>
 <body for="html-export" id="body">
 <div class="smartperf smartperf-preview  ">
-    <h1 class="mume-header fontColor">网页加载trace说明</h1>
+    <h1 class="mume-header fontColor">web端加载trace说明</h1>
 
     <h2 class="mume-header fontColor">文件加载入口</h2>
 
@@ -777,7 +777,7 @@
     <p class="fontColor"><img src="../figures/web/trace.jpg" alt="GitHub Logo"><br>
         说明：</p>
     <ul class="fontColor">
-        <li>操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w放大，s为缩小，a为左移，d为右移</li>
+        <li>操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w为放大，s为缩小，a为左移，d为右移</li>
     </ul>
     <h2 class="mume-header fontColor">trace功能介绍</h2>
 
@@ -800,22 +800,22 @@
     <h4 class="mume-header fontColor">cpu使用情况的框选功能</h4>
 
     <p class="fontColor">可以对cpu的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格,总共有七个tab页。<br>
-        CPU by thread的Tab页，主要显示了在框选时间区间内的进程名，进程号，线程名，线程号，总运行时长，平均运行时长和调度次数信息。<br>
+        CPU by thread的Tab页，主要显示了在框选时间区间内的进程名、进程号、线程名、线程号、总运行时长、平均运行时长和调度次数信息。<br>
         <img src="../figures/web/cpubythread.jpg" alt="GitHub Logo"><br>
-        CPU by process的Tab页，主要显示了在框选时间区间内的进程名，进程号，总运行时长，平均运行时长和调度次数信息。<br>
+        CPU by process的Tab页，主要显示了在框选时间区间内的进程名、进程号、总运行时长、平均运行时长和调度次数信息。<br>
         <img src="../figures/web/cpubyprocess.jpg" alt="GitHub Logo"><br>
-        CPUUsage的Tab页，主要显示了在框选时间区间内，该频率时间占比前三的信息。<br>
+        CPU Usage的Tab页，主要显示了在框选时间区间内，该频率时间占比前三的信息。<br>
         <img src="../figures/web/cpusage.jpg" alt="GitHub Logo"><br>
-        States List的Tab页，按状态&gt;进程&gt;线程的维度去统计，需要呈现该状态的下线程名，进入该状态次数、该状态下时长、最大最小时长，平均时长、最大时长。<br>
+        States List的Tab页，按状态&gt;进程&gt;线程的维度去统计，需要呈现该状态的线程名、该状态次数、该状态下时长、最大最小时长、平均时长、最大时长。<br>
         <img src="../figures/web/StatesList.jpg" alt="GitHub Logo"><br>
-        Switches List的Tab页，按照进程&gt;线程&gt;状态、统计对应状态下的次数。<br>
+        Switches List的Tab页，按照进程&gt;线程&gt;状态，统计对应状态下的次数。<br>
         <img src="../figures/web/Switchlist.jpg" alt="GitHub Logo"><br>
-        Thread States的Tab页，按进程&gt;线程&gt;状态的维度去统计，需要呈现该状态的下线程名，进入该状态次数、该状态下时长、最小时长，平均时长、最大时长。<br>
+        Thread States的Tab页，按进程&gt;线程&gt;状态的维度去统计，需要呈现该状态的线程名、进入该状态次数、该状态下时长、最小时长、平均时长、最大时长。<br>
         <img src="../figures/web/threadstates.jpg" alt="GitHub Logo"><br>
-        Thread Switches的Tab页，按照状态&gt;进程&gt;线程、统计对应状态下的次数。<br>
+        Thread Switches的Tab页，按照状态&gt;进程&gt;线程，统计对应状态下的次数。<br>
         <img src="../figures/web/threadswitches.jpg" alt="GitHub Logo"><br>
         States List、Switches List、Thread States、Thread
-        Switches的4个Tab页，点击移动到某一行，鼠标会变成一个小手的标志，点击一下，就会进入辅助信息界面，会将选中行的辅助信息展示出来，包括开始时间，进程，线程，线程状态，对应的CPU，优先级等信息如下图。<br>
+        Switches的4个Tab页，点击移动到某一行，鼠标会变成一个小手的标志，点击一下，就会进入辅助信息界面，会将选中行的辅助信息展示出来，包括开始时间、进程、线程、线程状态、对应的CPU、优先级等信息如下图。<br>
         <img src="../figures/web/details.jpg" alt="GitHub Logo"></p>
     <h4 class="mume-header fontColor">cpu使用情况的单选功能</h4>
 
@@ -832,9 +832,9 @@
 
     <p class="fontColor">
         可以对线程的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，包含线程运行状态，线程调用栈的统计情况。当框选的数据中同时存在线程运行状态和线程调用栈数据，下方的弹出层中就会出现多个tab选项，可以进行切换。</p>
-    <p class="fontColor">下图是线程运行状态框选统计信息,包括进程名，进程号，线程名，线程号，线程状态，状态持续时间，平均持续时间，该线程状态发生的次数。<br>
+    <p class="fontColor">下图是线程运行状态框选统计信息,包括进程名、进程号、线程名、线程号、线程状态、状态持续时间、平均持续时间、该线程状态发生的次数。<br>
         <img src="../figures/web/threadselect.jpg" alt="GitHub Logo"></p>
-    <p class="fontColor">下图是线程调用栈框选统计信息,包括方法名，持续时间，平均持续时间，调用的次数。<br>
+    <p class="fontColor">下图是线程调用栈框选统计信息,包括方法名、持续时间、平均持续时间、调用的次数。<br>
         <img src="../figures/web/callstackselect.jpg" alt="GitHub Logo"></p>
     <h4 class="mume-header fontColor">进程、线程和方法数据的单选功能</h4>
 
@@ -861,11 +861,11 @@
         <img src="../figures/web/stars.jpg" alt="GitHub Logo"></p>
     <h4 class="mume-header fontColor">勾选功能</h4>
 
-    <p class="fontColor">框选某一区域，该区域左边会出现CheckBox的复选框。选中的区域的复选框会出现打勾的状态。可以取消勾选，也可以重新勾选。<br>
+    <p class="fontColor">框选某一区域，该区域左边会出现CheckBox的复选框，选中的区域的复选框会出现打勾的状态，可以取消勾选，也可以重新勾选。<br>
         <img src="../figures/web/checkbox.jpg" alt="GitHub Logo"></p>
     <h4 class="mume-header fontColor">搜索功能</h4>
 
-    <p class="fontColor">在搜索框中，可以输入线程，线程号等搜索自己想要的信息,搜索完成会高亮显示。<br>
+    <p class="fontColor">在搜索框中，可以输入线程，线程号等搜索自己想要的信息，搜索完成会高亮显示。<br>
         <img src="../figures/web/search.jpg" alt="GitHub Logo"><br>
         在搜索框中输入调用栈的方法名，会跳转到对应的调用栈。<br>
         <img src="../figures/web/searchcallstack.jpg" alt="GitHub Logo"></p>

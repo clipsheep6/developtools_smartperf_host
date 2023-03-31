@@ -33,12 +33,28 @@ export class Top20ProcessThreadCount extends BaseElement {
     private pie:LitChartPie | null | undefined
     private progress:LitProgressBar | null | undefined;
     private nodata:TableNoData | null | undefined;
+    private data:Array<any> = [];
 
     initElements(): void {
         this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
         this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-process-thread-count")
         this.pie = this.shadowRoot!.querySelector<LitChartPie>("#pie")
+
+        this.table!.addEventListener('row-click', (evt: any) => {
+            let data = evt.detail.data;
+            data.isSelected = true;
+            // @ts-ignore
+            if ((evt.detail as any).callBack) {
+                // @ts-ignore
+                (evt.detail as any).callBack(true)
+            }
+        })
+
+        this.table!.addEventListener('column-click', (evt) => {
+            // @ts-ignore
+            this.sortByColumn(evt.detail)
+        });
     }
 
     init(){
@@ -53,6 +69,7 @@ export class Top20ProcessThreadCount extends BaseElement {
         this.queryLogicWorker("scheduling-Process ThreadCount","query Process Thread Count Analysis Time:",(res)=>{
             this.nodata!.noData = res === undefined || res.length === 0
             this.table!.recycleDataSource = res;
+            this.data = res;
             this.table?.reMeauseHeight()
             this.pie!.config = {
                 appendPadding: 10,
@@ -94,6 +111,31 @@ export class Top20ProcessThreadCount extends BaseElement {
         info(log, durTime)
     }
 
+    sortByColumn(detail: any) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+
+        if (detail.key === 'NO' || detail.key === 'pid' || detail.key === 'threadNumber') {
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        } else {
+            this.data.sort(compare(detail.key, detail.sort, 'string'))
+        }
+        this.table!.recycleDataSource = this.data;
+    }
+
     initHtml(): string {
         return `
         <style>
@@ -133,10 +175,10 @@ export class Top20ProcessThreadCount extends BaseElement {
             </div>
             <div class="tb_thread_count">
                 <lit-table id="tb-process-thread-count" style="height: auto">
-                    <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="thread count" data-index="threadNumber" key="threadNumber" align="flex-start"></lit-table-column>        
+                    <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="thread count" data-index="threadNumber" key="threadNumber" align="flex-start" order></lit-table-column>        
                 </lit-table>
             </div>
         </div>

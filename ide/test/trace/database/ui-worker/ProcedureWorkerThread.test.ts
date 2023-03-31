@@ -13,12 +13,16 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {thread, ThreadStruct,ThreadRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerThread.js";
 // @ts-ignore
 import {Rect} from "../../../../dist/trace/component/trace/timer-shaft/Rect.js";
 
-describe(' ThreadTest', () => {
+describe('ProcedureWorkerThread Test', () => {
 
     let frame={
         x:0,
@@ -26,23 +30,8 @@ describe(' ThreadTest', () => {
         width:10,
         height:10
     }
-    it('ThreadTest01', () => {
-        let dataList = new Array();
-        dataList.push({startTime: 0, dur: 10, frame: {x:0, y:9, width:10, height:10}})
-        dataList.push({startTime: 1, dur: 111})
-        let rect = new Rect(0, 10, 10, 10);
-        thread(dataList, [{length: 0}], 1, 100254, 100254, frame,true)
-    })
 
-    it('ThreadTest02', () => {
-        let dataList = new Array();
-        dataList.push({startTime: 0, dur: 10, frame: {x:0, y:9, width:10, height:10}})
-        dataList.push({startTime: 1, dur: 111, frame: {x:0, y:9, width:10, height:10}})
-        let rect = new Rect(0, 10, 10, 10);
-        thread(dataList, [{length: 0}], 1, 100254, 100254, frame,false)
-    })
-
-    it('ThreadTest03', () => {
+    it('ProcedureWorkerThreadTest01', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -61,7 +50,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest04', () => {
+    it('ProcedureWorkerThreadTest02', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -81,7 +70,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest05', () => {
+    it('ProcedureWorkerThreadTest03', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -101,7 +90,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest06', () => {
+    it('ProcedureWorkerThreadTest04', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -121,7 +110,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest07', () => {
+    it('ProcedureWorkerThreadTest05', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -141,7 +130,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest08', () => {
+    it('ProcedureWorkerThreadTest06', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -161,7 +150,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('ThreadTest09', () => {
+    it('ProcedureWorkerThreadTest07', () => {
         const d1 = {
             cpu:1,
             tid:1,
@@ -179,7 +168,7 @@ describe(' ThreadTest', () => {
         expect(ThreadStruct.equals(d1, d2)).toBeTruthy()
     })
 
-    it('ThreadTest10', function () {
+    it('ProcedureWorkerThreadTest08', function () {
         let threadRender = new ThreadRender()
         let  req = {
             lazyRefresh:true,

@@ -23,12 +23,10 @@ import {
     queryBinderBySliceId,
     queryFlowsData,
     queryGpuDur,
-    queryPrecedingData,
+    queryPrecedingData, queryRunnableTimeByRunning,
     queryThreadStateArgs,
     queryThreadWakeUp,
-    queryThreadWakeUpFrom,
-    queryWakeUpFromThread_WakeThread,
-    queryWakeUpFromThread_WakeTime,
+    queryThreadWakeUpFrom
 } from "../../../database/SqlLite.js";
 import {WakeupBean} from "../../../bean/WakeupBean.js";
 import {SpApplication} from "../../../SpApplication.js";
@@ -43,24 +41,8 @@ import {IrqStruct} from "../../../database/ui-worker/ProcedureWorkerIrq.js";
 import {BinderArgBean} from "../../../bean/BinderArgBean.js";
 import {JankStruct} from "../../../database/ui-worker/ProcedureWorkerJank.js";
 import {LitIcon} from "../../../../base-ui/icon/LitIcon.js";
+import {Utils} from "../base/Utils.js";
 
-const STATUS_MAP: any = {
-    D: "Uninterruptible Sleep",
-    S: "Sleeping",
-    R: "Runnable",
-    "Running": "Running",
-    "R+": "Runnable (Preempted)",
-    DK: "Uninterruptible Sleep + Wake Kill",
-    I: "Task Dead",
-    T: "Traced",
-    t: "Traced",
-    X: "Exit (Dead)",
-    Z: "Exit (Zombie)",
-    K: "Wake Kill",
-    W: "Waking",
-    P: "Parked",
-    N: "No Load"
-}
 const INPUT_WORD = "This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running."
 
 export function getTimeString(ns: number): string {
@@ -119,7 +101,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         let processId = data.processId || data.tid;
         let state = ""
         if (data.end_state) {
-            state = STATUS_MAP[data.end_state]
+            state = Utils.getEndState(data.end_state)
         } else if (data.end_state == "" || data.end_state == null) {
             state = ""
         } else {
@@ -364,7 +346,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         list.push({name: 'Duration', value: getTimeString(data.dur || 0)})
         let state = ""
         if (data.state) {
-            state = STATUS_MAP[data.state]
+            state = Utils.getEndState(data.state)
         } else if (data.state == "" || data.state == null) {
             state = ""
         } else {
@@ -415,9 +397,6 @@ export class TabPaneCurrentSelection extends BaseElement {
             }
             if(args.length > 0){
                 args.forEach((arg)=>{
-                    if(arg.keyName === 'iowait' && state === 'Uninterruptible Sleep'){
-                        list[2].value = `Uninterruptible Sleep (non-IO)`
-                    }
                     list.push({name: arg.keyName, value: arg.strValue})
                 })
             }
@@ -609,7 +588,7 @@ export class TabPaneCurrentSelection extends BaseElement {
                         list.push({name: `<div style="padding:5px 0px 5px 0px;">App Frame</div>`, value: ""})
                         list.push({
                             name: `<div>Process</div>`,
-                            value: data.name + " " + data.pid
+                            value: data.cmdline + " " + data.pid
                         })
                         list.push({
                             name: `<div>start time</div>`,
@@ -688,22 +667,14 @@ export class TabPaneCurrentSelection extends BaseElement {
         if (data.id == undefined || data.startTime == undefined) {
             return null
         }
-        let wakeupTimes = await queryWakeUpFromThread_WakeTime(data.id, data.startTime)
-        if (wakeupTimes != undefined && wakeupTimes.length > 0) {
-            let wakeupTime = wakeupTimes[0]
-            if (wakeupTime.wakeTs != undefined && wakeupTime.preRow != undefined && wakeupTime.wakeTs < wakeupTime.preRow) {
-                return null
-            }
-            if (wakeupTime.wakeTs == undefined) {
-                return null
-            }
-            let wakeupBeans = await queryWakeUpFromThread_WakeThread(wakeupTime.wakeTs)
-            if (wakeupBeans != undefined && wakeupBeans.length > 0) {
-                wb = wakeupBeans[0]
+        let wakeup = await queryRunnableTimeByRunning(data.tid!,data.startTime)
+        if(wakeup && wakeup[0]){
+            let wakeupTs = wakeup[0].ts as number
+            let wf = await queryThreadWakeUpFrom(data.id,wakeupTs)
+            if(wf && wf[0]){
+                wb = wf[0]
                 if (wb != null) {
-                    if (wakeupTime.wakeTs != undefined && wakeupTime.startTs != undefined) {
-                        wb.wakeupTime = wakeupTime.wakeTs - wakeupTime.startTs
-                    }
+                    wb.wakeupTime = wakeupTs - (window as any).recordStartNS;
                     wb.schedulingLatency = (data.startTime || 0) - (wb.wakeupTime || 0)
                     if (wb.process == null) {
                         wb.process = wb.thread;
@@ -723,7 +694,7 @@ export class TabPaneCurrentSelection extends BaseElement {
      * @param data
      */
     async queryThreadWakeUpFromData(itid: number, startTime: number,dur:number) : Promise<WakeupBean|undefined> {
-        let wakeUps = await queryThreadWakeUpFrom(itid, startTime + (window as any).recordStartNS,dur)
+        let wakeUps = await queryThreadWakeUpFrom(itid, startTime + (window as any).recordStartNS)
         if (wakeUps != undefined && wakeUps.length > 0) {
             return wakeUps[0];
         }

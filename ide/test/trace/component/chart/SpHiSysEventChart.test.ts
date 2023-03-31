@@ -27,7 +27,8 @@ import {LitPopover} from "../../../../dist/base-ui/popover/LitPopoverV.js";
 import {
     querySystemLocationData,
     querySystemLockData,
-    querySystemSchedulerData
+    querySystemSchedulerData,
+    queryConfigSysEventAppName
 } from "../../../../src/trace/database/SqlLite.js";
 
 window.ResizeObserver = window.ResizeObserver ||
@@ -89,6 +90,7 @@ describe('SpHiSysEventChart Test', () => {
     let querySystemLocationData = sqlite.querySystemLocationData;
     let querySystemLockData = sqlite.querySystemLockData;
     let querySystemSchedulerData = sqlite.querySystemSchedulerData;
+    let queryConfigSysEventAppName = sqlite.queryConfigSysEventAppName;
     let location = [
         {
             ts: 1005938319,
@@ -130,9 +132,14 @@ describe('SpHiSysEventChart Test', () => {
             Value: "2",
         }
     ]
+
+    let process = [{
+        process_name: "process1"
+    }]
     querySystemLocationData.mockResolvedValue(location);
     querySystemLockData.mockResolvedValue(lock);
     querySystemSchedulerData.mockResolvedValue(work);
+    queryConfigSysEventAppName.mockResolvedValue(process);
 
     it('spHiSysEventChartTest01', function () {
         spHiSysEventChart.init();
@@ -240,7 +247,6 @@ describe('SpHiSysEventChart Test', () => {
     });
 
     it('spHiSysEventChartTest7', function () {
-        // expect(htmlDivElement.onMouseClick({button:2})).toBeUndefined();
         expect(htmlDivElement.onclick).toBe(null);
     });
 })

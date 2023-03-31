@@ -18,18 +18,22 @@ import "../../../../base-ui/checkbox/LitCheckBox.js";
 import {LitCheckBox} from "../../../../base-ui/checkbox/LitCheckBox.js";
 import {TraceRow} from "./TraceRow.js";
 import {SpSystemTrace} from "../../SpSystemTrace.js";
+import {LitSearch} from "../search/Search.js";
+import {TraceSheet} from "./TraceSheet.js";
+import {CpuStruct} from "../../../database/ui-worker/ProcedureWorkerCPU.js";
 
 @element("trace-row-config")
 export class TraceRowConfig extends BaseElement {
+    selectTypeList: Array<string> | undefined;
     private spSystemTrace: SpSystemTrace | null | undefined;
     private sceneTable: HTMLDivElement | null | undefined;
     private chartTable: HTMLDivElement | null | undefined;
     private inputElement: HTMLInputElement | null | undefined;
     private allTraceRowList: NodeListOf<TraceRow<any>> | undefined;
     private traceRowList: NodeListOf<TraceRow<any>> | undefined;
-    private selectTypeList: Array<string> | undefined;
     private selectTypeMap: any = {};
     private selectTypeOption: any = {};
+    private sceneRowList: any;
 
     get value() {
         return this.getAttribute('value') || "";
@@ -48,6 +52,7 @@ export class TraceRowConfig extends BaseElement {
             title: 'Frame timeline',
             name: 'janks'
         }]
+        this.sceneRowList = []
         this.selectTypeList = [];
         this.sceneTable!.innerHTML = '';
         this.chartTable!.innerHTML = '';
@@ -61,12 +66,13 @@ export class TraceRowConfig extends BaseElement {
         }
         sceneList!.forEach(it => {
             let sceneTraceRowList = this.spSystemTrace!.shadowRoot?.querySelector("div[class=rows]")!.querySelector<TraceRow<any>>(`trace-row[row-type=${it.name}]`);
-            if(sceneTraceRowList){
+            if (sceneTraceRowList) {
                 this.initConfigSceneTable(it);
                 let parentRow: any = {};
                 let selectParentOption: any = {};
                 let selectParentRow: any = {};
                 this.allTraceRowList!.forEach(traceRow => {
+                    traceRow.setAttribute('scene', '')
                     if (traceRow.rowParentId == '') {
                         parentRow['parent'] = traceRow;
                     }
@@ -77,6 +83,10 @@ export class TraceRowConfig extends BaseElement {
                 })
                 this.selectTypeMap[it.name] = Object.values(selectParentRow);
                 this.selectTypeOption[it.name] = Object.values(selectParentOption);
+            } else {
+                this.allTraceRowList!.forEach(traceRow => {
+                    traceRow.setAttribute('scene', '')
+                })
             }
         })
     }
@@ -113,13 +123,17 @@ export class TraceRowConfig extends BaseElement {
         optionCheckBox.addEventListener("change", (e) => {
             if (optionCheckBox.checked) {
                 row.removeAttribute('row-hidden');
+                row.setAttribute('scene', '');
+                this.resetChildRowModel(row, true, false)
             } else {
                 if (row.rowParentId == '') {
                     row.expansion = false;
                 }
                 row.setAttribute('row-hidden', '');
+                row.removeAttribute('scene');
+                this.resetChildRowModel(row, false, true)
             }
-            this.spSystemTrace!.refreshCanvas(false);
+            this.refreshSystemPanel();
         });
         this.chartTable!.append(...[div, optionCheckBox]);
     }
@@ -147,34 +161,88 @@ export class TraceRowConfig extends BaseElement {
 
     resetChartTable(item: any, isCheck: boolean) {
         let favoriteRowList = this.spSystemTrace?.favoriteRowsEL?.querySelectorAll<TraceRow<any>>("trace-row");
-        this.traceRowList!.forEach(traceRow => {
-            if (this.selectTypeList!.length > 0) {
+        if (this.selectTypeList!.length > 0) {
+            this.traceRowList!.forEach(traceRow => {
                 if (this.selectTypeList!.indexOf(traceRow.name) > -1) {
                     traceRow.removeAttribute('row-hidden');
+                    this.resetChildRowModel(traceRow, true, false)
                 } else {
                     traceRow.setAttribute('row-hidden', '');
+                    if (traceRow.expansion) {
+                        traceRow.removeAttribute('expansion')
+                    }
+                    this.resetChildRowModel(traceRow, false, true)
                 }
-            } else {
+            })
+        } else {
+            this.traceRowList!.forEach(traceRow => {
                 traceRow.removeAttribute('row-hidden');
-            }
-        })
+                this.resetChildRowModel(traceRow, true, false)
+            })
+        }
 
         if (favoriteRowList && favoriteRowList!.length > 0) {
             favoriteRowList!.forEach(traceRow => {
-                if (traceRow.rowType == item.name && isCheck) {
+                if (traceRow.rowType == item.name) {
                     traceRow.removeAttribute('row-hidden');
-                }
-                if(traceRow.rowType != item.name){
-                    traceRow.setAttribute('row-hidden', '');
+                    if (isCheck) {
+                        traceRow.setAttribute('scene', '');
+                    } else {
+                        traceRow.removeAttribute('scene');
+                    }
                 }
                 if (this.selectTypeList!.length == 0) {
                     traceRow.removeAttribute('row-hidden');
+                    traceRow.removeAttribute('scene');
                 }
             })
         }
+        this.refreshSystemPanel();
+    }
+
+    resetChildRowModel(row: any, hasRowSceneModel: boolean, hasRowHidden: boolean = false) {
+        if (hasRowSceneModel) {
+            row.setAttribute('scene', '');
+        } else {
+            row.removeAttribute('scene');
+        }
+        let sonRowList = this.spSystemTrace!.shadowRoot?.querySelector("div[class=rows]")!.querySelectorAll<TraceRow<any>>(`trace-row[row-parent-id='${row.rowId}']`);
+        sonRowList!.forEach(sonRow => {
+            if (hasRowSceneModel) {
+                sonRow.setAttribute('scene', '');
+            } else {
+                sonRow.removeAttribute('scene');
+            }
+            if (hasRowHidden) {
+                sonRow.setAttribute('row-hidden', '');
+            }
+        })
+    }
+
+    refreshSystemPanel() {
+        this.clearSearchAndFlag();
         this.spSystemTrace!.scrollToProcess('', '', '', false);
         this.spSystemTrace!.refreshFavoriteCanvas();
         this.spSystemTrace!.refreshCanvas(false);
+    }
+
+    clearSearchAndFlag() {
+        let traceSheet = this.spSystemTrace!.shadowRoot?.querySelector('.trace-sheet') as TraceSheet;
+        if (traceSheet) {
+            traceSheet!.setAttribute('mode', 'hidden');
+        }
+        let search = document.querySelector("sp-application")!.shadowRoot?.querySelector('#lit-search') as LitSearch;
+        if (search) {
+            search.clear();
+        }
+        let highlightRow = this.spSystemTrace!.shadowRoot?.querySelector<TraceRow<any>>("trace-row[highlight]");
+        if (highlightRow) {
+            highlightRow.highlight = false
+        }
+        this.spSystemTrace!.timerShaftEL?.removeTriangle('inverted');
+        CpuStruct.wakeupBean = undefined
+        this.spSystemTrace!.hoverFlag = undefined
+        this.spSystemTrace!.selectFlag = undefined
     }
 
     initElements(): void {

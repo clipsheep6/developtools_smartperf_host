@@ -1253,6 +1253,9 @@ export class LitTable extends HTMLElement {
         newTableElement.onclick = () => {
             this.dispatchRowClickEvent(rowData, [newTableElement])
         }
+        newTableElement.onmouseenter= ()=>{
+            this.dispatchRowHoverEvent(rowData.data)
+        }
         if (rowData.data.isSelected != undefined) {
             this.setSelectedRow(rowData.data.isSelected, [newTableElement])
         }
@@ -1329,6 +1332,9 @@ export class LitTable extends HTMLElement {
             } else {
                 this.dispatchRowClickEvent(rowObject, [element])
             }
+        }
+        element.onmouseenter = ()=>{
+            this.dispatchRowHoverEvent(rowObject.data)
         }
         (element as any).data = rowObject.data
         if (rowObject.data.isSelected != undefined) {
@@ -1456,6 +1462,14 @@ export class LitTable extends HTMLElement {
                     }
                     this.setSelectedRow(rowObject.data.isSelected, elements)
                 }
+            }, composed: true,
+        }));
+    }
+
+    dispatchRowHoverEvent(data:any){
+        this.dispatchEvent(new CustomEvent('row-hover', {
+            detail: {
+                data: data
             }, composed: true,
         }));
     }

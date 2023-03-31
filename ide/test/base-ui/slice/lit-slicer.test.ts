@@ -76,4 +76,25 @@ describe('slicer Test', ()=>{
         litSlicer.style ="v";
         expect(litSlicer.style).toBeUndefined()
     })
+
+    it('slicerTest13', function () {
+        let litSlicer = new LitSlicer();
+        litSlicer.style ="v";
+        document.body.innerHTML= `
+        <lit-slicer-track id="slicer_2"></lit-slicer-track>
+        <lit-slicer-track id="slicer"></lit-slicer-track>
+        `
+        let slice = document.getElementById('slicer') as LitSlicerTrack
+        let line = slice.shadowRoot?.querySelector('#root') as HTMLDivElement
+        let mouseOutEvent: MouseEvent = new MouseEvent("mousedown", <MouseEventInit>{movementX: 1, movementY: 2});
+
+        line.dispatchEvent(mouseOutEvent)
+        let onmousemove: MouseEvent = new MouseEvent("mousemove", <MouseEventInit>{movementX: 1, movementY: 2});
+        document.dispatchEvent(onmousemove)
+        let onmouseleave : MouseEvent = new MouseEvent("mouseleave", <MouseEventInit>{movementX: 1, movementY: 2});
+        document.dispatchEvent(onmouseleave)
+        let onmouseup : MouseEvent = new MouseEvent("mouseup", <MouseEventInit>{movementX: 1, movementY: 2});
+        document.dispatchEvent(onmouseup)
+        expect(litSlicer.style).toBeUndefined()
+    })
 })

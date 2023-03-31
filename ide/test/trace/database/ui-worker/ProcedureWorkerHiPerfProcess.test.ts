@@ -12,12 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 //@ts-ignore
 import {hiPerfProcess,HiPerfProcessStruct,HiperfProcessRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerHiPerfProcess.js";
 
-describe('ProcedureWorkerHiPerfCPU Test', ()=>{
+describe('ProcedureWorkerHiPerfProcess Test', ()=>{
 
-    it('ProcedureWorkerHiPerfCPUTest01',()=>{
+    it('ProcedureWorkerHiPerfProcessTest01',()=>{
         const data = {
             frame:undefined,
             cpu:1,
@@ -31,25 +36,25 @@ describe('ProcedureWorkerHiPerfCPU Test', ()=>{
         expect(HiPerfProcessStruct.draw(ctx,'',data,true)).toBeUndefined();
     });
 
-    it('ProcedureWorkerHiPerfCPUTest02', function () {
+    it('ProcedureWorkerHiPerfProcessTest02', function () {
         let dataList = new Array();
         dataList.push({startNS: 0, dur: 10,length:1, frame: {x:0, y:9, width:10, height:10}})
         dataList.push({startNS: 1, dur: 2,length:1})
-        hiPerfProcess(dataList, [{length:0}], 1, 8, 3, "",true,1,true)
+        hiPerfProcess(dataList, [{length:0}], dataList, 8, 3, "",true,1,true)
     });
 
-    it('ProcedureWorkerHiPerfCPUTest03', function () {
+    it('ProcedureWorkerHiPerfProcessTest03', function () {
         let dataList = new Array();
         dataList.push({startNS: 0, dur: 10,length:1, frame: {x:0, y:9, width:10, height:10}})
         dataList.push({startNS: 1, dur: 2,length:1})
-        hiPerfProcess(dataList, [{length:0}], 1, 8, 3, "",false,1,false)
+        hiPerfProcess(dataList, [{length:0}], dataList, 8, 3, "",false,1,false)
     });
 
-    it('ProcedureWorkerHiPerfCPUTest04', function () {
+    it('ProcedureWorkerHiPerfProcessTest04', function () {
         expect(HiPerfProcessStruct.groupBy10MS([{a:'1',b:2,c:3}],10,)).toEqual([{"dur": 10000000, "height": 40, "startNS": NaN,}])
     });
 
-    it('ProcedureWorkerHiPerfCPUTest05', function () {
+    it('ProcedureWorkerHiPerfProcessTest05', function () {
         let hiperfProcessRender = new HiperfProcessRender()
         let  req = {
             lazyRefresh:true,
@@ -89,6 +94,6 @@ describe('ProcedureWorkerHiPerfCPU Test', ()=>{
             scale:100_000_001
         }
         window.postMessage = jest.fn(()=>true)
-        expect(hiperfProcessRender.render(req,[],[])).toBeUndefined()
+        expect(hiperfProcessRender.render(req,[],[], [])).toBeUndefined()
     });
 })

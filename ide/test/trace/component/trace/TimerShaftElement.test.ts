@@ -13,13 +13,65 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {TimerShaftElement,ns2s,ns2x} from "../../../../dist/trace/component/trace/TimerShaftElement.js";
 // @ts-ignore
 import {Rect} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerCommon";
 
+// @ts-ignore
+import {EventCenter} from "../../../../dist/trace/component/trace/base/EventCenter.js";
+
+
+declare global {
+    interface Window {
+        SmartEvent: {
+            UI: {
+                MenuTrace: string,//selected menu trace
+                RefreshCanvas: string,//selected menu trace
+                SliceMark: string,//Set the tag scope
+                TimeRange: string,//Set the timeline range
+                TraceRowComplete: string,//Triggered after the row component has finished loading data
+            }
+        }
+
+        subscribe(evt: string, fn: (b: any) => void): void;
+
+        subscribeOnce(evt: string, fn: (b: any) => void): void;
+
+        unsubscribe(evt: string, fn: (b: any) => void): void;
+
+        publish(evt: string, data: any): void;
+
+        clearTraceRowComplete(): void;
+    }
+}
+
+window.SmartEvent = {
+    UI: {
+        MenuTrace: "SmartEvent-UI-MenuTrace",
+        RefreshCanvas: "SmartEvent-UI-RefreshCanvas",
+        SliceMark: "SmartEvent-UI-SliceMark",
+        TimeRange: "SmartEvent-UI-TimeRange",
+        TraceRowComplete: "SmartEvent-UI-TraceRowComplete",
+    }
+}
+
+Window.prototype.subscribe = (ev, fn) => EventCenter.subscribe(ev, fn)
+Window.prototype.unsubscribe = (ev, fn) => EventCenter.unsubscribe(ev, fn)
+Window.prototype.publish = (ev, data) => EventCenter.publish(ev, data)
+Window.prototype.subscribeOnce = (ev, data) => EventCenter.subscribeOnce(ev, data)
+Window.prototype.clearTraceRowComplete = () => EventCenter.clearTraceRowComplete()
+
 describe('TimerShaftElement Test', () => {
-    let timerShaftElement = new TimerShaftElement();
+    document.body.innerHTML = '<timer-shaft-element id="timerShaftEL"><timer-shaft-element>'
+    let timerShaftElement = document.querySelector('#timerShaftEL') as TimerShaftElement;
+    timerShaftElement.totalNS = 1000
+    timerShaftElement.startNS = 1000
+    timerShaftElement.endNS = 2000
 
     timerShaftElement.cpuUsage = 'cpuUsage'
 
@@ -46,7 +98,7 @@ describe('TimerShaftElement Test', () => {
     });
 
     it('TimerShaftElementTest06', function () {
-        expect(timerShaftElement.totalNS).toBe(10000000000);
+        expect(timerShaftElement.totalNS).toBe(1000);
     });
 
     it('TimerShaftElementTest08', function () {
@@ -71,7 +123,7 @@ describe('TimerShaftElement Test', () => {
             box-sizing: border-box;
             display: flex;
             width: 100%;
-            height: 147px;
+            height: 148px;
             border-bottom: 1px solid var(--dark-background,#dadada);
             border-top: 1px solid var(--dark-background,#dadada);
         }
@@ -107,9 +159,20 @@ describe('TimerShaftElement Test', () => {
             padding: 2px 6px;
             display: flex;justify-content: space-between;
             user-select: none;
+            position: relative;
         }
         .time-total::after{
             content: \\" +\\";
+        }
+        .time-collect{
+            position:absolute;
+            right:5px;
+            bottom:5px;
+            color: #5291FF;
+            display: none;
+        }
+        .time-collect[close] > .time-collect-arrow{
+            transform: rotateZ(-180deg);
         }
 
         </style>
@@ -119,6 +182,9 @@ describe('TimerShaftElement Test', () => {
                 <div class=\\"time-div\\">
                     <span class=\\"time-total\\">10</span>
                     <span class=\\"time-offset\\">0</span>
+                    <div class=\\"time-collect\\">
+                        <lit-icon class=\\"time-collect-arrow\\" name=\\"caret-down\\" size=\\"17\\"></lit-icon>
+                    </div>
                 </div>
             </div>
             <canvas class=\\"panel\\"></canvas>
@@ -217,17 +283,17 @@ describe('TimerShaftElement Test', () => {
 
     it('TimerShaftElementTest31', function () {
         timerShaftElement.timeRuler = jest.fn(() => true);
-        expect(timerShaftElement.totalNS).toBe(10000000000);
+        expect(timerShaftElement.totalNS).toBe(1000);
     });
 
     it('TimerShaftElementTest32', function () {
         timerShaftElement.rangeRuler = jest.fn(() => true);
-        expect(timerShaftElement.totalNS).toBe(10000000000);
+        expect(timerShaftElement.totalNS).toBe(1000);
     });
 
     it('TimerShaftElementTest33', function () {
         timerShaftElement.timeTotalEL = jest.fn(() => true);
-        expect(timerShaftElement.totalNS).toBe(10000000000);
+        expect(timerShaftElement.totalNS).toBe(1000);
     });
 
     it('TimerShaftElementTest35', function () {

@@ -804,6 +804,12 @@ export class SpApplication extends BaseElement {
                             spSystemTrace!.loadDatabaseArrayBuffer(this.result as ArrayBuffer, "",(command: string, percent: number) => {
                                 setProgress(command)
                             }, () => {
+                                mainMenu.menus!.splice(1, mainMenu.menus!.length > 2 ? 1 : 0, {
+                                    collapsed: false,
+                                    title: "Current Trace",
+                                    describe: "Actions on the current trace",
+                                    children: getTraceOptionMenus(showFileName,fileSize,fileName,false)
+                                })
                                 litSearch.setPercent("", 101);
                                 progressEL.loading = false;
                                 that.freshMenuDisable(false)

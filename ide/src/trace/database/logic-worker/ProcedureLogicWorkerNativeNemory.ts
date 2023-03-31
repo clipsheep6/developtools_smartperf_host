@@ -40,6 +40,7 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
     chartComplete:Map<number,boolean> = new Map<number, boolean>();
     realTimeDif:number = 0;
     responseTypes:{key:number, value:string}[] = []
+    totalNS:number = 0;
 
     handle(data: any): void {
         this.currentEventId = data.id
@@ -87,6 +88,22 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
                         this.queryCallchainsSamples(data.params.leftNs, data.params.rightNs,data.params.types)
                     }
                     break;
+                case "native-memory-queryStatisticCallchainsSamples":
+                    this.searchValue = "";
+                    if (data.params.list) {
+                        let samples = convertJSON(data.params.list) || [];
+                        this.queryAllCallchainsSamples = samples;
+                        this.freshCurrentCallchains(samples,true)
+                        // @ts-ignore
+                        self.postMessage({
+                            id: data.id,
+                            action: data.action,
+                            results: this.allThreads
+                        });
+                    }else {
+                        this.queryStatisticCallchainsSamples(data.params.leftNs, data.params.rightNs,data.params.types)
+                    }
+                    break;
                 case "native-memory-action":
                     if (data.params) {
                         // @ts-ignore
@@ -118,6 +135,14 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
                     break;
                 case "native-memory-get-responseType":
                     self.postMessage({id: data.id, action: data.action, results: this.responseTypes});
+                    break;
+                case "native-memory-queryNativeHookStatistic":
+                    if (data.params.list) {
+                        postMessage(data.id, data.action, this.handleNativeHookStatisticData(convertJSON(data.params.list)));
+                    }else {
+                        this.totalNS = data.params.totalNS;
+                        this.queryNativeHookStatistic(data.params.type)
+                    }
                     break;
             }
         }
@@ -161,6 +186,42 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
             )
             order by startTime;
         `, {})
+    }
+
+    queryNativeHookStatistic(type:number){
+        let sql = `
+        select (ts - start_ts) startTime,
+                sum(apply_size - release_size) heapsize,
+                sum(apply_count - release_count) density
+        from native_hook_statistic,trace_range
+        where startTime >= 0 ${ type === -1 ? '': `and type = ${type}`}
+        group by startTime;
+        `
+        this.queryData("native-memory-queryNativeHookStatistic",sql,{})
+    }
+
+    handleNativeHookStatisticData(arr:{startTime:number,heapsize:number,density:number,dur:number}[]){
+        let maxSize = 0,maxDensity = 0,minSize = 0,minDensity = 0;
+        for (let i =0,len = arr.length; i< len;i++) {
+            if(i == len - 1){
+                arr[i].dur = this.totalNS - arr[i].startTime
+            }else{
+                arr[i+1].heapsize = arr[i].heapsize + arr[i+1].heapsize
+                arr[i+1].density = arr[i].density + arr[i+1].density
+                arr[i].dur = arr[i+1].startTime - arr[i].startTime
+            }
+            maxSize = Math.max(maxSize,arr[i].heapsize)
+            maxDensity = Math.max(maxDensity,arr[i].density)
+            minSize = Math.min(minSize,arr[i].heapsize)
+            minDensity = Math.min(minDensity,arr[i].density)
+        }
+        return arr.map((it )=>{
+            (it as any).maxHeapSize = maxSize;
+            (it as any).maxDensity = maxDensity;
+            (it as any).minHeapSize = minSize;
+            (it as any).minDensity = minDensity;
+            return it
+        })
     }
 
     initResponseTypeList(list:any[]){
@@ -432,39 +493,6 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
         return name == "" ? "-" : name
     }
 
-    groupByWithTid(data: Array<NativeHookCallInfo>): Array<NativeHookCallInfo> {
-        let tidMap = new Map<number, NativeHookCallInfo>();
-        for (let call of data) {
-            if (tidMap.has(call.tid)) {
-                let tidCall = tidMap.get(call.tid);
-                tidCall!.size += call.size;
-                tidCall!.heapSizeStr = `${getByteWithUnit(tidCall!.size)}`;
-                tidCall!.heapPercent = `${(tidCall!.size / this.selectTotalSize * 100).toFixed(1)}%`
-                tidCall!.count += call.count;
-                tidCall!.countValue = `${tidCall!.count}`
-                tidCall!.countPercent = `${(tidCall!.count / this.selectTotalCount * 100).toFixed(1)}%`
-                tidCall!.children.push(call);
-            } else {
-                let tidCall = new NativeHookCallInfo();
-                tidCall.id = "tid_" + call.tid;
-                tidCall.count = call.count;
-                tidCall!.countValue = `${call.count}`
-                tidCall!.countPercent = `${(tidCall!.count / this.selectTotalCount * 100).toFixed(1)}%`
-                tidCall.size = call.size;
-                tidCall.heapSizeStr = `${getByteWithUnit(tidCall!.size)}`;
-                tidCall!.heapPercent = `${(tidCall!.size / this.selectTotalSize * 100).toFixed(1)}%`
-                tidCall.title = (call.threadName == null ? 'Thread' : call.threadName) + " [ " + call.tid + " ]";
-                tidCall.symbol = tidCall.title;
-                tidCall.addr = tidCall.addr;
-                tidCall.type = -1;
-                tidCall.children.push(call);
-                tidMap.set(call.tid, tidCall);
-            }
-        }
-        let showData = Array.from(tidMap.values())
-        return showData;
-    }
-
     mergeTree(target: NativeHookCallInfo, src: NativeHookCallInfo) {
         let len = src.children.length;
         src.size += target.size;
@@ -599,6 +627,26 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
         `, {})
     }
 
+    queryStatisticCallchainsSamples(leftNs: number, rightNs: number, types: Array<number>){
+        this.queryData("native-memory-queryStatisticCallchainsSamples", `
+    select
+      0 as tid,
+      callchain_id as eventId,
+      (case when type = 0 then 'AllocEvent' else 'MmapEvent' end) as eventType,
+      apply_size as heapSize,
+      release_size as freeSize,
+      (max(A.ts) - B.start_ts) as startTs
+    from
+      native_hook_statistic A,
+      trace_range B
+    where
+      A.ts - B.start_ts
+    between ${leftNs} and ${rightNs}
+      and A.type in (${types.join(",")})
+    group by callchain_id;
+        `, {})
+    }
+
     freshCurrentCallchains(samples: NativeHookStatistics[], isTopDown: boolean){
         this.currentTreeMapData = {};
         this.currentTreeList = [];
@@ -678,18 +726,27 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
         let filterResponseType = paramMap.get("filterResponseType");
         let leftNs = paramMap.get("leftNs");
         let rightNs = paramMap.get("rightNs");
+        let nativeHookType = paramMap.get("nativeHookType");
         if(filterAllocType == "0"&&filterEventType == "0" && filterResponseType == -1){
             this.currentSamples = this.queryAllCallchainsSamples
             return
         }
         let filter = this.queryAllCallchainsSamples.filter((item) => {
             let filterAllocation = true
-            if (filterAllocType == "1") {
-                filterAllocation = item.startTs >= leftNs && item.startTs <= rightNs
-                    && (item.endTs > rightNs || item.endTs == 0 || item.endTs == null)
-            } else if (filterAllocType == "2") {
-                filterAllocation = item.startTs >= leftNs && item.startTs <= rightNs
-                    && item.endTs <= rightNs && item.endTs != 0 && item.endTs != null;
+            if(nativeHookType === "native-hook"){
+                if (filterAllocType == "1") {
+                    filterAllocation = item.startTs >= leftNs && item.startTs <= rightNs
+                        && (item.endTs > rightNs || item.endTs == 0 || item.endTs == null)
+                } else if (filterAllocType == "2") {
+                    filterAllocation = item.startTs >= leftNs && item.startTs <= rightNs
+                        && item.endTs <= rightNs && item.endTs != 0 && item.endTs != null;
+                }
+            }else{
+                if (filterAllocType == "1") {
+                    filterAllocation = item.heapSize > item.freeSize
+                } else if (filterAllocType == "2") {
+                    filterAllocation = item.heapSize === item.freeSize;
+                }
             }
             let filterLastLib = filterResponseType == -1?true:(filterResponseType == item.lastLibId)
             let filterNative = this.getTypeFromIndex(parseInt(filterEventType), item, [])
@@ -827,6 +884,7 @@ export class NativeHookStatistics {
     subType: string = "";
     subTypeId: number = 0;
     heapSize: number = 0;
+    freeSize: number = 0;
     addr: string = "";
     startTs: number = 0;
     endTs: number = 0;

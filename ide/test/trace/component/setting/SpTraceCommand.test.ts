@@ -77,6 +77,7 @@ describe('SPTraceCommand Test', ()=>{
             position: relative;
             top: 56px;
             right: 40px;
+            cursor:pointer;
         }
 
         #copy-button{
@@ -122,7 +123,7 @@ describe('SPTraceCommand Test', ()=>{
         }
         
         #stop-button{
-            display: none;
+           display: none;
            border-radius: 15px;
            background-color: #0A59F7;
            width: 120px;
@@ -134,6 +135,8 @@ describe('SPTraceCommand Test', ()=>{
            line-height: 20px;
            margin-left: 80%;
            border: 1px solid #FFFFFF;
+           opacity: 0.6;
+           cursor:pointer;
         }
         
         :host([show]) #stop-button {

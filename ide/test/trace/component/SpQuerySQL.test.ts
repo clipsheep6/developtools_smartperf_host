@@ -15,7 +15,10 @@
 
 // @ts-ignore
 import {SpQuerySQL} from "../../../dist/trace/component/SpQuerySQL.js"
-
+// @ts-ignore
+import {queryCustomizeSelect} from "../../../dist/trace/database/SqlLite.js";
+const sqlite = require("../../../dist/trace/database/SqlLite.js")
+jest.mock("../../../dist/trace/database/SqlLite.js");
 describe('SpQuerySQL Test', () => {
     let spQuerySQL= new SpQuerySQL();
 
@@ -161,12 +164,14 @@ describe('SpQuerySQL Test', () => {
         
         #copy-button{
            margin-right: 10%;
-           cursor:pointer
+           cursor:pointer;
+           opacity: 0.6;
         }
         
         #close-button{
            margin-right: 5%;
-           cursor:pointer
+           cursor:pointer;
+           opacity: 0.6;
         }
         
         .button-option{
@@ -240,6 +245,23 @@ describe('SpQuerySQL Test', () => {
     });
 
     it('SpQuerySQLTest017', function () {
+        expect(spQuerySQL.attributeChangedCallback('','','')).toBeUndefined();
+    });
+
+    it('SpQuerySQLTest018', function () {
+        document.body.innerHTML = `
+         <sp-query-sql id="query-sql"></sp-query-sql>
+        `
+       let spQuerySql = document.getElementById('query-sql') as SpQuerySQL
+        spQuerySql.queryStr = 'select * from trace_range'
+        let range = sqlite.queryCustomizeSelect;
+        let dataTime: Array<any> = [{
+            start_ts: 1000,
+            end_ts:12000
+        }]
+        range.mockResolvedValue(dataTime)
+        let keyboardEvent: KeyboardEvent = new KeyboardEvent("keydown", <KeyboardEventInit>{ctrlKey:true, keyCode:13});
+        spQuerySql.dispatchEvent(keyboardEvent)
         expect(spQuerySQL.attributeChangedCallback('','','')).toBeUndefined();
     });
 

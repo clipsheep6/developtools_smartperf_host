@@ -32,12 +32,28 @@ export class Top20ProcessSwitchCount extends BaseElement {
     private pie:LitChartPie | null | undefined
     private progress:LitProgressBar | null | undefined;
     private nodata:TableNoData | null | undefined;
+    private data:Array<any> = [];
 
     initElements(): void {
         this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
         this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
         this.table = this.shadowRoot!.querySelector<LitTable>("#tb-process-switch-count")
         this.pie = this.shadowRoot!.querySelector<LitChartPie>("#pie")
+
+        this.table!.addEventListener('row-click', (evt: any) => {
+            let data = evt.detail.data;
+            data.isSelected = true;
+            // @ts-ignore
+            if ((evt.detail as any).callBack) {
+                // @ts-ignore
+                (evt.detail as any).callBack(true)
+            }
+        })
+
+        this.table!.addEventListener('column-click', (evt) => {
+            // @ts-ignore
+            this.sortByColumn(evt.detail)
+        });
     }
 
     init(){
@@ -52,6 +68,7 @@ export class Top20ProcessSwitchCount extends BaseElement {
         this.queryLogicWorker("scheduling-Process SwitchCount","query Process Switch Count Analysis Time:",(res)=>{
             this.nodata!.noData = res === undefined || res.length === 0
             this.table!.recycleDataSource = res;
+            this.data = res;
             this.table?.reMeauseHeight();
             this.pie!.config = {
                 appendPadding: 10,
@@ -93,6 +110,31 @@ export class Top20ProcessSwitchCount extends BaseElement {
         info(log, durTime)
     }
 
+    sortByColumn(detail: any) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+
+        if (detail.key === 'NO' || detail.key === 'pid' || detail.key === 'switchCount'|| detail.key === 'tid') {
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        } else {
+            this.data.sort(compare(detail.key, detail.sort, 'string'))
+        }
+        this.table!.recycleDataSource = this.data;
+    }
+
     initHtml(): string {
         return `
         <style>
@@ -132,12 +174,12 @@ export class Top20ProcessSwitchCount extends BaseElement {
             </div>
             <div class="tb_switch_count" >
                 <lit-table id="tb-process-switch-count" style="height: auto">
-                    <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="tid" data-index="tid" key="tid" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="t_name" data-index="tName" key="tName" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start"></lit-table-column>
-                    <lit-table-column width="1fr" title="sched_switch count" data-index="switchCount" key="switchCount" align="flex-start"></lit-table-column>        
+                    <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start" order></lit-table-column>
+                    <lit-table-column width="1fr" title="sched_switch count" data-index="switchCount" key="switchCount" align="flex-start" order></lit-table-column>        
                 </lit-table>
             </div>
         </div>

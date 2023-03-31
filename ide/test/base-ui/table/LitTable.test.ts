@@ -15,15 +15,18 @@
 
 // @ts-ignore
 import {LitTable} from "../../../dist/base-ui/table/lit-table.js";
-import {LitTableColumn} from "../../../src/base-ui/table/lit-table-column.js";
+// @ts-ignore
+import {LitTableColumn} from "../../../dist/base-ui/table/lit-table-column.js";
+// @ts-ignore
+import {TableRowObject} from "../../../dist/base-ui/table/TableRowObject.js";
 
 describe('LitTable Test', () => {
     window.ResizeObserver = window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn(),
-    }));
+        jest.fn().mockImplementation(() => ({
+            disconnect: jest.fn(),
+            observe: jest.fn(),
+            unobserve: jest.fn(),
+        }));
     let litTable = new LitTable();
     litTable.selectable = true
     litTable.selectable = false
@@ -53,14 +56,14 @@ describe('LitTable Test', () => {
             display: 'none',
             transform: 'translateY'
         },
-        childNodes:{forEach:true},
+        childNodes: {forEach: true},
         onclick: 1
     }
     const rowObject = {
         children: {
             length: 1,
         },
-        data: [{isSelected:undefined}],
+        data: [{isSelected: undefined}],
         depth: 1,
         top: 1
     }
@@ -76,18 +79,10 @@ describe('LitTable Test', () => {
         firstChild: null,
         onclick: 1
 
-    }||undefined
-
-    JSON.parse = jest.fn(() => [['children', 'father'], ['children', 'father']])
+    } || undefined
 
     litTable.columns = litTable.columns || jest.fn(() => true)
-    litTable.ds = jest.fn(() => [{
-        id: 1,
-        name: 'name'
-    }, {
-        id: 2,
-        name: 'nameValue'
-    }])
+
 
     litTable.tbodyElement = jest.fn(() => ({
         innerHTML: ''
@@ -103,7 +98,46 @@ describe('LitTable Test', () => {
     })
 
     it('LitTableTest02', () => {
-        litTable.ds.forEach = jest.fn(() => true)
+        litTable.ds = [
+            {
+                "name": "StartTime",
+                "value": "1s 489ms 371μs "
+            },
+            {
+                "name": "Duration",
+                "value": "6ms 440μs "
+            },
+            {
+                "name": "State",
+                "value": "Sleeping"
+            },
+            {
+                "name": "Process",
+                "value": "hilogd [441] "
+            }
+        ]
+        litTable.setAttribute('selectable', '123');
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+
+        let tableColmn2 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn2.setAttribute('title', "3");
+        tableColmn2.setAttribute('data-index', "3");
+        tableColmn2.setAttribute('key', "3");
+        tableColmn2.setAttribute('align', 'flex-start');
+        tableColmn2.setAttribute('height', '32px');
+        litTable.tableColumns = [tableColmn, tableColmn1, tableColmn2];
+        litTable.tbodyElement = document.createElement("div");
         expect(litTable.renderTable()).toBeUndefined();
     })
 
@@ -162,7 +196,7 @@ describe('LitTable Test', () => {
 
     it('LitTableTest16', () => {
         document.body.innerHTML = "<lit-table id='tab' tree></lit-table>"
-       let table = document.querySelector("#tab") as LitTable;
+        let table = document.querySelector("#tab") as LitTable;
         let htmlElement = document.createElement('lit-table-column') as LitTableColumn;
         htmlElement.setAttribute('title', "1");
         htmlElement.setAttribute('data-index', "1");
@@ -183,13 +217,15 @@ describe('LitTable Test', () => {
     })
 
     it('LitTableTest17', () => {
-         expect(litTable.shadowRoot.innerHTML).toMatchInlineSnapshot(`
+        expect(litTable.shadowRoot.innerHTML).toMatchInlineSnapshot(`
 "
         <style>
         :host{
             display: grid;
             grid-template-columns: repeat(1,1fr);
             width: 100%;
+            position: relative;
+            font-weight: 500;
             flex:1;
         }
         .tr{
@@ -199,12 +235,17 @@ describe('LitTable Test', () => {
         }
         .tr:nth-of-type(even){
         }
-
         .tr{
             background-color: var(--dark-background,#FFFFFF);
         }
         .tr:hover{
             background-color: var(--dark-background6,#DEEDFF);
+        }
+        .tr[selected]{
+            background-color: var(--dark-background6,#DEEDFF);
+        }
+        .tr[high-light]{
+            font-weight: 600;
         }
         .td{
             box-sizing: border-box;
@@ -220,9 +261,6 @@ describe('LitTable Test', () => {
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap;
-        }
-        .tr[selected]{
-            background-color: var(--dark-background6,#DEEDFF);
         }
         .td-order{
         }
@@ -278,7 +316,11 @@ describe('LitTable Test', () => {
             display:flex;
             align-items:center;
             white-space: nowrap;
+            font-weight: 500;
             cursor: pointer;
+        }
+        .tree-first-body[high-light]{
+            font-weight: 600;
         }
         .tree-first-body:hover{
             background-color: var(--dark-background6,#DEEDFF); /*antd #fafafa 42b983*/
@@ -341,19 +383,30 @@ describe('LitTable Test', () => {
             background-color: var(--dark-background6,#DEEDFF);
         }
         .export{
-            width:30px;
-            height:30px;
+            height:40px;
+            width: 40px;
             cursor:pointer;
+            display:none;
             color:var(--dark-background6,#262626);
+            border-radius:40px;
+            border: 1px solid var(--dark-background6,#262626);
             box-sizing: border-box;
-            position:fixed;
-            right:30px;
-            bottom:15px;
+            position:absolute;
+            right:40px;
+            bottom:30px;
+            z-index: 9999999;
+        }
+        :host([download]) .export{
+            display: flex;
+            align-items:center;
+            justify-content:center;
         }
         </style>
 
         <slot id=\\"slot\\" style=\\"display: none\\"></slot>
         <slot name=\\"head\\"></slot>
+        <div class=\\"export\\"><lit-icon size=\\"25\\" name=\\"download\\"></lit-icon></div>
+       
         <div class=\\"table\\" style=\\"overflow-x:auto;\\">
             <div class=\\"thead\\"></div>
             <div class=\\"tbody\\">
@@ -366,35 +419,73 @@ describe('LitTable Test', () => {
     })
 
     it('LitTableTest18', () => {
-        expect(litTable.createExpandBtn({expanded:false})).not.toBeUndefined()
+        expect(litTable.createExpandBtn({expanded: false})).not.toBeUndefined()
     })
 
     it('LitTableTest19', () => {
+        let newTableElement = document.createElement('div');
+        newTableElement.classList.add('tr');
+        newTableElement.style.cursor = "pointer"
+        newTableElement.style.gridTemplateColumns = "1,2,3";
+        newTableElement.style.position = 'absolute';
+        newTableElement.style.top = '0px'
+        newTableElement.style.left = '0px'
+        litTable.currentRecycleList = [newTableElement];
+        litTable.recycleDs = [{rowHidden: false, data: {isSearch: true}}];
+        litTable.tbodyElement = document.createElement("div");
+        litTable.treeElement = document.createElement("div");
+        litTable.tableElement = document.createElement("div");
+        litTable.theadElement = document.createElement("div");
         expect(litTable.reMeauseHeight()).toBeUndefined();
     })
 
     it('LitTableTest20', () => {
-        const rowData= {
-            data:[{
-                isSelected:undefined
+        const rowData = {
+            data: [{
+                isSelected: undefined
             }],
         }
-        litTable.columns.forEach = jest.fn(()=>true)
+        litTable.columns.forEach = jest.fn(() => true)
         expect(litTable.createNewTableElement(rowData)).not.toBeUndefined();
     })
 
     it('LitTableTest21', () => {
-        expect(litTable.freshCurrentLine(element)).toBeUndefined();
+        let element = document.createElement("div");
+        let ch = document.createElement("div");
+        element.appendChild(ch);
+        let rowObject = {rowHidden: false, data: {isSearch: true}};
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1];
+        expect(litTable.freshCurrentLine(element, rowObject)).toBeUndefined();
     })
 
     it('LitTableTest22', () => {
         litTable.recycleDs.length = 1
-        litTable.setCurrentSelection = jest.fn(()=>true)
+        litTable.setCurrentSelection = jest.fn(() => true)
         expect(litTable.scrollToData()).toBeUndefined();
     })
 
     it('LitTableTest23', () => {
-        expect(litTable.expandList()).toBeUndefined();
+        litTable.recycleDs = [{rowHidden: false, data: {isSearch: true}}];
+        let dataSource = [{
+            id: 1,
+            name: 'name'
+        }, {
+            id: 2,
+            name: 'nameValue'
+        }]
+        expect(litTable.expandList(dataSource)).toBeUndefined();
     })
 
     it('LitTableTest24', () => {
@@ -402,62 +493,94 @@ describe('LitTable Test', () => {
     })
 
     it('LitTableTest25', () => {
-        expect(litTable.dispatchRowClickEvent({data:{isSelected:""}})).toBeUndefined();
+        expect(litTable.dispatchRowClickEvent({data: {isSelected: ""}})).toBeUndefined();
     })
 
     it('LitTableTest26', () => {
-        litTable.treeElement = jest.fn(()=>undefined)
-        litTable.treeElement.children = jest.fn(()=>[1])
-        litTable.columns.forEach = jest.fn(()=>true)
-        litTable.treeElement.lastChild= jest.fn(()=>true)
-        litTable.treeElement.lastChild.style= jest.fn(()=>true)
-        expect(litTable.createNewTreeTableElement({data:""})).not.toBeUndefined();
+        litTable.treeElement = jest.fn(() => undefined)
+        litTable.treeElement.children = jest.fn(() => [1])
+        litTable.columns.forEach = jest.fn(() => true)
+        litTable.treeElement.lastChild = jest.fn(() => true)
+        litTable.treeElement.lastChild.style = jest.fn(() => true)
+        expect(litTable.createNewTreeTableElement({data: ""})).not.toBeUndefined();
     });
 
     it('LitTableTest27', () => {
-        litTable.tableElement = jest.fn(()=>undefined)
-        litTable.tableElement.scrollTop = jest.fn(()=>1)
+        litTable.tableElement = jest.fn(() => undefined)
+        litTable.tableElement.scrollTop = jest.fn(() => 1)
         expect(litTable.move1px()).toBeUndefined();
     })
 
     it('LitTableTest28', () => {
         document.body.innerHTML = `<lit-table id="aaa"></lit-table>`
         let litTable = document.querySelector('#aaa') as LitTable
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+        litTable.tableColumns = [tableColmn, tableColmn1];
+        litTable.columns = [tableColmn, tableColmn1];
+        litTable.selectable = true;
+        litTable.ds = [
+            {id: 1, pid: null, name: '1'},
+            {id: 2, pid: 1, name: '2'},
+            {id: 3, pid: 1, name: '3'},
+            {id: 4, pid: null, name: '4'},
+            {id: 5, pid: 4, name: '4'},
+            {id: 6, pid: 4, name: '5'},
+            {id: 7, pid: 3, name: '7'},
+            {id: 8, pid: 4, name: '8'},
+        ]
         expect(litTable.renderTreeTable()).toBeUndefined();
     })
 
     it('LitTableTest29', () => {
         document.body.innerHTML = `<lit-table id="aaa"></lit-table>`
         let litTable = document.querySelector('#aaa') as LitTable
-        expect(litTable.setMouseIn(true,[])).toBeUndefined();
+        expect(litTable.setMouseIn(true, [])).toBeUndefined();
     })
 
     it('LitTableTest30', () => {
         document.body.innerHTML = `<lit-table id="aaa"></lit-table>`
         let litTable = document.querySelector('#aaa') as LitTable
         const data = {
-            isSelected:true
+            isSelected: true
         }
         expect(litTable.setCurrentSelection(data)).toBeUndefined();
     })
 
-    it("LitTableTest31",() => {
+    it("LitTableTest31", () => {
         document.body.innerHTML = `<lit-table id="aaa"></lit-table>`;
         let litTable = document.querySelector('#aaa') as LitTable;
-        litTable.formatName =true;
+        litTable.formatName = true;
         expect(litTable.formatName).toBeTruthy();
     })
-    it("LitTableTest32",() => {
-        let litTable =new LitTable();
+    it("LitTableTest32", () => {
+        let litTable = new LitTable();
         expect(litTable.formatName()).toBe("");
     })
 
-    it("LitTableTest33",() => {
-        let litTable =new LitTable();
+    it("LitTableTest33", () => {
+        let litTable = new LitTable();
         expect(litTable.dataExportInit()).toBeUndefined();
     })
-    it("LitTableTest34",() => {
-        let litTable =new LitTable();
+    it("LitTableTest34", () => {
+        let litTable = new LitTable();
+        let htmlElement = document.createElement('lit-table-column') as LitTableColumn;
+        htmlElement.setAttribute('title', "1");
+        htmlElement.setAttribute('data-index', "1");
+        htmlElement.setAttribute('key', "1");
+        htmlElement.setAttribute('align', 'flex-start');
+        htmlElement.setAttribute('height', '32px');
+        litTable.columns = [htmlElement];
         expect(litTable.exportData()).toBeUndefined();
     })
 
@@ -466,14 +589,14 @@ describe('LitTable Test', () => {
     })
 
     it('LitTableTest36', () => {
-        expect(litTable.setSelectedRow(true,[])).toBeUndefined();
+        expect(litTable.setSelectedRow(true, [])).toBeUndefined();
 
     })
 
     it('LitTableTest37', () => {
         document.body.innerHTML = `<lit-table id="aaa"></lit-table>`;
         let litTable = document.querySelector('#aaa') as LitTable;
-        litTable.setAttribute('tree',true);
+        litTable.setAttribute('tree', true);
         expect(litTable.dataSource).toStrictEqual([]);
     });
 
@@ -484,15 +607,193 @@ describe('LitTable Test', () => {
         expect(litTable.recycleDataSource).toStrictEqual([]);
     });
 
-    it("LitTableTest39",() => {
-        let litTable =new LitTable();
+    it("LitTableTest39", () => {
+        let litTable = new LitTable();
         expect(litTable.dataExportInit()).toBeUndefined();
     });
 
     it('LitTableTest40', () => {
-        litTable.columns = undefined;
-        expect(litTable.formatExportData()).toStrictEqual([]);
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+
+        let tableColmn2 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn2.setAttribute('title', "3");
+        tableColmn2.setAttribute('data-index', "3");
+        tableColmn2.setAttribute('key', "3");
+        tableColmn2.setAttribute('align', 'flex-start');
+        tableColmn2.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1, tableColmn2];
+        let dataSource = [{
+            id: 1,
+            name: 'name'
+        }, {
+            id: 2,
+            name: 'nameValue'
+        }]
+        expect(litTable.formatExportData(dataSource)).toBeTruthy();
     });
+
+    it('LitTableTest41', () => {
+        let list = [{
+            "memoryTap": "All Heap",
+            "existing": 1938,
+            "existingString": "1.89 Kb",
+            "freeByteString": "4.54 Kb",
+            "allocCount": 46,
+            "freeCount": 103,
+            "freeByte": 4653,
+            "totalBytes": 6591,
+            "totalBytesString": "6.44 Kb",
+            "maxStr": "200 byte",
+            "max": 200,
+            "totalCount": 149,
+            "existingValue": [
+                1938,
+                6591,
+                566720
+            ]
+        }]
+        LitTable.createNewTreeTableElement = jest.fn().mockResolvedValue({})
+        litTable.treeElement = document.createElement("div");
+        litTable.tableElement = document.createElement("div");
+        litTable.setAttribute('selectable', '123');
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+
+        let tableColmn2 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn2.setAttribute('title', "3");
+        tableColmn2.setAttribute('data-index', "3");
+        tableColmn2.setAttribute('key', "3");
+        tableColmn2.setAttribute('align', 'flex-start');
+        tableColmn2.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1, tableColmn2];
+        litTable.tbodyElement = document.createElement("div");
+        litTable.theadElement = document.createElement("div");
+        expect(litTable.meauseTreeRowElement(list)).toBeTruthy()
+    })
+
+    it('LitTableTest42', () => {
+        let list = [{
+            "memoryTap": "All Heap",
+            "existing": 1938,
+            "existingString": "1.89 Kb",
+            "freeByteString": "4.54 Kb",
+            "allocCount": 46,
+            "freeCount": 103,
+            "freeByte": 4653,
+            "totalBytes": 6591,
+            "totalBytesString": "6.44 Kb",
+            "maxStr": "200 byte",
+            "max": 200,
+            "totalCount": 149,
+            "existingValue": [
+                1938,
+                6591,
+                566720
+            ]
+        }]
+        LitTable.createNewTreeTableElement = jest.fn().mockResolvedValue({})
+        litTable.treeElement = document.createElement("div");
+        litTable.tableElement = document.createElement("div");
+        litTable.setAttribute('selectable', '123');
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+
+        let tableColmn2 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn2.setAttribute('title', "3");
+        tableColmn2.setAttribute('data-index', "3");
+        tableColmn2.setAttribute('key', "3");
+        tableColmn2.setAttribute('align', 'flex-start');
+        tableColmn2.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1, tableColmn2];
+        litTable.tbodyElement = document.createElement("div");
+        litTable.theadElement = document.createElement("div");
+        expect(litTable.meauseAllRowHeight(list)).toBeTruthy()
+    })
+
+    it('LitTableTest43', () => {
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+
+        let tableColmn2 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn2.setAttribute('title', "3");
+        tableColmn2.setAttribute('data-index', "3");
+        tableColmn2.setAttribute('key', "3");
+        tableColmn2.setAttribute('align', 'flex-start');
+        tableColmn2.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1, tableColmn2];
+        let dataSource = [{
+            id: 1,
+            name: 'name'
+        }, {
+            id: 2,
+            name: 'nameValue'
+        }]
+        expect(litTable.formatExportCsvData(dataSource)).toBeTruthy();
+    });
+
+    it('LitTableTest44', () => {
+        let element = document.createElement("div");
+        litTable.tableElement = document.createElement("div");
+        let firstElement = document.createElement("div");
+        let ch = document.createElement("div");
+        element.appendChild(ch);
+        let rowObject = {rowHidden: false, data: {isSearch: true}};
+        let tableColmn = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn.setAttribute('title', "1");
+        tableColmn.setAttribute('data-index', "1");
+        tableColmn.setAttribute('key', "1");
+        tableColmn.setAttribute('align', 'flex-start');
+        tableColmn.setAttribute('height', '32px');
+        let tableColmn1 = document.createElement('lit-table-column') as LitTableColumn;
+        tableColmn1.setAttribute('title', "2");
+        tableColmn1.setAttribute('data-index', "2");
+        tableColmn1.setAttribute('key', "2");
+        tableColmn1.setAttribute('align', 'flex-start');
+        tableColmn1.setAttribute('height', '32px');
+        litTable.columns = [tableColmn, tableColmn1];
+        expect(litTable.freshCurrentLine(element, rowObject, firstElement)).toBeUndefined();
+    })
 
 })
 

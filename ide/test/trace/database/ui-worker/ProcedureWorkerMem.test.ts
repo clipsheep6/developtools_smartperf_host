@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {mem, ProcessMemStruct,MemRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerMem.js";
 // @ts-ignore

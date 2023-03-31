@@ -113,7 +113,12 @@ describe('TabPaneFilter Test', () => {
                 color: var(--dark-color,#aab2bd);
             }
         .describe{
-        font-size: 0.8rem;
+            /*display: inline-block*/
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 50px;
         }
 
         #mark{
@@ -264,6 +269,9 @@ describe('TabPaneFilter Test', () => {
         :host(:not([sort])) .sort{
             display: none;
         }
+        .popover{
+            display: flex;
+        }
 </style>
     <lit-icon name=\\"statistics\\" class=\\"spacing\\" id=\\"icon\\" size=\\"16\\"></lit-icon>
     <span class=\\"describe left-text spacing\\">Input Filter</span>
@@ -317,7 +325,7 @@ describe('TabPaneFilter Test', () => {
         </lit-popover>
         <div class=\\"sort\\">
             <lit-icon name=\\"swap\\" class=\\"spacing\\" size=\\"16\\"></lit-icon>
-            <div style=\\"margin-left: 5px\\" class=\\"statistics-name\\">Statistics by Thread</div>
+            <div style=\\"margin-left: 5px\\" class=\\"describe statistics-name\\">Statistics by Thread</div>
         </div>
         "
 `);

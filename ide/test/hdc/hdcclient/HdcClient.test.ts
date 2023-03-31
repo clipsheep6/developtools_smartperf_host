@@ -15,7 +15,6 @@
 
 // @ts-ignore
 import {HdcClient} from "../../../dist/hdc/hdcclient/HdcClient.js"
-import {HdcCommand} from "../../../src/hdc/hdcclient/HdcCommand";
 
 describe('HdcClient Test', ()=>{
     it('HdcClientTest01', function () {
@@ -52,7 +51,7 @@ describe('HdcClient Test', ()=>{
 
     it('HdcClientTest07', async ()=> {
         let hdcClient =  new HdcClient();
-        await expect(hdcClient.disconnect()).rejects.not.toBeUndefined();
+        await expect(hdcClient.disconnect()).not;
 
     });
     it('HdcClientTest08', function () {

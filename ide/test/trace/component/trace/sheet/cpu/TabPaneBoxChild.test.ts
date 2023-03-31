@@ -75,7 +75,9 @@ describe('TabPaneBoxChild Test', () => {
         </style>
         <label id=\\"time-range\\" style=\\"width: 100%;height: 20px;text-align: end;font-size: 10pt;margin-bottom: 5px\\">Selected range:0.0 ms</label>
         <lit-table id=\\"tb-cpu-thread\\" style=\\"height: auto\\">
-            <lit-table-column order width=\\"20%\\" title=\\"Start Time\\" data-index=\\"startTime\\" key=\\"startTime\\" align=\\"flex-start\\" order >
+            <lit-table-column order width=\\"15%\\" title=\\"StartTime(Relative)\\" data-index=\\"startTime\\" key=\\"startTime\\" align=\\"flex-start\\" order >
+            </lit-table-column>
+            <lit-table-column order width=\\"15%\\" title=\\"StartTime(Absolute)\\" data-index=\\"absoluteTime\\" key=\\"absoluteTime\\" align=\\"flex-start\\" order >
             </lit-table-column>
             <lit-table-column order width=\\"20%\\" title=\\"Process\\" data-index=\\"processName\\" key=\\"processName\\" align=\\"flex-start\\" order >
             </lit-table-column>

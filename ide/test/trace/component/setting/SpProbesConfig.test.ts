@@ -29,8 +29,32 @@ describe('SpProbesConfig Test', ()=>{
 
     it(' SpProbesConfig get Default attrValue', function () {
         let spEle = document.querySelector("#spconfig") as SpProbesConfig
-        expect(spEle.traceConfig).toEqual([])
-        expect(spEle.traceEvents).toEqual([])
+        expect(spEle.traceConfig).toEqual(["Scheduling details","CPU Frequency and idle states","Hitrace categories"])
+        expect(spEle.traceEvents).toEqual( ["ability",
+                   "ace",
+                   "app",
+                   "ark",
+                   "binder",
+                   "disk",
+                   "freq",
+                   "graphic",
+                   "idle",
+                   "irq",
+                   "memreclaim",
+                   "mmc",
+                   "multimodalinput",
+                  "ohos",
+                   "pagecache",
+                   "rpc",
+                   "sched",
+                   "sync",
+                   "window",
+                   "workq",
+                   "zaudio",
+                   "zcamera",
+                   "zimage",
+                   "zmedia",
+                 ])
         expect(spEle.memoryConfig).toEqual([])
     });
 
@@ -69,13 +93,24 @@ describe('SpProbesConfig Test', ()=>{
         }
 
         .trace-config{
-           display: grid;
-           grid-template-columns: repeat(2, 1fr);
+           display: flex;
+           flex-direction: column;
+           width: 50%;
            gap: 10px;
            margin-bottom: 20px;
         }
 
         .memory-config{
+           display: grid;
+           grid-template-columns: repeat(2, 1fr);
+           border-style: solid none none none;
+           border-color: #D5D5D5;
+           padding-top: 15px;
+           margin-top: 15px;
+           gap: 10px;
+        }
+        
+        .ability-config{
            display: grid;
            grid-template-columns: repeat(2, 1fr);
            border-style: solid none none none;
@@ -116,7 +151,7 @@ describe('SpProbesConfig Test', ()=>{
                 <div>
                     <div class=\\"trace-config\\"></div>
                     <div class=\\"span-col-2\\" id=\\"hitrace-cat\\">
-                      <check-des-box id=\\"hitrace\\" value =\\"Hitrace categories\\" des=\\"Enables C++ codebase annotations (HTRACE_BEGIN() / os.Trace())\\">
+                      <check-des-box id=\\"hitrace\\" checked=\\"true\\" value =\\"Hitrace categories\\" des=\\"Enables C++ codebase annotations (HTRACE_BEGIN() / os.Trace())\\">
                       </check-des-box>
                       <div class=\\"user-events\\">
                           <slot></slot>
@@ -126,6 +161,11 @@ describe('SpProbesConfig Test', ()=>{
                 <div class=\\"memory-config\\">
                     <div class=\\"span-col-2\\">
                       <span>Memory Config</span>
+                    </div>
+                </div>
+                <div class=\\"ability-config\\">
+                    <div class=\\"span-col-2\\">
+                      <span>Ability Config</span>
                     </div>
                 </div>
             </div>

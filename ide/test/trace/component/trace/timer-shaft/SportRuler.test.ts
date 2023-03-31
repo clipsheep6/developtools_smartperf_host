@@ -14,6 +14,13 @@
  */
 
 // @ts-ignore
+import {EventCenter} from "../../../../../dist/trace/component/trace/base/EventCenter.js";
+
+jest.mock("../../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
+// @ts-ignore
 import {SportRuler} from "../../../../../dist/trace/component/trace/timer-shaft/SportRuler.js"
 // @ts-ignore
 import {TimerShaftElement} from "../../../../../dist/trace/component/trace/TimerShaftElement.js";
@@ -21,6 +28,46 @@ import {TimerShaftElement} from "../../../../../dist/trace/component/trace/Timer
 import {Flag} from "../../../../../dist/trace/component/trace/timer-shaft/Flag.js";
 // @ts-ignore
 import {TraceRow, RangeSelectStruct} from "../../../../../dist/trace/component/trace/base/TraceRow.js";
+
+declare global {
+    interface Window {
+        SmartEvent: {
+            UI: {
+                MenuTrace: string,//selected menu trace
+                RefreshCanvas: string,//selected menu trace
+                SliceMark: string,//Set the tag scope
+                TimeRange: string,//Set the timeline range
+                TraceRowComplete: string,//Triggered after the row component has finished loading data
+            }
+        }
+
+        subscribe(evt: string, fn: (b: any) => void): void;
+
+        subscribeOnce(evt: string, fn: (b: any) => void): void;
+
+        unsubscribe(evt: string, fn: (b: any) => void): void;
+
+        publish(evt: string, data: any): void;
+
+        clearTraceRowComplete(): void;
+    }
+}
+
+window.SmartEvent = {
+    UI: {
+        MenuTrace: "SmartEvent-UI-MenuTrace",
+        RefreshCanvas: "SmartEvent-UI-RefreshCanvas",
+        SliceMark: "SmartEvent-UI-SliceMark",
+        TimeRange: "SmartEvent-UI-TimeRange",
+        TraceRowComplete: "SmartEvent-UI-TraceRowComplete",
+    }
+}
+
+Window.prototype.subscribe = (ev, fn) => EventCenter.subscribe(ev, fn)
+Window.prototype.unsubscribe = (ev, fn) => EventCenter.unsubscribe(ev, fn)
+Window.prototype.publish = (ev, data) => EventCenter.publish(ev, data)
+Window.prototype.subscribeOnce = (ev, data) => EventCenter.subscribeOnce(ev, data)
+Window.prototype.clearTraceRowComplete = () => EventCenter.clearTraceRowComplete()
 
 describe('SportRuler Test', () => {
     const canvas = document.createElement('canvas');
@@ -40,7 +87,7 @@ describe('SportRuler Test', () => {
     }, () => {
     }, () => {
     });
-
+    sportRuler.c = ctx;
     sportRuler.range = {
         totalNS: 20,
         startX: 0,
@@ -62,12 +109,6 @@ describe('SportRuler Test', () => {
         let ranges = sportRuler.range;
         expect(ranges.endNS).toBe(20);
     })
-
-    // it('SportRulerTest06', function () {
-    //     sportRuler.flagListIdx = jest.fn(() => "flagListIdx")
-    //     sportRuler.flagList = jest.fn(() => true)
-    //     expect(sportRuler.modifyFlagList('amend', {})).toBeUndefined();
-    // })
 
     it('SportRulerTest07', function () {
         sportRuler.flagList.splice = jest.fn(() => true)
@@ -102,13 +143,6 @@ describe('SportRuler Test', () => {
             type: "",
         })
         sportRuler.flagList = flags;
-
-        let rangeSelectStruct = new RangeSelectStruct();
-        rangeSelectStruct.startNS = 20
-        rangeSelectStruct.endX = 1000
-        rangeSelectStruct.startNS = 20
-        rangeSelectStruct.endNS = 200
-        // TraceRow.rangeSelectObject = rangeSelectStruct
         expect(sportRuler.draw()).toBeUndefined();
     })
 
@@ -221,37 +255,21 @@ describe('SportRuler Test', () => {
 
     })
 
-    // it('SportRulerTest15', function () {
-    //     sportRuler.flagList.findIndex = jest.fn(() => 0)
-    //     sportRuler.drawTriangle(1000, 'square')
-    //     expect(sportRuler.range()).toBeUndefined();
-    // })
-
-    // it('SportRulerTest16', function () {
-    //     sportRuler.flagList.findIndex = jest.fn(() => -1)
-    //     sportRuler.drawTriangle(1000, 'inverted')
-    //     expect(sportRuler.range()).toBeUndefined();
-    // })
-
     it('SportRulerTest17', function () {
         sportRuler.removeTriangle('inverted')
-        // expect(sportRuler.range()).toBeUndefined();
     })
 
     it('SportRulerTest18', function () {
         sportRuler.flagList.findIndex = jest.fn(() => 0)
         sportRuler.removeTriangle('square')
-        // expect(sportRuler.range()).toBeUndefined();
     })
 
     it('SportRulerTest19', function () {
         sportRuler.drawInvertedTriangle(100, '#000000')
-        // expect(sportRuler.range()).toBeUndefined();
     })
 
     it('SportRulerTest20', function () {
         sportRuler.drawFlag(100, '#000000', false, 'text', '')
-        // expect(sportRuler.range()).toBeUndefined();
     })
 
     it('SportRulerTest23', function () {

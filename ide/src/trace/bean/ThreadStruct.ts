@@ -15,6 +15,7 @@
 
 import {BaseStruct} from "./BaseStruct.js";
 import {Rect} from "../component/trace/timer-shaft/Rect.js";
+import {Utils} from "../component/trace/base/Utils.js";
 
 const padding = 1;
 
@@ -25,23 +26,6 @@ export class ThreadStruct extends BaseStruct {
     static sColor = "#FBFBFB";
     static hoverThreadStruct: ThreadStruct | undefined;
     static selectThreadStruct: ThreadStruct | undefined;
-    static statusMap: any = {
-        "D": "Uninterruptible Sleep",
-        "S": "Sleeping",
-        "R": "Runnable",
-        "Running": "Running",
-        "R+": "Runnable (Preempted)",
-        "DK": "Uninterruptible Sleep + Wake Kill",
-        "I": "Task Dead",
-        "T": "Stopped",
-        "t": "Traced",
-        "X": "Exit (Dead)",
-        "Z": "Exit (Zombie)",
-        "K": "Wake Kill",
-        "W": "Waking",
-        "P": "Parked",
-        "N": "No Load"
-    }
     hasSched: number | undefined;
     pid: number | undefined;
     processName: string | undefined;
@@ -117,7 +101,7 @@ export class ThreadStruct extends BaseStruct {
     }
 
     static getEndState(state: string): string {
-        let statusMapElement = ThreadStruct.statusMap[state];
+        let statusMapElement = Utils.getEndState(state);
         if (statusMapElement) {
             return statusMapElement
         } else {

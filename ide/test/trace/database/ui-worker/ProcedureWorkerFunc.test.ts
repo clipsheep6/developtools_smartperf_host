@@ -13,13 +13,17 @@
  * limitations under the License.
  */
 
+jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
+    return {}
+});
+
 // @ts-ignore
 import {func, FuncStruct,FuncRender} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerFunc.js";
 // @ts-ignore
 import {Rect} from "../../../../dist/trace/component/trace/timer-shaft/Rect.js";
 import {markAsUntransferable} from "worker_threads";
 
-describe(' FPSTest', () => {
+describe(' ProcedureWorkerFuncTest', () => {
 
     it('FuncTest01', () => {
         let dataList = new Array();
@@ -69,7 +73,7 @@ describe(' FPSTest', () => {
         expect(FuncStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('FuncTest07', () => {
+    it('FuncTest04', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -89,7 +93,7 @@ describe(' FPSTest', () => {
         expect(FuncStruct.draw(ctx, data)).toBeUndefined()
     })
 
-    it('FuncTest04', () => {
+    it('FuncTest05', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -97,7 +101,7 @@ describe(' FPSTest', () => {
         FuncStruct.drawString(ctx, "1", 1,new Rect(0,0,100,100));
     })
 
-    it('FuncTest05', () => {
+    it('FuncTest06', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -105,12 +109,12 @@ describe(' FPSTest', () => {
         FuncStruct.drawString(ctx, "1", 2,new Rect(1,1,150,150));
     });
 
-    it('FuncTest06 ', function () {
+    it('FuncTest07', function () {
         let str = ""
-        expect(FuncStruct.getInt(str)).toBe(0);
+        expect(FuncStruct.isBinder({})).toBe(false);
     });
 
-    it('FuncTest07 ', function () {
+    it('FuncTest08', function () {
         let data = {
             startTs:2,
             depth:1
@@ -118,7 +122,7 @@ describe(' FPSTest', () => {
         expect(FuncStruct.isSelected(data)).toBe(false);
     });
 
-    it('FuncTest08', function () {
+    it('FuncTest09', function () {
         let funcRender = new FuncRender()
         let  req = {
             lazyRefresh:undefined,

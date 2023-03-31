@@ -27,6 +27,7 @@ import "../../../base-ui/progress-bar/LitProgressBar.js"
 import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
 import "./TableNoData.js"
 import {TableNoData} from "./TableNoData.js";
+import {getProbablyTime} from "../../database/logic-worker/ProcedureLogicWorkerCommon.js";
 
 @element('top20-frequency-thread')
 export class Top20FrequencyThread extends BaseElement {
@@ -40,6 +41,9 @@ export class Top20FrequencyThread extends BaseElement {
     private progress:LitProgressBar | null | undefined;
     private nodata:TableNoData | null | undefined;
     private currentTid:number = 0;
+    private data:Array<any> = [];
+    private sortColumn: string = '';
+    private sortType: number = 0;
 
     initElements(): void {
         this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
@@ -55,6 +59,52 @@ export class Top20FrequencyThread extends BaseElement {
             this.progress!.loading = true
             this.queryData();
         }
+
+        this.table!.addEventListener('row-click', (evt: any) => {
+            let data = evt.detail.data;
+            data.isSelected = true;
+            if ((evt.detail as any).callBack) {
+                (evt.detail as any).callBack(true)
+            }
+        })
+
+        this.table!.addEventListener('column-click', (evt:any) => {
+            this.sortColumn = evt.detail.key;
+            this.sortType = evt.detail.sort;
+            // @ts-ignore
+            this.sortByColumn(evt.detail)
+        });
+        this.table!.addEventListener('row-hover',(evt:any)=>{
+
+        })
+    }
+
+    sortByColumn(detail: any) {
+        // @ts-ignore
+        function compare(property, sort, type) {
+            return function (a: any, b: any) {
+                if (type === 'number') {
+                    // @ts-ignore
+                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                } else {
+                    if (sort === 2) {
+                        return b[property].toString().localeCompare(a[property].toString());
+                    }else {
+                        return a[property].toString().localeCompare(b[property].toString());
+                    }
+                }
+            }
+        }
+
+        if (detail.key === 'timeStr') {
+            detail.key = "time";
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        }else if (detail.key === 'no' || detail.key === 'cpu' || detail.key === 'freq'|| detail.key === 'ratio') {
+            this.data.sort(compare(detail.key, detail.sort, 'number'))
+        } else {
+            this.data.sort(compare(detail.key, detail.sort, 'string'))
+        }
+        this.table!.recycleDataSource = this.data;
     }
 
     async init(){
@@ -91,11 +141,16 @@ export class Top20FrequencyThread extends BaseElement {
             (res as any[]).map((it:any,index:number)=> {
                 it.no = index + 1
             })
-            this.table!.recycleDataSource = res;
+            this.data = res;
+            if (this.sortColumn != ""){
+                this.sortByColumn({key:this.sortColumn,sort:this.sortType});
+            }else {
+                this.table!.recycleDataSource = res;
+            }
             this.table!.reMeauseHeight()
             this.pie!.config = {
                 appendPadding: 10,
-                data:res,
+                data:this.getPieChartData(res),
                 angleField: 'time',
                 colorField: 'freq',
                 radius: 0.8,
@@ -121,6 +176,32 @@ export class Top20FrequencyThread extends BaseElement {
         })
     }
 
+    getPieChartData(res:any[]){
+        if(res.length > 20){
+            let pieChartArr:any[] = []
+            let other :any = {
+                cpu:'-',
+                freq:'other',
+                time:0,
+                ratio:'0',
+                totalDur:0,
+            }
+            for (let i = 0; i < res.length; i++) {
+                if(i < 19){
+                    pieChartArr.push(res[i])
+                }else{
+                    other.time += res[i].time;
+                    other.timeStr = getProbablyTime(other.time);
+                    other.totalDur = res[i].totalDur;
+                    other.ratio= ((other.time / other.totalDur) * 100).toFixed(2);
+                }
+            }
+            pieChartArr.push(other)
+            return pieChartArr;
+        }
+        return res;
+    }
+
     clearData(){
         this.traceChange = true;
         this.threadSelect!.innerHTML = ''
@@ -144,7 +225,7 @@ export class Top20FrequencyThread extends BaseElement {
             background-color: var(--dark-background5,#F6F6F6);
         }
         .tb_thread_count{
-            width: calc(100% - 50px);
+            width: calc(100% - 100px);
             overflow: auto ;
             border-radius: 5px;
             border: solid 1px var(--dark-border1,#e0e0e0);
@@ -178,15 +259,15 @@ export class Top20FrequencyThread extends BaseElement {
                 <div>Statistics By Duration</div>
                 <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
             </div>
-            <div style="flex: 1;display: flex;flex-direction: column;align-items: center;padding-top: 15px">
+            <div style="flex: 1;display: flex;flex-direction: column;align-items: center;padding-top: 15px;overflow: auto;height: 60vh">
                 <div id="current_thread" style="font-weight: bold"></div>
                 <div class="tb_thread_count">
                     <lit-table id="tb-process-thread-count" style="height: auto">
-                        <lit-table-column width="1fr" title="NO" data-index="no" key="no" align="flex-start"></lit-table-column>
-                        <lit-table-column width="1fr" title="cpu" data-index="cpu" key="cpu" align="flex-start"></lit-table-column>
-                        <lit-table-column width="1fr" title="frequency" data-index="freq" key="freq" align="flex-start"></lit-table-column>
-                        <lit-table-column width="1fr" title="duration" data-index="timeStr" key="timeStr" align="flex-start"></lit-table-column>
-                        <lit-table-column width="1fr" title="%" data-index="ratio" key="ratio" align="flex-start"></lit-table-column>        
+                        <lit-table-column width="1fr" title="NO" data-index="no" key="no" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="1fr" title="cpu" data-index="cpu" key="cpu" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="1fr" title="frequency" data-index="freq" key="freq" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="1fr" title="duration" data-index="timeStr" key="timeStr" align="flex-start" order></lit-table-column>
+                        <lit-table-column width="1fr" title="%" data-index="ratio" key="ratio" align="flex-start" order></lit-table-column>        
                     </lit-table>
                 </div>
             </div>

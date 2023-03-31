@@ -20,6 +20,7 @@ import {
     RequestMessage
 } from "./ProcedureWorkerCommon.js";
 import {TraceRow} from "../../component/trace/base/TraceRow.js";
+import {Utils} from "../../component/trace/base/Utils.js";
 
 export class ThreadRender extends Render {
     renderMainThread(req: {
@@ -65,27 +66,12 @@ export class ThreadStruct extends BaseStruct {
     static rColor = "#a0b84d";
     static otherColor = "#673ab7";
     static uninterruptibleSleepColor = "#f19d38";
+    static uninterruptibleSleepNonIOColor = "#795548";
     static traceColor = "#0d47a1";
     static sColor = "#FBFBFB";
     static hoverThreadStruct: ThreadStruct | undefined;
     static selectThreadStruct: ThreadStruct | undefined;
-    static statusMap: any = {
-        "D": "Uninterruptible Sleep",
-        "S": "Sleeping",
-        "R": "Runnable",
-        "Running": "Running",
-        "R+": "Runnable (Preempted)",
-        "DK": "Uninterruptible Sleep + Wake Kill",
-        "I": "Task Dead",
-        "T": "Traced",
-        "t": "Traced",
-        "X": "Exit (Dead)",
-        "Z": "Exit (Zombie)",
-        "K": "Wake Kill",
-        "W": "Waking",
-        "P": "Parked",
-        "N": "No Load"
-    }
+
     hasSched: number | undefined;// 14724852000
     pid: number | undefined// 2519
     processName: string | undefined //null
@@ -107,37 +93,15 @@ export class ThreadStruct extends BaseStruct {
     static draw(ctx: CanvasRenderingContext2D, data: ThreadStruct) {
         if (data.frame) {
             ctx.globalAlpha = 1
-            let stateText = data.state || '';
-            if ("S" == data.state) {
-                ctx.fillStyle = ThreadStruct.sColor;
-                ctx.globalAlpha = 0.2; // transparency
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.globalAlpha = 1; // transparency
-            } else if ("R" == data.state || "R+" == data.state) {
-                ctx.fillStyle = ThreadStruct.rColor;
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.fillStyle = "#fff";
-                data.frame.width > 4 && ThreadStruct.drawString(ctx, ThreadStruct.getEndState(data.state || ''), 2, data.frame);
-            } else if ("D" == data.state) {
-                ctx.fillStyle = ThreadStruct.uninterruptibleSleepColor;
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.fillStyle = "#fff";
-                data.frame.width > 4 && ThreadStruct.drawString(ctx, ThreadStruct.getEndState(data.state || ''), 2, data.frame);
-            } else if ("Running" == data.state) {
-                ctx.fillStyle = ThreadStruct.runningColor;
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.fillStyle = "#fff";
-                data.frame.width > 4 && ThreadStruct.drawString(ctx, ThreadStruct.getEndState(data.state || ''), 2, data.frame);
-            } else if ("T" == data.state || "t" == data.state) {
-                ctx.fillStyle = ThreadStruct.traceColor;
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.fillStyle = "#fff";
-                ThreadStruct.drawString(ctx, ThreadStruct.getEndState(data.state || ''), 2, data.frame);
-            } else {
-                ctx.fillStyle = ThreadStruct.otherColor;
-                ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
-                ctx.fillStyle = "#fff";
-                data.frame.width > 4 && ThreadStruct.drawString(ctx, ThreadStruct.getEndState(data.state || ''), 2, data.frame);
+            let stateText = ThreadStruct.getEndState(data.state || '')
+            ctx.fillStyle = Utils.getStateColor(data.state || '')
+            if("S" === data.state){
+                ctx.globalAlpha = 0.2;
+            }
+            ctx.fillRect(data.frame.x, data.frame.y + padding, data.frame.width, data.frame.height - padding * 2)
+            ctx.fillStyle = "#fff";
+            if("S" !== data.state){
+                data.frame.width > 4 && ThreadStruct.drawString(ctx, stateText, 2, data.frame);
             }
             if (ThreadStruct.selectThreadStruct && ThreadStruct.equals(ThreadStruct.selectThreadStruct, data) && ThreadStruct.selectThreadStruct.state != "S") {
                 ctx.strokeStyle = '#232c5d'
@@ -168,7 +132,7 @@ export class ThreadStruct extends BaseStruct {
     }
 
     static getEndState(state: string): string {
-        let statusMapElement = ThreadStruct.statusMap[state];
+        let statusMapElement = Utils.getEndState(state);
         if (statusMapElement) {
             return statusMapElement
         } else {

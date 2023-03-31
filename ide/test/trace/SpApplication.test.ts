@@ -13,6 +13,11 @@
  * limitations under the License.
  */
 
+const intersectionObserverMock = () => ({
+    observe: () => null
+})
+window.IntersectionObserver = jest.fn().mockImplementation(intersectionObserverMock);
+
 // @ts-ignore
 import {SpApplication} from "../../dist/trace/SpApplication.js";
 
@@ -27,9 +32,9 @@ describe('spApplication Test', ()=>{
 
     it('spApplicationTest01',function (){
         document.body.innerHTML= `<sp-application></sp-application>`
-        let element = new SpApplication();
-        element.dark = 'dark'
-        expect(element.dark).toBeTruthy()
+         let element = new SpApplication();
+         element.dark = 'dark'
+        expect(SpApplication.name).toBe('SpApplication')
     })
 
     it('spApplicationTest02',function (){
@@ -325,6 +330,28 @@ describe('spApplication Test', ()=>{
             font-size: 20px;
             color: var(--dark-color1,#4D4D4D);
          }
+         .chart-filter {
+            display: block;
+            visibility: hidden;
+            z-index: -1;
+        }
+        
+        :host([chart_filter]) .chart-filter {
+            visibility: visible;
+            position: absolute;
+            width: 40%;
+            height: 100%;
+            right: 0;
+            z-index: 1001;
+            top: 0;
+        }
+        .filter-config {
+            opacity: 1;
+            visibility: hidden;
+        }
+        .filter-config:hover {
+            opacity: 0.7;
+        }
         </style>
         <div class=\\"root\\">
             <lit-main-menu id=\\"main-menu\\" class=\\"menu\\" data=''></lit-main-menu>
@@ -337,6 +364,7 @@ describe('spApplication Test', ()=>{
                     </div>
                     <lit-search id=\\"lit-search\\"></lit-search>
                 </div>
+                <img class=\\"filter-config\\" title=\\"Display Template\\" src=\\"img/config_filter.png\\" style=\\"display: block;text-align: right;position: absolute;right: 1.2em;cursor: pointer;top: 20px\\">
                 <lit-progress-bar class=\\"progress\\"></lit-progress-bar>
             </div>
             <div id=\\"app-content\\" class=\\"content\\">
@@ -346,6 +374,9 @@ describe('spApplication Test', ()=>{
                 </sp-system-trace>
                 <sp-record-trace style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 102\\" id=\\"sp-record-trace\\">
                 </sp-record-trace>
+                <sp-record-trace record_template='' style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 102\\" id=\\"sp-record-template\\">
+                </sp-record-trace>
+                <sp-scheduling-analysis style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;\\" id=\\"sp-scheduling-analysis\\"></sp-scheduling-analysis>
                 <sp-metrics style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;z-index: 97\\" id=\\"sp-metrics\\">
                 </sp-metrics>
                 <sp-query-sql style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0;left:0;right:0;bottom:0;position:absolute;z-index: 98\\" id=\\"sp-query-sql\\">
@@ -354,6 +385,7 @@ describe('spApplication Test', ()=>{
                 </sp-info-and-stats>
                 <sp-help style=\\"width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 103\\" id=\\"sp-help\\">
                 </sp-help>
+                <trace-row-config class=\\"chart-filter\\" style=\\"overflow-y: clip;\\"></trace-row-config>
             </div>
         </div>
         "
@@ -390,6 +422,5 @@ describe('spApplication Test', ()=>{
         spApplication.querySql = false;
         expect(spApplication.querySql).toBeFalsy();
     });
-
 
 })

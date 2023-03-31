@@ -14,9 +14,10 @@
  */
 
 // @ts-ignore
-
-
 import {RangeSelect} from "../../../../../dist/trace/component/trace/base/RangeSelect.js";
+// @ts-ignore
+import {TraceRow} from "../../../../../dist/trace/component/trace/base/TraceRow.js";
+
 
 describe("RangeSelect Test", () => {
     beforeAll(() => {
@@ -38,6 +39,8 @@ describe("RangeSelect Test", () => {
             screenX: 255,
             screenY: 325,
         });
+        let htmlElement = document.createElement('div');
+        rangeSelect.rowsPaneEL = htmlElement;
         rangeSelect.timerShaftDragEL = jest.fn(()=>true)
         rangeSelect.timerShaftDragEL.timerShaftDragEL = jest.fn(()=>true)
         expect(rangeSelect.isInRowsEl(mouseEvent)).toBeFalsy();
@@ -53,8 +56,8 @@ describe("RangeSelect Test", () => {
             screenX: 255,
             screenY: 325,
         });
-        rangeSelect.spacerEL = jest.fn(()=>true)
-        rangeSelect.spacerEL.offsetTop = jest.fn(()=>1)
+        let htmlElement = document.createElement('div');
+        rangeSelect.spacerEL = htmlElement;
         expect(rangeSelect.isInSpacerEL(mouseEvent)).toBeFalsy();
     });
 
@@ -78,8 +81,14 @@ describe("RangeSelect Test", () => {
             screenX: 255,
             screenY: 325
         });
+        let divElement = document.createElement('div');
+        rangeSelect.rowsPaneEL = divElement;
         rangeSelect.spacerEL = jest.fn(()=>true)
         rangeSelect.spacerEL.offsetTop = jest.fn(()=>true)
+        rangeSelect.rowsPaneEL.scrollTop = 0;
+        rangeSelect.rowsEL.getBoundingClientRect = jest.fn(()=>true)
+        let htmlElement = document.createElement('div');
+        rangeSelect.spacerEL = htmlElement;
         expect(rangeSelect.mouseDown(mouseEvent)).toBeUndefined()
     });
 
@@ -115,7 +124,9 @@ describe("RangeSelect Test", () => {
         rangeSelect.isInRowsEl = jest.fn(()=>true)
         rangeSelect.isDrag = jest.fn(()=>true)
         rangeSelect.isMouseDown = true
-       let rowsEL= [{
+        let rowsELDiv = document.createElement('div');
+        rangeSelect.rowsEL = rowsELDiv;
+       let rows= [{
             frame: {
                 x:1,
                 width:10,
@@ -127,7 +138,6 @@ describe("RangeSelect Test", () => {
             offsetLeft:0,
             offsetWidth:100,
        }]
-        rangeSelect.rowsEL = rowsEL;
         let mouseEvent = new MouseEvent("mousedown",{
             // @ts-ignore
             offsetY:1,
@@ -151,8 +161,14 @@ describe("RangeSelect Test", () => {
         rangeSelect.mouseX = jest.fn(()=> 10)
         rangeSelect.markA = jest.fn( ()=> 8)
         rangeSelect.markB = jest.fn( ()=> 9)
-
-        expect(rangeSelect.mouseMove(rowsEL,mouseEvent)).toBeUndefined();
+        //rangeSelect.rowEL.getBoundingClientRect = jest.fn(()=>{})
+        let htmlElement = document.createElement('div');
+        rangeSelect.spacerEL = htmlElement;
+        let rowElement = document.createElement('div');
+        rangeSelect.rowsPaneEL = rowElement;
+        rangeSelect.favoriteRowsEL = rowElement;
+        let traceRowElement = document.createElement('trace-row') as TraceRow;
+        expect(rangeSelect.mouseMove([traceRowElement],mouseEvent)).toBeUndefined();
     });
 
     it('Utils Test10', () => {
@@ -177,6 +193,8 @@ describe("RangeSelect Test", () => {
             screenX: 255,
             screenY: 325
         });
+        let htmlElement = document.createElement('div');
+        rangeSelect.rowsPaneEL = htmlElement;
         rangeSelect.timerShaftDragEL = jest.fn(()=>true)
         rangeSelect.timerShaftDragEL.timerShaftDragEL = jest.fn(()=>0)
         expect(rangeSelect.isTouchMark(mouseEvent)).toBeFalsy();

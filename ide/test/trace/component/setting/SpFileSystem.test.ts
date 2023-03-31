@@ -28,7 +28,7 @@ describe('spFileSystem Test', () => {
     });
 
     it('SpFileSystemTest03', function () {
-        expect(spFileSystem.getSystemConfig()).toStrictEqual({"process": ""})
+        expect(spFileSystem.getSystemConfig()).toStrictEqual({"process": "","unWindLevel": 10})
     });
 
     it('SpFileSystemTest04', function () {

@@ -254,7 +254,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         }
         const fragment = document.createDocumentFragment()
         let node;
-        this.parentElement?.querySelectorAll<TraceRow<any>>(`trace-row[row-parent-id='${this.rowId}']`).forEach(it => {
+        this.parentElement?.querySelectorAll<any>(`[row-parent-id='${this.rowId}']`).forEach(it => {
             node = it
             fragment.appendChild(node)
         })
@@ -727,7 +727,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         } else {
             if (!this.hasAttribute("row-hidden")) {
                 if (this.onThreadHandler && this.dataList) {
-                    this.onThreadHandler!(useCache, null);
+                    this.onThreadHandler!(false, null);
                 }
             }
         }

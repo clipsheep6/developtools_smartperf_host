@@ -26,7 +26,10 @@ import {
 } from "../../../../dist/trace/database/logic-worker/ProcedureLogicWorkerFileSystem.js"
 
 describe('ProcedureLogicWorkerFileSystem Test', ()=> {
+    let procedureLogicWorkerF = new ProcedureLogicWorkerFileSystem();
 
+    procedureLogicWorkerF.queryData = jest.fn()
+    procedureLogicWorkerF.initCallchains()
     it('procedureLogicWorkerFileSystemTest', function () {
         let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
         expect(procedureLogicWorkerFileSystem).not.toBeUndefined();
@@ -52,7 +55,7 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
         expect(procedureLogicWorkerFileSystem.handle(data)).toBeUndefined()
     });
     it('procedureLogicWorkerFileSystemTest36', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+
         window.postMessage = jest.fn(()=>true)
         let data ={
             type: "fileSystem-queryFileSamples",
@@ -60,20 +63,22 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
                 list:[]
             }
         }
-        expect(procedureLogicWorkerFileSystem.handle(data)).toBeUndefined()
+        expect(procedureLogicWorkerF.handle(data)).toBeUndefined()
     });
     it('procedureLogicWorkerFileSystemTest37', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+
         window.postMessage = jest.fn(()=>true)
         let data ={
             type: "fileSystem-action",
             length:0,
             params: {
+                callType: 'fileSystem',
+                args:[],
                 list:[],
                 filter:() => {return []}
             }
         }
-        expect(procedureLogicWorkerFileSystem.handle(data)).toBeUndefined()
+        expect(procedureLogicWorkerF.handle(data)).toBeUndefined()
     });
     it('procedureLogicWorkerFileSystemTest38', function () {
         let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
@@ -99,8 +104,8 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
     });
 
     it('procedureLogicWorkerFileSystemTest07', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
-        expect(procedureLogicWorkerFileSystem.clearSplitMapData()).toBeUndefined()
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
+        expect(handlerMap.clearSplitMapData([true])).toBeUndefined()
     });
 
     it('procedureLogicWorkerFileSystemTest08', function () {
@@ -169,25 +174,36 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
     });
 
     it('procedureLogicWorkerFileSystemTest14', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
-        expect(procedureLogicWorkerFileSystem.clearAll()).toBeUndefined();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
+        expect(handlerMap.clearAll()).toBeUndefined();
 
     });
 
     it('procedureLogicWorkerFileSystemTest15', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
-        let currentNode = {
-            symbol: '',
-            path: '',
-            libName: '',
-            symbolName: '',
+        window.postMessage = jest.fn(()=>true)
+        let map = new Map();
+        map.set("symbol", '');
+        map.set("path", '');
+        map.set("libName", '');
+        map.set("symbolName", '');
+        let data ={
+            type: "fileSystem-init",
+            params: map
         }
-        expect(procedureLogicWorkerFileSystem.setMerageName(currentNode)).toBeUndefined();
+        procedureLogicWorkerF.handle(data);
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
+        let currentNode = {
+            symbol: 'symbol',
+            path: 'path',
+            libName: 'libName',
+            symbolName: 'symbolName'
+        }
+        expect(handlerMap.setMerageName(currentNode)).toBeUndefined();
 
     });
 
     it('procedureLogicWorkerFileSystemTest33', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let currentNode = {
             pathId: -1,
             symbol: '',
@@ -195,13 +211,13 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
             libName: '',
             symbolName: '',
         }
-        expect(procedureLogicWorkerFileSystem.setMerageName(currentNode)).toBeUndefined();
+        expect(handlerMap.setMerageName(currentNode)).toBeUndefined();
 
     });
 
     it('procedureLogicWorkerFileSystemTest17', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
-        expect(procedureLogicWorkerFileSystem.freshCurrentCallchains([],1)).toBeUndefined();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
+        expect(handlerMap.freshCurrentCallchains([],1)).toBeUndefined();
 
     });
 
@@ -235,92 +251,92 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
     });
 
     it('procedureLogicWorkerFileSystemTest23', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'getCallChainsBySampleIds',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest24', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'getCurrentDataFromDb',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest25', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'hideSystemLibrary',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest26', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'hideNumMaxAndMin',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest27', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'splitAllProcess',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest28', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'resetAllNode',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest29', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'resotreAllNode',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest30', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'clearSplitMapData',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest31', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'splitTree',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
 
     it('procedureLogicWorkerFileSystemTest32', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             funcName: 'setSearchValue',
         }
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params));
+        expect(handlerMap.resolvingAction(params));
 
     });
     it('procedureLogicWorkerFileSystemTest34', function () {
@@ -350,19 +366,23 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
 
     });
     it('procedureLogicWorkerFileSystemTest40', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let selectionParam = {
+            diskIOipids:{
+                length:1,
+                join:jest.fn(()=>true)
+            },
             fileSystemType:{
                 length:1,
                 join:jest.fn(()=>true)
             }
         }
         window.postMessage = jest.fn(()=>true)
-        expect(procedureLogicWorkerFileSystem.queryFileSamples(selectionParam)).toBeUndefined();
+        expect(handlerMap.queryFileSamples(selectionParam)).toBeUndefined();
 
     });
     it('procedureLogicWorkerFileSystemTest41', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let sample = {
             callChainId:1,
             type:{
@@ -370,11 +390,11 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
             }
         }
         window.postMessage = jest.fn(()=>true)
-        expect(procedureLogicWorkerFileSystem.createThreadAndType(sample)).toBeTruthy()
+        expect(handlerMap.createThreadAndType(sample)).toBeTruthy()
 
     });
     it('procedureLogicWorkerFileSystemTest42', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let currentNode = {
             initChildren:{
                 filter:jest.fn(()=>-1)
@@ -391,11 +411,11 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
 
         }
         window.postMessage = jest.fn(()=>true)
-        expect(procedureLogicWorkerFileSystem.merageChildrenByIndex(currentNode, callChainDataList, index, sample, isTopDown)).toBeUndefined()
+        expect(handlerMap.merageChildrenByIndex(currentNode, callChainDataList, index, sample, isTopDown)).toBeUndefined()
 
     });
     it('procedureLogicWorkerFileSystemTest43', function () {
-        let procedureLogicWorkerFileSystem = new ProcedureLogicWorkerFileSystem();
+        let handlerMap = procedureLogicWorkerF.handlerMap.get("fileSystem");
         let params = {
             length:1,
             forEach:jest.fn(()=>true)
@@ -403,7 +423,7 @@ describe('ProcedureLogicWorkerFileSystem Test', ()=> {
 
         }
         window.postMessage = jest.fn(()=>true)
-        expect(procedureLogicWorkerFileSystem.resolvingAction(params)).toStrictEqual([])
+        expect(handlerMap.resolvingAction(params)).toStrictEqual([])
 
     });
 

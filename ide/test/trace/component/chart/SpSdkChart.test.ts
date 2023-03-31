@@ -15,6 +15,8 @@
 
 // @ts-ignore
 import {SpSdkChart} from "../../../../dist/trace/component/chart/SpSdkChart.js"
+// @ts-ignore
+import {SpSystemTrace} from "../../../../dist/trace/component/SpSystemTrace.js";
 const sqlit = require("../../../../dist/trace/database/SqlLite.js")
 jest.mock("../../../../dist/trace/database/SqlLite.js");
 
@@ -67,6 +69,29 @@ describe('SpSdkChart Test', ()=> {
             columns:[{showType: 'slice'}]
         }
         expect(spSdkChart.getTableType(showType)).toBe("");
+    });
+
+    it('SpSdkChartTest10', function () {
+        let spSystemTrace = new SpSdkChart();
+        let sdkChart = new SpSdkChart(spSystemTrace);
+        let map = new Map();
+        let jsonCofigStr = "{\"settingConfig\":{\"configuration\":{\"counters\":{\"enum\":[\"ARM_Mali-TTRx_JS1_ACTIVE\",\"ARM_Mali-TTRx_JS0_ACTIVE\",\"ARM_Mali-TTRx_GPU_ACTIVE\",\"ARM_Mali-TTRx_FRAG_ACTIVE\"],\n" +
+            "    \"type\":\"string\"},\"stop_gator\":{\"default\":\"true\",\"description\":\"stop_gator\",\"type\":\"boolean\"},\"version\":{\"default\":\"1\",\"description\":\"gatordversion\",\"type\":\"number\"}},\"name\":\"mailG77\"},\n" +
+            "    \"tableConfig\":{\"showType\":[{\"columns\":[{\"column\":\"ts\",\"displayName\":\"TimeStamp\",\"showType\":[1,3],\"type\":\"INTEGER\"},{\"column\":\"counter_id\",\"displayName\":\"MonitorValue\",\"showType\":[1,3],\"type\":\"INTEGER\"},\n" +
+            "    {\"column\":\"value\",\"displayName\":\"Value\",\"showType\":[1,3],\"type\":\"INTEGER\"}],\"inner\":{\"columns\":[{\"column\":\"counter_name\",\"displayName\":\"\",\"showType\":[0],\"type\":\"STRING\"},\n" +
+            "    {\"column\":\"counter_id\",\"displayName\":\"\",\"showType\":[0],\"type\":\"INTEGER\"}],\"tableName\":\"mock_plugin_counterobj_table\"},\"tableName\":\"mock_plugin_counter_table\"},\n" +
+            "    {\"columns\":[{\"column\":\"start_ts\",\"displayName\":\"startts\",\"showType\":[2,3],\"type\":\"INTEGER\"},{\"column\":\"end_ts\",\"displayName\":\"endts\",\"showType\":[2,3],\"type\":\"INTEGER\"},\n" +
+            "    {\"column\":\"slice_id\",\"displayName\":\"slice_id\",\"showType\":[2,3],\"type\":\"INTEGER\"},{\"column\":\"value\",\"displayName\":\"Value\",\"showType\":[2,3],\"type\":\"INTEGER\"}],\n" +
+            "    \"inner\":{\"columns\":[{\"column\":\"slice_name\",\"displayName\":\"\",\"showType\":[0],\"type\":\"STRING\"},{\"column\":\"slice_id\",\"displayName\":\"\",\"showType\":[0],\"type\":\"INTEGER\"}],\n" +
+            "    \"tableName\":\"mock_plugin_sliceobj_table\"},\"tableName\":\"mock_plugin_slice_table\"}]}}"
+        let datamap = {
+            jsonConfig: jsonCofigStr,
+            disPlayName : "common_mock",
+            pluginName: "mock-plugin"
+        }
+        map.set("1", datamap)
+        SpSystemTrace.SDK_CONFIG_MAP = map
+        sdkChart.parseJson(58512, map)
     });
 
 })

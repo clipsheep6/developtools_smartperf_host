@@ -437,7 +437,7 @@ export function getProbablyTime(ns: number): string {
     }else if (currentNs >= microsecond1) {
         res += (currentNs / microsecond1).toFixed(2) + "μs ";
     }else if (currentNs > 0) {
-        res += currentNs + "ns ";
+        res += currentNs.toFixed(0) + "ns ";
     }else if (res == "") {
         res = ns + "";
     }
