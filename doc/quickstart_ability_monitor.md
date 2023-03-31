@@ -4,7 +4,7 @@
 点击Probes config，如选择抓取AbilityMonitor。
 ![GitHub Logo]( ../figures/AbilityMonitor/abilityset.jpg)
 ### Ability Monitor文件的抓取
-点击Record setting，在output file path输入文件名hiprofiler_data_abilitymonitor.htrace，拖动滚动条设置buffer size大小是64M,抓取时长是50s。
+点击Record setting，在output file path输入文件名hiprofiler_data_abilitymonitor.htrace，拖动滚动条设置buffer size大小是64M，抓取时长是50s。
 ![GitHub Logo]( ../figures/AbilityMonitor/abilitysetting.jpg)
 点击Trace command，就会根据上面的配置生成抓取命令，点击复制按钮，会将命令行复制。
 ![GitHub Logo]( ../figures/AbilityMonitor/abilitycommand.jpg)

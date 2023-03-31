@@ -8,6 +8,11 @@ Native Memory是查看内存的分配和释放等情况。
 * Max unwind level：抓取的栈的最大深度
 * Shared Memory Size：native_daemon和native_hook进程之间存储数据的共享内存大小
 * Filter Memory Size：只抓取大于该size的malloc数据（free不受影响）
+* Use Fp Unwind：Fp回栈
+* Use Record Accurately：不过滤数据，上报全量的
+* Use Offline Symbolization：离线符号化
+* Use Record Statistics：统计数据上报
+* statistics interval：统计数据上报周期
 
 再点击Record setting，在output file path输入文件名hiprofiler_data_nativememory.htrace，拖动滚动条设置buffer size大小是64M，抓取时长是50s。
 ![GitHub Logo](../figures/NativeMemory/nativememoryset.jpg)
@@ -97,3 +102,7 @@ Snapshot List的Tab页，主要显示了各时刻内存的增长的差值。
 ![GitHub Logo](../figures/NativeMemory/nativeflameshow.jpg)
 鼠标左键火焰图，会进入下一级界面，右键回到上一级。
 ![GitHub Logo](../figures/NativeMemory/nativeflamelevel2.jpg)
+### Native Memory数据统计功能
+选择Use Record Statistics和statistics interval配置项抓取的数据，只会显示Call Info的Tab页，Call Info相关功能同上。
+![GitHub Logo](../figures/NativeMemory/statiscsCallInfo.jpg)
+

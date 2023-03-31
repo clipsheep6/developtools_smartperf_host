@@ -1,4 +1,4 @@
-# web端抓取trace指导
+# web端抓取trace说明
 ## 界面配置说明
 ![GitHub Logo](../figures/hdc/hdc.jpg)
 说明：
