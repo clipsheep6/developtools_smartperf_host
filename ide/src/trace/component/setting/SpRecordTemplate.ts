@@ -121,7 +121,6 @@ export class SpRecordTemplate extends BaseElement {
             }
             let htraceProfilerPluginConfig: ProfilerPluginConfig<TracePluginConfig> = {
                 pluginName: "ftrace-plugin",
-                serialize_optimize: true,
                 sampleInterval: 1000,
                 configData: tracePluginConfig
             }

@@ -963,7 +963,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let netWorkPlugin: ProfilerPluginConfig<NetworkConfig> = {
             pluginName: "network-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: netWorkConfig
         }
@@ -976,7 +975,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let diskIoPlugin: ProfilerPluginConfig<DiskioConfig> = {
             pluginName: "diskio-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: diskIoConfig
         }
@@ -990,7 +988,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let cpuPlugin: ProfilerPluginConfig<CpuConfig> = {
             pluginName: "cpu-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: cpuConfig
         }
@@ -1006,7 +1003,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let processPlugin: ProfilerPluginConfig<ProcessConfig> = {
             pluginName: "process-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: processConfig
         }
@@ -1215,7 +1211,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let hilogConfigProfilerPluginConfig: ProfilerPluginConfig<HilogConfig> = {
             pluginName: "hilog-plugin",
-            serialize_optimize: true,
             sampleInterval: reportingFrequency * 1000,
             configData: hilogConfig,
         }
@@ -1288,7 +1283,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let hiPerfPluginConfig: ProfilerPluginConfig<HiperfPluginConfig> = {
             pluginName: "hiperf-plugin",
-            serialize_optimize: true,
             sampleInterval: reportingFrequency * 1000,
             configData: hiPerf,
         }
@@ -1322,7 +1316,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let ebpfPluginConfig: ProfilerPluginConfig<FileSystemConfig> = {
             pluginName: "hiebpf-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: systemPluginConfig,
         }
@@ -1368,7 +1361,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let nativePluginConfig: ProfilerPluginConfig<NativeHookConfig> = {
             pluginName: "nativehook",
-            serialize_optimize: true,
             sampleInterval: reportingFrequency * 1000,
             configData: nativeConfig,
         }
@@ -1426,7 +1418,6 @@ export class SpRecordTrace extends BaseElement {
         })
         let profilerPluginConfig: ProfilerPluginConfig<MemoryConfig> = {
             pluginName: "memory-plugin",
-            serialize_optimize: true,
             sampleInterval: reportingFrequency * 1000,
             configData: memoryconfig,
         }
@@ -1439,7 +1430,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let fpsPlugin: ProfilerPluginConfig<FpsConfig> = {
             pluginName: "hidump-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: fpsConfig
         }
@@ -1453,7 +1443,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let hiSystemEventPlugin: ProfilerPluginConfig<HiSystemEventConfig> = {
             pluginName: "hisysevent-plugin",
-            serialize_optimize: true,
             configData: hiSystemEventConfig
         }
         return hiSystemEventPlugin;
@@ -1480,7 +1469,6 @@ export class SpRecordTrace extends BaseElement {
         }
         let htraceProfilerPluginConfig: ProfilerPluginConfig<TracePluginConfig> = {
             pluginName: "ftrace-plugin",
-            serialize_optimize: true,
             sampleInterval: 1000,
             configData: tracePluginConfig
         }
@@ -1491,7 +1479,6 @@ export class SpRecordTrace extends BaseElement {
         let gpuConfig = this.spSdkConfig!.getGpuConfig();
         let gpuPluginConfig: ProfilerPluginConfig<any> = {
             pluginName: this.spSdkConfig!.getPlugName(),
-            serialize_optimize: true,
             sampleInterval: this.spSdkConfig!.getSampleInterval(),
             configData: gpuConfig,
         }

@@ -81,7 +81,6 @@ export interface CreateSessionRequest {
 
 export interface ProfilerPluginConfig<T> {
     pluginName: string;
-    serialize_optimize: boolean;
     sampleInterval?: number;
     configData: T;
 }
