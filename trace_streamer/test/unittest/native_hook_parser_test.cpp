@@ -120,7 +120,7 @@ public:
         itid_ = nativeHook.Itids()[index];
         eventType_ = nativeHook.EventTypes()[index];
         subType_ = nativeHook.SubTypes()[index];
-        startTimeStamp_ = nativeHook.TimeStamData()[index];
+        startTimeStamp_ = nativeHook.TimeStampData()[index];
         endTimeStamp_ = nativeHook.EndTimeStamps()[index];
         duration_ = nativeHook.Durations()[index];
         address_ = nativeHook.Addrs()[index];

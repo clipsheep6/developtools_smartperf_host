@@ -68,7 +68,7 @@ HWTEST_F(BinderFilterTest, BinderSenderfilterNeedReply, TestSize.Level1)
     EXPECT_TRUE(traceDataCache_.GetConstInternalSlicesData().Size() == 1);
     EXPECT_TRUE(traceDataCache_.GetConstInternalSlicesData().ArgSetIdsData()[0] == 0);
     EXPECT_TRUE(traceDataCache_.GetConstArgSetData().Size() == 7);
-    EXPECT_TRUE(traceDataCache_.GetConstInternalSlicesData().TimeStamData()[0] == ts1);
+    EXPECT_TRUE(traceDataCache_.GetConstInternalSlicesData().TimeStampData()[0] == ts1);
 }
 
 /**

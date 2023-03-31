@@ -114,16 +114,18 @@ EMSCRIPTEN_KEEPALIVE int TraceStreamer_Init_ThirdParty_Config(int dataLen)
 ```
 
 ### 你也可以执行如下命令查看应用帮助
-```
-./trace_streamer --help
-```
+```./trace_streamer --help```
+
 ### TraceStreamer支持解析的事件列表
 通过```./trace_streamer -i```
 查看支持的事件列表。  
 支持的事件列表参见[SupportEventList.md](./doc/des_support_event.md)。
 ## TraceStreamer重要概念介绍
 ### 进程和线程标识符
-在通用操作系统中，进程号（pid/tgid）和线程号（tid）可能会被重复用于标识不同的进程或者线程。所以在trace数据源中，进程号（pid）和线程号（tid）也可能被重用。TraceStreamer在解析数据过程中，使用ipid(internal pid)唯一标识进程， itid(internal tid)唯一标识线程。
+```
+在通用操作系统中，进程号（pid/tgid）和线程号（tid）可能会被重复用于标识不同的进程或者线程。所以在trace数据源中，进程号（pid）和线程号（tid）也可能被重用。
+TraceStreamer在解析数据过程中，使用ipid(internal pid)唯一标识进程， itid(internal tid)唯一标识线程。
+```
 ### 计量器
 用来记录系统中各种随时间连续变化的数值。例如： CPU的频率， 内存的使用量， 界面刷新频率。
 #### 举例
@@ -146,18 +148,21 @@ TraceStreamer设计过程中使用了流式处理的思想，数据从入口进�
 在windows平台上，需使用支持c++17标准的clang编译器。  
 # 对外部的依赖
 本应用依赖与sqlite、protobuf(htrace解析部分依赖)、nlohmann_json。  
-本应用同时依赖于src/protos/protogen.sh目录下文件来生成相关pb.h，pb.cc文件
+本应用同时依赖于src/protos/protogen.sh目录下文件来生成相关pb.h，pb.cc文件。
+_____ 
+
 ### 编译linux和Mac应用
 在目录下有build.sh脚本，在不同的平台上会判断系统版本，编译相应系统的应用。
 ```
 ./build.sh linux
 ./build.sh macx
 ```
+
 ### 编译wasm
 ```
 ./build.sh wasm
 ```
 
 ### 开始编译
-本工具建议独立编译， 通过部署第三方依赖库，emsdk，可编译出支持不同平台的应用。   
+本工具建议独立编译，通过部署第三方依赖库，emsdk，可编译出支持不同平台的应用。   
 具体方法可参考[compile_trace_streamer](./doc/compile_trace_streamer.md)。

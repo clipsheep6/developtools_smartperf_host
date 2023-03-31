@@ -79,7 +79,7 @@ HWTEST_F(EventParserTest, ParseLine, TestSize.Level1)
               stream_.traceDataCache_->GetStatAndInfo()->GetValue(TRACE_EVENT_SCHED_SWITCH, STAT_EVENT_DATA_INVALID));
     auto readStatIndex = stream_.traceDataCache_->GetConstSchedSliceData().EndStatesData()[0];
     EXPECT_EQ(TASK_RUNNABLE, readStatIndex);
-    auto realTimeStamp = stream_.traceDataCache_->GetConstSchedSliceData().TimeStamData()[0];
+    auto realTimeStamp = stream_.traceDataCache_->GetConstSchedSliceData().TimeStampData()[0];
     EXPECT_TRUE(bytraceLine.ts == realTimeStamp);
     auto realCpu = stream_.traceDataCache_->GetConstSchedSliceData().CpusData()[0];
     EXPECT_TRUE(bytraceLine.cpu == realCpu);

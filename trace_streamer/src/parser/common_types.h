@@ -19,7 +19,7 @@
 #include <atomic>
 #include <string>
 #include <unordered_map>
-#if IS_PBREADER
+#ifndef IS_PBDECODER
 #include "cpu_plugin_result.pbreader.h"
 #include "diskio_plugin_result.pbreader.h"
 #include "hidump_plugin_result.pbreader.h"
@@ -81,8 +81,7 @@ struct DataSegment {
     BytraceLine bufLine;
     std::atomic<ParseStatus> status{TS_PARSE_STATUS_INIT};
 };
-// 注意使用完之后恢复初始化状态，保证下次使用不会出现数据混乱。
-#if IS_PBREADER
+#ifndef IS_PBDECODER
 struct HtraceDataSegment {
     std::shared_ptr<std::string> seg;
     uint64_t timeStamp;
@@ -159,17 +158,7 @@ public:
     std::string funcPrefix_ = "";
     std::string funcArgs_ = "";
 };
-#if IS_PBREADER
-struct NativeHookMetaData {
-    NativeHookMetaData(const std::shared_ptr<const std::string>& seg,
-                        std::unique_ptr<ProtoReader::NativeHookData_Reader> reader)
-        : seg_(seg), reader_(std::move(reader))
-    {
-    }
-    std::shared_ptr<const std::string> seg_;
-    std::unique_ptr<ProtoReader::NativeHookData_Reader> reader_;
-};
-#endif
+
 } // namespace TraceStreamer
 } // namespace SysTuning
 #endif // _BYTRACE_COMMON_TYPES_H_

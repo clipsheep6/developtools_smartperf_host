@@ -68,6 +68,7 @@ enum EndState {
     // (D) Indicates that the process is in deep sleep, waiting for resources, and does not respond to signals.
     // Typical scenario: process acquisition semaphore blocking.
     TASK_UNINTERRUPTIBLE = 2,
+    TASK_UNINTERRUPTIBLE_IO = 21,
     // (Running) Indicates that the thread is running
     TASK_RUNNING = 3,
     // (I) Thread in interrupt state
@@ -84,6 +85,7 @@ enum EndState {
     TASK_KILLED = 128,
     // (DK)
     TASK_DK = 130,
+    TASK_DK_IO = 131,
     // the process is being debug now
     TASK_TRACED_KILL = 136,
     // (W) The process is in a deep sleep state and will be killed directly after waking up
@@ -105,12 +107,13 @@ enum SchedWakeType {
     SCHED_WAKING = 0, // sched_waking
     SCHED_WAKEUP = 1, // sched_wakeup
 };
-#if IS_PBREADER
+#ifndef IS_PBDECODER
 enum DataSourceType {
     DATA_SOURCE_TYPE_TRACE,
     DATA_SOURCE_TYPE_MEM,
     DATA_SOURCE_TYPE_HILOG,
     DATA_SOURCE_TYPE_NATIVEHOOK,
+    DATA_SOURCE_TYPE_NATIVEHOOK_CONFIG,
     DATA_SOURCE_TYPE_FPS,
     DATA_SOURCE_TYPE_NETWORK,
     DATA_SOURCE_TYPE_DISKIO,

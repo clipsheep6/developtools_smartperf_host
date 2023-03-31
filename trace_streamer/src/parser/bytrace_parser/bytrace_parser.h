@@ -80,7 +80,7 @@ private:
     using json = nlohmann::json;
     typedef struct {
         std::string eventSource;
-        uint64_t timestamp;
+        uint64_t timeStamp;
         std::vector<std::string> appName;
         std::vector<std::string> appVersions;
         std::vector<std::string> key;
@@ -159,6 +159,7 @@ private:
     const int sleepDur_ = 100;
     bool supportThread_ = false;
     bool isBytrace_ = true;
+    bool traceBegan_ = false;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

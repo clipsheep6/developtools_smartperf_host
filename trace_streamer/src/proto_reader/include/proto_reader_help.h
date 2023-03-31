@@ -41,11 +41,11 @@ public:
     {
         return std::string(reinterpret_cast<const char*>(data_), size_);
     }
-    const size_t Size()
+    size_t Size() const
     {
         return size_;
     }
-    const uint8_t* Data()
+    const uint8_t* Data() const
     {
         return data_;
     }

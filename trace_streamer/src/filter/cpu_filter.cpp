@@ -101,6 +101,14 @@ bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint32_t iTi
     auto argSetId = streamFilters_->argsFilter_->NewArgs(args);
 
     traceDataCache_->GetSchedSliceData()->UpdateArg(row, argSetId);
+    if (iowait) {
+        auto state = traceDataCache_->GetThreadStateData()->StatesData()[row];
+        if (state == TASK_UNINTERRUPTIBLE) {
+            traceDataCache_->GetThreadStateData()->UpdateState(row, TASK_UNINTERRUPTIBLE_IO);
+        } else { // state == TASK_DK
+            traceDataCache_->GetThreadStateData()->UpdateState(row, TASK_DK_IO);
+        }
+    }
     pidToSchedSliceRow.erase(iTid);
     return true;
 }

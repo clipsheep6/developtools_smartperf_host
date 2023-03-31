@@ -202,7 +202,7 @@ int FrameSliceTable::Cursor::Column(int column) const
             sqlite3_result_int64(context_, static_cast<int32_t>(CurrentRow()));
             break;
         case TS:
-            sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.TimeStamData()[CurrentRow()]));
+            sqlite3_result_int64(context_, static_cast<int64_t>(frameSliceObj_.TimeStampData()[CurrentRow()]));
             break;
         case VSYNC:
             sqlite3_result_int64(context_, static_cast<int32_t>(frameSliceObj_.VsyncIds()[CurrentRow()]));

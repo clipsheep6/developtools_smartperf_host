@@ -23,8 +23,8 @@ FrameFilter::FrameFilter(TraceDataCache* dataCache, const TraceStreamerFilters* 
 FrameFilter::~FrameFilter() = default;
 
 void FrameFilter::BeginVsyncEvent(uint64_t ts,
-                                  uint64_t ipid,
-                                  uint64_t itid,
+                                  uint32_t ipid,
+                                  uint32_t itid,
                                   uint64_t expectStart,
                                   uint64_t expectEnd,
                                   uint32_t vsyncId,
@@ -43,15 +43,15 @@ void FrameFilter::BeginVsyncEvent(uint64_t ts,
         expectStart, ipid, itid, vsyncId, callStackSliceRow, expectEnd, (uint8_t)EXPECT_SLICE);
     vsyncRenderSlice_[itid].emplace(std::make_pair(vsyncId, frame));
 }
-bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint64_t itid, uint64_t expectStart, uint64_t callStackSliceRow)
+bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart, uint64_t callStackSliceRow)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     auto pos = frame->second.begin();
@@ -69,15 +69,15 @@ bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint64_t itid, uint64_t expectS
     return true;
 }
 
-bool FrameFilter::MarkRSOnvsyncEvent(uint64_t ts, uint64_t itid)
+bool FrameFilter::MarkRSOnvsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     auto pos = frame->second.begin();
@@ -87,15 +87,15 @@ bool FrameFilter::MarkRSOnvsyncEvent(uint64_t ts, uint64_t itid)
     pos->second->isRsMainThread_ = true;
     return false;
 }
-bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint64_t itid)
+bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%llu failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
         return false;
     }
     auto pos = frame->second.begin();
@@ -108,25 +108,29 @@ bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint64_t itid)
         frame->second.erase(pos);
         return false;
     }
-    pos->second->endTs_ = ts;
-    traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts, pos->second->expectedDur_);
-    pos->second->vsyncEnd_ = true;
-    // from now on, maybe we do not known where renderSlice is
-    if (pos->second->dstFrameSliceId_ == INVALID_UINT64) {
-        TS_LOGD("render service not run yet");
+    // on new trace mode, do not need to deal it
+    if (!newMode_) {
+        pos->second->endTs_ = ts;
+        traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
+                                                                pos->second->expectedDur_);
+        pos->second->vsyncEnd_ = true;
+        // from now on, maybe we do not known where renderSlice is
+        if (pos->second->dstFrameSliceId_ == INVALID_UINT64) {
+            TS_LOGD("render service not run yet");
+        }
+        frame->second.erase(pos);
     }
-    frame->second.erase(pos);
     return true;
 }
-bool FrameFilter::BeginRSTransactionData(uint64_t ts, uint64_t itid, uint32_t franeNum)
+bool FrameFilter::BeginRSTransactionData(uint64_t ts, uint32_t itid, uint32_t franeNum)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginRSTransactionData find for itid:%llu failed", itid);
+        TS_LOGW("BeginRSTransactionData find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("BeginRSTransactionData find for itid:%llu failed", itid);
+        TS_LOGW("BeginRSTransactionData find for itid:%u failed", itid);
         return false;
     }
     if (frame->second.size() > 1) {
@@ -141,17 +145,17 @@ bool FrameFilter::BeginRSTransactionData(uint64_t ts, uint64_t itid, uint32_t fr
     return true;
 }
 bool FrameFilter::BeginProcessCommandUni(uint64_t ts,
-                                         uint64_t itid,
+                                         uint32_t itid,
                                          const std::vector<FrameMap>& frames,
                                          uint32_t sliceIndex)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginProcessCommandUni find for itid:%llu failed", itid);
+        TS_LOGW("BeginProcessCommandUni find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("BeginProcessCommandUni find for itid:%llu failed", itid);
+        TS_LOGW("BeginProcessCommandUni find for itid:%u failed", itid);
         return false;
     }
     auto pos = frame->second.begin();
@@ -162,17 +166,17 @@ bool FrameFilter::BeginProcessCommandUni(uint64_t ts,
     }
     std::vector<uint64_t> fromSlices = {};
     std::vector<uint64_t> fromExpectedSlices = {};
-    for (auto&& it : frames) {
+    for (auto& it : frames) {
         auto sourceFrameMap = dstRenderSlice_.find(it.sourceItid);
         if (sourceFrameMap == dstRenderSlice_.end()) {
             // error
-            TS_LOGE("BeginProcessCommandUni find for itid:%llu framenum:%u failed", it.sourceItid, it.frameNum);
+            TS_LOGE("BeginProcessCommandUni find for itid:%u framenum:%u failed", it.sourceItid, it.frameNum);
             continue;
         }
         auto srcFrame = sourceFrameMap->second.find(it.frameNum);
         if (srcFrame == sourceFrameMap->second.end()) {
             // error
-            TS_LOGE("BeginProcessCommandUni find for itid:%llu framenum:%u failed", it.sourceItid, it.frameNum);
+            TS_LOGE("BeginProcessCommandUni find for itid:%u framenum:%u failed", it.sourceItid, it.frameNum);
             continue;
         }
         fromSlices.push_back(srcFrame->second.get()->frameSliceRow_);
@@ -201,15 +205,15 @@ bool FrameFilter::BeginProcessCommandUni(uint64_t ts,
     traceDataCache_->GetFrameSliceData()->SetSrcs(pos->second->frameExpectedSliceRow_, fromExpectedSlices);
     return true;
 }
-bool FrameFilter::EndVsyncEvent(uint64_t ts, uint64_t itid)
+bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndVsyncEvent find for itid:%llu ts:%llu failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndVsyncEvent find for itid:%llu ts:%llu failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     auto pos = frame->second.begin();
@@ -237,22 +241,31 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint64_t itid)
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameSliceRow_);
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameExpectedSliceRow_);
         frame->second.erase(pos);
-    } else {
-        TS_LOGD("nothing to do, it is a app, or invalid RenderService itid:%llu", itid);
+    } else { // !pos->second->isRsMainThread_
+        if (newMode_) {
+            // new trace, onvsync in vsync event
+            traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
+                                                                    pos->second->expectedDur_);
+            pos->second->endTs_ = ts;
+            // for Render serivce
+            frame->second.erase(pos);
+        } else {
+            TS_LOGD("nothing to do, it is a app, or invalid RenderService itid:%u", itid);
+        }
         // nothing to do, it is a app, or invalid RenderService
     }
     return true;
 }
 // only for renderservice
-bool FrameFilter::StartFrameQueue(uint64_t ts, uint64_t itid)
+bool FrameFilter::StartFrameQueue(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("StartFrameQueue find for itid:%llu failed", itid);
+        TS_LOGW("StartFrameQueue find for itid:%u failed", itid);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("StartFrameQueue find for itid:%llu failed", itid);
+        TS_LOGW("StartFrameQueue find for itid:%u failed", itid);
         return false;
     }
     auto pos = frame->second.begin();
@@ -262,15 +275,15 @@ bool FrameFilter::StartFrameQueue(uint64_t ts, uint64_t itid)
     pos->second->frameQueueStartTs_ = ts;
     return true;
 }
-bool FrameFilter::EndFrameQueue(uint64_t ts, uint64_t itid)
+bool FrameFilter::EndFrameQueue(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndFrameQueue find for itid:%llu ts:%llu failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndFrameQueue find for itid:%llu ts:%llu  failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%llu  failed", itid, ts);
         return false;
     }
     traceDataCache_->GetGPUSliceData()->AppendNew(frame->second.begin()->second.get()->frameSliceRow_,

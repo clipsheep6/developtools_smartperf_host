@@ -56,7 +56,10 @@ config("default") {
   if (is_debug && is_win) {
     ldflags = [ "-fstack-protector" ]
   }
-  if (is_linux || is_macx || is_pbreader) {
+  if (is_pbdecoder) {
+    cflags += [ "-D IS_PBDECODER" ]
+  }
+  if (is_linux || is_macx) {
     cflags += [
       "-Wa,--noexecstack",
       "-fcolor-diagnostics",
@@ -99,9 +102,6 @@ config("default") {
         "-D__x86_64__",
       ]
     }
-    if (is_pbreader) {
-      cflags += [ "-D IS_PBREADER" ]
-    }
     cflags += [ "-D BINDER_ASYNC" ]
     libs += [ "pthread" ]
     if (!is_macx) {
@@ -134,7 +134,7 @@ config("default") {
 
 config("symbols") {
   cflags = [ "-O0" ]
-  if (is_linux || is_macx || is_pbreader) {
+  if (is_linux || is_macx || !is_pbdecoder) {
     cflags += [ "-funwind-tables" ]
   }
 }
@@ -177,7 +177,7 @@ config("executable") {
   print("use_wasm", use_wasm)
   ldflags = []
 
-  if (is_linux || ((is_macx && !use_wasm) || is_pbreader)) {
+  if (is_linux || ((is_macx && !use_wasm) || !is_pbdecoder)) {
     ldflags += []
   }
   if (!is_macx && !use_wasm && !is_win) {

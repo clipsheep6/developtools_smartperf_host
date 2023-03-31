@@ -45,7 +45,7 @@ public:
     {
         return ids_;
     }
-    const std::deque<uint64_t>& TimeStamData() const
+    const std::deque<uint64_t>& TimeStampData() const
     {
         return timeStamps_;
     }

@@ -199,7 +199,7 @@ int IrqTable::Cursor::Column(int column) const
             sqlite3_result_int64(context_, CurrentRow());
             break;
         case TS:
-            sqlite3_result_int64(context_, static_cast<int64_t>(slicesObj_.TimeStamData()[CurrentRow()]));
+            sqlite3_result_int64(context_, static_cast<int64_t>(slicesObj_.TimeStampData()[CurrentRow()]));
             break;
         case DUR:
             sqlite3_result_int64(context_, static_cast<int64_t>(slicesObj_.DursData()[CurrentRow()]));

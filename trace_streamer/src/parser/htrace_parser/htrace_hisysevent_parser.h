@@ -40,7 +40,7 @@ private:
     using json = nlohmann::json;
     typedef struct {
         std::string eventSource;
-        uint64_t timestamp;
+        uint64_t timeStamp;
         std::vector<std::string> appName;
         std::vector<std::string> appVersions;
         std::vector<std::string> key;

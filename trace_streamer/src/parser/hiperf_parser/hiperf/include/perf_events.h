@@ -362,7 +362,7 @@ public:
         // for read and sort
         size_t dataSize = 0;
         perf_event_header header;
-        uint64_t timestamp = 0;
+        uint64_t timeStamp = 0;
         const perf_event_attr *attr = nullptr;
         size_t posCallChain = 0;
     };

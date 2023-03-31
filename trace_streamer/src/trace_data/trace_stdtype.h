@@ -47,7 +47,7 @@ public:
     {
         return ids_;
     }
-    const std::deque<uint64_t>& TimeStamData() const
+    const std::deque<uint64_t>& TimeStampData() const
     {
         return timeStamps_;
     }
@@ -267,10 +267,12 @@ public:
                               const std::string& flag,
                               const std::string& args);
     void AppendDistributeInfo();
-    void SetDuration(size_t index, uint64_t timestamp);
+    void SetDuration(size_t index, uint64_t timeStamp);
+    void SetDurationWithFlag(size_t index, uint64_t timeStamp);
+    void SetFlag(size_t index, uint8_t flag);
     void SetDurationEx(size_t index, uint32_t dur);
-    void SetIrqDurAndArg(size_t index, uint64_t timestamp, uint32_t argSetId);
-    void SetTimeStamp(size_t index, uint64_t timestamp);
+    void SetIrqDurAndArg(size_t index, uint64_t timeStamp, uint32_t argSetId);
+    void SetTimeStamp(size_t index, uint64_t timeStamp);
     void SetDepth(size_t index, uint8_t depth);
     void SetArgSetId(size_t index, uint32_t argSetId);
     void Clear() override
@@ -356,7 +358,7 @@ private:
 
 class Measure : public CacheBase {
 public:
-    size_t AppendMeasureData(uint32_t type, uint64_t timestamp, int64_t value, uint32_t filterId);
+    size_t AppendMeasureData(uint32_t type, uint64_t timeStamp, int64_t value, uint32_t filterId);
     const std::deque<uint32_t>& TypeData() const
     {
         return typeDeque_;
@@ -369,7 +371,7 @@ public:
     {
         return durDeque_;
     }
-    void SetDur(uint32_t row, uint64_t timestamp);
+    void SetDur(uint32_t row, uint64_t timeStamp);
     const std::deque<uint32_t>& FilterIdData() const
     {
         return filterIdDeque_;
@@ -392,7 +394,7 @@ private:
 
 class Raw : public CacheBase {
 public:
-    size_t AppendRawData(uint32_t id, uint64_t timestamp, uint32_t name, uint32_t cpu, uint32_t internalTid);
+    size_t AppendRawData(uint32_t id, uint64_t timeStamp, uint32_t name, uint32_t cpu, uint32_t internalTid);
     const std::deque<uint32_t>& NameData() const
     {
         return nameDeque_;
@@ -491,7 +493,7 @@ private:
 
 class Instants : public CacheBase {
 public:
-    size_t AppendInstantEventData(uint64_t timestamp,
+    size_t AppendInstantEventData(uint64_t timeStamp,
                                   DataIndex nameIndex,
                                   int64_t internalTid,
                                   int64_t wakeupFromInternalPid);
@@ -601,7 +603,7 @@ private:
 };
 class SysCall : public CacheBase {
 public:
-    size_t AppendSysCallData(int64_t sysCallNum, DataIndex type, uint32_t ipid, uint64_t timestamp, int64_t ret);
+    size_t AppendSysCallData(int64_t sysCallNum, DataIndex type, uint32_t ipid, uint64_t timeStamp, int64_t ret);
     const std::deque<int64_t>& SysCallsData() const
     {
         return sysCallNums_;
@@ -691,7 +693,7 @@ private:
 class LogInfo : public CacheBase {
 public:
     size_t AppendNewLogInfo(uint64_t seq,
-                            uint64_t timestamp,
+                            uint64_t timeStamp,
                             uint32_t pid,
                             uint32_t tid,
                             DataIndex level,
@@ -733,17 +735,17 @@ public:
                                    uint32_t itid,
                                    std::string eventType,
                                    DataIndex subType,
-                                   uint64_t timestamp,
+                                   uint64_t timeStamp,
                                    uint64_t endTimestamp,
                                    uint64_t duration,
                                    uint64_t addr,
-                                   int64_t memSize,
-                                   int64_t allMemSize);
-    void UpdateHeapDuration(size_t row, uint64_t endTimestamp);
+                                   int64_t memSize);
+    void UpdateCallChainId(size_t row, uint32_t callChainId);
+    void UpdateEndTimeStampAndDuration(size_t row, uint64_t endTimeStamp);
     void UpdateCurrentSizeDur(size_t row, uint64_t timeStamp);
     void UpdateMemMapSubType();
     void UpdateAddrToMemMapSubType(uint64_t addr, int64_t size, uint64_t tagId);
-    void UpdateLastCallerPathIndexs(std::map<uint32_t, uint64_t>& callIdToLasLibId);
+    void UpdateLastCallerPathIndexs(std::unordered_map<uint32_t, uint64_t>& callIdToLasLibId);
     const std::deque<uint32_t>& CallChainIds() const;
     const std::deque<uint32_t>& Ipids() const;
     const std::deque<uint32_t>& Itids() const;
@@ -764,7 +766,7 @@ public:
         itids_.clear();
         eventTypes_.clear();
         subTypes_.clear();
-        endTimestamps_.clear();
+        endTimeStamps_.clear();
         durations_.clear();
         addrs_.clear();
         memSizes_.clear();
@@ -779,7 +781,7 @@ private:
     std::deque<uint32_t> itids_ = {};
     std::deque<std::string> eventTypes_ = {};
     std::deque<DataIndex> subTypes_ = {};
-    std::deque<uint64_t> endTimestamps_ = {};
+    std::deque<uint64_t> endTimeStamps_ = {};
     std::deque<uint64_t> durations_ = {};
     std::deque<uint64_t> addrs_ = {};
     std::deque<int64_t> memSizes_ = {};
@@ -813,7 +815,7 @@ public:
                                     DataIndex filePath,
                                     uint64_t offset,
                                     uint64_t symbolOffset,
-                                    std::string& vaddr);
+                                    const std::string& vaddr);
     void UpdateSymbolIdToNameMap(uint64_t originSymbolId, uint64_t symbolId);
     void UpdateSymbolId();
     void UpdateSymbolId(size_t index, DataIndex symbolId);
@@ -865,7 +867,7 @@ public:
     size_t AppendNewNativeHookStatistic(uint32_t ipid,
                                         uint64_t timeStamp,
                                         uint32_t callChainId,
-                                        uint8_t memoryType,
+                                        uint32_t memoryType,
                                         uint64_t applyCount,
                                         uint64_t releaseCount,
                                         uint64_t applySize,
@@ -873,15 +875,17 @@ public:
 
     const std::deque<uint32_t>& Ipids() const;
     const std::deque<uint32_t>& CallChainIds() const;
-    const std::deque<uint8_t>& MemoryTypes() const;
+    const std::deque<uint32_t>& MemoryTypes() const;
     const std::deque<uint64_t>& ApplyCounts() const;
     const std::deque<uint64_t>& ReleaseCounts() const;
     const std::deque<uint64_t>& ApplySizes() const;
     const std::deque<uint64_t>& ReleaseSizes() const;
     void Clear()
     {
+        ids_.clear();
         ipids_.clear();
         callChainIds_.clear();
+        timeStamps_.clear();
         memoryTypes_.clear();
         applyCounts_.clear();
         releaseCounts_.clear();
@@ -890,9 +894,8 @@ public:
     }
 private:
     std::deque<uint32_t> ipids_ = {};
-    std::deque<uint64_t> endTimestamps_ = {};
     std::deque<uint32_t> callChainIds_ = {};
-    std::deque<uint8_t> memoryTypes_ = {};
+    std::deque<uint32_t> memoryTypes_ = {};
     std::deque<uint64_t> applyCounts_ = {};
     std::deque<uint64_t> releaseCounts_ = {};
     std::deque<uint64_t> applySizes_ = {};
@@ -901,7 +904,7 @@ private:
 
 class Hidump : public CacheBase {
 public:
-    size_t AppendNewHidumpInfo(uint64_t timestamp, uint32_t fps);
+    size_t AppendNewHidumpInfo(uint64_t timeStamp, uint32_t fps);
     const std::deque<uint32_t>& Fpss() const;
 
 private:
@@ -950,7 +953,7 @@ private:
 class PerfSample : public CacheBase {
 public:
     size_t AppendNewPerfSample(uint32_t sampleId,
-                               uint64_t timestamp,
+                               uint64_t timeStamp,
                                uint32_t tid,
                                uint64_t eventCount,
                                uint64_t eventTypeId,

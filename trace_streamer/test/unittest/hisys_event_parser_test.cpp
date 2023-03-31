@@ -65,7 +65,7 @@ HWTEST_F(HtraceHisysEventParserTest, ParseNoArray, TestSize.Level1)
     HtraceHisyseventParser HisysEvent(stream_.traceDataCache_.get(), stream_.streamFilters_.get());
     HisysEvent.JGetData(jMessage, jData, maxArraySize, noArrayIndex, arrayIndex);
     EXPECT_TRUE(jData.eventSource == "POWER_IDE_BATTERY");
-    EXPECT_EQ(jData.timestamp, 22611696002);
+    EXPECT_EQ(jData.timeStamp, 22611696002);
     EXPECT_EQ(maxArraySize, 0);
     EXPECT_EQ(noArrayIndex.size(), 17);
     EXPECT_EQ(arrayIndex.size(), 0);
@@ -106,7 +106,7 @@ HWTEST_F(HtraceHisysEventParserTest, ParseHaveArrayData, TestSize.Level1)
     HtraceHisyseventParser HisysEvent(stream_.traceDataCache_.get(), stream_.streamFilters_.get());
     HisysEvent.JGetData(jMessage, jData, maxArraySize, noArrayIndex, arrayIndex);
     EXPECT_TRUE(jData.eventSource == "POWER_IDE_WIFISCAN");
-    EXPECT_EQ(jData.timestamp, 16611696002);
+    EXPECT_EQ(jData.timeStamp, 16611696002);
     EXPECT_EQ(maxArraySize, 3);
     EXPECT_EQ(noArrayIndex.size(), 12);
     EXPECT_EQ(arrayIndex.size(), 9);
@@ -156,13 +156,13 @@ HWTEST_F(HtraceHisysEventParserTest, MixedDataAnalysis, TestSize.Level1)
         HisysEvent.JGetData(jMessage, jData, maxArraySize, noArrayIndex, arrayIndex);
         if (jData.eventSource == "POWER_IDE_WIFISCAN") {
             EXPECT_TRUE(jData.eventSource == "POWER_IDE_WIFISCAN");
-            EXPECT_EQ(jData.timestamp, 16611696002);
+            EXPECT_EQ(jData.timeStamp, 16611696002);
             EXPECT_EQ(maxArraySize, 3);
             EXPECT_EQ(noArrayIndex.size(), 12);
             EXPECT_EQ(arrayIndex.size(), 9);
         } else {
             EXPECT_TRUE(jData.eventSource == "POWER_IDE_BATTERY");
-            EXPECT_EQ(jData.timestamp, 22611696002);
+            EXPECT_EQ(jData.timeStamp, 22611696002);
             EXPECT_EQ(maxArraySize, 0);
             EXPECT_EQ(noArrayIndex.size(), 17);
             EXPECT_EQ(arrayIndex.size(), 0);

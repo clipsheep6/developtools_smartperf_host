@@ -52,11 +52,11 @@ Thread* TraceDataCacheWriter::GetThreadData(InternalTid internalTid)
     return &internalThreadsData_[internalTid];
 }
 
-void TraceDataCacheWriter::UpdateTraceTime(uint64_t timestamp)
+void TraceDataCacheWriter::UpdateTraceTime(uint64_t timeStamp)
 {
-    if (timestamp) {
-        traceStartTime_ = std::min(traceStartTime_, timestamp);
-        traceEndTime_ = std::max(traceEndTime_, timestamp);
+    if (timeStamp) {
+        traceStartTime_ = std::min(traceStartTime_, timeStamp);
+        traceEndTime_ = std::max(traceEndTime_, timeStamp);
     }
 }
 
@@ -191,6 +191,10 @@ NativeHookFrame* TraceDataCacheWriter::GetNativeHookFrameData()
     return &nativeHookFrameData_;
 }
 
+NativeHookStatistic* TraceDataCacheWriter::GetNativeHookStatisticsData()
+{
+    return &nativeHookStatisticData_;
+}
 Hidump* TraceDataCacheWriter::GetHidumpData()
 {
     return &hidumpData_;

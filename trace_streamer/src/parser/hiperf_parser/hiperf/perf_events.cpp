@@ -1220,7 +1220,7 @@ inline bool PerfEvents::IsRecordInMmap()
 
 static bool CompareRecordTime(const PerfEvents::MmapFd *left, const PerfEvents::MmapFd *right)
 {
-    return left->timestamp > right->timestamp;
+    return left->timeStamp > right->timeStamp;
 }
 
 void PerfEvents::ReadRecordsFromMmaps()
@@ -1281,14 +1281,14 @@ bool PerfEvents::GetRecordFromMmap(MmapFd &mmap)
 
     GetRecordFieldFromMmap(mmap, &(mmap.header), mmap.mmapPage->data_tail, sizeof(mmap.header));
     if (mmap.header.type != PERF_RECORD_SAMPLE) {
-        mmap.timestamp = 0;
+        mmap.timeStamp = 0;
         return true;
     }
     // in PERF_RECORD_SAMPLE : header + u64 sample_id + u64 ip + u32 pid + u32 tid + u64 time
     constexpr size_t timePos = sizeof(perf_event_header) + sizeof(uint64_t) + sizeof(uint64_t) +
                                sizeof(uint32_t) + sizeof(uint32_t);
-    GetRecordFieldFromMmap(mmap, &(mmap.timestamp), mmap.mmapPage->data_tail + timePos,
-                           sizeof(mmap.timestamp));
+    GetRecordFieldFromMmap(mmap, &(mmap.timeStamp), mmap.mmapPage->data_tail + timePos,
+                           sizeof(mmap.timeStamp));
     return true;
 }
 

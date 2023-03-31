@@ -52,6 +52,7 @@
 #include "native_hook_frame_table.h"
 #include "native_hook_statistic_table.h"
 #include "native_hook_table.h"
+#include "native_hook_statistic_table.h"
 #include "network_table.h"
 #include "paged_memory_sample_table.h"
 #if WITH_PERF

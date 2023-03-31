@@ -29,7 +29,7 @@ HiSysEventMeasureFilter::HiSysEventMeasureFilter(TraceDataCache* dataCache, cons
 HiSysEventMeasureFilter::~HiSysEventMeasureFilter() {}
 
 DataIndex HiSysEventMeasureFilter::AppendNewValue(uint64_t serial,
-                                                  uint64_t timestamp,
+                                                  uint64_t timeStamp,
                                                   DataIndex appNameId,
                                                   DataIndex key,
                                                   int32_t type,
@@ -37,7 +37,7 @@ DataIndex HiSysEventMeasureFilter::AppendNewValue(uint64_t serial,
                                                   DataIndex strValue)
 {
     uint64_t appKeyId = GetOrCreateFilterIdInternal(appNameId, key);
-    traceDataCache_->GetSyseventMeasureData()->AppendData(serial, timestamp, appNameId, appKeyId, type, numericValue, strValue);
+    traceDataCache_->GetSyseventMeasureData()->AppendData(serial, timeStamp, appNameId, appKeyId, type, numericValue, strValue);
     return appNameId;
 }
 void HiSysEventMeasureFilter::AppendNewValue(std::string msg, std::string processName)

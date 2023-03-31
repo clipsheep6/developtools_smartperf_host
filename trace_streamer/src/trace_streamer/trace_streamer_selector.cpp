@@ -29,7 +29,7 @@
 #include "irq_filter.h"
 #include "measure_filter.h"
 #include "parser/bytrace_parser/bytrace_parser.h"
-#if IS_PBREADER
+#ifndef IS_PBDECODER
 #include "parser/htrace_pbreader_parser/htrace_parser.h"
 #else
 #include "parser/htrace_parser/htrace_parser.h"

@@ -328,10 +328,10 @@ void PrintEventParser::HandleFrameQueueEndEvent(uint64_t ts, uint64_t pid, uint6
     auto iTid = streamFilters_->processFilter_->GetInternalTid(tid);
     auto pos = std::find(frameCallIds_.begin(), frameCallIds_.end(), callStackRow);
     if (pos != frameCallIds_.end()) {
-        TS_LOGD("ts:%llu, frameSliceEnd:%llu", ts, tid);
+        TS_LOGD("ts:%llu, frameSliceEnd:%u", ts, tid);
         if (!streamFilters_->frameFilter_->EndFrameQueue(ts, iTid)) {
             streamFilters_->statFilter_->IncreaseStat(TRACE_FRAMEQUEUE, STAT_EVENT_NOTMATCH);
-            TS_LOGW("ts:%llu, frameSliceEnd:%llu failed", ts, tid);
+            TS_LOGW("ts:%llu, frameSliceEnd:%lu failed", ts, tid);
         }
         frameCallIds_.erase(pos);
     }

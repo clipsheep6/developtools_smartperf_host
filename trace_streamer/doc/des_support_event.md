@@ -3,7 +3,7 @@ trace事件是指系统在运行过程中输出的日志。trace事件有内核�
 所谓事件，是指特定的标签，指定了其事件类型。  
 ## ftrace事件
 ftrace属于linux标准内核事件。  
-ftrace相关事件属于系统内核事件，具体请参考linux内核相关技术网站( www.kernel.org )。
+ftrace相关事件属于系统内核事件，具体请参考linux内核相关技术网站(www.kernel.org)。
 ```
 binder_transaction
 binder_transaction_received

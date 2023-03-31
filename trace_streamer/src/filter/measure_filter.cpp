@@ -29,16 +29,16 @@ MeasureFilter::MeasureFilter(TraceDataCache* dataCache, const TraceStreamerFilte
 
 MeasureFilter::~MeasureFilter() {}
 
-bool MeasureFilter::AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timestamp, int64_t value)
+bool MeasureFilter::AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timeStamp, int64_t value)
 {
     auto filterId = GetOrCreateFilterId(internalTid, nameIndex);
     if (filterType_ == E_PROCESS_MEASURE_FILTER) {
-        traceDataCache_->GetProcessMeasureData()->AppendMeasureData(0, timestamp, value, filterId);
+        traceDataCache_->GetProcessMeasureData()->AppendMeasureData(0, timeStamp, value, filterId);
     } else {
-        auto row = traceDataCache_->GetMeasureData()->AppendMeasureData(0, timestamp, value, filterId);
+        auto row = traceDataCache_->GetMeasureData()->AppendMeasureData(0, timeStamp, value, filterId);
          //if the filterId ever exists
         if (filterIdToRow_.count(filterId)) {
-            traceDataCache_->GetMeasureData()->SetDur(filterIdToRow_.at(filterId), timestamp);
+            traceDataCache_->GetMeasureData()->SetDur(filterIdToRow_.at(filterId), timeStamp);
             filterIdToRow_.at(filterId) = row;
         } else {
             filterIdToRow_.insert(std::make_pair(filterId, row));

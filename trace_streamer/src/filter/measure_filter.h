@@ -47,7 +47,7 @@ public:
     MeasureFilter(const MeasureFilter&) = delete;
     MeasureFilter& operator=(const MeasureFilter&) = delete;
     ~MeasureFilter() override;
-    bool AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timestamp, int64_t value);
+    bool AppendNewMeasureData(uint64_t internalTid, DataIndex nameIndex, uint64_t timeStamp, int64_t value);
     uint32_t GetOrCreateFilterId(uint64_t internalTid, DataIndex nameIndex);
     void Clear();
 private:

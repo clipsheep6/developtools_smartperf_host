@@ -33,7 +33,7 @@ patch -p0 third_party/protobuf/BUILD.gn prebuilts/patch_protobuf/protobufbuild.g
 ```
 patch -p0 third_party/googletest/BUILD.gn prebuilts/patch_googletest/googletestbuild.gn.patch
 ```
-4. 处理一系列public权限问题，处理原则是，但凡是有问题头文件的上下添加如下内容：  
+4. 处理一系列public权限问题，处理原则是，但凡是有问题头文件的上下添加如下内容：
 ```
 #undef private
 #define private private
@@ -87,13 +87,12 @@ gtest-port.h文件
 ```
 patch -p0 third_party/libunwind/BUILD.gn prebuilts/patch_libunwind/libunwindbuild.gn.patch
 ```
-third_party/libunwind/src/x86_64/unwind_i.h
-第60行，注释掉。
+third_party/libunwind/src/x86_64/unwind_i.h第60行，注释。
 ```
 // #define setcontext                      UNW_ARCH_OBJ (setcontext)
 ```
 #### 其他文件
-为了独立编译trace_streamer，你还需要在third_party目录下有2个文件：
+为了独立编译trace_streamer，你还需要在third_party目录下有2个文件。
 ```
 third_party/perf_include/
 ├── libbpf
@@ -102,9 +101,12 @@ third_party/perf_include/
 └── musl
     └── elf.h
 ```
-perf_event.h文件位于如下目录，获取方式：wget https://gitee.com/openharmony/third_party_libbpf/raw/master/include/uapi/linux/perf_event.h 。需打补丁：patch -p0 perf_event.h prebuilts/patch_perf_event/perf_event.h.patch 。
-
-elf.h文件来自于musl/include/elf.h，使用原始文件，不用打补丁。获取方式：wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h 。
+perf_event.h文件获取方式：
+wget https://gitee.com/openharmony/third_party_libbpf/raw/master/include/uapi/linux/perf_event.h
+需打补丁：
+patch -p0 perf_event.h prebuilts/patch_perf_event/perf_event.h.patch
+elf.h文件获取方式：
+wget https://gitee.com/openharmony/third_party_musl/raw/master/include/elf.h
 
 ### 开始编译
 #### 预置条件
@@ -147,7 +149,7 @@ ___来生成out/linux/protoc可执行文件。___
 #### 编译WebAssembly版本
 如果需要编译WebAssembly版本，您需要在prebuilts/目录下安装emsdk。
 步骤如下：  
-1. 在任何目录下载emsdk。
+1. 在任何目录下载emsdk。  
 ```
 git clone https://github.com/juj/emsdk.git --depth=1
 cd emsdk

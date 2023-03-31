@@ -63,7 +63,7 @@ ohos_source_set("lib") {
     "${OHOS_PROTO_GEN}",
     "//third_party/protobuf/src",
   ]
-  if (is_pbreader) {
+  if (!is_pbdecoder) {
     include_dirs += [
       "parser/htrace_pbreader_parser",
       "parser/htrace_pbreader_parser/htrace_event_parser",
@@ -138,7 +138,7 @@ ohos_source_set("trace_streamer_source") {
   if (is_test) {
     include_dirs += [ "../prebuilts/emsdk/emsdk/emscripten/system/include" ]
   }
-  if (is_pbreader) {
+  if (!is_pbdecoder) {
     include_dirs += [
       "parser/htrace_pbreader_parser",
       "parser/htrace_pbreader_parser/htrace_event_parser",
