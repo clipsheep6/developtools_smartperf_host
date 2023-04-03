@@ -137,7 +137,6 @@ std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::Parse(uint32_t pid, uint6
     auto end = startValueToSymAddrMap->upper_bound(symVaddr);
     length = std::distance(startValueToSymAddrMap->begin(), end);
     uint32_t symbolStart = INVALID_UINT32;
-    uint32_t fuctionVaddr = 0;
     if (length > 0) {
         end--;
         if (symEntLen == ELF32_SYM) {

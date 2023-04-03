@@ -169,11 +169,9 @@ void HtraceEventParser::ParseDataItem(HtraceDataSegment& tracePacket, BuiltinClo
         for (auto i = events; i; i++) {
             ProtoReader::BytesView event(i->ToBytes());
             uint64_t timeStamp = 0;
-            bool isFoundTs = false;
             if (event.size_ > MIN_DATA_AREA && event.data_[0] == tsTag) {
                 const uint8_t* nextData =
                     ProtoReader::VarIntDecode(event.data_ + DATA_AREA_START, event.data_ + DATA_AREA_END, &timeStamp);
-                isFoundTs = nextData != event.data_ + 1;
             }
             eventTimeStamp_ = timeStamp;
             ftraceOriginStartTime_ = std::min(ftraceOriginStartTime_, eventTimeStamp_);

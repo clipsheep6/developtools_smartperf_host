@@ -14,14 +14,12 @@
  */
 #ifndef HTRACE_PROCESS_PARSER_H
 #define HTRACE_PROCESS_PARSER_H
-#include <cstdint>
-#include <map>
-#include <string>
 #include "common_types.h"
 #include "htrace_plugin_time_parser.h"
 #include "trace_streamer_filters.h"
-
-
+#include <cstdint>
+#include <map>
+#include <string>
 
 namespace SysTuning {
 namespace TraceStreamer {
@@ -70,7 +68,7 @@ public:
         uint64_t cpu_time_ms_;
     };
     struct ProcessInfo {
-        ProcessInfo(int32_t pid, std::string name, int32_t ppid, int32_t uid)
+        ProcessInfo(int32_t pid, const std::string& name, int32_t ppid, int32_t uid)
             : pid_(pid), name_(name), ppid_(ppid), uid_(uid)
         {
         }
