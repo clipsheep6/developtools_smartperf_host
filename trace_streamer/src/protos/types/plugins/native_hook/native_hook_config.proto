@@ -36,7 +36,8 @@ message NativeHookConfig {
     bool blocked = 16;
     bool record_accurately = 17;
     bool startup_mode = 18;
-    bool offline_symbolization = 19;
-    bool callframe_compressed = 20;
-    uint32 statistics_interval = 21;
+    bool memtrace_enable = 19;
+    bool offline_symbolization = 20;
+    bool callframe_compressed = 21;
+    uint32 statistics_interval = 22;
 }

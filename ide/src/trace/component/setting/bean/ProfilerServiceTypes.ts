@@ -860,7 +860,7 @@ export interface NativeHookConfig {
     blocked: boolean
     recordAccurately:boolean
     offlineSymbolization:boolean
-    callframeCompressed:boolean
+    callframeCompress:boolean
     statisticsInterval:number
 }
 

@@ -14,7 +14,7 @@
  */
 
 import {
-    BaseStruct, drawFlagLine,
+    BaseStruct, dataFilterHandler, drawFlagLine,
     drawLines,
     drawLoading,
     drawSelection, drawWakeUp, isFrameContainPoint,
@@ -28,10 +28,18 @@ import {convertJSON} from "../logic-worker/ProcedureLogicWorkerCommon.js";
 
 export class CpuFreqLimitRender extends Render{
     renderMainThread(req: { useCache: boolean; context: CanvasRenderingContext2D; cpu: number; type: string;maxFreq:number;maxFreqName:string }, row: TraceRow<CpuFreqLimitsStruct>) {
-        let list = row.dataList = convertJSON(row.dataList);
+        let list = row.dataList
         let filter = row.dataListCache;
-        let chartColor = ColorUtils.colorForTid(req.cpu);
-        freqLimits(list, filter, TraceRow.range!.startNS, TraceRow.range!.endNS, TraceRow.range!.totalNS, row.frame, req.useCache || !TraceRow.range!.refresh);
+        dataFilterHandler(list,filter,{
+            startKey: "startNs",
+            durKey: "dur",
+            startNS: TraceRow.range?.startNS ?? 0,
+            endNS: TraceRow.range?.endNS ?? 0,
+            totalNS: TraceRow.range?.totalNS ?? 0,
+            frame: row.frame,
+            paddingTop: 5,
+            useCache: req.useCache || !(TraceRow.range?.refresh ?? false)
+        })
         req.context.beginPath();
         let maxFreq = req.maxFreq;
         let maxFreqName = req.maxFreqName;

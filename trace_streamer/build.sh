@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 # Copyright (C) 2021 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@ set -e
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -e
 PARAMS=$*
 echo $PARAMS
 echo "begin to check input"
@@ -43,7 +43,6 @@ fi
 if [ ! -f "out/$target_os/protoreader_plugin" ] && [ "$1" != "spb" ] && [ -f "out/$target_os/protoc" ];then
     ./build.sh spb
 fi
-
 if [ "$1" == "windows" ];then
     echo "gn only support linux and wasm build currently"
     if [ ! -d "out/windows" ];then

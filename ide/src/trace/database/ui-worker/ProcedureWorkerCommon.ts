@@ -152,11 +152,11 @@ export function dataFilterHandler(fullData: Array<any>, filterData: Array<any>, 
                 slice[i].frame.height = height;
             }
             if (i === slice.length - 1) {
-                if (!(slice[i][condition.durKey])) {
+                if(slice[i][condition.durKey] === undefined || slice[i][condition.durKey] === null){
                     slice[i][condition.durKey] = (condition.endNS || 0) - (slice[i][condition.startKey] || 0)
                 }
             } else {
-                if (!(slice[i][condition.durKey])) {
+                if(slice[i][condition.durKey] === undefined || slice[i][condition.durKey] === null){
                     slice[i][condition.durKey] = (slice[i + 1][condition.startKey] || 0) - (slice[i][condition.startKey] || 0)
                 }
             }

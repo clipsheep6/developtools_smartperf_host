@@ -1351,7 +1351,7 @@ export class SpRecordTrace extends BaseElement {
             stringCompressed: true,
             fpUnwind: this.spAllocations!.fp_unwind,
             blocked: true,
-            callframeCompressed: true,
+            callframeCompress: true,
             recordAccurately: this.spAllocations!.record_accurately,
             offlineSymbolization: this.spAllocations!.offline_symbolization,
             statisticsInterval: 0

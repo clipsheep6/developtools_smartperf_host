@@ -799,16 +799,21 @@ export class SpSystemTrace extends BaseElement {
         }
     }
 
+    private keyPressWASD = false
     documentOnKeyPress = (ev: KeyboardEvent) => {
         if (!this.loadTraceCompleted) return;
+        let keyPress = ev.key.toLocaleLowerCase();
+        this.keyPressWASD = keyPress === 'w' || keyPress === 'a' || keyPress === 's' || keyPress === 'd'
         TraceRow.isUserInteraction = true;
-        if (ev.key.toLocaleLowerCase() == "m") {
+        if (keyPress == "m") {
             if (CpuStruct.selectCpuStruct) {
                 this.timerShaftEL?.setSlicesMark((CpuStruct.selectCpuStruct.startTime || 0), (CpuStruct.selectCpuStruct.startTime || 0) + (CpuStruct.selectCpuStruct.dur || 0));
             } else if (ThreadStruct.selectThreadStruct) {
                 this.timerShaftEL?.setSlicesMark((ThreadStruct.selectThreadStruct.startTime || 0), (ThreadStruct.selectThreadStruct.startTime || 0) + (ThreadStruct.selectThreadStruct.dur || 0));
             } else if (FuncStruct.selectFuncStruct) {
                 this.timerShaftEL?.setSlicesMark((FuncStruct.selectFuncStruct.startTs || 0), (FuncStruct.selectFuncStruct.startTs || 0) + (FuncStruct.selectFuncStruct.dur || 0));
+            }else if (IrqStruct.selectIrqStruct) {
+                this.timerShaftEL?.setSlicesMark((IrqStruct.selectIrqStruct.startNS || 0), (IrqStruct.selectIrqStruct.startNS || 0) + (IrqStruct.selectIrqStruct.dur || 0));
             } else if (TraceRow.rangeSelectObject) {
                 this.timerShaftEL?.setSlicesMark((TraceRow.rangeSelectObject.startNS || 0), (TraceRow.rangeSelectObject.endNS || 0));
             } else if (JankStruct.selectJankStruct) {
@@ -826,6 +831,7 @@ export class SpSystemTrace extends BaseElement {
 
     documentOnKeyUp = (ev: KeyboardEvent) => {
         if (!this.loadTraceCompleted) return;
+        this.keyPressWASD = false
         TraceRow.isUserInteraction = false;
         this.observerScrollHeightEnable = false;
         this.keyboardEnable && this.timerShaftEL!.documentOnKeyUp(ev);
@@ -861,6 +867,10 @@ export class SpSystemTrace extends BaseElement {
     documentOnMouseMove = (ev: MouseEvent) => {
         this.inFavoriteArea = this.favoriteRowsEL?.containPoint(ev);
         if ((window as any).isSheetMove) return;
+        if(this.keyPressWASD) {
+            ev.stopPropagation()
+            return;
+        };
         if (!this.loadTraceCompleted || (window as any).flagInputFocus) return;
         if (this.isMouseInSheet(ev)) {
             this.hoverStructNull();
@@ -870,7 +880,13 @@ export class SpSystemTrace extends BaseElement {
         if (this.timerShaftEL?.isScaling()) {
             return;
         }
-        this.timerShaftEL?.documentOnMouseMove(ev)
+        if(this.timerShaftEL!.containPoint(ev)){
+            this.timerShaftEL?.documentOnMouseMove(ev)
+            return;
+        }else{
+            this.timerShaftEL?.documentOnMouseOut(ev)
+            this.hoverFlag = null;
+        }
         this.rangeSelect.mouseMove(rows, ev);
         if (this.rangeSelect.isMouseDown) {
             this.refreshCanvas(true);
@@ -879,7 +895,7 @@ export class SpSystemTrace extends BaseElement {
                 this.tipEL!.style.display = "none";
                 this.hoverStructNull();
             }
-            rows.filter(it => it.focusContain(ev)).filter(it => {
+            rows.filter(it => it.focusContain(ev) && it.collect === this.inFavoriteArea).filter(it => {
                 if(it.collect){
                     return true;
                 }else{

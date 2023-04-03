@@ -593,16 +593,6 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
         this.realTimeDif = 0;
     }
 
-    listToTree(target: NativeHookCallInfo, src: NativeHookCallInfo) {
-        if (target.depth == src.depth + 1) {
-            src.children.push(target)
-        } else {
-            if (src.children.length > 0) {
-                this.listToTree(target, <NativeHookCallInfo>src.children[0]);
-            }
-        }
-    }
-
     queryCallchainsSamples(leftNs: number, rightNs: number, types: Array<string>){
         this.queryData("native-memory-queryCallchainsSamples", `
             select

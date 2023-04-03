@@ -146,7 +146,10 @@ export class RangeSelect {
                 this.movingMark = x2 < x1 ? "markA" : "markB"
             } else {
                 this.isHover = false;
+                document.body.style.cursor = "default"
             }
+        }else{
+            document.body.style.cursor = "default"
         }
         if ((this.isHover && this.isMouseDown)) {
             let rangeSelect: RangeSelectStruct | undefined;

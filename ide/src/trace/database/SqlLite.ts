@@ -914,7 +914,7 @@ export const queryCpuState = (cpuFilterId:number) :Promise<Array<any>> =>
         select (A.ts - B.start_ts) as startTs,ifnull(dur,B.end_ts - A.ts) dur,
             value
         from measure A,trace_range B
-        where filter_id = $filterId;`,{$filterId:cpuFilterId},"exec-buf")
+        where filter_id = $filterId;`,{$filterId:cpuFilterId})
 
 export const queryCpuMaxFreq = (): Promise<Array<any>> =>
     query("queryCpuMaxFreq", `
@@ -2769,7 +2769,7 @@ export const getCpuLimitFreqMax = (filterIds:string): Promise<Array<any>> =>{
 
 export const getCpuLimitFreq = (maxId: number, minId: number,cpu:number): Promise<Array<CpuFreqLimitsStruct>> =>
     query("getCpuLimitFreq", `
-    select ts - T.start_ts as startNs,max(value) as max,min(value) as min,$cpu as cpu from measure,trace_range T where filter_id in ($maxId,$minId) group by ts
+    select ts - T.start_ts as startNs,dur,max(value) as max,min(value) as min,$cpu as cpu from measure,trace_range T where filter_id in ($maxId,$minId) group by ts
 `, {$maxId : maxId,$minId : minId,$cpu : cpu})
 
 export const queryHisystemEventExits = (): Promise<Array<any>> =>
@@ -2913,8 +2913,13 @@ export const queryIrqData = (callid:number,cat:string): Promise<Array<IrqStruct>
 trace_range t where i.callid = ${callid} and i.cat = 'softirq'
     `;
     let sqlIrq = `
-    select i.ts - t.start_ts as startNS,i.dur,case when i.cat = 'ipi' then 'IPI' || i.name else i.name end as name,i.depth,argsetid as argSetId,i.id from irq i,
-trace_range t where i.callid = ${callid} and ((i.cat = 'irq' and i.flag ='1') or i.cat = 'ipi') 
+    select i.ts - t.start_ts as startNS,i.dur,
+        case when i.cat = 'ipi' then 'IPI' || i.name else i.name end as name,
+        i.depth,
+        argsetid as argSetId,
+        i.id 
+        from irq i,trace_range t 
+        where i.callid = ${callid} and ((i.cat = 'irq' and i.flag ='1') or i.cat = 'ipi') 
     `
     return query("queryIrqData",cat === "irq" ? sqlIrq:sqlSoftIrq,{})
 }

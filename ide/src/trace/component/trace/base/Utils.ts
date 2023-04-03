@@ -385,6 +385,6 @@ export class Utils {
     }
 
     public static getTimeIsCross(startTime: number, endTime: number,startTime1:number,endTime1:number){
-        return Math.max(startTime,startTime1)<Math.min(endTime,endTime1)
+        return Math.max(startTime,startTime1)<=Math.min(endTime,endTime1)
     }
 }

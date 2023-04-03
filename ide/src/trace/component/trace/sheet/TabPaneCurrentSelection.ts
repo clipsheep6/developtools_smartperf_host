@@ -46,6 +46,9 @@ import {Utils} from "../base/Utils.js";
 const INPUT_WORD = "This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running."
 
 export function getTimeString(ns: number): string {
+    if(ns === 0) {
+        return '0'
+    }
     let currentNs = ns
     let hour1 = 3600_000_000_000
     let minute1 = 60_000_000_000

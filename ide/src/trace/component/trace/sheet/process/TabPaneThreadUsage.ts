@@ -59,7 +59,7 @@ export class TabPaneThreadUsage extends BaseElement {
                     if(map.has(e.tid)){
                         map.get(e.tid)[`cpu${e.cpu}`] = e.wallDuration || 0
                         map.get(e.tid)[`cpu${e.cpu}TimeStr`] = getProbablyTime(e.wallDuration || 0)
-                        map.get(e.tid)[`cpu${e.cpu}Ratio`] = ((e.wallDuration || 0) / (val.rightNs - val.leftNs)).toFixed(2)
+                        map.get(e.tid)[`cpu${e.cpu}Ratio`] = (100.0 * (e.wallDuration || 0) / (val.rightNs - val.leftNs)).toFixed(2)
                         map.get(e.tid)[`wallDuration`] = map.get(e.tid)[`wallDuration`] + (e.wallDuration || 0)
                         map.get(e.tid)[`wallDurationTimeStr`] = getProbablyTime(map.get(e.tid)[`wallDuration`])
                     }else{

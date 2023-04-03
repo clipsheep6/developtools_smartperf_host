@@ -274,6 +274,7 @@ export class TimerShaftElement extends BaseElement {
 
     documentOnMouseOut = (ev: MouseEvent) => {
         this.rangeRuler?.mouseOut(ev);
+        this.sportRuler?.mouseOut(ev);
     }
 
     documentOnKeyPress = (ev: KeyboardEvent) => {

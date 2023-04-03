@@ -14,7 +14,7 @@
  */
 
 import {
-    BaseStruct,
+    BaseStruct, dataFilterHandler,
     drawFlagLine,
     drawLines,
     drawLoading, drawSelection,
@@ -28,13 +28,19 @@ import {convertJSON} from "../logic-worker/ProcedureLogicWorkerCommon.js";
 export class CpuStateRender extends PerfRender {
 
     renderMainThread(req: { useCache: boolean; context: CanvasRenderingContext2D; type: string; cpu: number }, row: TraceRow<CpuStateStruct>) {
-        let list = row.dataList = convertJSON(row.dataList);
+        let list = row.dataList
         let filter = row.dataListCache;
         let chartColor = ColorUtils.colorForTid(req.cpu);
-        if(list && row.dataList2.length == 0){
-            row.dataList2 = this.getList(list,TraceRow.range!.endNS,req.cpu)
-        }
-        this.cpuState(list, row.dataList2, req.type!, filter, req.cpu, TraceRow.range!.startNS, TraceRow.range!.endNS, TraceRow.range!.totalNS, row.frame, req.useCache || !TraceRow.range!.refresh);
+        dataFilterHandler(list,filter,{
+            startKey: "startTs",
+            durKey: "dur",
+            startNS: TraceRow.range?.startNS ?? 0,
+            endNS: TraceRow.range?.endNS ?? 0,
+            totalNS: TraceRow.range?.totalNS ?? 0,
+            frame: row.frame,
+            paddingTop: 5,
+            useCache: req.useCache || !(TraceRow.range?.refresh ?? false)
+        })
         req.context.beginPath();
         req.context.font = "11px sans-serif";
         req.context.fillStyle = chartColor;
@@ -43,7 +49,9 @@ export class CpuStateRender extends PerfRender {
         let path = new Path2D();
         let find = false;
         let offset = 3;
+        let heights = [4, 12, 21, 30]
         for (let re of filter) {
+            re.height = heights[(re as any).value]
             CpuStateStruct.draw(req.context, path, re);
             if (row.isHover) {
                 if (re.frame && row.hoverX >= re.frame.x - offset && row.hoverX <= re.frame.x + re.frame.width + offset) {
@@ -163,16 +171,6 @@ export class CpuStateRender extends PerfRender {
             }
             res.push(...slice.filter(it => it.v));
         }
-    }
-
-    getList(arr: Array<any>, endNS: number, cpu: number): Array<any> {
-        let heights = [4, 12, 21, 30]
-        for (let i = 0, len = arr.length; i < len; i++) {
-            let it = arr[i];
-            it.height = heights[it.value]
-            it.cpu = cpu;
-        }
-        return arr;
     }
 
 }

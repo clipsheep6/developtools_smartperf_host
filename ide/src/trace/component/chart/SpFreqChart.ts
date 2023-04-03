@@ -83,6 +83,7 @@ export class SpFreqChart {
             }
             this.trace.rowsEL?.appendChild(traceRow)
         }
+        let heights = [4, 12, 21, 30]
         for (let it of cpuStateFilterIds) {
             let cpuStateRow = TraceRow.skeleton<CpuStateStruct>();
             cpuStateRow.rowId = `${it.filterId}`
@@ -93,7 +94,13 @@ export class SpFreqChart {
             cpuStateRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
             cpuStateRow.selectChangeHandler = this.trace.selectChangeHandler;
             cpuStateRow.isHover = true;
-            cpuStateRow.supplier = () => queryCpuState(it.filterId);
+            cpuStateRow.supplier = () => queryCpuState(it.filterId).then( res =>{
+                res.forEach((r)=>{
+                    r.height = heights[it.value]
+                    r.cpu = it.cpu;
+                })
+                return res
+            });
             cpuStateRow.focusHandler = ev => {
                 this.trace.displayTip(cpuStateRow, CpuStateStruct.hoverStateStruct, `<span>State: ${CpuStateStruct.hoverStateStruct?.value}</span>`);
             }

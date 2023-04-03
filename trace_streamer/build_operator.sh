@@ -59,7 +59,7 @@ fi
 if [ "$is_debug" != "false" ];then
        	ext="_debug"
 fi
-if [ ! -d "third_party/protogen" ];then
+if [ ! -d "third_party/protogen" ] && [ "$target" != "spb" ] && [ "$target" != "protoc" ];then
     ./src/protos/protogen.sh
 fi
 

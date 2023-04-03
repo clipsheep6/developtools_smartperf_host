@@ -371,6 +371,11 @@ export class SportRuler extends Graph {
         )
     }
 
+    mouseOut(ev:MouseEvent){
+        this.hoverFlag.hidden = true
+        this.draw()
+    }
+
 
     edgeDetection(ev: MouseEvent): boolean {
         let x = ev.offsetX - (this.canvas?.offsetLeft || 0)

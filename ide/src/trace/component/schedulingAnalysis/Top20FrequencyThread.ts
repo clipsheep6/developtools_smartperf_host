@@ -173,6 +173,7 @@ export class Top20FrequencyThread extends BaseElement {
                 ],
             }
             this.progress!.loading = false
+            this.shadowRoot!.querySelector("#tb_container")!.scrollTop = 0
         })
     }
 
@@ -259,9 +260,9 @@ export class Top20FrequencyThread extends BaseElement {
                 <div>Statistics By Duration</div>
                 <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
             </div>
-            <div style="flex: 1;display: flex;flex-direction: column;align-items: center;padding-top: 15px;overflow: auto;height: 60vh">
+            <div style="flex: 1;display: flex;flex-direction: column;align-items: center;padding-top: 15px;height: 60vh">
                 <div id="current_thread" style="font-weight: bold"></div>
-                <div class="tb_thread_count">
+                <div id="tb_container" class="tb_thread_count">
                     <lit-table id="tb-process-thread-count" style="height: auto">
                         <lit-table-column width="1fr" title="NO" data-index="no" key="no" align="flex-start" order></lit-table-column>
                         <lit-table-column width="1fr" title="cpu" data-index="cpu" key="cpu" align="flex-start" order></lit-table-column>

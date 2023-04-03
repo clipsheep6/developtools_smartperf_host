@@ -61,7 +61,7 @@ export class TabPaneCpuByThread extends BaseElement {
                         thread.occurrences += e.occurrences;
                         thread[`cpu${e.cpu}`] = e.wallDuration || 0
                         thread[`cpu${e.cpu}TimeStr`] = getProbablyTime(e.wallDuration || 0)
-                        thread[`cpu${e.cpu}Ratio`] = ((e.wallDuration || 0) / (val.rightNs - val.leftNs)).toFixed(2)
+                        thread[`cpu${e.cpu}Ratio`] = (100.0 * (e.wallDuration || 0) / (val.rightNs - val.leftNs)).toFixed(2)
                     }else{
                         let obj:any = {
                             tid:e.tid,
