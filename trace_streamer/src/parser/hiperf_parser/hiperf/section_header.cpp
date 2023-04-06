@@ -35,10 +35,9 @@ enum class NUMBER : int {
     NUMBER_TWELVE = 12,
 };
 
-std::unique_ptr<SectionHeader> SectionHeader::MakeUnique(char * const shdrBuf, const size_t bufSize,
-                                                         const size_t index)
+std::unique_ptr<SectionHeader> SectionHeader::MakeUnique(char* const shdrBuf, const size_t bufSize, const size_t index)
 {
-    std::unique_ptr<SectionHeader> shdr {new (std::nothrow) SectionHeader()};
+    std::unique_ptr<SectionHeader> shdr{new (std::nothrow) SectionHeader()};
     if (shdr == nullptr) {
         return nullptr;
     }
@@ -50,10 +49,10 @@ std::unique_ptr<SectionHeader> SectionHeader::MakeUnique(char * const shdrBuf, c
     return shdr;
 }
 
-bool SectionHeader::ParseSecHeader32(char * const shdrBuf)
+bool SectionHeader::ParseSecHeader32(char* const shdrBuf)
 {
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(shdrBuf);
-    int index {0};
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(shdrBuf);
+    int index{0};
     nameIndex_ = u4Buf[index];
     index = static_cast<int>(NUMBER::NUMBER_ONE);
     secType_ = u4Buf[index];
@@ -76,11 +75,11 @@ bool SectionHeader::ParseSecHeader32(char * const shdrBuf)
     return true;
 }
 
-bool SectionHeader::ParseSecHeader64(char * const shdrBuf)
+bool SectionHeader::ParseSecHeader64(char* const shdrBuf)
 {
-    uint64_t *u8Buf = reinterpret_cast<uint64_t *>(shdrBuf);
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(shdrBuf);
-    size_t index {0};
+    uint64_t* u8Buf = reinterpret_cast<uint64_t*>(shdrBuf);
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(shdrBuf);
+    size_t index{0};
     nameIndex_ = u4Buf[index];
     index = static_cast<size_t>(NUMBER::NUMBER_ONE);
     secType_ = u4Buf[index];

@@ -35,8 +35,8 @@ bool VirtualThread::IsSorted() const
     for (std::size_t index = 1; index < memMaps_.size(); ++index) {
         if (memMaps_[index - 1].end_ > memMaps_[index].begin_) {
             std::cout << "memMaps_ order error:\n"
-                      << "    " << memMaps_[index - 1].begin_ << "-" << memMaps_[index - 1].end_
-                      << "    " << memMaps_[index].begin_ << "-" << memMaps_[index].end_;
+                      << "    " << memMaps_[index - 1].begin_ << "-" << memMaps_[index - 1].end_ << "    "
+                      << memMaps_[index].begin_ << "-" << memMaps_[index].end_;
             return false;
         }
     }
@@ -44,14 +44,13 @@ bool VirtualThread::IsSorted() const
 }
 #endif
 
-const MemMapItem *VirtualThread::FindMapByAddr2(uint64_t addr) const
+const MemMapItem* VirtualThread::FindMapByAddr2(uint64_t addr) const
 {
     HLOGM("try found vaddr 0x%" PRIx64 " in maps %zu ", addr, memMaps_.size());
     if (memMaps_.size() == 0) {
         return nullptr;
     }
-    auto foundIt =
-        std::upper_bound(memMaps_.begin(), memMaps_.end(), addr, MemMapItem::ValueLessThan);
+    auto foundIt = std::upper_bound(memMaps_.begin(), memMaps_.end(), addr, MemMapItem::ValueLessThan);
     if (foundIt == memMaps_.begin()) {
         // have map 2 3 4 5
         // find 1 , will return 2 (index 0, begin elem)
@@ -67,7 +66,7 @@ const MemMapItem *VirtualThread::FindMapByAddr2(uint64_t addr) const
     return nullptr;
 }
 
-const MemMapItem *VirtualThread::FindMapByAddr(uint64_t addr) const
+const MemMapItem* VirtualThread::FindMapByAddr(uint64_t addr) const
 {
     HLOGM("try found vaddr 0x%" PRIx64 " in maps %zu ", addr, memMaps_.size());
     if (memMaps_.size() == 0) {
@@ -79,9 +78,9 @@ const MemMapItem *VirtualThread::FindMapByAddr(uint64_t addr) const
     if (memMaps_.back().end_ <= addr) {
         return nullptr;
     }
-    constexpr int two {2};
-    std::size_t left {0};
-    std::size_t right {memMaps_.size()};
+    constexpr int two{2};
+    std::size_t left{0};
+    std::size_t right{memMaps_.size()};
     std::size_t mid = (right - left) / two + left;
     while (left < right) {
         if (addr < memMaps_[mid].end_) {
@@ -101,16 +100,16 @@ const MemMapItem *VirtualThread::FindMapByAddr(uint64_t addr) const
     return nullptr;
 }
 
-const MemMapItem *VirtualThread::FindMapByFileInfo(const std::string name, uint64_t offset) const
+const MemMapItem* VirtualThread::FindMapByFileInfo(const std::string name, uint64_t offset) const
 {
-    for (auto &map : memMaps_) {
+    for (auto& map : memMaps_) {
         if (name != map.name_) {
             continue;
         }
         // check begin and length
         if (offset >= map.pageoffset_ && (offset - map.pageoffset_) < (map.end_ - map.begin_)) {
-            HLOGMMM("found fileoffset 0x%" PRIx64 " in map (0x%" PRIx64 " - 0x%" PRIx64
-                    " pageoffset 0x%" PRIx64 ")  from %s",
+            HLOGMMM("found fileoffset 0x%" PRIx64 " in map (0x%" PRIx64 " - 0x%" PRIx64 " pageoffset 0x%" PRIx64
+                    ")  from %s",
                     offset, map.begin_, map.end_, map.pageoffset_, map.name_.c_str());
             return &map;
         }
@@ -119,9 +118,9 @@ const MemMapItem *VirtualThread::FindMapByFileInfo(const std::string name, uint6
     return nullptr;
 }
 
-SymbolsFile *VirtualThread::FindSymbolsFileByMap(const MemMapItem &inMap) const
+SymbolsFile* VirtualThread::FindSymbolsFileByMap(const MemMapItem& inMap) const
 {
-    for (auto &symbolsFile : symbolsFiles_) {
+    for (auto& symbolsFile : symbolsFiles_) {
         if (symbolsFile->filePath_ == inMap.name_) {
             HLOGM("found symbol for map '%s'", inMap.name_.c_str());
             symbolsFile->LoadDebugInfo();
@@ -129,11 +128,10 @@ SymbolsFile *VirtualThread::FindSymbolsFileByMap(const MemMapItem &inMap) const
         }
     }
 #ifdef DEBUG_MISS_SYMBOL
-    if (find(missedSymbolFile_.begin(), missedSymbolFile_.end(), inMap.name_) ==
-        missedSymbolFile_.end()) {
+    if (find(missedSymbolFile_.begin(), missedSymbolFile_.end(), inMap.name_) == missedSymbolFile_.end()) {
         missedSymbolFile_.emplace_back(inMap.name_);
         HLOGW("NOT found symbol for map '%s'", inMap.name_.c_str());
-        for (auto &file : symbolsFiles_) {
+        for (auto& file : symbolsFiles_) {
             HLOGW(" we have '%s'", file->filePath_.c_str());
         }
     }
@@ -147,7 +145,7 @@ void VirtualThread::ReportVaddrMapMiss(uint64_t vaddr) const
         if (missedRuntimeVaddr_.find(vaddr) == missedRuntimeVaddr_.end()) {
             missedRuntimeVaddr_.insert(vaddr);
             HLOGV("vaddr %" PRIx64 " not found in any map", vaddr);
-            for (auto &map : memMaps_) {
+            for (auto& map : memMaps_) {
                 HLOGV("map %s ", map.ToString().c_str());
             }
         }
@@ -155,23 +153,21 @@ void VirtualThread::ReportVaddrMapMiss(uint64_t vaddr) const
 #endif
 }
 
-bool VirtualThread::ReadRoMemory(uint64_t vaddr, uint8_t *data, size_t size) const
+bool VirtualThread::ReadRoMemory(uint64_t vaddr, uint8_t* data, size_t size) const
 {
-    const MemMapItem *map = FindMapByAddr(vaddr);
+    const MemMapItem* map = FindMapByAddr(vaddr);
     if (map != nullptr) {
         // found symbols by file name
-        SymbolsFile *symbolsFile = FindSymbolsFileByMap(*map);
+        SymbolsFile* symbolsFile = FindSymbolsFileByMap(*map);
         if (symbolsFile != nullptr) {
-            HLOGM("read vaddr from addr is 0x%" PRIx64 " at '%s'", vaddr - map->begin_,
-                  map->name_.c_str());
+            HLOGM("read vaddr from addr is 0x%" PRIx64 " at '%s'", vaddr - map->begin_, map->name_.c_str());
             if (size == symbolsFile->ReadRoMemory(map->FileOffsetFromAddr(vaddr), data, size)) {
                 return true;
             } else {
                 return false;
             }
         } else {
-            HLOGW("found addr %" PRIx64 " in map but not loaded symbole %s", vaddr,
-                  map->name_.c_str());
+            HLOGW("found addr %" PRIx64 " in map but not loaded symbole %s", vaddr, map->name_.c_str());
         }
     } else {
 #ifdef HIPERF_DEBUG
@@ -181,7 +177,7 @@ bool VirtualThread::ReadRoMemory(uint64_t vaddr, uint8_t *data, size_t size) con
     return false;
 }
 
-bool VirtualThread::IsLegalFileName(const std::string &fileName)
+bool VirtualThread::IsLegalFileName(const std::string& fileName)
 {
     // some special
     if (fileName == "[vdso]") {
@@ -190,8 +186,7 @@ bool VirtualThread::IsLegalFileName(const std::string &fileName)
     if (fileName.empty() or fileName.find(':') != std::string::npos or fileName.front() == '[' or
         fileName.back() == ']' or std::strncmp(fileName.c_str(), "/dev/", sizeof("/dev/")) == 0 or
         std::strncmp(fileName.c_str(), "/memfd:", sizeof("/memfd:")) == 0 or
-        std::strncmp(fileName.c_str(), "//anon", sizeof("//anon")) == 0 or
-        StringEndsWith(fileName, ".ttf")) {
+        std::strncmp(fileName.c_str(), "//anon", sizeof("//anon")) == 0 or StringEndsWith(fileName, ".ttf")) {
         return false;
     }
     return true;
@@ -335,15 +330,14 @@ void VirtualThread::SortMemMaps()
     return;
 }
 
-void VirtualThread::CreateMapItem(const std::string filename, uint64_t begin, uint64_t len,
-                                  uint64_t offset)
+void VirtualThread::CreateMapItem(const std::string filename, uint64_t begin, uint64_t len, uint64_t offset)
 {
     if (!IsLegalFileName(filename)) {
         return; // skip some memmap
     }
-    MemMapItem &map = memMaps_.emplace_back(begin, begin + len, offset, filename);
-    HLOGD(" %u:%u create a new map(total %zu) at '%s' (0x%" PRIx64 "-0x%" PRIx64 ")@0x%" PRIx64 " ",
-          pid_, tid_, memMaps_.size(), map.name_.c_str(), map.begin_, map.end_, map.pageoffset_);
+    MemMapItem& map = memMaps_.emplace_back(begin, begin + len, offset, filename);
+    HLOGD(" %u:%u create a new map(total %zu) at '%s' (0x%" PRIx64 "-0x%" PRIx64 ")@0x%" PRIx64 " ", pid_, tid_,
+          memMaps_.size(), map.name_.c_str(), map.begin_, map.end_, map.pageoffset_);
     SortMemMaps();
 }
 } // namespace HiPerf

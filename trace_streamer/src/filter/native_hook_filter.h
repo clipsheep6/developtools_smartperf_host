@@ -77,7 +77,6 @@ public:
     void ParseConfigInfo(ProtoReader::BytesView& protoData);
     void AppendStackMaps(uint32_t stackid, std::vector<uint64_t>& frames);
     void AppendFrameMaps(uint32_t id, const ProtoReader::BytesView& bytesView);
-    void AppendMmapTagMaps(uint64_t addr, uint32_t size, uint64_t tagIndex);
     void AppendFilePathMaps(uint32_t id, uint64_t fileIndex);
     void AppendSymbolMap(uint32_t id, uint64_t symbolIndex);
     void AppendThreadNameMap(uint32_t id, uint64_t threadNameIndex);
@@ -129,7 +128,6 @@ private:
     std::shared_ptr<OfflineSymbolizationFilter> offlineSymbolization_;
     DoubleMap<uint32_t, uint64_t, uint64_t> addrToAllocEventRow_;
     DoubleMap<uint32_t, uint64_t, uint64_t> addrToMmapEventRow_;
-    DoubleMap<uint64_t, int64_t, uint64_t> addrToMmapTagIndex_;
     uint64_t lastMallocEventRaw_ = INVALID_UINT64;
     uint64_t lastMmapEventRaw_ = INVALID_UINT64;
     std::hash<std::string_view> hashFun_;

@@ -14,12 +14,12 @@
  */
 #ifndef HTRACE_PROCESS_PARSER_H
 #define HTRACE_PROCESS_PARSER_H
-#include "common_types.h"
-#include "htrace_plugin_time_parser.h"
-#include "trace_streamer_filters.h"
 #include <cstdint>
 #include <map>
 #include <string>
+#include "common_types.h"
+#include "htrace_plugin_time_parser.h"
+#include "trace_streamer_filters.h"
 
 namespace SysTuning {
 namespace TraceStreamer {

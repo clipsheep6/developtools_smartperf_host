@@ -212,4 +212,4 @@ private:
 };
 } // namespace ProtoReader
 } // namespace SysTuning
-#endif  // PROTO_READER_FIELD_H
+#endif // PROTO_READER_FIELD_H

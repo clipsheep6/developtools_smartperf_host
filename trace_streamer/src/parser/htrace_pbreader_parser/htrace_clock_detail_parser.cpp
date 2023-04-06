@@ -25,8 +25,9 @@ HtraceClockDetailParser::HtraceClockDetailParser(TraceDataCache* dataCache, cons
     : EventParserBase(dataCache, filters)
 {
     for (auto i = 0; i < MEM_MAX; i++) {
-        memNameDictMap_.insert(std::make_pair(static_cast<MemInfoType>(i),
-            traceDataCache_->GetDataIndex(config_.memNameMap_.at(static_cast<MemInfoType>(i)))));
+        memNameDictMap_.insert(
+            std::make_pair(static_cast<MemInfoType>(i),
+                           traceDataCache_->GetDataIndex(config_.memNameMap_.at(static_cast<MemInfoType>(i)))));
     }
 }
 
@@ -37,7 +38,7 @@ void HtraceClockDetailParser::Parse(const ProtoReader::BytesView& tracePacket) c
         TS_LOGW("already has clock snapshot!!!");
         return;
     }
-    ProtoReader::TracePluginResult_Reader reader((const uint8_t *)(tracePacket.data_), tracePacket.size_);
+    ProtoReader::TracePluginResult_Reader reader((const uint8_t*)(tracePacket.data_), tracePacket.size_);
     if (!reader.has_clocks_detail()) {
         TS_LOGE("!!! no clock snapshot");
         return;
@@ -49,10 +50,8 @@ void HtraceClockDetailParser::Parse(const ProtoReader::BytesView& tracePacket) c
         // auto clockInfo = tracePacket->mutable_clocks_detail(i);
         auto id = clockInfo.FindDataArea(ProtoReader::ClockDetailMsg_Reader::kIdDataAreaNumber).ToUint32();
         ProtoReader::ClockDetailMsg_TimeSpec_Reader time(clockInfo.time());
-        TS_LOGI("clockid:%d, ts:%llu", id,
-                static_cast<unsigned long long>(time.tv_nsec() + time.tv_sec() * SEC_TO_NS));
-        snapShot.push_back(SnapShot{static_cast<ClockId>(id),
-                                    time.tv_nsec() + time.tv_sec() * SEC_TO_NS});
+        TS_LOGI("clockid:%d, ts:%llu", id, static_cast<unsigned long long>(time.tv_nsec() + time.tv_sec() * SEC_TO_NS));
+        snapShot.push_back(SnapShot{static_cast<ClockId>(id), time.tv_nsec() + time.tv_sec() * SEC_TO_NS});
     }
     if (snapShot.size()) {
         streamFilters_->clockFilter_->AddClockSnapshot(snapShot);

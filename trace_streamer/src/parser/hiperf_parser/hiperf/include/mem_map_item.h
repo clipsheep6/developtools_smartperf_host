@@ -38,22 +38,18 @@ public:
     std::string_view nameHold_;
 
     MemMapItem() {}
-    MemMapItem(uint64_t begin, uint64_t end, uint64_t offset, const std::string &name)
-        : begin_(begin),
-          end_(end),
-          pageoffset_(offset),
-          name_(name),
-          nameHold_(MemoryHold::Get().HoldStringView(name))
+    MemMapItem(uint64_t begin, uint64_t end, uint64_t offset, const std::string& name)
+        : begin_(begin), end_(end), pageoffset_(offset), name_(name), nameHold_(MemoryHold::Get().HoldStringView(name))
     {
     }
 
     // use for find
-    inline bool operator==(const std::string &name) const
+    inline bool operator==(const std::string& name) const
     {
         return name_ == name;
     }
 
-    inline bool operator<(const MemMapItem &other) const
+    inline bool operator<(const MemMapItem& other) const
     {
         return end_ < other.end_;
     }
@@ -76,17 +72,17 @@ public:
         sstream << " " << name_;
         return sstream.str();
     }
-    static bool GreaterSort(const MemMapItem &a, const MemMapItem &b)
+    static bool GreaterSort(const MemMapItem& a, const MemMapItem& b)
     {
         return (a.begin_ > b.begin_);
     }
-    static bool LessSort(const MemMapItem &a, const MemMapItem &b)
+    static bool LessSort(const MemMapItem& a, const MemMapItem& b)
     {
         return (a.begin_ < b.begin_);
     }
     // The range [first, last) must be partitioned with respect to the expression !(value < element)
     // or !comp(value, element)
-    static bool ValueLessThan(uint64_t vaddr, const MemMapItem &a)
+    static bool ValueLessThan(uint64_t vaddr, const MemMapItem& a)
     {
         return vaddr <= a.begin_;
     }

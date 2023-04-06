@@ -151,11 +151,8 @@ static ConfigTable PERF_TRACEPOINT_CONFIGS = {
 };
 
 static const std::map<perf_type_id, std::string> PERF_TYPES = {
-    {PERF_TYPE_HARDWARE, "hardware"},
-    {PERF_TYPE_SOFTWARE, "software"},
-    {PERF_TYPE_TRACEPOINT, "tracepoint"},
-    {PERF_TYPE_HW_CACHE, "hardware cache"},
-    {PERF_TYPE_RAW, "raw"},
+    {PERF_TYPE_HARDWARE, "hardware"},       {PERF_TYPE_SOFTWARE, "software"}, {PERF_TYPE_TRACEPOINT, "tracepoint"},
+    {PERF_TYPE_HW_CACHE, "hardware cache"}, {PERF_TYPE_RAW, "raw"},
 };
 
 static std::map<perf_type_id, ConfigTable> TYPE_CONFIGS = {
@@ -238,7 +235,7 @@ public:
     PerfEvents();
     ~PerfEvents();
 
-    bool AddEvents(const std::vector<std::string> &eventStrings, bool group = false);
+    bool AddEvents(const std::vector<std::string>& eventStrings, bool group = false);
     bool PrepareTracking(void);
     bool StartTracking(bool immediately = true);
     bool StopTracking(void);
@@ -261,7 +258,7 @@ public:
     void SetVerboseReport(bool);
     bool AddOffCpuEvent();
 
-    inline void SetTrackedCommand(const std::vector<std::string> &trackedCommand)
+    inline void SetTrackedCommand(const std::vector<std::string>& trackedCommand)
     {
         if (!trackedCommand.empty()) {
             trackedCommand_ = TrackedCommand::CreateInstance(trackedCommand);
@@ -303,13 +300,12 @@ public:
         __u64 id = 0;
         double used_cpus = 0;
     };
-    using StatCallBack =
-        std::function<void(const std::map<std::string, std::unique_ptr<PerfEvents::CountEvent>> &)>;
+    using StatCallBack = std::function<void(const std::map<std::string, std::unique_ptr<PerfEvents::CountEvent>>&)>;
     using RecordCallBack = std::function<bool(std::unique_ptr<PerfEventRecord>)>;
 
     void SetStatCallBack(StatCallBack reportCallBack);
     void SetRecordCallBack(RecordCallBack recordCallBack);
-    void GetLostSamples(size_t &lostSamples, size_t &lostNonSamples)
+    void GetLostSamples(size_t& lostSamples, size_t& lostNonSamples)
     {
         lostSamples = lostSamples_;
         lostNonSamples = lostNonSamples_;
@@ -325,8 +321,8 @@ public:
             if (config != configs.end()) {
                 return config->second;
             } else {
-                HLOGW("config not found for %u:%lld in %zu:%zu", type_id, config_id,
-                      TYPE_CONFIGS.size(), configs.size());
+                HLOGW("config not found for %u:%lld in %zu:%zu", type_id, config_id, TYPE_CONFIGS.size(),
+                      configs.size());
                 // dump all config size
                 for (auto types : TYPE_CONFIGS) {
                     HLOGV("type id %d %zu", types.first, types.second.size());
@@ -350,20 +346,23 @@ public:
     };
 
     static const std::string GetTypeName(perf_type_id type_id);
-    bool ParseEventName(const std::string &nameStr, std::string &name, bool &excludeUser,
-                        bool &excludeKernel, bool &isTracePoint);
+    bool ParseEventName(const std::string& nameStr,
+                        std::string& name,
+                        bool& excludeUser,
+                        bool& excludeKernel,
+                        bool& isTracePoint);
 
     // mmap one fd for each cpu
     struct MmapFd {
         int fd;
-        perf_event_mmap_page *mmapPage = nullptr;
-        uint8_t *buf = nullptr;
+        perf_event_mmap_page* mmapPage = nullptr;
+        uint8_t* buf = nullptr;
         size_t bufSize = 0;
         // for read and sort
         size_t dataSize = 0;
         perf_event_header header;
         uint64_t timeStamp = 0;
-        const perf_event_attr *attr = nullptr;
+        const perf_event_attr* attr = nullptr;
         size_t posCallChain = 0;
     };
 
@@ -378,7 +377,7 @@ private:
     size_t lostSamples_ = 0;
     size_t lostNonSamples_ = 0;
 
-    std::unique_ptr<RingBuffer> recordBuf_ {nullptr};
+    std::unique_ptr<RingBuffer> recordBuf_{nullptr};
     std::mutex mtxRrecordBuf_;
     std::condition_variable cvRecordBuf_;
     std::thread readRecordBufThread_;
@@ -389,17 +388,17 @@ private:
     void StatLoop();
     bool IsRecordInMmap();
     void ReadRecordsFromMmaps();
-    bool GetRecordFromMmap(MmapFd &mmap);
-    void GetRecordFieldFromMmap(MmapFd &mmap, void *dest, size_t pos, size_t size);
-    void MoveRecordToBuf(MmapFd &mmap);
-    size_t GetCallChainPosInSampleRecord(const perf_event_attr &attr);
-    size_t GetStackSizePosInSampleRecord(MmapFd &mmap);
-    bool CutStackAndMove(MmapFd &mmap);
+    bool GetRecordFromMmap(MmapFd& mmap);
+    void GetRecordFieldFromMmap(MmapFd& mmap, void* dest, size_t pos, size_t size);
+    void MoveRecordToBuf(MmapFd& mmap);
+    size_t GetCallChainPosInSampleRecord(const perf_event_attr& attr);
+    size_t GetStackSizePosInSampleRecord(MmapFd& mmap);
+    bool CutStackAndMove(MmapFd& mmap);
     void ReadRecordFromBuf();
     size_t CalcBufferSize();
     bool PrepareRecordThread();
     void WaitRecordThread();
-    bool HaveTargetsExit(const std::chrono::steady_clock::time_point &startTime);
+    bool HaveTargetsExit(const std::chrono::steady_clock::time_point& startTime);
     void ExitReadRecordBufThread();
 
     enum EventSpaceType {
@@ -460,7 +459,7 @@ private:
     std::vector<EventGroupItem> eventGroupItem_;
 
     std::map<int, MmapFd> cpuMmap_;
-    std::vector<MmapFd *> MmapRecordHeap_;
+    std::vector<MmapFd*> MmapRecordHeap_;
 
 #if !is_mingw
     std::vector<struct pollfd> pollFds_;
@@ -488,11 +487,14 @@ private:
 
     void LoadTracepointEventTypesFromSystem();
     bool PerfEventsEnable(bool);
-    bool AddEvent(perf_type_id type, __u64 config, bool excludeUser = false,
-                  bool excludeKernel = false, bool followGroup = false);
-    bool AddEvent(const std::string &eventString, bool followGroup = false);
+    bool AddEvent(perf_type_id type,
+                  __u64 config,
+                  bool excludeUser = false,
+                  bool excludeKernel = false,
+                  bool followGroup = false);
+    bool AddEvent(const std::string& eventString, bool followGroup = false);
     bool IsEventSupport(perf_type_id type, __u64 config);
-    bool IsEventAttrSupport(perf_event_attr &attr);
+    bool IsEventAttrSupport(perf_event_attr& attr);
 
     std::chrono::time_point<std::chrono::steady_clock> trackingStartTime_;
     std::chrono::time_point<std::chrono::steady_clock> trackingEndTime_;
@@ -503,18 +505,17 @@ private:
     void PutAllCpus();
     bool PrepareFdEvents();
     bool CreateFdEvents();
-    bool StatReport(const __u64 &durationInSec);
-    bool CreateMmap(const FdItem &item, const perf_event_attr &attr);
+    bool StatReport(const __u64& durationInSec);
+    bool CreateMmap(const FdItem& item, const perf_event_attr& attr);
 
-    const perf_event_attr *GetDefaultAttr()
+    const perf_event_attr* GetDefaultAttr()
     {
         HLOG_ASSERT(eventGroupItem_.size() > 0);
         HLOG_ASSERT(eventGroupItem_[0].eventItems.size() > 0);
         return &(eventGroupItem_.at(0).eventItems.at(0).attr);
     };
 
-    OHOS::UniqueFd Open(perf_event_attr &attr, pid_t pid = 0, int cpu = -1, int group_fd = -1,
-                        unsigned long flags = 0);
+    OHOS::UniqueFd Open(perf_event_attr& attr, pid_t pid = 0, int cpu = -1, int group_fd = -1, unsigned long flags = 0);
     std::unique_ptr<perf_event_attr> CreateDefaultAttr(perf_type_id type, __u64 config);
 };
 } // namespace HiPerf

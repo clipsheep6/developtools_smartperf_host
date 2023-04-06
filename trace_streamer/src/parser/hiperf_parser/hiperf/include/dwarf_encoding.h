@@ -84,8 +84,8 @@ const std::map<dw_encode_t, size_t> DWFormatSizeMap = {
     {DW_EH_PE_sdata8, sizeof(char) * 8},
 };
 
-template<class T>
-uint64_t dwReadAnyTypeData(const unsigned char *&buffer, T)
+template <class T>
+uint64_t dwReadAnyTypeData(const unsigned char*& buffer, T)
 {
     T value;
     if (memcpy_s(&value, sizeof(T), buffer, sizeof(T)) != 0) {
@@ -97,14 +97,17 @@ uint64_t dwReadAnyTypeData(const unsigned char *&buffer, T)
 
 class DwarfEncoding {
 public:
-    DwarfEncoding(dw_encode_t dw, const unsigned char *&data, uint64_t vaddrBase = 0,
-                  uint64_t vaddrPC = 0, uint64_t vaddrText = 0);
+    DwarfEncoding(dw_encode_t dw,
+                  const unsigned char*& data,
+                  uint64_t vaddrBase = 0,
+                  uint64_t vaddrPC = 0,
+                  uint64_t vaddrText = 0);
 
     const std::string ToString() const;
 
-    const unsigned char *GetEnd() const;
+    const unsigned char* GetEnd() const;
 
-    const unsigned char *GetData() const;
+    const unsigned char* GetData() const;
 
     size_t GetSize() const;
 
@@ -116,7 +119,7 @@ public:
 
 private:
     dw_encode_t dw_;
-    const unsigned char *data_;
+    const unsigned char* data_;
     uint64_t vaddrBase_ = 0;
     uint64_t vaddrPC_ = 0;
     uint64_t vaddrText_ = 0;
@@ -126,7 +129,7 @@ private:
 
     dw_encode_t Application() const;
 
-    uint64_t ReadValue(const unsigned char *&data) const;
+    uint64_t ReadValue(const unsigned char*& data) const;
 
     const std::string FormatName() const;
 

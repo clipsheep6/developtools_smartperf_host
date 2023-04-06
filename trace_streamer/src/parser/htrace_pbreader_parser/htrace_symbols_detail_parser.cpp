@@ -30,13 +30,14 @@ HtraceSymbolsDetailParser::HtraceSymbolsDetailParser(TraceDataCache* dataCache, 
 HtraceSymbolsDetailParser::~HtraceSymbolsDetailParser() = default;
 void HtraceSymbolsDetailParser::Parse(ProtoReader::BytesView tracePacket)
 {
-    ProtoReader::TracePluginResult_Reader reader((const uint8_t *)(tracePacket.data_), tracePacket.size_);
+    ProtoReader::TracePluginResult_Reader reader((const uint8_t*)(tracePacket.data_), tracePacket.size_);
     if (!reader.has_symbols_detail()) {
         return;
     }
     for (auto i = reader.symbols_detail(); i; ++i) {
         ProtoReader::SymbolsDetailMsg_Reader reader(i->ToBytes());
-        streamFilters_->symbolsFilter_->RegisterFunc(reader.symbol_addr(), traceDataCache_->GetDataIndex(reader.symbol_name().ToStdString()));
+        streamFilters_->symbolsFilter_->RegisterFunc(reader.symbol_addr(),
+                                                     traceDataCache_->GetDataIndex(reader.symbol_name().ToStdString()));
     }
 }
 } // namespace TraceStreamer

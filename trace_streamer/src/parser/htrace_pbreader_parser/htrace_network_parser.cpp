@@ -48,7 +48,11 @@ void HtraceNetworkParser::Parse(ProtoReader::BytesView tracePacket, uint64_t ts)
 void HtraceNetworkParser::Finish()
 {
     auto cmp = [](const TsNetworkData& a, const TsNetworkData& b) { return a.ts < b.ts; };
+#ifdef IS_WASM
     std::sort(networkData_.begin(), networkData_.end(), cmp);
+#else
+    std::stable_sort(networkData_.begin(), networkData_.end(), cmp);
+#endif
     bool firstTime = true;
     uint64_t lastTs = 0;
     uint64_t lastRx = 0;
@@ -70,9 +74,8 @@ void HtraceNetworkParser::Finish()
         auto dur = newTimeStamp - lastTs;
         auto durS = 1.0 * dur / SEC_TO_NS;
         traceDataCache_->GetNetworkData()->AppendNewNetData(
-            newTimeStamp, itor->tx_bytes, itor->rx_bytes, dur,
-            1.0 * (itor->rx_bytes - lastRx) / durS, 1.0 * (itor->tx_bytes - lastTx) / durS,
-            itor->rx_packets, 1.0 * (itor->rx_packets - lastPacketIn) / durS,
+            newTimeStamp, itor->tx_bytes, itor->rx_bytes, dur, 1.0 * (itor->rx_bytes - lastRx) / durS,
+            1.0 * (itor->tx_bytes - lastTx) / durS, itor->rx_packets, 1.0 * (itor->rx_packets - lastPacketIn) / durS,
             itor->tx_packets, 1.0 * (itor->tx_packets - lastPacketOut) / durS, "undefined");
         lastTs = newTimeStamp;
         lastRx = itor->rx_bytes;

@@ -28,18 +28,18 @@ enum class FEATURE {
     TRACING_DATA = 1,
     BUILD_ID, // build_id_event
 
-    HOSTNAME,  // A perf_header_string with the hostname where the data was collected (uname -n)
-    OSRELEASE, // A perf_header_string with the os release where the data was collected (uname -r)
-    VERSION,   // A perf_header_string with the perf user tool version where the data was collected.
-               // This is the same as the version of the source tree the perf tool was built from.
-    ARCH,      // A perf_header_string with the CPU architecture (uname -m)
-    NRCPUS,    // A structure defining the number of CPUs.
-    CPUDESC,   // A perf_header_string with description of the CPU. On x86 this is the model name
-               // in /proc/cpuinfo
-    CPUID,     // A perf_header_string with the exact CPU type. On x86 this is
-               // vendor,family,model,stepping. For example: GenuineIntel,6,69,1
-    TOTAL_MEM, // An uint64_t with the total memory in kilobytes.
-    CMDLINE,   // A perf_header_string_list with the perf arg-vector used to collect the data.
+    HOSTNAME,      // A perf_header_string with the hostname where the data was collected (uname -n)
+    OSRELEASE,     // A perf_header_string with the os release where the data was collected (uname -r)
+    VERSION,       // A perf_header_string with the perf user tool version where the data was collected.
+                   // This is the same as the version of the source tree the perf tool was built from.
+    ARCH,          // A perf_header_string with the CPU architecture (uname -m)
+    NRCPUS,        // A structure defining the number of CPUs.
+    CPUDESC,       // A perf_header_string with description of the CPU. On x86 this is the model name
+                   // in /proc/cpuinfo
+    CPUID,         // A perf_header_string with the exact CPU type. On x86 this is
+                   // vendor,family,model,stepping. For example: GenuineIntel,6,69,1
+    TOTAL_MEM,     // An uint64_t with the total memory in kilobytes.
+    CMDLINE,       // A perf_header_string_list with the perf arg-vector used to collect the data.
     EVENT_DESC,    // Another description of the perf_event_attrs
     CPU_TOPOLOGY,  //
     NUMA_TOPOLOGY, // A list of NUMA node descriptions
@@ -113,11 +113,10 @@ static const std::vector<std::string> extFeatureNames = {
     "hiperf_cpu_off",
 };
 static const std::vector<std::string> featureNames = {
-    "unknown_feature", "tracing_data", "build_id",     "hostname",     "osrelease",
-    "version",         "arch",         "nrcpus",       "cpudesc",      "cpuid",
-    "total_mem",       "cmdline",      "event_desc",   "cpu_topology", "numa_topology",
-    "branch_stack",    "pmu_mappings", "group_desc",   "auxtrace",     "stat",
-    "cache",           "sample_time",  "mem_topology", "last_feature",
+    "unknown_feature", "tracing_data", "build_id",     "hostname",   "osrelease", "version",    "arch",
+    "nrcpus",          "cpudesc",      "cpuid",        "total_mem",  "cmdline",   "event_desc", "cpu_topology",
+    "numa_topology",   "branch_stack", "pmu_mappings", "group_desc", "auxtrace",  "stat",       "cache",
+    "sample_time",     "mem_topology", "last_feature",
 };
 
 class PerfFileSection {
@@ -125,7 +124,7 @@ public:
     struct perf_file_section header;
     const FEATURE featureId_;
 
-    virtual bool GetBinary(char *buf, size_t size) = 0;
+    virtual bool GetBinary(char* buf, size_t size) = 0;
     virtual size_t GetSize() = 0;
     virtual ~PerfFileSection() {}
     explicit PerfFileSection(const FEATURE featureId) : featureId_(featureId)
@@ -136,29 +135,29 @@ public:
     static std::string GetFeatureName(FEATURE featureId);
 
 protected:
-    const char *rBuffer_ = nullptr;
-    char *wBuffer_ = nullptr;
+    const char* rBuffer_ = nullptr;
+    char* wBuffer_ = nullptr;
     size_t maxSize_ = 0;
     size_t offset_ = 0;
 
     // for read
-    void Init(const char *buffer, size_t maxSize);
+    void Init(const char* buffer, size_t maxSize);
     // for write
-    void Init(char *buffer, size_t maxSize);
+    void Init(char* buffer, size_t maxSize);
     bool Write(uint32_t u32);
     bool Write(uint64_t u64);
-    bool Write(const std::string &str);
+    bool Write(const std::string& str);
 
-    bool Write(const char *buf, size_t size);
-    bool Write(const char *buf, size_t size, size_t max);
+    bool Write(const char* buf, size_t size);
+    bool Write(const char* buf, size_t size, size_t max);
 
-    bool Read(uint32_t &value);
-    bool Read(uint64_t &value);
-    bool Read(std::string &value);
-    bool Read(char *buf, size_t size);
+    bool Read(uint32_t& value);
+    bool Read(uint64_t& value);
+    bool Read(std::string& value);
+    bool Read(char* buf, size_t size);
     void Skip(size_t size);
 
-    uint32_t SizeOf(std::string &string);
+    uint32_t SizeOf(std::string& string);
 };
 
 class PerfFileSectionString : public PerfFileSection {
@@ -167,10 +166,10 @@ class PerfFileSectionString : public PerfFileSection {
 public:
     // convert buff to PerfFileSectionString, used to read file
     // if the data in buf is incorrect, ......
-    PerfFileSectionString(FEATURE id, const char *buf, size_t size);
-    PerfFileSectionString(FEATURE id, const std::string &charString);
+    PerfFileSectionString(FEATURE id, const char* buf, size_t size);
+    PerfFileSectionString(FEATURE id, const std::string& charString);
 
-    bool GetBinary(char *buf, size_t size);
+    bool GetBinary(char* buf, size_t size);
     size_t GetSize();
     const std::string toString() const;
 };
@@ -181,7 +180,7 @@ struct SymbolStruct {
     uint32_t len_ = 0;
     std::string symbolName_ = EMPTY_STRING;
     SymbolStruct() {}
-    SymbolStruct(uint64_t vaddr, uint32_t len, const std::string &symbolName)
+    SymbolStruct(uint64_t vaddr, uint32_t len, const std::string& symbolName)
         : vaddr_(vaddr), len_(len), symbolName_(symbolName)
     {
     }
@@ -201,14 +200,14 @@ public:
     std::vector<SymbolFileStruct> symbolFileStructs_;
 
     size_t GetSize();
-    PerfFileSectionSymbolsFiles(FEATURE id, const std::vector<SymbolFileStruct> &symbolFileStructs)
+    PerfFileSectionSymbolsFiles(FEATURE id, const std::vector<SymbolFileStruct>& symbolFileStructs)
         : PerfFileSection(id), symbolFileStructs_(symbolFileStructs)
     {
     }
     // if the data in buf is incorrect, ......
-    PerfFileSectionSymbolsFiles(FEATURE id, const char *buf, size_t size);
+    PerfFileSectionSymbolsFiles(FEATURE id, const char* buf, size_t size);
 
-    bool GetBinary(char *buf, size_t size);
+    bool GetBinary(char* buf, size_t size);
 
 private:
     // issue from fuzz test
@@ -222,24 +221,24 @@ class PerfFileSectionNrCpus : public PerfFileSection {
     uint32_t nrCpusOnline_;
 
 public:
-    PerfFileSectionNrCpus(FEATURE id, const char *buf, size_t size);
+    PerfFileSectionNrCpus(FEATURE id, const char* buf, size_t size);
     PerfFileSectionNrCpus(FEATURE id, uint32_t nrCpusAvailable, uint32_t nrCpusOnline);
 
-    bool GetBinary(char *buf, size_t size);
+    bool GetBinary(char* buf, size_t size);
     size_t GetSize();
-    void GetValue(uint32_t &nrCpusAvailable, uint32_t &nrCpusOnline) const;
+    void GetValue(uint32_t& nrCpusAvailable, uint32_t& nrCpusOnline) const;
 };
 
 class PerfFileSectionU64 : public PerfFileSection {
     uint64_t value_;
 
 public:
-    PerfFileSectionU64(FEATURE id, const char *buf, size_t size);
+    PerfFileSectionU64(FEATURE id, const char* buf, size_t size);
     PerfFileSectionU64(FEATURE id, uint64_t v);
 
-    bool GetBinary(char *buf, size_t size);
+    bool GetBinary(char* buf, size_t size);
     size_t GetSize();
-    void GetValue(uint64_t &v) const;
+    void GetValue(uint64_t& v) const;
 };
 
 struct AttrWithId;
@@ -247,12 +246,12 @@ class PerfFileSectionEventDesc : public PerfFileSection {
 public:
     std::vector<AttrWithId> eventDesces_;
 
-    PerfFileSectionEventDesc(FEATURE id, const char *buf, size_t size);
-    PerfFileSectionEventDesc(FEATURE id, const std::vector<AttrWithId> &eventDesces);
+    PerfFileSectionEventDesc(FEATURE id, const char* buf, size_t size);
+    PerfFileSectionEventDesc(FEATURE id, const std::vector<AttrWithId>& eventDesces);
 
-    bool GetBinary(char *buf, size_t size);
+    bool GetBinary(char* buf, size_t size);
     size_t GetSize();
-    void GetValue(std::vector<AttrWithId> &eventDesces) const;
+    void GetValue(std::vector<AttrWithId>& eventDesces) const;
 };
 } // namespace HiPerf
 } // namespace Developtools

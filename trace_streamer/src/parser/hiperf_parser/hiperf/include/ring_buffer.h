@@ -34,21 +34,21 @@ public:
     size_t GetFreeSize() const;
 
     // before writing data to rbuff, alloc space first
-    uint8_t *AllocForWrite(size_t writeSize);
+    uint8_t* AllocForWrite(size_t writeSize);
     // after writing data, move head pointer
     void EndWrite();
     // get data from buff, return nullptr if no readable data
-    uint8_t *GetReadData();
+    uint8_t* GetReadData();
     // after reading, move tail pointer
     void EndRead();
 
 private:
     std::unique_ptr<uint8_t[]> buf_ = nullptr;
     const size_t size_;
-    std::atomic<size_t> head_ {0};
+    std::atomic<size_t> head_{0};
     // std::atomic_size_t head_ = 0; // write after this, always increase
     // std::atomic_size_t tail_ = 0; // read from this, always increase
-    std::atomic<size_t> tail_ {0};
+    std::atomic<size_t> tail_{0};
     size_t writeSize_ = 0;
     size_t readSize_ = 0;
 };

@@ -16,7 +16,7 @@ TraceStreamer使用stat表统计解析trace数据源过程遇到的重要事件�
 ## 数据状态级别
 数据状态级别总共有4种，分别是：info, warn, error,fatal。由于数据的重要性不同，不同事件的同一种状态可能对应不同的级别。
 例如binder_transaction_received的 not_supported状态的数据为info级别，而binder_transaction_alloc_buf的not_supported状态数据为warn级别。  
-您可以在src/cfg/trace_streamer_config.cpp的InitSecurityMap方法中自行定义相关事件的优先级。
+可以在src/cfg/trace_streamer_config.cpp的InitSecurityMap方法中自行定义相关事件的优先级。
 
 ## 事件，状态与级别对应关系
 我们通过一张表，来记录所有事件的解析情况，拿下面这条数据举例：

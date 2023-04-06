@@ -48,13 +48,17 @@ void HtraceDiskIOParser::Parse(ProtoReader::BytesView tracePacket, uint64_t ts)
 
     streamFilters_->statFilter_->IncreaseStat(TRACE_DISKIO, STAT_EVENT_RECEIVED);
     diskIOData_.push_back(TsDiskIOData{ts, diskioData.rd_sectors_kb(), diskioData.wr_sectors_kb(),
-                                       diskioData.prev_rd_sectors_kb(), diskioData.prev_wr_sectors_kb(),
-                                       rdCountPerSec, wrCountPerSec, rdCount, wrCount});
+                                       diskioData.prev_rd_sectors_kb(), diskioData.prev_wr_sectors_kb(), rdCountPerSec,
+                                       wrCountPerSec, rdCount, wrCount});
 }
 void HtraceDiskIOParser::Finish()
 {
     auto cmp = [](const TsDiskIOData& a, const TsDiskIOData& b) { return a.ts < b.ts; };
+#ifdef IS_WASM
     std::sort(diskIOData_.begin(), diskIOData_.end(), cmp);
+#else
+    std::stable_sort(diskIOData_.begin(), diskIOData_.end(), cmp);
+#endif
     bool first = true;
     uint64_t lastTs = 0;
     for (auto itor = diskIOData_.begin(); itor != diskIOData_.end(); itor++) {

@@ -113,7 +113,7 @@ EMSCRIPTEN_KEEPALIVE int TraceStreamer_Init_ThirdParty_Config(int dataLen)
 } // extern "C"
 ```
 
-### 你也可以执行如下命令查看应用帮助
+### 可以执行如下命令查看应用帮助
 ```./trace_streamer --help```
 
 ### TraceStreamer支持解析的事件列表

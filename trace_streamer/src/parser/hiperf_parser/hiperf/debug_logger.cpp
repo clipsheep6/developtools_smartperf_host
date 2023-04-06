@@ -67,19 +67,18 @@ void DebugLogger::Disable(bool disable)
 
 #if is_ohos
 #ifndef CONFIG_NO_HILOG
-int DebugLogger::HiLog(std::string &buffer) const
+int DebugLogger::HiLog(std::string& buffer) const
 {
     size_t lastLF = buffer.find_last_of('\n');
     if (lastLF != std::string::npos) {
         buffer.erase(lastLF, 1);
     }
-    return OHOS::HiviewDFX::HiLog::Debug(HIPERF_HILOG_LABLE[MODULE_DEFAULT], "%{public}s",
-                                         buffer.c_str());
+    return OHOS::HiviewDFX::HiLog::Debug(HIPERF_HILOG_LABLE[MODULE_DEFAULT], "%{public}s", buffer.c_str());
 }
 #endif
 #endif
 
-int DebugLogger::Log(DebugLevel level, const std::string &logTag, const char *fmt, ...) const
+int DebugLogger::Log(DebugLevel level, const std::string& logTag, const char* fmt, ...) const
 {
     constexpr const int DEFAULT_STRING_BUF_SIZE = 4096;
 #ifdef HIPERF_DEBUG_TIME
@@ -146,7 +145,7 @@ bool DebugLogger::EnableHiLog(bool enable)
     return enableHilog_;
 }
 
-bool DebugLogger::ShouldLog(DebugLevel level, const std::string &logtag) const
+bool DebugLogger::ShouldLog(DebugLevel level, const std::string& logtag) const
 {
     return GetLogLevelByTag(logtag) <= level;
 }
@@ -167,7 +166,7 @@ bool DebugLogger::SetMixLogOutput(bool enable)
     return lastMixLogOutput;
 }
 
-bool DebugLogger::SetLogPath(const std::string &newLogPath)
+bool DebugLogger::SetLogPath(const std::string& newLogPath)
 {
     // make sure not write happend when rename
     std::lock_guard<std::recursive_mutex> lock(logMutex_);
@@ -187,7 +186,7 @@ bool DebugLogger::SetLogPath(const std::string &newLogPath)
     return OpenLog();
 }
 
-void DebugLogger::SetLogTags(const std::string &tags)
+void DebugLogger::SetLogTags(const std::string& tags)
 {
     HLOGI(" tags is '%s'", tags.c_str());
     auto tagLevels = StringSplit(tags, ",");
@@ -205,7 +204,7 @@ void DebugLogger::SetLogTags(const std::string &tags)
     }
 }
 
-DebugLevel DebugLogger::GetLogLevelByTag(const std::string &tag) const
+DebugLevel DebugLogger::GetLogLevelByTag(const std::string& tag) const
 {
     if (logTagLevelmap_.count(tag) > 0) {
         return logTagLevelmap_.at(tag);
@@ -219,7 +218,7 @@ const std::string DebugLogger::GetLogLevelName(DebugLevel level) const
     return DebugLevelMap.at(level);
 }
 
-DebugLevel DebugLogger::GetLogLevelByName(const std::string &name) const
+DebugLevel DebugLogger::GetLogLevelByName(const std::string& name) const
 {
     for (auto it = DebugLevelMap.begin(); it != DebugLevelMap.end(); it++) {
         if (it->second == name) {
@@ -246,7 +245,7 @@ bool DebugLogger::RestoreLog()
     return OpenLog(logPath_, "a");
 }
 
-bool DebugLogger::OpenLog(const std::string &tempLogPath, const std::string &flags)
+bool DebugLogger::OpenLog(const std::string& tempLogPath, const std::string& flags)
 {
     std::lock_guard<std::recursive_mutex> lock(logMutex_);
 
@@ -281,7 +280,7 @@ __attribute__((weak)) DebugLevel DebugLogger::debugLevel_ = LEVEL_DEBUG;
 __attribute__((weak)) bool DebugLogger::logDisabled_ = true;
 std::unique_ptr<DebugLogger> DebugLogger::logInstance_;
 
-DebugLogger *DebugLogger::GetInstance()
+DebugLogger* DebugLogger::GetInstance()
 {
     if (logInstance_ == nullptr) {
         logInstance_ = std::make_unique<DebugLogger>();

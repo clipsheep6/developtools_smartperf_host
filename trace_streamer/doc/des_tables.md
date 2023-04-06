@@ -852,9 +852,9 @@ frame_maps:记录应用到RS的帧的映射关系。
 - pid：进程的真实id  
 - name：进程名字  
 - start_ts：开始时间  
-- switch_count：统计其切换次数  
+- switch_count：统计内部有多少个线程有切换  
 - thread_count：统计其线程个数  
-- slice_count：进程是否有线程和线程切换数据  
+- slice_count：进程内有多个线程有slice数据  
 - mem_count：进程是否有内存数据
 
 ### process_filter表

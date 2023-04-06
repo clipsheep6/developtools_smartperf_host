@@ -41,6 +41,7 @@ public:
     int TraceStreamer_Init_ThirdParty_Config(const uint8_t* data, int len);
     int WasmExportDatabase(ResultCallBack resultCallBack);
     std::map<int, std::string> g_thirdPartyConfig;
+
 private:
     std::unique_ptr<TraceStreamerSelector> ts_ = std::make_unique<TraceStreamerSelector>();
     size_t lenParseData_ = 0;

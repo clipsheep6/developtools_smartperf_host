@@ -34,6 +34,7 @@ public:
     ~HtraceMemParser();
     void Parse(HtraceDataSegment& seg, uint64_t, BuiltinClocks clock);
     void Finish();
+
 private:
     void ParseProcessInfo(const ProtoReader::MemoryData_Reader* tracePacket, uint64_t timeStamp) const;
     void ParseMemInfo(const ProtoReader::MemoryData_Reader* tracePacket, uint64_t timeStamp) const;
@@ -45,7 +46,7 @@ private:
     std::map<SysMeminfoType, DataIndex> sysMemNameDictMap_ = {};
     std::map<SysVMeminfoType, DataIndex> sysVMemNameDictMap_ = {};
     uint64_t zram_ = 0;
-    const DataIndex zramIndex_ =  traceDataCache_->GetDataIndex("sys.mem.zram");
+    const DataIndex zramIndex_ = traceDataCache_->GetDataIndex("sys.mem.zram");
     TraceStreamerConfig config_{};
 };
 } // namespace TraceStreamer

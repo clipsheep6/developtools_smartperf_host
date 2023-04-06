@@ -46,8 +46,10 @@ private:
     } JsonData;
 
 private:
-    void
-        NoArrayDataParse(JsonData jData, std::vector<size_t> noArrayIndex, DataIndex eventSourceIndex, uint64_t serial);
+    void NoArrayDataParse(JsonData jData,
+                          std::vector<size_t> noArrayIndex,
+                          DataIndex eventSourceIndex,
+                          uint64_t serial);
     void ArrayDataParse(JsonData jData,
                         std::vector<size_t> arrayIndex,
                         DataIndex eventSourceIndex,

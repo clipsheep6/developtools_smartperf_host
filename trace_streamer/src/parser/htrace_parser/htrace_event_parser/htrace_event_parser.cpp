@@ -72,7 +72,7 @@ HtraceEventParser::HtraceEventParser(TraceDataCache* dataCache, const TraceStrea
                             std::bind(&HtraceEventParser::CpuIdleEvent, this, std::placeholders::_1)},
                            {config_.eventNameMap_.at(TRACE_EVENT_CPU_FREQUENCY),
                             std::bind(&HtraceEventParser::CpuFrequencyEvent, this, std::placeholders::_1)},
-                            {config_.eventNameMap_.at(TRACE_EVENT_CPU_FREQUENCY_LIMITS),
+                           {config_.eventNameMap_.at(TRACE_EVENT_CPU_FREQUENCY_LIMITS),
                             std::bind(&HtraceEventParser::CpuFrequencyLimitsEvent, this, std::placeholders::_1)},
                            {config_.eventNameMap_.at(TRACE_EVENT_SUSPEND_RESUME),
                             std::bind(&HtraceEventParser::SuspendResumeEvent, this, std::placeholders::_1)},
@@ -184,7 +184,7 @@ void HtraceEventParser::DealEvent(const FtraceEvent& event)
         InvokeFunc(TRACE_EVENT_SCHED_SWITCH, event.sched_switch_format());
     } else if (event.has_sched_blocked_reason_format()) {
         InvokeFunc(TRACE_EVENT_SCHED_BLOCKED_REASON, event.sched_blocked_reason_format());
-    }  else if (event.has_task_rename_format()) {
+    } else if (event.has_task_rename_format()) {
         InvokeFunc(TRACE_EVENT_TASK_RENAME, event.task_rename_format());
     } else if (event.has_task_newtask_format()) {
         InvokeFunc(TRACE_EVENT_TASK_NEWTASK, event.task_newtask_format());
@@ -354,7 +354,8 @@ bool HtraceEventParser::SchedBlockReasonEvent(const MessageLite& event)
     auto caller = traceDataCache_->GetDataIndex(
         std::string_view("0x" + SysTuning::base::number(msg.caller(), SysTuning::base::INTEGER_RADIX_TYPE_HEX)));
     auto itid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimeStamp_, pid);
-    if (!streamFilters_->cpuFilter_->InsertBlockedReasonEvent(eventTimeStamp_, eventCpu_, itid, ioWait, caller, INVALID_UINT32)) {
+    if (!streamFilters_->cpuFilter_->InsertBlockedReasonEvent(eventTimeStamp_, eventCpu_, itid, ioWait, caller,
+                                                              INVALID_UINT32)) {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_BLOCKED_REASON, STAT_EVENT_NOTMATCH);
     }
     return true;
@@ -466,8 +467,7 @@ bool HtraceEventParser::SchedWakingEvent(const MessageLite& event) const
         return false;
     }
     auto instants = traceDataCache_->GetInstantsData();
-    auto internalTid =
-        streamFilters_->processFilter_->UpdateOrCreateThread(eventTimeStamp_, wakePidValue.value());
+    auto internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimeStamp_, wakePidValue.value());
     auto wakeupFromPid = streamFilters_->processFilter_->UpdateOrCreateThread(eventTimeStamp_, eventTid_);
     streamFilters_->cpuFilter_->InsertWakeupEvent(eventTimeStamp_, internalTid, true);
     instants->AppendInstantEventData(eventTimeStamp_, schedWakingName_, internalTid, wakeupFromPid);
@@ -559,11 +559,11 @@ bool HtraceEventParser::WorkqueueExecuteStartEvent(const MessageLite& event) con
     if (funcNameIndex == INVALID_UINT64) {
         std::string addrStr = "0x" + base::number(msg.function(), base::INTEGER_RADIX_TYPE_HEX);
         auto addStrIndex = traceDataCache_->GetDataIndex(addrStr);
-        result = streamFilters_->sliceFilter_->BeginSlice(comm_, eventTimeStamp_, eventPid_, eventPid_,
-                                                               workQueueId_, addStrIndex);
+        result = streamFilters_->sliceFilter_->BeginSlice(comm_, eventTimeStamp_, eventPid_, eventPid_, workQueueId_,
+                                                          addStrIndex);
     } else {
-        result = streamFilters_->sliceFilter_->BeginSlice(comm_, eventTimeStamp_, eventPid_, eventPid_,
-                                                               workQueueId_, funcNameIndex);
+        result = streamFilters_->sliceFilter_->BeginSlice(comm_, eventTimeStamp_, eventPid_, eventPid_, workQueueId_,
+                                                          funcNameIndex);
     }
 
     traceDataCache_->GetInternalSlicesData()->AppendDistributeInfo();
@@ -749,7 +749,11 @@ void HtraceEventParser::FilterAllEventsTemp()
     auto cmp = [](const std::unique_ptr<EventInfo>& a, const std::unique_ptr<EventInfo>& b) {
         return a->eventTimeStamp_ < b->eventTimeStamp_;
     };
+#ifdef IS_WASM
     std::sort(eventList_.begin(), eventList_.end(), cmp);
+#else
+    std::stable_sort(eventList_.begin(), eventList_.end(), cmp);
+#endif
 
     auto endOfList = eventList_.begin() + maxBuffSize;
     for (auto itor = eventList_.begin(); itor != endOfList; itor++) {
@@ -769,7 +773,11 @@ void HtraceEventParser::FilterAllEvents()
     auto cmp = [](const std::unique_ptr<EventInfo>& a, const std::unique_ptr<EventInfo>& b) {
         return a->eventTimeStamp_ < b->eventTimeStamp_;
     };
+#ifdef IS_WASM
     std::sort(eventList_.begin(), eventList_.end(), cmp);
+#else
+    std::stable_sort(eventList_.begin(), eventList_.end(), cmp);
+#endif
     size_t maxBuffSize = 1000 * 1000;
 
     while (eventList_.size()) {
@@ -783,7 +791,7 @@ void HtraceEventParser::FilterAllEvents()
             eventTid_ = event->eventTid_;
             comm_ = event->common_;
             DealEvent(event->cpuDetail_);
-                itor->reset();
+            itor->reset();
         }
         eventList_.erase(eventList_.begin(), endOfList);
     }

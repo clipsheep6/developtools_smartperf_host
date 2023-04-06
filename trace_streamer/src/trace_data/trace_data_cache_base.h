@@ -16,7 +16,6 @@
 #ifndef TRACE_DATA_CACHE_BASE_H
 #define TRACE_DATA_CACHE_BASE_H
 
-
 #include <array>
 #include <deque>
 #include <map>

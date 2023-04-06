@@ -85,6 +85,7 @@ public:
         cpus_.clear();
     }
     void SetDur(uint64_t index, uint64_t dur);
+
 public:
     std::deque<uint64_t> durs_;
     std::deque<uint32_t> cpus_;
@@ -170,6 +171,7 @@ public:
     {
         return cpus_;
     }
+
 private:
     std::deque<InternalTime> timeStamps_;
     std::deque<InternalTime> durations_;
@@ -744,7 +746,7 @@ public:
     void UpdateEndTimeStampAndDuration(size_t row, uint64_t endTimeStamp);
     void UpdateCurrentSizeDur(size_t row, uint64_t timeStamp);
     void UpdateMemMapSubType();
-    void UpdateAddrToMemMapSubType(uint64_t addr, int64_t size, uint64_t tagId);
+    void UpdateAddrToMemMapSubType(uint64_t addr, uint64_t tagId);
     void UpdateLastCallerPathIndexs(std::unordered_map<uint32_t, uint64_t>& callIdToLasLibId);
     const std::deque<uint32_t>& CallChainIds() const;
     const std::deque<uint32_t>& Ipids() const;
@@ -788,7 +790,7 @@ private:
     std::deque<int64_t> allMemSizes_ = {};
     std::deque<uint64_t> currentSizeDurs_ = {};
     std::deque<uint64_t> lastCallerPathIndexs_ = {};
-    DoubleMap<uint64_t, int64_t, uint64_t> addrToMmapTag_ = INVALID_UINT64;
+    std::unordered_map<uint64_t, uint64_t> addrToMmapTag_ = {};
     int64_t countHeapSizes_ = 0;
     int64_t countMmapSizes_ = 0;
     const std::string ALLOC_EVET = "AllocEvent";
@@ -862,7 +864,7 @@ private:
     DataIndex muslFilePathIndex_ = INVALID_UINT64;
 };
 
-class NativeHookStatistic: public CacheBase {
+class NativeHookStatistic : public CacheBase {
 public:
     size_t AppendNewNativeHookStatistic(uint32_t ipid,
                                         uint64_t timeStamp,
@@ -892,6 +894,7 @@ public:
         applySizes_.clear();
         releaseSizes_.clear();
     }
+
 private:
     std::deque<uint32_t> ipids_ = {};
     std::deque<uint32_t> callChainIds_ = {};
@@ -967,6 +970,7 @@ public:
     const std::deque<uint64_t>& TimestampTraces() const;
     const std::deque<uint64_t>& CpuIds() const;
     const std::deque<DataIndex>& ThreadStates() const;
+
 private:
     std::deque<uint32_t> sampleIds_ = {};
     std::deque<uint32_t> tids_ = {};
@@ -983,6 +987,7 @@ public:
     const std::deque<uint32_t>& Pids() const;
     const std::deque<uint32_t>& Tids() const;
     const std::deque<DataIndex>& ThreadNames() const;
+
 private:
     std::deque<uint32_t> tids_ = {};
     std::deque<uint32_t> pids_ = {};
@@ -994,6 +999,7 @@ public:
     size_t AppendNewPerfReport(DataIndex type, DataIndex value);
     const std::deque<DataIndex>& Types() const;
     const std::deque<DataIndex>& Values() const;
+
 private:
     std::deque<DataIndex> types_ = {};
     std::deque<DataIndex> values_ = {};
@@ -1009,6 +1015,7 @@ public:
     const std::string& GetSeverityDesc(SupportedTraceEventType eventType, StatType type) const;
     const StatSeverityLevel& GetSeverity(SupportedTraceEventType eventType, StatType type) const;
     std::map<BuiltinClocks, std::string> clockid2ClockNameMap_ = {};
+
 private:
     uint32_t statCount_[TRACE_EVENT_MAX][STAT_EVENT_MAX];
     std::string event_[TRACE_EVENT_MAX];
@@ -1341,11 +1348,7 @@ private:
 };
 class EbpfCallStackData : public CacheBase {
 public:
-    size_t AppendNewData(uint32_t callChainId,
-                         uint32_t depth,
-                         uint64_t ip,
-                         uint64_t symbolId,
-                         uint64_t filePathId);
+    size_t AppendNewData(uint32_t callChainId, uint32_t depth, uint64_t ip, uint64_t symbolId, uint64_t filePathId);
     const std::deque<uint32_t>& CallChainIds() const;
     const std::deque<uint32_t>& Depths() const;
     const std::deque<uint64_t>& Ips() const;
@@ -1437,6 +1440,7 @@ public:
         fileNameLens_.clear();
         fileNameIndexs_.clear();
     }
+
 private:
     std::deque<uint64_t> starts_ = {};
     std::deque<uint64_t> ends_ = {};
@@ -1491,10 +1495,7 @@ private:
 
 class EbpfElfSymbol : public CacheBase {
 public:
-    size_t AppendNewData(uint64_t elfId,
-                         uint32_t stName,
-                         uint64_t stValue,
-                         uint64_t stSize);
+    size_t AppendNewData(uint64_t elfId, uint32_t stName, uint64_t stValue, uint64_t stSize);
     const std::deque<uint64_t>& ElfIds() const;
     const std::deque<uint32_t>& StNames() const;
     const std::deque<uint64_t>& StValues() const;
@@ -1529,6 +1530,7 @@ public:
         appNames_.clear();
         keyNames_.clear();
     }
+
 private:
     std::deque<uint8_t> flags_ = {};
     std::deque<DataIndex> appNames_ = {};
@@ -1562,6 +1564,7 @@ public:
         numValues_.clear();
         stringValues_.clear();
     }
+
 private:
     std::deque<uint64_t> serial_ = {};
     std::deque<uint64_t> ts_ = {};
@@ -1638,6 +1641,7 @@ public:
         recordings_.clear();
         streamAlls_.clear();
     }
+
 private:
     std::deque<uint32_t> stringValues_ = {};
     std::deque<int32_t> brightness_ = {};
@@ -1675,6 +1679,7 @@ public:
         key_.clear();
         value_.clear();
     }
+
 private:
     std::deque<std::string> traceSource_ = {};
     std::deque<std::string> key_ = {};
@@ -1720,6 +1725,7 @@ public:
         protectionIds_.clear();
         pathIds_.clear();
     }
+
 private:
     std::deque<std::string> startAddrs_ = {};
     std::deque<std::string> endAddrs_ = {};
@@ -1856,12 +1862,12 @@ private:
 
 class FrameSlice : public CacheBase {
 public:
-    size_t AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceRow);
+    size_t AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceId);
     size_t AppendFrame(uint64_t ts,
                        uint32_t ipid,
                        uint32_t itid,
                        uint32_t vsyncId,
-                       uint64_t callStackSliceRow,
+                       uint64_t callStackSliceId,
                        uint64_t end,
                        uint8_t type);
     void SetEndTime(uint64_t row, uint64_t end);
@@ -1870,14 +1876,16 @@ public:
     void SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices);
     const std::deque<uint32_t> Ipids() const;
     const std::deque<uint32_t> VsyncIds() const;
-    const std::deque<uint64_t> CallStackRows() const;
+    const std::deque<uint64_t> CallStackIds() const;
     const std::deque<uint64_t> EndTss() const;
     const std::deque<uint64_t> Dsts() const;
     const std::deque<uint64_t> Durs() const;
     const std::deque<uint8_t> Types() const;
     const std::deque<uint8_t> Flags() const;
+    const std::deque<uint8_t> Depths() const;
+    const std::deque<uint32_t> FrameNos() const;
     const std::deque<std::string>& Srcs() const;
-    void UpdateCallStackSliceRow(uint64_t row, uint64_t callStackSliceRow);
+    void UpdateCallStackSliceId(uint64_t row, uint64_t callStackSliceId);
     void SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur);
     void Erase(uint64_t row);
 
@@ -1886,11 +1894,13 @@ private:
     std::deque<uint64_t> dsts_ = {};
     std::deque<std::string> srcs_ = {};
     std::deque<uint32_t> vsyncIds_ = {};
-    std::deque<uint64_t> callStackRows_ = {};
+    std::deque<uint64_t> callStackIds_ = {};
     std::deque<uint64_t> endTss_ = {};
     std::deque<uint64_t> durs_ = {};
     std::deque<uint8_t> types_ = {};
     std::deque<uint8_t> flags_ = {};
+    std::deque<uint8_t> depths_ = {};
+    std::deque<uint32_t> frameNos_ = {};
     const uint32_t INVALID_ROW = 2;
 };
 class FrameMaps : public CacheBase {
@@ -1910,6 +1920,7 @@ public:
     const std::deque<uint32_t>& FrameRows() const;
     const std::deque<uint64_t>& Durs() const;
     const size_t Size() const;
+
 private:
     std::deque<uint32_t> frameRows_ = {};
     std::deque<uint64_t> durs_ = {};

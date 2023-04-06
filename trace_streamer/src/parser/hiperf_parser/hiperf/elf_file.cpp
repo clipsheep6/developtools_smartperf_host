@@ -21,7 +21,7 @@ using namespace OHOS::Developtools::HiPerf::ELF;
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-ElfFile::ElfFile(const std::string &filename)
+ElfFile::ElfFile(const std::string& filename)
 {
 #if is_mingw
     std::string resolvedPath = CanonicalizeSpecPath(filename.c_str());
@@ -61,9 +61,9 @@ ElfFile::~ElfFile()
     }
 }
 
-std::unique_ptr<ElfFile> ElfFile::MakeUnique(const std::string &filename)
+std::unique_ptr<ElfFile> ElfFile::MakeUnique(const std::string& filename)
 {
-    std::unique_ptr<ElfFile> file {new (std::nothrow) ElfFile(filename)};
+    std::unique_ptr<ElfFile> file{new (std::nothrow) ElfFile(filename)};
     if (file == nullptr) {
         HLOGE("Error in ElfFile::MakeUnique(): ElfFile::ElfFile() failed");
         return nullptr;
@@ -108,7 +108,7 @@ bool ElfFile::ParseElfHeader()
         return false;
     }
     HLOG_ASSERT(ret == 0);
-    unsigned char ehdrBuf[ehdr64Size] {0};
+    unsigned char ehdrBuf[ehdr64Size]{0};
     size_t readsize = ReadFile(ehdrBuf, ehdr64Size);
     if (readsize < ehdr64Size) {
         HLOGW("file size not enough, try read %zu, only have %zu", ehdr64Size, readsize);
@@ -125,7 +125,7 @@ bool ElfFile::ParsePrgHeaders()
     uint64_t phdrOffset = ehdr_->phdrOffset_;
     int64_t ret = lseek(fd_, phdrOffset, SEEK_SET);
     HLOG_ASSERT(ret == static_cast<int64_t>(phdrOffset));
-    char *phdrsBuf = new (std::nothrow) char[phdrSize * numPhdrs];
+    char* phdrsBuf = new (std::nothrow) char[phdrSize * numPhdrs];
     if (phdrsBuf == nullptr) {
         HLOGE("Error in ELF::ElfFile::ParsePrgHeaders(): new failed");
         return false;
@@ -137,7 +137,7 @@ bool ElfFile::ParsePrgHeaders()
         phdrsBuf = nullptr;
         return false;
     }
-    char *phdrBuf = phdrsBuf;
+    char* phdrBuf = phdrsBuf;
     for (size_t count = 0; count < numPhdrs; ++count) {
         std::unique_ptr<ProgramHeader> phdr = ProgramHeader::MakeUnique(phdrBuf, phdrSize);
         if (phdr == nullptr) {
@@ -162,7 +162,7 @@ bool ElfFile::ParseSecNamesStr()
     uint64_t shdrOffset = ehdr_->shdrOffset_ + ((uint64_t)shdrIndex) * shdrSize;
     int64_t ret = lseek(fd_, shdrOffset, SEEK_SET);
     HLOG_ASSERT(ret == static_cast<int64_t>(shdrOffset));
-    char *shdrBuf = new (std::nothrow) char[shdrSize];
+    char* shdrBuf = new (std::nothrow) char[shdrSize];
     if (shdrBuf == nullptr) {
         HLOGE("Error in ElfFile::ParseSecNamesStr(): new failed");
         return false;
@@ -170,7 +170,7 @@ bool ElfFile::ParseSecNamesStr()
     (void)memset_s(shdrBuf, shdrSize, 0, shdrSize);
     ret = ReadFile(shdrBuf, shdrSize);
     HLOG_ASSERT(ret == static_cast<int64_t>(shdrSize));
-    const std::string secName {".shstrtab"};
+    const std::string secName{".shstrtab"};
     shdrs_[secName] = SectionHeader::MakeUnique(shdrBuf, shdrSize, shdrIndex);
     if (shdrs_[secName] == nullptr) {
         HLOGE("Error in ElfFile::ParseSecNamesStr(): SectionHeader::MakeUnique() failed");
@@ -186,7 +186,7 @@ bool ElfFile::ParseSecNamesStr()
     size_t secSize = shdrs_[secName]->secSize_;
     ret = lseek(fd_, secOffset, SEEK_SET);
     HLOG_ASSERT(ret == static_cast<int64_t>(secOffset));
-    char *secNamesBuf = new (std::nothrow) char[secSize];
+    char* secNamesBuf = new (std::nothrow) char[secSize];
     if (secNamesBuf == nullptr) {
         HLOGE("Error in ElfFile::ParseSecNamesStr(): new secNamesBuf failed");
         return false;
@@ -211,7 +211,7 @@ bool ElfFile::ParseSecHeaders()
     uint64_t shdrOffset = ehdr_->shdrOffset_;
     int64_t ret = lseek(fd_, shdrOffset, SEEK_SET);
     HLOG_ASSERT(ret == static_cast<int64_t>(shdrOffset));
-    char *shdrsBuf = new (std::nothrow) char[shdrSize * numShdrs];
+    char* shdrsBuf = new (std::nothrow) char[shdrSize * numShdrs];
     if (shdrsBuf == nullptr) {
         HLOGE("Error in ELF::ElfFile::ParseSecHeaders(): new failed");
         return false;
@@ -219,7 +219,7 @@ bool ElfFile::ParseSecHeaders()
     (void)memset_s(shdrsBuf, shdrSize * numShdrs, '\0', shdrSize * numShdrs);
     ret = ReadFile(shdrsBuf, shdrSize * numShdrs);
     HLOG_ASSERT(ret == static_cast<int64_t>(shdrSize * numShdrs));
-    char *shdrBuf = shdrsBuf;
+    char* shdrBuf = shdrsBuf;
     for (size_t count = 0; count < numShdrs; ++count) {
         if (count == ehdr_->shdrStrTabIdx_) {
             shdrBuf += shdrSize;
@@ -251,7 +251,7 @@ bool ElfFile::ParseSymTable(const std::string secName)
     }
 }
 
-bool ElfFile::ParseSymTable(const SectionHeader *shdr)
+bool ElfFile::ParseSymTable(const SectionHeader* shdr)
 {
     if (shdr == nullptr) {
         return false;
@@ -261,7 +261,7 @@ bool ElfFile::ParseSymTable(const SectionHeader *shdr)
     HLOG_ASSERT(ret == static_cast<int64_t>(secOffset));
     uint64_t secSize = shdr->secSize_;
     uint64_t entrySize = shdr->secEntrySize_;
-    char *secBuf = new (std::nothrow) char[secSize];
+    char* secBuf = new (std::nothrow) char[secSize];
     if (secBuf == nullptr) {
         HLOGE("Error in EFL::ElfFile::ParseSymTable(): new failed");
         return false;
@@ -281,16 +281,16 @@ bool ElfFile::ParseSymTable(const SectionHeader *shdr)
 
 bool ElfFile::ParseSymNamesStr()
 {
-    const std::string secName {".strtab"};
+    const std::string secName{".strtab"};
     if (shdrs_.find(secName) == shdrs_.end()) {
         HLOGE("Error in ElfFile::ParseSymNamesStr(): section %s  does not exist", secName.c_str());
         return false;
     }
-    const auto &shdr = shdrs_[secName];
+    const auto& shdr = shdrs_[secName];
     uint64_t secOffset = shdr->fileOffset_;
     uint64_t secSize = shdr->secSize_;
     int64_t ret = lseek(fd_, secOffset, SEEK_SET);
-    char *secBuf = new (std::nothrow) char[secSize];
+    char* secBuf = new (std::nothrow) char[secSize];
     if (secBuf == nullptr) {
         HLOGE("Error in ElfFile::ParsesymNamesStr(): new failed");
         return false;
@@ -311,18 +311,18 @@ bool ElfFile::ParseSymNamesStr()
 
 bool ElfFile::ParseDynSymTable()
 {
-    const std::string secName {".dynsym"};
+    const std::string secName{".dynsym"};
     if (shdrs_.find(secName) == shdrs_.end()) {
         HLOGE("Error in ELF::ElfFile::ParseSymTable(): section %s does not exist", secName.c_str());
         return false;
     }
-    const auto &shdr = shdrs_[secName];
+    const auto& shdr = shdrs_[secName];
     uint64_t secOffset = shdr->fileOffset_;
     int64_t ret = lseek(fd_, secOffset, SEEK_SET);
     HLOG_ASSERT(ret == static_cast<int64_t>(secOffset));
     uint64_t secSize = shdr->secSize_;
     uint64_t entrySize = shdr->secEntrySize_;
-    char *secBuf = new (std::nothrow) char[secSize];
+    char* secBuf = new (std::nothrow) char[secSize];
     if (secBuf == nullptr) {
         HLOGE("Error in EFL::ElfFile::ParseDynSymTable(): new failed");
         return false;
@@ -346,7 +346,7 @@ std::string ElfFile::GetSectionName(const uint32_t startIndex)
         HLOGF("out_of_range %s ,endIndex %d ", secNamesStr_.c_str(), startIndex);
         return "";
     }
-    size_t endIndex {startIndex};
+    size_t endIndex{startIndex};
     for (; endIndex < secNamesStr_.size(); ++endIndex) {
         if (secNamesStr_[endIndex] == '\0') {
             break;

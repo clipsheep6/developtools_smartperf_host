@@ -20,12 +20,12 @@
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-const char *MemoryHold::HoldStringView(std::string_view view)
+const char* MemoryHold::HoldStringView(std::string_view view)
 {
     if (view.size() == 0) {
         return "";
     }
-    char *p = new char[view.size() + 1];
+    char* p = new char[view.size() + 1];
     if (p == nullptr) {
         return "";
     }
@@ -41,7 +41,7 @@ std::string CanonicalizeSpecPath(const char* src)
         fprintf(stderr, "Error: CanonicalizeSpecPath failed, src is NULL");
         return "";
     }
-    char resolvedPath[PATH_MAX] = { 0 };
+    char resolvedPath[PATH_MAX] = {0};
 #if defined(_WIN32)
     if (!_fullpath(resolvedPath, src, PATH_MAX)) {
         fprintf(stderr, "Error: _fullpath %s failed", src);
@@ -75,7 +75,7 @@ uint32_t RoundUp(uint32_t x, const int align)
     return (((x) + (align)-1) / (align)) * (align);
 }
 
-std::string StringReplace(std::string source, const std::string &from, const std::string &to)
+std::string StringReplace(std::string source, const std::string& from, const std::string& to)
 {
     size_t pos = 0;
     std::string result;
@@ -90,7 +90,7 @@ std::string StringReplace(std::string source, const std::string &from, const std
     return result;
 }
 
-size_t SubStringCount(const std::string &source, const std::string &sub)
+size_t SubStringCount(const std::string& source, const std::string& sub)
 {
     size_t count(0);
     size_t pos(0);
@@ -126,7 +126,7 @@ std::vector<std::string> StringSplit(std::string source, std::string split)
     }
     return result;
 }
-StdoutRecord::StdoutRecord(const std::string &tempFile, const std::string &mode)
+StdoutRecord::StdoutRecord(const std::string& tempFile, const std::string& mode)
 {
     if (!tempFile.empty()) {
         std::string resolvedPath = CanonicalizeSpecPath(tempFile.c_str());
@@ -204,7 +204,7 @@ std::string StdoutRecord::Stop()
     return content_;
 }
 
-bool IsDigits(const std::string &str)
+bool IsDigits(const std::string& str)
 {
     if (str.empty()) {
         return false;
@@ -213,20 +213,20 @@ bool IsDigits(const std::string &str)
     }
 }
 
-bool IsHexDigits(const std::string &str)
+bool IsHexDigits(const std::string& str)
 {
     if (str.empty()) {
         return false;
     }
-    const std::string prefix {"0x"};
-    std::string effectStr {str};
+    const std::string prefix{"0x"};
+    std::string effectStr{str};
     if (prefix.compare(0, prefix.size(), effectStr.substr(0, prefix.size())) == 0) {
         effectStr = effectStr.substr(prefix.size(), effectStr.size() - prefix.size());
     }
     if (effectStr.empty()) {
         return false;
     }
-    std::size_t start {0};
+    std::size_t start{0};
     for (; start < effectStr.size(); ++start) {
         if (effectStr[start] == '0') {
             continue;
@@ -239,7 +239,7 @@ bool IsHexDigits(const std::string &str)
     return std::all_of(effectStr.begin(), effectStr.end(), ::isxdigit);
 }
 
-bool IsDir(const std::string &path)
+bool IsDir(const std::string& path)
 {
     struct stat st;
     if (stat(path.c_str(), &st) == 0) {
@@ -248,7 +248,7 @@ bool IsDir(const std::string &path)
     return false;
 }
 
-bool IsPath(const std::string &fileName)
+bool IsPath(const std::string& fileName)
 {
     HLOG_ASSERT(!fileName.empty());
     if (fileName[0] == PATH_SEPARATOR) {
@@ -261,7 +261,7 @@ bool IsPath(const std::string &fileName)
     return false;
 }
 
-std::string PlatformPathConvert(const std::string &path)
+std::string PlatformPathConvert(const std::string& path)
 {
 #if is_mingw
     return StringReplace(path, "/", "\\");
@@ -270,7 +270,7 @@ std::string PlatformPathConvert(const std::string &path)
 #endif
 }
 
-std::string ReadFileToString(const std::string &fileName)
+std::string ReadFileToString(const std::string& fileName)
 {
     std::ifstream inputString(fileName, std::ios::in);
     if (!inputString or !inputString.is_open()) {
@@ -283,7 +283,7 @@ std::string ReadFileToString(const std::string &fileName)
     return content;
 }
 
-bool ReadFileToString(const std::string &fileName, std::string &fileData, size_t fileSize)
+bool ReadFileToString(const std::string& fileName, std::string& fileData, size_t fileSize)
 {
     fileData.clear();
     std::string resolvedPath = CanonicalizeSpecPath(fileName.c_str());
@@ -305,7 +305,7 @@ bool ReadFileToString(const std::string &fileName, std::string &fileData, size_t
     return (readSize == 0) ? true : false;
 }
 
-bool WriteStringToFile(const std::string &fileName, const std::string &value)
+bool WriteStringToFile(const std::string& fileName, const std::string& value)
 {
     std::ofstream output(fileName, std::ios::out);
     if (!output) {
@@ -331,7 +331,7 @@ bool PowerOfTwo(uint64_t n)
     return n && (!(n & (n - 1)));
 }
 
-bool ReadIntFromProcFile(const std::string &path, int &value)
+bool ReadIntFromProcFile(const std::string& path, int& value)
 {
     std::string s = ReadFileToString(path);
     if (s.empty()) {
@@ -341,7 +341,7 @@ bool ReadIntFromProcFile(const std::string &path, int &value)
     return true;
 }
 
-bool WriteIntToProcFile(const std::string &path, int value)
+bool WriteIntToProcFile(const std::string& path, int value)
 {
     std::string s = std::to_string(value);
 
@@ -349,18 +349,18 @@ bool WriteIntToProcFile(const std::string &path, int value)
 }
 
 // compress specified dataFile into gzip file
-bool CompressFile(const std::string &dataFile, const std::string &destFile)
+bool CompressFile(const std::string& dataFile, const std::string& destFile)
 {
     return true;
 }
 
 // uncompress specified gzip file into dataFile
-bool UncompressFile(const std::string &gzipFile, const std::string &dataFile)
+bool UncompressFile(const std::string& gzipFile, const std::string& dataFile)
 {
     return true;
 }
 
-std::string &StringTrim(std::string &string)
+std::string& StringTrim(std::string& string)
 {
     if (!string.empty()) {
         string.erase(0, string.find_first_not_of(" "));
@@ -369,14 +369,14 @@ std::string &StringTrim(std::string &string)
     return string;
 }
 
-std::vector<std::string> GetEntriesInDir(const std::string &basePath)
+std::vector<std::string> GetEntriesInDir(const std::string& basePath)
 {
     std::vector<std::string> result;
-    DIR *dir = opendir(basePath.c_str());
+    DIR* dir = opendir(basePath.c_str());
     if (dir == nullptr) {
         return result;
     }
-    dirent *entry;
+    dirent* entry;
     while ((entry = readdir(dir)) != nullptr) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
@@ -387,7 +387,7 @@ std::vector<std::string> GetEntriesInDir(const std::string &basePath)
     return result;
 }
 
-std::vector<std::string> GetSubDirs(const std::string &basePath)
+std::vector<std::string> GetSubDirs(const std::string& basePath)
 {
     std::vector<std::string> entries = GetEntriesInDir(basePath);
     std::vector<std::string> result = {};
@@ -399,7 +399,7 @@ std::vector<std::string> GetSubDirs(const std::string &basePath)
     return result;
 }
 
-bool IsSameCommand(const std::string &cmdLine, const std::string &cmdName)
+bool IsSameCommand(const std::string& cmdLine, const std::string& cmdName)
 {
     std::vector<std::string> cmdpaths = StringSplit(cmdLine, "/");
     if (!cmdpaths.empty()) {
@@ -412,11 +412,11 @@ bool IsSameCommand(const std::string &cmdLine, const std::string &cmdName)
 
 std::vector<pid_t> GetSubthreadIDs(const pid_t pid)
 {
-    std::string path {"/proc/"};
+    std::string path{"/proc/"};
     path += std::to_string(pid);
     path += "/task/";
     auto tids = GetSubDirs(path);
-    std::vector<pid_t> res {};
+    std::vector<pid_t> res{};
     for (auto tidStr : tids) {
         pid_t tid = static_cast<pid_t>(std::stoul(tidStr, nullptr));
         if (tid == pid) {
@@ -427,12 +427,12 @@ std::vector<pid_t> GetSubthreadIDs(const pid_t pid)
     return res;
 }
 
-bool StringStartsWith(const std::string &string, const std::string &with)
+bool StringStartsWith(const std::string& string, const std::string& with)
 {
     return string.find(with) == 0;
 }
 
-bool StringEndsWith(const std::string &string, const std::string &with)
+bool StringEndsWith(const std::string& string, const std::string& with)
 {
     if (string.empty()) {
         // empty string only end with empty string
@@ -445,9 +445,9 @@ bool StringEndsWith(const std::string &string, const std::string &with)
     return string.rfind(with) == (string.length() - with.length());
 }
 
-void HexDump(const void *buf, size_t size, size_t maxSize)
+void HexDump(const void* buf, size_t size, size_t maxSize)
 {
-    const unsigned char *byteBuf = static_cast<const unsigned char *>(buf);
+    const unsigned char* byteBuf = static_cast<const unsigned char*>(buf);
     const size_t dumpByteEachLine = 8;
     size_t outputBytes = 0;
     if (!maxSize) {
@@ -462,7 +462,7 @@ void HexDump(const void *buf, size_t size, size_t maxSize)
     }
 }
 
-std::string BufferToHexString(const std::vector<unsigned char> &vec)
+std::string BufferToHexString(const std::vector<unsigned char>& vec)
 {
     return BufferToHexString(vec.data(), vec.size());
 }
@@ -472,8 +472,7 @@ std::string BufferToHexString(const unsigned char buf[], size_t size)
     std::stringstream ss;
     ss << size << ":";
     for (size_t i = 0; i < size; i++) {
-        ss << " 0x" << std::setfill('0') << std::setw(BYTE_PRINT_WIDTH) << std::hex
-           << (unsigned short)buf[i];
+        ss << " 0x" << std::setfill('0') << std::setw(BYTE_PRINT_WIDTH) << std::hex << (unsigned short)buf[i];
     }
     return ss.str();
 }
@@ -487,15 +486,14 @@ using namespace OHOS::Developtools::HiPerf;
 std::string GetLastErrorString()
 {
     LPVOID lpMsgBuf;
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL, GetLastError(), 0, (LPTSTR)&lpMsgBuf, 0, NULL);
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+                  GetLastError(), 0, (LPTSTR)&lpMsgBuf, 0, NULL);
     std::string error((LPTSTR)lpMsgBuf);
     LocalFree(lpMsgBuf);
     return error;
 }
 
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset)
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset)
 {
     HANDLE FileHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
     if (FileHandle == INVALID_HANDLE_VALUE) {
@@ -506,15 +504,13 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset
 
     HANDLE FileMappingHandle = ::CreateFileMappingW(FileHandle, 0, PAGE_READONLY, 0, 0, 0);
     if (FileMappingHandle == nullptr) {
-        HLOGE("CreateFileMappingW %zu Failed with %ld:%s", length, GetLastError(),
-              GetLastErrorString().c_str());
+        HLOGE("CreateFileMappingW %zu Failed with %ld:%s", length, GetLastError(), GetLastErrorString().c_str());
         return MMAP_FAILED;
     }
 
-    void *mapAddr = ::MapViewOfFile(FileMappingHandle, FILE_MAP_READ, 0, 0, 0);
+    void* mapAddr = ::MapViewOfFile(FileMappingHandle, FILE_MAP_READ, 0, 0, 0);
     if (mapAddr == nullptr) {
-        HLOGE("MapViewOfFile %zu Failed with %ld:%s", length, GetLastError(),
-              GetLastErrorString().c_str());
+        HLOGE("MapViewOfFile %zu Failed with %ld:%s", length, GetLastError(), GetLastErrorString().c_str());
         return MMAP_FAILED;
     }
 
@@ -524,7 +520,7 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset
     return mapAddr;
 }
 
-int munmap(void *addr, size_t)
+int munmap(void* addr, size_t)
 {
     /*
         On success, munmap() returns 0.  On failure, it returns -1, and

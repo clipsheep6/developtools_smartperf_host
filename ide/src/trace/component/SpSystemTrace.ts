@@ -880,11 +880,8 @@ export class SpSystemTrace extends BaseElement {
         if (this.timerShaftEL?.isScaling()) {
             return;
         }
-        if(this.timerShaftEL!.containPoint(ev)){
-            this.timerShaftEL?.documentOnMouseMove(ev)
-            return;
-        }else{
-            this.timerShaftEL?.documentOnMouseOut(ev)
+        this.timerShaftEL?.documentOnMouseMove(ev)
+        if(!this.timerShaftEL?.sportRuler?.edgeDetection(ev)){
             this.hoverFlag = null;
         }
         this.rangeSelect.mouseMove(rows, ev);
@@ -977,7 +974,7 @@ export class SpSystemTrace extends BaseElement {
             let inFavoriteArea = this.favoriteRowsEL?.containPoint(ev)
             let rows = this.visibleRows.filter((it) => it.focusContain(ev) && it.collect == inFavoriteArea)
             if (rows && rows[0] && this.traceRowClickJudgmentConditions.get(rows[0]!.rowType!)?.()) {
-                this.onClickHandler();
+                this.onClickHandler(rows[0]!.rowType!);
                 this.documentOnMouseMove(ev)
             }else{
                 this.clickEmptyArea()
@@ -1009,7 +1006,7 @@ export class SpSystemTrace extends BaseElement {
         [TraceRow.ROW_TYPE_JANK,() => JankStruct.hoverJankStruct !== null &&  JankStruct.hoverJankStruct !== undefined],
     ])
 
-    onClickHandler() {
+    onClickHandler(clickRowType:string) {
         if (!this.loadTraceCompleted) return;
         this.shadowRoot?.querySelectorAll<TraceRow<any>>("trace-row").forEach(it => it.rangeSelect = false)
         this.selectStructNull();
@@ -1106,7 +1103,7 @@ export class SpSystemTrace extends BaseElement {
             }
         }
 
-        if (CpuStruct.hoverCpuStruct) {
+        if (clickRowType === TraceRow.ROW_TYPE_CPU && CpuStruct.hoverCpuStruct) {
             CpuStruct.selectCpuStruct = CpuStruct.hoverCpuStruct
             this.timerShaftEL?.drawTriangle(CpuStruct.selectCpuStruct!.startTime || 0, "inverted");
             this.traceSheetEL?.displayCpuData(CpuStruct.selectCpuStruct, (wakeUpBean) => {
@@ -1114,12 +1111,12 @@ export class SpSystemTrace extends BaseElement {
                 this.refreshCanvas(false);
             }, cpuClickHandler);
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (ThreadStruct.hoverThreadStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_THREAD && ThreadStruct.hoverThreadStruct) {
             ThreadStruct.selectThreadStruct = ThreadStruct.hoverThreadStruct;
             this.timerShaftEL?.drawTriangle(ThreadStruct.selectThreadStruct!.startTime || 0, "inverted");
             this.traceSheetEL?.displayThreadData(ThreadStruct.selectThreadStruct, threadClickHandler, cpuClickHandler);
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (FuncStruct.hoverFuncStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_FUNC && FuncStruct.hoverFuncStruct) {
             FuncStruct.selectFuncStruct = FuncStruct.hoverFuncStruct;
             let hoverFuncStruct = FuncStruct.hoverFuncStruct
             this.timerShaftEL?.drawTriangle(FuncStruct.selectFuncStruct!.startTs || 0, "inverted");
@@ -1130,27 +1127,27 @@ export class SpSystemTrace extends BaseElement {
                 this.scrollToActFunc(funcStract, false)
             })
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (CpuFreqStruct.hoverCpuFreqStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_CPU_FREQ && CpuFreqStruct.hoverCpuFreqStruct) {
             CpuFreqStruct.selectCpuFreqStruct = CpuFreqStruct.hoverCpuFreqStruct
             this.traceSheetEL?.displayFreqData()
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (CpuStateStruct.hoverStateStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_CPU_STATE && CpuStateStruct.hoverStateStruct) {
             CpuStateStruct.selectStateStruct = CpuStateStruct.hoverStateStruct;
             this.traceSheetEL?.displayCpuStateData()
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_CPU_FREQ_LIMIT && CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct) {
             CpuFreqLimitsStruct.selectCpuFreqLimitsStruct = CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct
             this.traceSheetEL?.displayFreqLimitData()
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (ClockStruct.hoverClockStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_CLOCK && ClockStruct.hoverClockStruct) {
             ClockStruct.selectClockStruct = ClockStruct.hoverClockStruct
             this.traceSheetEL?.displayClockData(ClockStruct.selectClockStruct)
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (IrqStruct.hoverIrqStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_IRQ && IrqStruct.hoverIrqStruct) {
             IrqStruct.selectIrqStruct = IrqStruct.hoverIrqStruct;
             this.traceSheetEL?.displayIrqData(IrqStruct.selectIrqStruct);
             this.timerShaftEL?.modifyFlagList(undefined);
-        } else if (JankStruct.hoverJankStruct) {
+        } else if (clickRowType === TraceRow.ROW_TYPE_JANK && JankStruct.hoverJankStruct) {
             JankStruct.selectJankStructList.length = 0;
             this.clearPointPair();
             JankStruct.selectJankStruct = JankStruct.hoverJankStruct;
@@ -1600,7 +1597,7 @@ export class SpSystemTrace extends BaseElement {
                 item.draw(true)
             })
             this.scrollToProcess(`${findEntry.cpu}`, "", "cpu-data", true)
-            this.onClickHandler();
+            this.onClickHandler(TraceRow.ROW_TYPE_CPU);
         } else if (findEntry.type == "func") {
             this.observerScrollHeightEnable = true;
             this.scrollToActFunc(findEntry, true)
@@ -1627,7 +1624,7 @@ export class SpSystemTrace extends BaseElement {
             sdkRow!.highlight = true
             this.hoverStructNull();
             this.selectStructNull();
-            this.onClickHandler();
+            this.onClickHandler(findEntry.rowType!);
             this.closeAllExpandRows(findEntry.rowParentId)
             this.scrollToProcess(`${findEntry.rowId}`, `${findEntry.rowParentId}`, findEntry.rowType, true);
         }
@@ -1655,7 +1652,7 @@ export class SpSystemTrace extends BaseElement {
             this.selectStructNull();
             FuncStruct.hoverFuncStruct = searchEntry;
             FuncStruct.selectFuncStruct = searchEntry;
-            this.onClickHandler();
+            this.onClickHandler(TraceRow.ROW_TYPE_FUNC);
             this.scrollToDepth(`${funcRowID}`, `${funcStract.pid}`, funcStract.type, true, funcStract.depth || 0)
         }
         if (funcRow!.isComplete) {
@@ -1734,7 +1731,7 @@ export class SpSystemTrace extends BaseElement {
             this.timerShaftEL?.drawTriangle(findEntry.startTime || 0, "inverted");
         }
         CpuStruct.hoverCpuStruct = CpuStruct.selectCpuStruct;
-        this.onClickHandler();
+        this.onClickHandler(TraceRow.ROW_TYPE_CPU);
         return findIndex;
     }
 
@@ -1772,7 +1769,7 @@ export class SpSystemTrace extends BaseElement {
             this.timerShaftEL?.drawTriangle(findEntry.startTime || 0, "inverted");
         }
         CpuStruct.hoverCpuStruct = CpuStruct.selectCpuStruct;
-        this.onClickHandler();
+        this.onClickHandler(TraceRow.ROW_TYPE_CPU);
         return findIndex;
     }
 

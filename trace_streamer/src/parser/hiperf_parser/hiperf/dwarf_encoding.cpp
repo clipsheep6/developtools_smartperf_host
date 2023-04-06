@@ -20,8 +20,11 @@
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-DwarfEncoding::DwarfEncoding(dw_encode_t dw, const unsigned char *&data, uint64_t vaddrBase,
-                             uint64_t vaddrPC, uint64_t vaddrText)
+DwarfEncoding::DwarfEncoding(dw_encode_t dw,
+                             const unsigned char*& data,
+                             uint64_t vaddrBase,
+                             uint64_t vaddrPC,
+                             uint64_t vaddrText)
     : dw_(dw), data_(data), vaddrBase_(vaddrBase), vaddrPC_(vaddrPC), vaddrText_(vaddrText)
 {
     value_[0] = ReadValue(data);
@@ -33,7 +36,7 @@ const std::string DwarfEncoding::ToString() const
                               " value size:" + std::to_string(GetSize()) + " raw:";
 
     size_t size = GetSize();
-    const unsigned char *data = data_;
+    const unsigned char* data = data_;
     while (size-- > 0) {
         debugString.append(ToHex(data[0]) + " ");
         data++;
@@ -44,12 +47,12 @@ const std::string DwarfEncoding::ToString() const
     return debugString;
 }
 
-const unsigned char *DwarfEncoding::GetEnd() const
+const unsigned char* DwarfEncoding::GetEnd() const
 {
     return data_ + GetSize();
 }
 
-const unsigned char *DwarfEncoding::GetData() const
+const unsigned char* DwarfEncoding::GetData() const
 {
     return data_;
 }
@@ -91,7 +94,7 @@ dw_encode_t DwarfEncoding::Application() const
 {
     return (dw_ & 0xF0);
 }
-uint64_t DwarfEncoding::ReadValue(const unsigned char *&data) const
+uint64_t DwarfEncoding::ReadValue(const unsigned char*& data) const
 {
     switch (Format()) {
         case DW_EH_PE_udata2:

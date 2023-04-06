@@ -12,7 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -e
-echo "formatting C/C++ code ..."
-find $@ -name '*.h' -o -name '*.cpp' | xargs dos2unix
-find $@ -name '*.h' -o -name '*.cpp' | xargs chmod -x
-find $@ -name '*.h' -o -name '*.cpp' | xargs clang-format --verbose -i
+target_os="linux"
+gn="gn"
+case "$OSTYPE" in
+  solaris*) echo "SOLARIS" ;;
+  darwin*)  target_os="macx" ;;
+  linux*)   target_os="linux"  ;;
+  bsd*)     echo "is bsd os" ;;
+  msys*)    target_os="windows" gn="gn.exe" ;;
+  *)        echo "unknown: $OSTYPE" ;;
+esac
+PRJ_ROOT_DIR=$(readlink -f -- "$(dirname $0)/")
+cd ${PRJ_ROOT_DIR}
+FORMAT_DIR_LIST=(
+    "${PRJ_ROOT_DIR}/src"
+    "${PRJ_ROOT_DIR}/sdk/demo_sdk"
+    "${PRJ_ROOT_DIR}/test"
+)
+echo "formatting code ..."
+for d in ${FORMAT_DIR_LIST[@]}; do
+    echo $d
+    for f in $(find $d -type f -not -name '*sql.c' -regex '.*\.\(cpp\|hpp\|c\|h\)'); do
+        dos2unix $f
+        chmod -x $f
+        clang-format --verbose -i $f
+    done
+    for f in $(find $d -type f -not -name '*sql.c' -regex '.*\.\(gn\|gni\)'); do
+        echo $f
+        ./prebuilts/$target_os/gn format $f
+    done
+done
+echo "formatting code over"

@@ -53,7 +53,7 @@ public:
     // it process the record, and rebuild the trhread maps
     // It internally determines whether to go to the Record process (which will generate virtual
     // events) or the Report process by judging whether SetRecordMode has been passed.
-    void UpdateFromRecord(PerfEventRecord &reocrd);
+    void UpdateFromRecord(PerfEventRecord& reocrd);
 
     // in reocrd mode
     // we make a kernel symbols from some proc file
@@ -66,12 +66,12 @@ public:
     void UpdateKernelModulesSymbols();
 
     // set symbols path , it will send to every symobile file for search
-    bool SetSymbolsPaths(const std::vector<std::string> &symbolsPaths);
+    bool SetSymbolsPaths(const std::vector<std::string>& symbolsPaths);
 
     // any mode
     static_assert(sizeof(pid_t) == sizeof(int));
 
-    const std::vector<std::unique_ptr<SymbolsFile>> &GetSymbolsFiles() const
+    const std::vector<std::unique_ptr<SymbolsFile>>& GetSymbolsFiles() const
     {
         return symbolsFiles_;
     }
@@ -87,19 +87,18 @@ public:
         disableUnwind_ = disableUnwind;
     }
 
-    const Symbol GetSymbol(uint64_t ip, pid_t pid, pid_t tid,
-                           const perf_callchain_context &context = PERF_CONTEXT_MAX);
+    const Symbol GetSymbol(uint64_t ip, pid_t pid, pid_t tid, const perf_callchain_context& context = PERF_CONTEXT_MAX);
 
-    VirtualThread &GetThread(pid_t pid, pid_t tid);
-    const std::map<pid_t, VirtualThread> &GetThreads() const
+    VirtualThread& GetThread(pid_t pid, pid_t tid);
+    const std::map<pid_t, VirtualThread>& GetThreads() const
     {
         return userSpaceThreadMap_;
     }
-    void SymbolicRecord(PerfRecordSample &recordSample);
+    void SymbolicRecord(PerfRecordSample& recordSample);
 
     // report use
-    void UpdateFromPerfData(const std::vector<SymbolFileStruct> &);
-    void UnwindFromRecord(PerfRecordSample &recordSample);
+    void UpdateFromPerfData(const std::vector<SymbolFileStruct>&);
+    void UnwindFromRecord(PerfRecordSample& recordSample);
 
     // debug time
 #ifdef HIPERF_DEBUG_TIME
@@ -132,31 +131,33 @@ private:
         THREAD_SYMBOL_CACHE_LIMIT = 2000,
     };
     std::unordered_map<pid_t, HashList<uint64_t, Symbol>> threadSymbolCache_;
-    HashList<uint64_t, Symbol> kernelSymbolCache_ {KERNEL_SYMBOL_CACHE_LIMIT};
-    bool GetSymbolCache(uint64_t ip, pid_t pid, pid_t tid, Symbol &symbol,
-                        const perf_callchain_context &context);
+    HashList<uint64_t, Symbol> kernelSymbolCache_{KERNEL_SYMBOL_CACHE_LIMIT};
+    bool GetSymbolCache(uint64_t ip, pid_t pid, pid_t tid, Symbol& symbol, const perf_callchain_context& context);
     // find synbols function name
-    void MakeCallFrame(Symbol &symbol, CallFrame &callFrame);
+    void MakeCallFrame(Symbol& symbol, CallFrame& callFrame);
     // records
     void UpdateSymbols(std::string filename);
-    void UpdateFromRecord(PerfRecordSample &recordSample);
-    void UpdateFromRecord(PerfRecordMmap &recordMmap);
-    void UpdateFromRecord(PerfRecordMmap2 &recordMmap2);
-    void UpdateFromRecord(PerfRecordComm &recordComm);
+    void UpdateFromRecord(PerfRecordSample& recordSample);
+    void UpdateFromRecord(PerfRecordMmap& recordMmap);
+    void UpdateFromRecord(PerfRecordMmap2& recordMmap2);
+    void UpdateFromRecord(PerfRecordComm& recordComm);
 
     // threads
-    VirtualThread &UpdateThread(pid_t pid, pid_t tid, const std::string name = "");
+    VirtualThread& UpdateThread(pid_t pid, pid_t tid, const std::string name = "");
     std::string ReadThreadName(pid_t tid);
-    VirtualThread &CreateThread(pid_t pid, pid_t tid);
+    VirtualThread& CreateThread(pid_t pid, pid_t tid);
 
     // maps
-    void UpdateThreadMaps(pid_t pid, pid_t tid, const std::string filename, uint64_t begin,
-                          uint64_t len, uint64_t offset);
+    void UpdateThreadMaps(pid_t pid,
+                          pid_t tid,
+                          const std::string filename,
+                          uint64_t begin,
+                          uint64_t len,
+                          uint64_t offset);
     void UpdatekernelMap(uint64_t begin, uint64_t end, uint64_t offset, std::string filename);
 
-    const Symbol GetKernelSymbol(uint64_t ip, const std::vector<MemMapItem> &memMaps,
-                                 const VirtualThread &thread);
-    const Symbol GetUserSymbol(uint64_t ip, const VirtualThread &thread);
+    const Symbol GetKernelSymbol(uint64_t ip, const std::vector<MemMapItem>& memMaps, const VirtualThread& thread);
+    const Symbol GetUserSymbol(uint64_t ip, const VirtualThread& thread);
 #ifdef HIPERF_DEBUG
     std::unordered_set<uint64_t> missedRuntimeVaddr_;
 #endif

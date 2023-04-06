@@ -33,7 +33,7 @@ void SystemEventMeasureFilter::AppendNewMeasureData(DataIndex nameIndex, uint64_
 {
     auto filterId = GetOrCreateFilterId(nameIndex);
     auto row = traceDataCache_->GetSysMemMeasureData()->AppendMeasureData(0, timeStamp, value, filterId);
-    //if the filterId ever exists
+    // if the filterId ever exists
     if (filterIdToRow_.count(filterId)) {
         traceDataCache_->GetSysMemMeasureData()->SetDur(filterIdToRow_.at(filterId), timeStamp);
         filterIdToRow_.at(filterId) = row;

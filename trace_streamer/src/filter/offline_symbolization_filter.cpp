@@ -35,7 +35,9 @@ void OfflineSymbolizationFilter::ParseMaps(std::unique_ptr<NativeHookMetaData>& 
     segs_.emplace_back(nativeHookMetaData->seg_);
     auto reader = std::make_shared<ProtoReader::MapsInfo_Reader>(nativeHookMetaData->reader_->maps_info());
     auto ipid = streamFilters_->processFilter_->GetOrCreateInternalPid(0, reader->pid());
-    ipidAndStartAddrToMapsInfoMap_.Insert(ipid, reader->start(), std::move(reader));
+    // The temporary variable startTime here is to solve the problem of parsing errors under the window platform
+    uint64_t startTime = reader->start();
+    ipidAndStartAddrToMapsInfoMap_.Insert(ipid, startTime, std::move(reader));
 }
 void OfflineSymbolizationFilter::ParseSymbolTables(std::unique_ptr<NativeHookMetaData>& nativeHookMetaData)
 {
@@ -65,12 +67,13 @@ void OfflineSymbolizationFilter::ParseSymbolTables(std::unique_ptr<NativeHookMet
         }
     }
 }
-std::shared_ptr<std::vector<std::shared_ptr<FrameInfo>>> OfflineSymbolizationFilter::Parse(uint32_t pid, const std::vector<uint64_t>& ips)
+std::shared_ptr<std::vector<std::shared_ptr<FrameInfo>>>
+    OfflineSymbolizationFilter::Parse(uint32_t pid, const std::vector<uint64_t>& ips)
 {
     auto result = std::make_shared<std::vector<std::shared_ptr<FrameInfo>>>();
     for (auto itor = ips.begin(); itor != ips.end(); itor++) {
         auto frameInfo = Parse(pid, *itor);
-        //If the IP in the middle of the call stack cannot be symbolized, the remaining IP is discarded
+        // If the IP in the middle of the call stack cannot be symbolized, the remaining IP is discarded
         if (!frameInfo) {
             break;
         }
@@ -116,7 +119,8 @@ std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::Parse(uint32_t pid, uint6
     if (itor == filePathIdToSymbolTableMap_.end()) {
         // find matching SymbolTable failed, but filePathId is availiable
         ipidAndIpToFrameInfo_.Insert(ipid, ip, frameInfo);
-        TS_LOGD("find matching filePathId failed, pid = %u, ip = %lu, filePathId = %u", pid, ip, frameInfo->filePathId_);
+        TS_LOGD("find matching filePathId failed, pid = %u, ip = %lu, filePathId = %u", pid, ip,
+                frameInfo->filePathId_);
         return frameInfo;
     }
     auto symbolTable = itor->second;

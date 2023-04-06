@@ -21,7 +21,7 @@ namespace HiPerf {
 namespace Option {
 static std::map<std::string, std::unique_ptr<MainOption>> g_MainOptions;
 
-bool CheckOptionFormat(const std::string &optionName)
+bool CheckOptionFormat(const std::string& optionName)
 {
     if (optionName.empty()) {
         HLOGE("unable to use empty option name!");
@@ -35,12 +35,12 @@ bool CheckOptionFormat(const std::string &optionName)
     return true;
 }
 
-const std::map<std::string, std::unique_ptr<MainOption>> &GetMainOptions()
+const std::map<std::string, std::unique_ptr<MainOption>>& GetMainOptions()
 {
     return g_MainOptions;
 }
 
-const MainOption *FindMainOption(std::string argName)
+const MainOption* FindMainOption(std::string argName)
 {
     HLOGV("%s", argName.c_str());
     auto found = g_MainOptions.find(argName);
@@ -52,8 +52,7 @@ const MainOption *FindMainOption(std::string argName)
     }
 }
 
-std::vector<std::string>::iterator FindOption(std::vector<std::string> &args,
-                                              const std::string &optionName)
+std::vector<std::string>::iterator FindOption(std::vector<std::string>& args, const std::string& optionName)
 {
     HLOGV("try find '%s' in args: %s", optionName.c_str(), VectorToString(args).c_str());
     auto tmpit = args.begin();
@@ -76,36 +75,34 @@ std::vector<std::string>::iterator FindOption(std::vector<std::string> &args,
     return it;
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName, bool &value)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, bool& value)
 {
     value = true;
     HLOGD("get bool result:'%s':'%d'", optionName.c_str(), value);
     return true;
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName, int &value)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, int& value)
 {
     value = std::stoi(optionValue);
     HLOGD("get int result:'%s':'%d'", optionName.c_str(), value);
     return true;
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName, float &value)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, float& value)
 {
     value = std::stof(optionValue);
     HLOGD("get float result:'%s':'%f'", optionName.c_str(), value);
     return true;
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::string &value)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::string& value)
 {
     value = optionValue;
     return true; // every thing done
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::vector<int> &values)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::vector<int>& values)
 {
     std::vector<std::string> stringValues = StringSplit(optionValue, ",");
     HLOGD("split int result:'%s':'%s'", optionName.c_str(), VectorToString(stringValues).c_str());
@@ -116,17 +113,15 @@ bool GetValueFromString(const std::string &optionValue, const std::string &optio
     return values.size() > 0; // convert successed ?
 }
 
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::vector<std::string> &values)
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::vector<std::string>& values)
 {
     values = StringSplit(optionValue, ",");
-    HLOGD("split string result:'%s':'%s' from '%s'", optionName.c_str(),
-          VectorToString(values).c_str(), optionValue.c_str());
+    HLOGD("split string result:'%s':'%s' from '%s'", optionName.c_str(), VectorToString(values).c_str(),
+          optionValue.c_str());
     return values.size() > 0; // convert successed ?
 }
 
-bool GetOptionTrackedCommand(std::vector<std::string> &args,
-                             std::vector<std::string> &trackedCommand)
+bool GetOptionTrackedCommand(std::vector<std::string>& args, std::vector<std::string>& trackedCommand)
 {
     if (!args.empty()) {
         trackedCommand.insert(trackedCommand.begin(), args.begin(), args.end());
@@ -140,8 +135,9 @@ void ClearMainOptions()
     g_MainOptions.clear();
 }
 
-bool RegisterMainOption(const std::string &optionName, const std::string &help,
-                        std::function<bool(std::vector<std::string> &)> callBackFunction)
+bool RegisterMainOption(const std::string& optionName,
+                        const std::string& help,
+                        std::function<bool(std::vector<std::string>&)> callBackFunction)
 {
     HLOGV("%s", optionName.c_str());
     if (!CheckOptionFormat(optionName)) {

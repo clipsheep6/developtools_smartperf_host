@@ -77,7 +77,7 @@ TraceFileType GuessFileType(const uint8_t* data, size_t size)
         return TRACE_FILETYPE_H_TRACE;
     }
     const std::regex bytraceMatcher = std::regex(R"(-(\d+)\s+\(?\s*(\d+|-+)?\)?\s?\[(\d+)\]\s*)"
-                                            R"([a-zA-Z0-9.]{0,5}\s+(\d+\.\d+):\s+(\S+):)");
+                                                 R"([a-zA-Z0-9.]{0,5}\s+(\d+\.\d+):\s+(\S+):)");
     std::smatch matcheLine;
     std::string bytraceMode(reinterpret_cast<const char*>(data), size);
     if (std::regex_search(bytraceMode, matcheLine, bytraceMatcher)) {
@@ -230,8 +230,7 @@ int TraceStreamerSelector::OperateDatabase(const std::string& sql)
 {
     return traceDataCache_->OperateDatabase(sql);
 }
-int TraceStreamerSelector::SearchDatabase(const std::string& sql,
-    TraceDataDB::ResultCallBack resultCallBack)
+int TraceStreamerSelector::SearchDatabase(const std::string& sql, TraceDataDB::ResultCallBack resultCallBack)
 {
     return traceDataCache_->SearchDatabase(sql, resultCallBack);
 }

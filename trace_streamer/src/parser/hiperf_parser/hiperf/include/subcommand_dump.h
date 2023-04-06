@@ -67,12 +67,12 @@ public:
     }
     ~SubCommandDump() override;
 
-    bool OnSubCommand(std::vector<std::string> &args) override;
-    bool ParseOption(std::vector<std::string> &args) override;
+    bool OnSubCommand(std::vector<std::string>& args) override;
+    bool ParseOption(std::vector<std::string>& args) override;
 
     static bool RegisterSubCommandDump(void);
 
-    static void DumpPrintEventAttr(const perf_event_attr &attr, int indent = 0);
+    static void DumpPrintEventAttr(const perf_event_attr& attr, int indent = 0);
     std::unique_ptr<PerfFileReader> reader_;
 
 private:
@@ -104,13 +104,13 @@ private:
     void DumpPrintFileHeader(int indent = 0);
     void DumpAttrPortion(int indent = 0);
     void DumpDataPortion(int indent = 0);
-    void DumpCallChain(int indent, std::unique_ptr<PerfRecordSample> &sample);
+    void DumpCallChain(int indent, std::unique_ptr<PerfRecordSample>& sample);
     void DumpFeaturePortion(int indent = 0);
-    void ExprotUserData(std::unique_ptr<PerfEventRecord> &record);
-    void ExprotUserStack(const PerfRecordSample &recordSample);
-    void PrintHeaderInfo(const int &indent);
-    void PrintSymbolFile(const int &indent, const SymbolFileStruct &symbolFileStruct);
-    void PrintFeatureEventdesc(int indent, const PerfFileSectionEventDesc &sectionEventdesc);
+    void ExprotUserData(std::unique_ptr<PerfEventRecord>& record);
+    void ExprotUserStack(const PerfRecordSample& recordSample);
+    void PrintHeaderInfo(const int& indent);
+    void PrintSymbolFile(const int& indent, const SymbolFileStruct& symbolFileStruct);
+    void PrintFeatureEventdesc(int indent, const PerfFileSectionEventDesc& sectionEventdesc);
     VirtualRuntime vr_;
 };
 } // namespace HiPerf

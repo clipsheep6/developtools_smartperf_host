@@ -22,7 +22,7 @@ using namespace std;
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-bool SubCommandHelp::OnSubCommand(std::vector<std::string> &args)
+bool SubCommandHelp::OnSubCommand(std::vector<std::string>& args)
 {
     HLOGV("enter");
     OnHelp(args);
@@ -35,23 +35,22 @@ void SubCommandHelp::RegisterSubCommandHelp()
     SubCommand::RegisterSubCommand("help", std::make_unique<SubCommandHelp>());
 }
 
-bool SubCommandHelp::OnHelp(std::vector<std::string> &args)
+bool SubCommandHelp::OnHelp(std::vector<std::string>& args)
 {
     if (args.empty()) {
-        const auto &mainOptions = Option::GetMainOptions();
+        const auto& mainOptions = Option::GetMainOptions();
         HLOGD("%zu options found:", mainOptions.size());
         printf("Usage: hiperf [options] command [args for command]\n");
 
         printf("options:\n");
-        for (const auto &commandOption : mainOptions) {
-            printf("\t%-20s\t%s\n", commandOption.first.c_str(),
-                   commandOption.second->help.c_str());
+        for (const auto& commandOption : mainOptions) {
+            printf("\t%-20s\t%s\n", commandOption.first.c_str(), commandOption.second->help.c_str());
         }
 
-        auto &commands = SubCommand::GetSubCommands();
+        auto& commands = SubCommand::GetSubCommands();
         HLOGD("%zu cmds found:", commands.size());
         printf("command:\n");
-        for (const auto &command : commands) {
+        for (const auto& command : commands) {
             printf("\t%s:\t%s\n", command.second->Name().c_str(), command.second->Brief().c_str());
         }
         printf("\nSee 'hiperf help [command]' for more information on a specific command.\n\n");

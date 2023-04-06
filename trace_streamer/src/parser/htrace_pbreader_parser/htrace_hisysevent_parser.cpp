@@ -56,7 +56,7 @@ int32_t HtraceHisyseventParser::JGetData(json& jMessage,
             continue;
         }
         if (i.key() == "tag_" && i.value() != "PowerStats") {
-                streamFilters_->statFilter_->IncreaseStat(TRACE_HISYSEVENT, STAT_EVENT_DATA_INVALID);
+            streamFilters_->statFilter_->IncreaseStat(TRACE_HISYSEVENT, STAT_EVENT_DATA_INVALID);
             return -1;
         }
         if (i.key() == "APPNAME") {
@@ -87,12 +87,12 @@ void HtraceHisyseventParser::NoArrayDataParse(JsonData jData,
         if (value.is_string()) {
             std::string strValue = value;
             DataIndex valueIndex = traceDataCache_->GetDataIndex(strValue);
-            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 1, 0,
-                                                                     valueIndex);
+            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                     keyIndex, 1, 0, valueIndex);
         } else {
             double valueIndex = value;
-            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 0,
-                                                                     valueIndex, 0);
+            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                     keyIndex, 0, valueIndex, 0);
         }
     }
 }
@@ -110,13 +110,13 @@ void HtraceHisyseventParser::ArrayDataParse(JsonData jData,
             streamFilters_->hiSysEventMeasureFilter_->GetOrCreateFilterId(eventSourceIndex);
             if (value.is_number()) {
                 double valueIndex = value;
-                streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 0,
-                                                                         valueIndex, 0);
+                streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                         keyIndex, 0, valueIndex, 0);
             } else if (value.is_string()) {
                 std::string strValue = value;
                 DataIndex valueIndex = traceDataCache_->GetDataIndex(strValue);
-                streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 1,
-                                                                         0, valueIndex);
+                streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                         keyIndex, 1, 0, valueIndex);
             }
         }
     }
@@ -131,12 +131,12 @@ void HtraceHisyseventParser::CommonDataParser(JsonData jData, DataIndex eventSou
         if (value.is_string()) {
             std::string strValue = value;
             DataIndex valueIndex = traceDataCache_->GetDataIndex(strValue);
-            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 1, 0,
-                                                                     valueIndex);
+            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                     keyIndex, 1, 0, valueIndex);
         } else {
             double valueIndex = value;
-            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex, keyIndex, 0,
-                                                                     valueIndex, 0);
+            streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(serial, jData.timeStamp, eventSourceIndex,
+                                                                     keyIndex, 0, valueIndex, 0);
         }
     }
 }
@@ -157,27 +157,20 @@ void HtraceHisyseventParser::Parse(ProtoReader::HisyseventInfo_Reader* tracePack
     ProtoReader::AudioVolumeInfo_Reader audioVolumeInfo(deviceStat.volume_state());
     if (isDeviceState) {
         streamFilters_->hiSysEventMeasureFilter_->AppendNewValue(
-            deviceStat.brightness_state(), deviceStat.bt_state(),
-            deviceStat.location_state(), deviceStat.wifi_state(),
-            audioVolumeInfo.stream_default(),
-            audioVolumeInfo.voice_call(), audioVolumeInfo.music(),
-            audioVolumeInfo.stream_ring(), audioVolumeInfo.media(),
-            audioVolumeInfo.voice_assistant(),
-            audioVolumeInfo.system(), audioVolumeInfo.alarm(),
-            audioVolumeInfo.notification(),
-            audioVolumeInfo.bluetoolth_sco(),
-            audioVolumeInfo.enforced_audible(),
-            audioVolumeInfo.stream_dtmf(),
-            audioVolumeInfo.stream_tts(),
-            audioVolumeInfo.accessibility(),
-            audioVolumeInfo.recording(),
+            deviceStat.brightness_state(), deviceStat.bt_state(), deviceStat.location_state(), deviceStat.wifi_state(),
+            audioVolumeInfo.stream_default(), audioVolumeInfo.voice_call(), audioVolumeInfo.music(),
+            audioVolumeInfo.stream_ring(), audioVolumeInfo.media(), audioVolumeInfo.voice_assistant(),
+            audioVolumeInfo.system(), audioVolumeInfo.alarm(), audioVolumeInfo.notification(),
+            audioVolumeInfo.bluetoolth_sco(), audioVolumeInfo.enforced_audible(), audioVolumeInfo.stream_dtmf(),
+            audioVolumeInfo.stream_tts(), audioVolumeInfo.accessibility(), audioVolumeInfo.recording(),
             audioVolumeInfo.stream_all());
         isDeviceState = false;
     }
     json jMessage;
     for (auto i = tracePacket->info(); i; ++i) {
         ProtoReader::HisyseventLine_Reader hisyseventLine(i->ToBytes());
-        if (hisyseventLine.raw_content().ToStdString().front() != '{' || hisyseventLine.raw_content().ToStdString().back() != '}') {
+        if (hisyseventLine.raw_content().ToStdString().front() != '{' ||
+            hisyseventLine.raw_content().ToStdString().back() != '}') {
             continue;
         }
         ss << hisyseventLine.raw_content().ToStdString();

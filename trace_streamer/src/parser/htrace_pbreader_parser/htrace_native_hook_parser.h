@@ -41,7 +41,9 @@ public:
 private:
     void MaybeParseNativeHookData();
     void ParseOneNativeHookData(std::multimap<uint64_t, std::unique_ptr<NativeHookMetaData>>::iterator itor);
-    void ParseNativeHookEvent(SupportedTraceEventType type, uint64_t newTimeStamp, const ProtoReader::BytesView& bytesView);
+    void ParseNativeHookEvent(SupportedTraceEventType type,
+                              uint64_t newTimeStamp,
+                              const ProtoReader::BytesView& bytesView);
     void ParseTagEvent(const ProtoReader::BytesView& bytesView);
     void ParseFileEvent(const ProtoReader::BytesView& bytesView);
     void ParseSymbolEvent(const ProtoReader::BytesView& bytesView);

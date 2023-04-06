@@ -33,7 +33,7 @@ public:
 public:
     const std::string& GetDataFromDict(DataIndex id) const;
     const Process& GetConstProcessData(InternalPid internalPid) const;
-    const  std::deque<Process>& GetConstProcessData() const;
+    const std::deque<Process>& GetConstProcessData() const;
     const Thread& GetConstThreadData(InternalTid internalTid) const;
     const std::deque<Thread>& GetConstThreadData() const;
     const CallStack& GetConstInternalSlicesData() const;

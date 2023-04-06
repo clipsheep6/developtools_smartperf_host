@@ -60,11 +60,13 @@ public:
     ~HtraceParser();
     void ParseTraceDataSegment(std::unique_ptr<uint8_t[]> bufferStr, size_t size) override;
     void WaitForParserEnd();
+
 private:
     bool ParseDataRecursively(std::deque<uint8_t>::iterator& packagesBegin, size_t& currentLength);
     void ParseTraceDataItem(const std::string& buffer) override;
     void FilterData(HtraceDataSegment& seg);
     void ParserData(HtraceDataSegment& dataSeg);
+
 private:
     void ParseMemory(ProtoReader::ProfilerPluginData_Reader* pluginDataZero, HtraceDataSegment& dataSeg);
     void ParseHilog(HtraceDataSegment& dataSeg);
@@ -79,10 +81,7 @@ private:
     void ParseThread();
     int GetNextSegment();
     void FilterThread();
-    enum ErrorCode {
-        ERROR_CODE_EXIT = -2,
-        ERROR_CODE_NODATA = -1
-    };
+    enum ErrorCode { ERROR_CODE_EXIT = -2, ERROR_CODE_NODATA = -1 };
     bool InitProfilerTraceFileHeader();
     ProfilerTraceFileHeader profilerTraceFileHeader_;
     uint64_t htraceCurentLength_ = 0;

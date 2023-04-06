@@ -35,9 +35,9 @@ public:
         Option::RegisterMainOption("-h", "show help", OnHelp);
     }
 
-    bool OnSubCommand(std::vector<std::string> &args) override;
+    bool OnSubCommand(std::vector<std::string>& args) override;
     static void RegisterSubCommandHelp(void);
-    static bool OnHelp(std::vector<std::string> &args);
+    static bool OnHelp(std::vector<std::string>& args);
 };
 } // namespace HiPerf
 } // namespace Developtools

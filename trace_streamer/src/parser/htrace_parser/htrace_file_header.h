@@ -53,7 +53,7 @@ struct ProfilerTraceFileHeader {
         uint64_t monotonicCoarse = 0;
         uint64_t monotonicRaw = 0;
         char standalonePluginName[PLUGIN_MODULE_NAME_MAX + 1] = "";
-        char pluginVersion[PLUGIN_MODULE_VERSION_MAX +1] = "";
+        char pluginVersion[PLUGIN_MODULE_VERSION_MAX + 1] = "";
     } __attribute__((packed));
     HeaderData data = {};
     uint8_t padding_[HEADER_SIZE - sizeof(data)] = {};

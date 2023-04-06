@@ -30,13 +30,13 @@ public:
         COMMAND_STOPPED  // no child process or command execution
     };
 
-    static std::unique_ptr<TrackedCommand> CreateInstance(const std::vector<std::string> &args);
+    static std::unique_ptr<TrackedCommand> CreateInstance(const std::vector<std::string>& args);
 
     ~TrackedCommand();
 
     bool CreateChildProcess();
     bool StartCommand();
-    bool WaitCommand(int &wstatus);
+    bool WaitCommand(int& wstatus);
     void Stop();
 
     inline std::string GetCommandName()
@@ -58,17 +58,17 @@ public:
     }
 
 private:
-    explicit TrackedCommand(const std::vector<std::string> &args);
+    explicit TrackedCommand(const std::vector<std::string>& args);
 
-    bool InitSignalPipes(int &startFd, int &ackFd);
-    void ExecuteCommand(const int &startFd, const int &ackFd);
+    bool InitSignalPipes(int& startFd, int& ackFd);
+    void ExecuteCommand(const int& startFd, const int& ackFd);
     void MakeInvalid();
 
-    std::vector<std::string> command_ {};
-    int startFd_ {-1};
-    int ackFd_ {-1};
-    pid_t childPid_ {-1};
-    State state_ {State::COMMAND_STOPPED};
+    std::vector<std::string> command_{};
+    int startFd_{-1};
+    int ackFd_{-1};
+    pid_t childPid_{-1};
+    State state_{State::COMMAND_STOPPED};
 };
 } // namespace HiPerf
 } // namespace Developtools

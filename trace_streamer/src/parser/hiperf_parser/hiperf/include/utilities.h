@@ -105,8 +105,7 @@ constexpr const int FIVE_THOUSANDS = 5000;
 #endif
 #endif
 
-constexpr const double MS_DUARTION =
-    static_cast<double>(std::chrono::milliseconds::duration::period::den);
+constexpr const double MS_DUARTION = static_cast<double>(std::chrono::milliseconds::duration::period::den);
 
 constexpr uint64_t KILO = 1024;
 
@@ -124,29 +123,29 @@ public:
     {
         Clean();
     }
-    const char *HoldStringView(std::string_view view);
+    const char* HoldStringView(std::string_view view);
     // only use in UT
     void Clean()
     {
-        for (auto &p : holder_) {
+        for (auto& p : holder_) {
             delete[] p;
         }
         holder_.clear();
     }
-    static MemoryHold &Get()
+    static MemoryHold& Get()
     {
         static MemoryHold instance;
         return instance;
     }
 
 private:
-    std::vector<char *> holder_;
+    std::vector<char*> holder_;
 };
 
-std::string StringReplace(std::string source, const std::string &from, const std::string &to);
+std::string StringReplace(std::string source, const std::string& from, const std::string& to);
 
-template<class T>
-std::string VectorToString(const std::vector<T> &items)
+template <class T>
+std::string VectorToString(const std::vector<T>& items)
 {
     if constexpr (std::is_same<T, std::vector<std::string>>::value) {
         std::vector<std::string> stringItems;
@@ -172,36 +171,36 @@ std::string VectorToString(const std::vector<T> &items)
     }
 }
 
-std::string BufferToHexString(const std::vector<unsigned char> &vec);
+std::string BufferToHexString(const std::vector<unsigned char>& vec);
 std::string BufferToHexString(const unsigned char buf[], size_t size);
-void HexDump(const void *buf, size_t size, size_t max_size = 0);
+void HexDump(const void* buf, size_t size, size_t max_size = 0);
 
-std::string &StringTrim(std::string &s);
+std::string& StringTrim(std::string& s);
 
 std::vector<std::string> StringSplit(std::string source, std::string split = ",");
 
-size_t SubStringCount(const std::string &source, const std::string &sub);
+size_t SubStringCount(const std::string& source, const std::string& sub);
 
-bool StringStartsWith(const std::string &string, const std::string &with);
+bool StringStartsWith(const std::string& string, const std::string& with);
 
-bool StringEndsWith(const std::string &string, const std::string &with);
+bool StringEndsWith(const std::string& string, const std::string& with);
 
-bool IsSameCommand(const std::string &cmdLine, const std::string &cmdName);
+bool IsSameCommand(const std::string& cmdLine, const std::string& cmdName);
 
 std::vector<pid_t> GetSubthreadIDs(const pid_t pid);
 
-bool IsDigits(const std::string &str);
+bool IsDigits(const std::string& str);
 
-bool IsHexDigits(const std::string &str);
+bool IsHexDigits(const std::string& str);
 
 constexpr const int COMPRESS_READ_BUF_SIZE = 4096;
 // compress specified dataFile into gzip file
-bool CompressFile(const std::string &dataFile, const std::string &destFile);
+bool CompressFile(const std::string& dataFile, const std::string& destFile);
 // uncompress specified gzip file into dataFile
-bool UncompressFile(const std::string &gzipFile, const std::string &dataFile);
+bool UncompressFile(const std::string& gzipFile, const std::string& dataFile);
 
-template<typename... VA>
-std::string StringPrintf(const char *stringFormat, VA... args)
+template <typename... VA>
+std::string StringPrintf(const char* stringFormat, VA... args)
 {
     // check howmany bytes we need
     char bytes[DEFAULT_STRING_BUF_SIZE];
@@ -212,8 +211,7 @@ std::string StringPrintf(const char *stringFormat, VA... args)
     }
 
     // print it to bytes
-    if (snprintf_s(bytes, sizeof(bytes), sizeof(bytes) - 1, stringFormat,
-                   args...) < 0) {
+    if (snprintf_s(bytes, sizeof(bytes), sizeof(bytes) - 1, stringFormat, args...) < 0) {
         return EMPTY_STRING;
     }
 
@@ -222,13 +220,13 @@ std::string StringPrintf(const char *stringFormat, VA... args)
 }
 
 // path check
-std::vector<std::string> GetEntriesInDir(const std::string &basePath);
+std::vector<std::string> GetEntriesInDir(const std::string& basePath);
 
-std::vector<std::string> GetSubDirs(const std::string &basePath);
+std::vector<std::string> GetSubDirs(const std::string& basePath);
 
-bool IsDir(const std::string &path);
+bool IsDir(const std::string& path);
 
-bool IsPath(const std::string &fileName);
+bool IsPath(const std::string& fileName);
 
 #if is_mingw
 const char PATH_SEPARATOR = '\\';
@@ -237,7 +235,7 @@ const char PATH_SEPARATOR = '/';
 #endif
 const std::string PATH_SEPARATOR_STR = std::string(1, PATH_SEPARATOR);
 
-std::string PlatformPathConvert(const std::string &path);
+std::string PlatformPathConvert(const std::string& path);
 
 // attribute
 #define PACKED __attribute__((packed))
@@ -247,13 +245,13 @@ std::string PlatformPathConvert(const std::string &path);
 // some time u will meet signal 7 (SIGBUS), code 1 (BUS_ADRALN) in 32 or 64 arch cpu
 #define HIPERF_BUF_ALIGN alignas(64)
 
-#define ALIGN(size, align) (((size) + (align) - 1) & (~((align) - 1)))
+#define ALIGN(size, align) (((size) + (align)-1) & (~((align)-1)))
 
 uint32_t RoundUp(uint32_t x, const int align);
 
 // data convert function
-template<class T>
-std::string ToHex(const T &source, int size = sizeof(T), bool prefix = false)
+template <class T>
+std::string ToHex(const T& source, int size = sizeof(T), bool prefix = false)
 {
     std::stringstream ss;
     if (prefix) {
@@ -264,8 +262,8 @@ std::string ToHex(const T &source, int size = sizeof(T), bool prefix = false)
 }
 
 // data move and copy
-template<class S, class T>
-size_t inline CopyFromBufferAndMove(S *&buffer, T *dest, size_t size = 0)
+template <class S, class T>
+size_t inline CopyFromBufferAndMove(S*& buffer, T* dest, size_t size = 0)
 {
     if (size == 0) {
         size = sizeof(T);
@@ -278,11 +276,11 @@ size_t inline CopyFromBufferAndMove(S *&buffer, T *dest, size_t size = 0)
 }
 
 // file read write
-bool ReadIntFromProcFile(const std::string &path, int &value);
-bool WriteIntToProcFile(const std::string &path, int value);
-std::string ReadFileToString(const std::string &fileName);
-bool ReadFileToString(const std::string &fileName, std::string &content, size_t fileSize = 0);
-bool WriteStringToFile(const std::string &fileName, const std::string &value);
+bool ReadIntFromProcFile(const std::string& path, int& value);
+bool WriteIntToProcFile(const std::string& path, int value);
+std::string ReadFileToString(const std::string& fileName);
+bool ReadFileToString(const std::string& fileName, std::string& content, size_t fileSize = 0);
+bool WriteStringToFile(const std::string& fileName, const std::string& value);
 
 // stdout
 class StdoutRecord {
@@ -291,22 +289,21 @@ public:
     {
         Stop(); // stdout need restore
     }
-    StdoutRecord(const std::string &tempFile = EMPTY_STRING,
-                 const std::string &mode = EMPTY_STRING);
+    StdoutRecord(const std::string& tempFile = EMPTY_STRING, const std::string& mode = EMPTY_STRING);
 
     bool Start();
     std::string Stop();
 
 private:
     OHOS::UniqueFd stdoutFile_;       // back and restore stdout
-    std::FILE *recordFile_ = nullptr; // save the output
+    std::FILE* recordFile_ = nullptr; // save the output
     bool stop_ = true;
     std::string content_ = EMPTY_STRING;
 };
 
 // misc
-template<class T>
-float Percentage(const T &a, const T &b)
+template <class T>
+float Percentage(const T& a, const T& b)
 {
     return static_cast<float>(a) / static_cast<float>(b) * FULL_PERCENTAGE;
 }
@@ -317,11 +314,11 @@ bool PowerOfTwo(uint64_t n);
 #define INDENT_ONE_LEVEL (indent + 1)
 #define INDENT_TWO_LEVEL (indent + 2)
 
-#define PrintIndent(indent, format, ...)                                                           \
-    if (indent >= 0) {                                                                             \
-        printf("%*s" format, (indent)*2, "", ##__VA_ARGS__);                                       \
-    } else {                                                                                       \
-        HLOGV("%s" format, "", ##__VA_ARGS__);                                                     \
+#define PrintIndent(indent, format, ...)                     \
+    if (indent >= 0) {                                       \
+        printf("%*s" format, (indent)*2, "", ##__VA_ARGS__); \
+    } else {                                                 \
+        HLOGV("%s" format, "", ##__VA_ARGS__);               \
     }
 
 #ifndef MMAP_FAILED
@@ -337,14 +334,14 @@ bool PowerOfTwo(uint64_t n);
 // this will also used for libunwind head (out of namespace)
 #if is_mingw
 #if !is_double_framework
-#define HAVE_MMAP   1
+#define HAVE_MMAP 1
 #define MAP_PRIVATE 0x02
-#define PROT_NONE   0
-#define PROT_READ   1
-#define PROT_WRITE  2
-#define PROT_EXEC   4
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, size_t offset);
-int munmap(void *addr, size_t);
+#define PROT_NONE 0
+#define PROT_READ 1
+#define PROT_WRITE 2
+#define PROT_EXEC 4
+void* mmap(void* addr, size_t length, int prot, int flags, int fd, size_t offset);
+int munmap(void* addr, size_t);
 #endif
 #endif
 

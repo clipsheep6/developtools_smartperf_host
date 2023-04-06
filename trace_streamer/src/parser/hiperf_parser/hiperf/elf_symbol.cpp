@@ -19,9 +19,9 @@ using namespace OHOS::Developtools::HiPerf::ELF;
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-std::unique_ptr<ElfSymbol> ElfSymbol::MakeUnique(char * const symBuf, const std::size_t bufSize)
+std::unique_ptr<ElfSymbol> ElfSymbol::MakeUnique(char* const symBuf, const std::size_t bufSize)
 {
-    std::unique_ptr<ElfSymbol> sym {new (std::nothrow) ElfSymbol()};
+    std::unique_ptr<ElfSymbol> sym{new (std::nothrow) ElfSymbol()};
     if (sym == nullptr) {
         HLOGE("Error in ElfSymbol::MakeUnique(): ElfSymbol::ElfSymbol() failed");
         return nullptr;
@@ -34,51 +34,51 @@ std::unique_ptr<ElfSymbol> ElfSymbol::MakeUnique(char * const symBuf, const std:
     return sym;
 }
 
-bool ElfSymbol::ParseElf32Symbol(char * const symBuf)
+bool ElfSymbol::ParseElf32Symbol(char* const symBuf)
 {
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(symBuf);
-    constexpr uint32_t nameOffset {0};
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(symBuf);
+    constexpr uint32_t nameOffset{0};
     nameIndex_ = u4Buf[nameOffset];
-    constexpr uint32_t valueOffset {1};
+    constexpr uint32_t valueOffset{1};
     symValue_ = u4Buf[valueOffset];
-    constexpr uint32_t sizeOffset {2};
+    constexpr uint32_t sizeOffset{2};
     symSize_ = u4Buf[sizeOffset];
-    constexpr uint32_t infoOffset {12};
+    constexpr uint32_t infoOffset{12};
     symInfo_ = symBuf[infoOffset];
-    constexpr uint32_t otherInfoOffset {13};
+    constexpr uint32_t otherInfoOffset{13};
     symOtherInfo_ = symBuf[otherInfoOffset];
-    uint16_t *u2Buf = reinterpret_cast<uint16_t *>(symBuf);
-    constexpr uint32_t secOffset {7};
+    uint16_t* u2Buf = reinterpret_cast<uint16_t*>(symBuf);
+    constexpr uint32_t secOffset{7};
     secIndex_ = u2Buf[secOffset];
     return true;
 }
 
-bool ElfSymbol::ParseElf64Symbol(char * const symBuf)
+bool ElfSymbol::ParseElf64Symbol(char* const symBuf)
 {
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(symBuf);
-    constexpr uint32_t nameOffset {0};
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(symBuf);
+    constexpr uint32_t nameOffset{0};
     nameIndex_ = u4Buf[nameOffset];
-    constexpr uint32_t infoOffset {4};
+    constexpr uint32_t infoOffset{4};
     symInfo_ = symBuf[infoOffset];
-    constexpr uint32_t otherInfoOffset {5};
+    constexpr uint32_t otherInfoOffset{5};
     symOtherInfo_ = symBuf[otherInfoOffset];
-    uint16_t *u2Buf = reinterpret_cast<uint16_t *>(symBuf);
-    constexpr uint32_t secOffset {3};
+    uint16_t* u2Buf = reinterpret_cast<uint16_t*>(symBuf);
+    constexpr uint32_t secOffset{3};
     secIndex_ = u2Buf[secOffset];
-    uint64_t *u8Buf = reinterpret_cast<uint64_t *>(symBuf);
-    constexpr uint32_t valueOffset {1};
+    uint64_t* u8Buf = reinterpret_cast<uint64_t*>(symBuf);
+    constexpr uint32_t valueOffset{1};
     symValue_ = u8Buf[valueOffset];
-    constexpr uint32_t sizeOffset {2};
+    constexpr uint32_t sizeOffset{2};
     symSize_ = u8Buf[sizeOffset];
     return true;
 }
 
-std::unique_ptr<SymbolTable> SymbolTable::MakeUnique(const std::string &symNamesStr,
-                                                     const char * const secBuf,
+std::unique_ptr<SymbolTable> SymbolTable::MakeUnique(const std::string& symNamesStr,
+                                                     const char* const secBuf,
                                                      const uint64_t secSize,
                                                      const uint64_t entrySize)
 {
-    std::unique_ptr<SymbolTable> symTable {new (std::nothrow) SymbolTable(symNamesStr)};
+    std::unique_ptr<SymbolTable> symTable{new (std::nothrow) SymbolTable(symNamesStr)};
     if (symNamesStr.empty()) {
         HLOGE("symNamesStr is empty");
     }
@@ -86,9 +86,9 @@ std::unique_ptr<SymbolTable> SymbolTable::MakeUnique(const std::string &symNames
         HLOGE("Error in SymbleTable::MakeUnique(): SymbleTable::SymbolTable() failed");
         return nullptr;
     }
-    char *symBuf = const_cast<char *>(secBuf);
+    char* symBuf = const_cast<char*>(secBuf);
     for (uint64_t curPos = 0; curPos < secSize; curPos += entrySize) {
-        symBuf = const_cast<char *>(secBuf + curPos);
+        symBuf = const_cast<char*>(secBuf + curPos);
         /*
             not >= , change to >
             Section Headers:

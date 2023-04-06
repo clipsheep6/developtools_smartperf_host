@@ -34,7 +34,7 @@ size_t RingBuffer::GetFreeSize() const
     return size_ - (head_.load(std::memory_order_relaxed) - tail_.load(std::memory_order_relaxed));
 }
 
-uint8_t *RingBuffer::AllocForWrite(size_t writeSize)
+uint8_t* RingBuffer::AllocForWrite(size_t writeSize)
 {
     size_t writeHead = head_.load(std::memory_order_relaxed);
     size_t readHead = tail_.load(std::memory_order_acquire);
@@ -74,7 +74,7 @@ void RingBuffer::EndWrite()
     head_.store(head, std::memory_order_release);
 }
 
-uint8_t *RingBuffer::GetReadData()
+uint8_t* RingBuffer::GetReadData()
 {
     size_t writeHead = head_.load(std::memory_order_acquire);
     size_t readHead = tail_.load(std::memory_order_relaxed);
@@ -96,7 +96,7 @@ uint8_t *RingBuffer::GetReadData()
         }
     }
     // else |---readPos<---data--->writePos---|
-    perf_event_header *header = reinterpret_cast<perf_event_header *>(buf_.get() + readPos);
+    perf_event_header* header = reinterpret_cast<perf_event_header*>(buf_.get() + readPos);
     readSize_ += header->size;
     return buf_.get() + readPos;
 }

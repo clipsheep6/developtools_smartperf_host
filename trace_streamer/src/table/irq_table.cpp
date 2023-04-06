@@ -243,25 +243,19 @@ int IrqTable::Cursor::Column(int column) const
             }
             break;
         case CHAIN_ID:
-            sqlite3_result_text(context_, slicesObj_.ChainIds()[CurrentRow()].c_str(),
-                                STR_DEFAULT_LEN, nullptr);
+            sqlite3_result_text(context_, slicesObj_.ChainIds()[CurrentRow()].c_str(), STR_DEFAULT_LEN, nullptr);
             break;
         case SPAN_ID:
-            sqlite3_result_text(context_, slicesObj_.SpanIds()[CurrentRow()].c_str(),
-                                STR_DEFAULT_LEN, nullptr);
+            sqlite3_result_text(context_, slicesObj_.SpanIds()[CurrentRow()].c_str(), STR_DEFAULT_LEN, nullptr);
             break;
         case PARENT_SPAN_ID:
-            sqlite3_result_text(context_,
-                                slicesObj_.ParentSpanIds()[CurrentRow()].c_str(),
-                                STR_DEFAULT_LEN, nullptr);
+            sqlite3_result_text(context_, slicesObj_.ParentSpanIds()[CurrentRow()].c_str(), STR_DEFAULT_LEN, nullptr);
             break;
         case FLAG:
-            sqlite3_result_text(context_, slicesObj_.Flags()[CurrentRow()].c_str(),
-                                STR_DEFAULT_LEN, nullptr);
+            sqlite3_result_text(context_, slicesObj_.Flags()[CurrentRow()].c_str(), STR_DEFAULT_LEN, nullptr);
             break;
         case ARGS:
-            sqlite3_result_text(context_, slicesObj_.ArgsData()[CurrentRow()].c_str(),
-                                STR_DEFAULT_LEN, nullptr);
+            sqlite3_result_text(context_, slicesObj_.ArgsData()[CurrentRow()].c_str(), STR_DEFAULT_LEN, nullptr);
             break;
         default:
             TS_LOGF("Unregistered column : %d", column);

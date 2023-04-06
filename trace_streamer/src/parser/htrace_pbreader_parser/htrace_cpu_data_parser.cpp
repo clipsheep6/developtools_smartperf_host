@@ -52,7 +52,11 @@ void HtraceCpuDataParser::Parse(ProtoReader::BytesView tracePacket, uint64_t ts)
 void HtraceCpuDataParser::Finish()
 {
     auto cmp = [](const std::unique_ptr<TsCpuData>& a, const std::unique_ptr<TsCpuData>& b) { return a->ts_ < b->ts_; };
+#ifdef IS_WASM
     std::sort(cpuData_.begin(), cpuData_.end(), cmp);
+#else
+    std::stable_sort(cpuData_.begin(), cpuData_.end(), cmp);
+#endif
     bool firstTime = true;
     uint64_t lastTs = 0;
     for (auto itor = cpuData_.begin(); itor != cpuData_.end(); itor++) {
@@ -64,9 +68,7 @@ void HtraceCpuDataParser::Finish()
         }
         auto dur = newTimeStamp - lastTs;
         traceDataCache_->GetCpuUsageInfoData()->AppendNewData(
-            newTimeStamp, dur,
-            (*itor)->totalLoad_,
-            (*itor)->userLoad_, (*itor)->sysLoad_, (*itor)->process_num_);
+            newTimeStamp, dur, (*itor)->totalLoad_, (*itor)->userLoad_, (*itor)->sysLoad_, (*itor)->process_num_);
         lastTs = newTimeStamp;
     }
     cpuData_.clear();

@@ -32,34 +32,31 @@ namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
 unsigned long long ReportItem::allIndex_ = 0;
-void Report::AddReportItem(const PerfRecordSample &sample, bool includeCallStack)
+void Report::AddReportItem(const PerfRecordSample& sample, bool includeCallStack)
 {
     size_t configIndex = GetConfigIndex(sample.data_.id);
-    HLOG_ASSERT_MESSAGE(configs_.size() > configIndex,
-                        "in %zu configs found index %zu, from ids %llu", configs_.size(),
+    HLOG_ASSERT_MESSAGE(configs_.size() > configIndex, "in %zu configs found index %zu, from ids %llu", configs_.size(),
                         configIndex, sample.data_.id);
-    VirtualThread &thread = virtualRuntime_.GetThread(sample.data_.pid, sample.data_.tid);
+    VirtualThread& thread = virtualRuntime_.GetThread(sample.data_.pid, sample.data_.tid);
     HLOG_ASSERT(sample.callFrames_.size() > 0);
     if (sample.callFrames_.size() > 0) {
         // if we need callstack ?
         if (includeCallStack) {
             // we will use caller mode , from last to first
             auto frameIt = sample.callFrames_.rbegin();
-            ReportItem &item = configs_[configIndex].reportItems_.emplace_back(
-                sample.data_.pid, sample.data_.tid, thread.name_, frameIt->filePath_,
-                frameIt->symbolName_, frameIt->vaddrInFile_, sample.data_.period);
+            ReportItem& item = configs_[configIndex].reportItems_.emplace_back(
+                sample.data_.pid, sample.data_.tid, thread.name_, frameIt->filePath_, frameIt->symbolName_,
+                frameIt->vaddrInFile_, sample.data_.period);
             HLOGV("%s", item.ToDebugString().c_str());
             HLOG_ASSERT(!item.func_.empty());
 
-            std::vector<ReportItemCallFrame> *currentCallFrames = &item.callStacks_;
-            for (frameIt = sample.callFrames_.rbegin(); frameIt != sample.callFrames_.rend();
-                 frameIt++) {
+            std::vector<ReportItemCallFrame>* currentCallFrames = &item.callStacks_;
+            for (frameIt = sample.callFrames_.rbegin(); frameIt != sample.callFrames_.rend(); frameIt++) {
                 HLOG_ASSERT(frameIt->ip_ < PERF_CONTEXT_MAX);
                 // in add items case , right one should only have 1 callstack
                 // so just new callfames and move to next level
-                ReportItemCallFrame &nextCallFrame = currentCallFrames->emplace_back(
-                    frameIt->symbolName_, frameIt->vaddrInFile_, frameIt->filePath_,
-                    sample.data_.period,
+                ReportItemCallFrame& nextCallFrame = currentCallFrames->emplace_back(
+                    frameIt->symbolName_, frameIt->vaddrInFile_, frameIt->filePath_, sample.data_.period,
                     (std::next(frameIt) == sample.callFrames_.rend()) ? sample.data_.period : 0);
                 HLOGV("add callframe %s", nextCallFrame.ToDebugString().c_str());
                 currentCallFrames = &nextCallFrame.childs;
@@ -71,9 +68,9 @@ void Report::AddReportItem(const PerfRecordSample &sample, bool includeCallStack
         } else {
             auto frameIt = sample.callFrames_.begin();
             HLOG_ASSERT(frameIt->ip_ < PERF_CONTEXT_MAX);
-            ReportItem &item = configs_[configIndex].reportItems_.emplace_back(
-                sample.data_.pid, sample.data_.tid, thread.name_, frameIt->filePath_,
-                frameIt->symbolName_, frameIt->vaddrInFile_, sample.data_.period);
+            ReportItem& item = configs_[configIndex].reportItems_.emplace_back(
+                sample.data_.pid, sample.data_.tid, thread.name_, frameIt->filePath_, frameIt->symbolName_,
+                frameIt->vaddrInFile_, sample.data_.period);
             item.ToDebugString().c_str();
             HLOGV("%s", item.ToDebugString().c_str());
             HLOG_ASSERT(!item.func_.empty());
@@ -83,21 +80,19 @@ void Report::AddReportItem(const PerfRecordSample &sample, bool includeCallStack
     configs_[configIndex].eventCount_ += sample.data_.period;
 }
 
-void Report::AddReportItemBranch(const PerfRecordSample &sample)
+void Report::AddReportItemBranch(const PerfRecordSample& sample)
 {
     size_t configIndex = GetConfigIndex(sample.data_.id);
     HLOG_ASSERT(configs_.size() > configIndex);
-    VirtualThread &thread = virtualRuntime_.GetThread(sample.data_.pid, sample.data_.tid);
+    VirtualThread& thread = virtualRuntime_.GetThread(sample.data_.pid, sample.data_.tid);
     for (u64 i = 0; i < sample.data_.bnr; i++) {
-        Symbol symbol_to =
-            virtualRuntime_.GetSymbol(sample.data_.lbr[i].to, sample.data_.pid, sample.data_.tid);
-        Symbol symbol_from =
-            virtualRuntime_.GetSymbol(sample.data_.lbr[i].from, sample.data_.pid, sample.data_.tid);
+        Symbol symbol_to = virtualRuntime_.GetSymbol(sample.data_.lbr[i].to, sample.data_.pid, sample.data_.tid);
+        Symbol symbol_from = virtualRuntime_.GetSymbol(sample.data_.lbr[i].from, sample.data_.pid, sample.data_.tid);
 
         // branch only have 1 time only for period
-        ReportItem &item = configs_[configIndex].reportItems_.emplace_back(
-            sample.data_.pid, sample.data_.tid, thread.name_, symbol_to.module_, symbol_to.Name(),
-            symbol_to.funcVaddr_, 1u);
+        ReportItem& item = configs_[configIndex].reportItems_.emplace_back(sample.data_.pid, sample.data_.tid,
+                                                                           thread.name_, symbol_to.module_,
+                                                                           symbol_to.Name(), symbol_to.funcVaddr_, 1u);
 
         item.fromDso_ = symbol_from.module_;
         item.fromFunc_ = symbol_from.Name();
@@ -110,7 +105,7 @@ void Report::AddReportItemBranch(const PerfRecordSample &sample)
 
 void Report::StatisticsRecords()
 {
-    for (auto &config : configs_) {
+    for (auto& config : configs_) {
         size_t duplicates = 0;
         size_t totalReportCount = config.reportItems_.size();
         // merge duplicate
@@ -121,20 +116,19 @@ void Report::StatisticsRecords()
         config.reportItems_.erase(last, config.reportItems_.end());
 
         duplicates = totalReportCount - config.reportItems_.size();
-        HLOGD("duplicates %zu, %zu -> %zu", duplicates, totalReportCount,
-              config.reportItems_.size());
+        HLOGD("duplicates %zu, %zu -> %zu", duplicates, totalReportCount, config.reportItems_.size());
     }
 }
 
 void Report::FilterDisplayRecords()
 {
     // remove the item with not in fliter
-    for (auto &config : configs_) {
+    for (auto& config : configs_) {
         size_t filterOuts = 0;
 #ifndef NDEBUG
         size_t totalReportCount = config.reportItems_.size();
 #endif
-        for (auto &reportKeyPair : reportKeyMap_) {
+        for (auto& reportKeyPair : reportKeyMap_) {
             auto reportKey = reportKeyPair.second;
             if (reportKey.displayFilter_.size() != 0) {
                 auto itemIt = config.reportItems_.begin();
@@ -155,29 +149,28 @@ void Report::FilterDisplayRecords()
             }
         }
 #ifndef NDEBUG
-        HLOGD("filter out %zu, %zu -> %zu", filterOuts, totalReportCount,
-              config.reportItems_.size());
+        HLOGD("filter out %zu, %zu -> %zu", filterOuts, totalReportCount, config.reportItems_.size());
 #endif
     }
 }
 
 void Report::UpdateReportItemsAfterAdjust()
 {
-    for (auto &config : configs_) {
+    for (auto& config : configs_) {
         HLOGV("percentage %zu items", config.reportItems_.size());
         uint64_t totalEventCount = 0; // just for debug check
-        for (auto &item : config.reportItems_) {
+        for (auto& item : config.reportItems_) {
             item.heat = Percentage(item.eventCount_, config.eventCount_);
             totalEventCount += item.eventCount_;
-            HLOGM("%s percentage from %5.2f%% %" PRIu64 "/ %" PRIu64 "",
-                  item.ToDebugString().c_str(), item.heat, item.eventCount_, config.eventCount_);
+            HLOGM("%s percentage from %5.2f%% %" PRIu64 "/ %" PRIu64 "", item.ToDebugString().c_str(), item.heat,
+                  item.eventCount_, config.eventCount_);
             for (auto keyPair : reportKeyMap_) {
                 reportKeyMap_.at(keyPair.first).UpdateValueMaxLen(keyPair.second.GetValue(item));
             }
         }
         // check again
-        HLOGV("recalc totalEventCount is %" PRIu64 " old totalEventCount is %" PRIu64 "",
-              totalEventCount, config.eventCount_);
+        HLOGV("recalc totalEventCount is %" PRIu64 " old totalEventCount is %" PRIu64 "", totalEventCount,
+              config.eventCount_);
         HLOG_ASSERT(totalEventCount == config.eventCount_);
     }
 }
@@ -185,24 +178,29 @@ void Report::UpdateReportItemsAfterAdjust()
 void Report::AdjustReportItems()
 {
     HLOGD("Adjust Record Order ....");
-    for (auto &config : configs_) {
+    for (auto& config : configs_) {
 #ifndef NDEBUG
         uint64_t totalReportCount = config.reportItems_.size();
         if (option_.debug_) {
-            for (auto &reportItem : config.reportItems_) {
+            for (auto& reportItem : config.reportItems_) {
                 HLOGV("reportItem %s", reportItem.ToDebugString().c_str());
             }
         }
         // sort first.
         HLOGD("MultiLevelSorting %" PRIu64 "", totalReportCount);
 #endif
+#ifdef IS_WASM
         std::sort(config.reportItems_.begin(), config.reportItems_.end(),
                   std::bind(&Report::MultiLevelSorting, this, _1, _2));
+#else
+        std::stable_sort(config.reportItems_.begin(), config.reportItems_.end(),
+                         std::bind(&Report::MultiLevelSorting, this, _1, _2));
+#endif
         HLOGD("MultiLevelSorting %" PRIu64 " done", totalReportCount);
         // reorder the callstack
 #ifndef NDEBUG
         if (option_.debug_) {
-            for (auto &reportItem : config.reportItems_) {
+            for (auto& reportItem : config.reportItems_) {
                 HLOGV("reportItem %s", reportItem.ToDebugString().c_str());
             }
         }
@@ -211,11 +209,13 @@ void Report::AdjustReportItems()
         FilterDisplayRecords();
 
         // reorder by count
-        std::sort(config.reportItems_.begin(), config.reportItems_.end(),
-                  &ReportItem::CompareSortingEventCount);
-
+#ifdef IS_WASM
+        std::sort(config.reportItems_.begin(), config.reportItems_.end(), &ReportItem::CompareSortingEventCount);
+#else
+        std::stable_sort(config.reportItems_.begin(), config.reportItems_.end(), &ReportItem::CompareSortingEventCount);
+#endif
         // reorder the callstack
-        for (auto &reportItem : config.reportItems_) {
+        for (auto& reportItem : config.reportItems_) {
             ReportItemCallFrame::OrderCallFrames(reportItem.callStacks_);
         }
         HLOGD("afater sorting and unique, we have %zu report items,", config.reportItems_.size());
@@ -224,10 +224,10 @@ void Report::AdjustReportItems()
     UpdateReportItemsAfterAdjust();
 }
 
-int Report::MultiLevelCompare(const ReportItem &a, const ReportItem &b)
+int Report::MultiLevelCompare(const ReportItem& a, const ReportItem& b)
 {
-    HLOGM("MultiLevelCompare %s vs %s sort order %s", a.ToDebugString().c_str(),
-          b.ToDebugString().c_str(), VectorToString(option_.sortKeys_).c_str());
+    HLOGM("MultiLevelCompare %s vs %s sort order %s", a.ToDebugString().c_str(), b.ToDebugString().c_str(),
+          VectorToString(option_.sortKeys_).c_str());
 
     // check each key user care
     for (auto it = option_.sortKeys_.begin(); it != option_.sortKeys_.end(); ++it) {
@@ -237,8 +237,7 @@ int Report::MultiLevelCompare(const ReportItem &a, const ReportItem &b)
             continue;
         } else {
             // if onekey is not same ,  returl as not same
-            HLOGM("not same because %s %d : %s vs %s", it->c_str(), result,
-                  reportKeyMap_.at(*it).GetValue(a).c_str(),
+            HLOGM("not same because %s %d : %s vs %s", it->c_str(), result, reportKeyMap_.at(*it).GetValue(a).c_str(),
                   reportKeyMap_.at(*it).GetValue(b).c_str());
             return result;
         }
@@ -247,27 +246,27 @@ int Report::MultiLevelCompare(const ReportItem &a, const ReportItem &b)
     return 0;
 }
 
-bool Report::MultiLevelSame(const ReportItem &a, const ReportItem &b)
+bool Report::MultiLevelSame(const ReportItem& a, const ReportItem& b)
 {
     return MultiLevelCompare(a, b) == 0;
 }
 
-void Report::MergeCallFrameCount(ReportItem &leftItem, ReportItem &rightItem)
+void Report::MergeCallFrameCount(ReportItem& leftItem, ReportItem& rightItem)
 {
     // add to left (right to left)
-    std::vector<ReportItemCallFrame> *leftCallFrames = &leftItem.callStacks_;
-    const std::vector<ReportItemCallFrame> *rightCallFrames = &rightItem.callStacks_;
+    std::vector<ReportItemCallFrame>* leftCallFrames = &leftItem.callStacks_;
+    const std::vector<ReportItemCallFrame>* rightCallFrames = &rightItem.callStacks_;
     uint64_t maxEventCount = leftItem.eventCount_;
     // right should only have one call stack
     int level = 0;
     while (rightCallFrames->size() != 0) {
         HLOG_ASSERT(rightCallFrames->size() == 1u);
-        const ReportItemCallFrame &rightFrame = rightCallFrames->at(0);
+        const ReportItemCallFrame& rightFrame = rightCallFrames->at(0);
         auto leftFrameIt = std::find(leftCallFrames->begin(), leftCallFrames->end(), rightFrame);
         if (leftFrameIt == leftCallFrames->end()) {
             // new callfames
 #ifndef NDEBUG
-            auto &leftCallFrame = leftCallFrames->emplace_back(rightFrame);
+            auto& leftCallFrame = leftCallFrames->emplace_back(rightFrame);
             HLOGV("%*s create frame %s in %s", level, "", leftCallFrame.ToDebugString().c_str(),
                   leftItem.ToDebugString().c_str());
             HLOG_ASSERT(leftCallFrame.eventCount_ <= maxEventCount);
@@ -283,8 +282,8 @@ void Report::MergeCallFrameCount(ReportItem &leftItem, ReportItem &rightItem)
             leftCallFrames = &(leftFrameIt->childs);
             HLOGM("%*s udpate frame +%" PRIu64 " %s in %s", level, "", rightFrame.eventCount_,
                   leftFrameIt->ToDebugString().c_str(), leftItem.ToDebugString().c_str());
-            HLOG_ASSERT_MESSAGE(leftFrameIt->eventCount_ <= maxEventCount,
-                                " maxEventCount is %" PRIu64 "", maxEventCount);
+            HLOG_ASSERT_MESSAGE(leftFrameIt->eventCount_ <= maxEventCount, " maxEventCount is %" PRIu64 "",
+                                maxEventCount);
             maxEventCount = leftFrameIt->eventCount_;
         }
         // move to next level
@@ -293,12 +292,12 @@ void Report::MergeCallFrameCount(ReportItem &leftItem, ReportItem &rightItem)
     }
 }
 
-bool Report::MultiLevelSameAndUpdateCount(ReportItem &l, ReportItem &r)
+bool Report::MultiLevelSameAndUpdateCount(ReportItem& l, ReportItem& r)
 {
     if (MultiLevelCompare(l, r) == 0) {
         l.eventCount_ += r.eventCount_;
-        HLOGM("l %" PRIu64 " %s c:%zu vs r %" PRIu64 " %s c:%zu", l.eventCount_, l.func_.data(),
-              l.callStacks_.size(), r.eventCount_, r.func_.data(), r.callStacks_.size());
+        HLOGM("l %" PRIu64 " %s c:%zu vs r %" PRIu64 " %s c:%zu", l.eventCount_, l.func_.data(), l.callStacks_.size(),
+              r.eventCount_, r.func_.data(), r.callStacks_.size());
         // if it have call stack?
         if (r.callStacks_.size() != 0) {
             // add to left (right to left)
@@ -310,7 +309,7 @@ bool Report::MultiLevelSameAndUpdateCount(ReportItem &l, ReportItem &r)
     }
 }
 
-bool Report::MultiLevelSorting(const ReportItem &a, const ReportItem &b)
+bool Report::MultiLevelSorting(const ReportItem& a, const ReportItem& b)
 {
     /*
     The value returned indicates whether the element passed as first argument is
@@ -331,13 +330,13 @@ bool Report::MultiLevelSorting(const ReportItem &a, const ReportItem &b)
     return result;
 }
 
-void Report::OutputStdStatistics(ReportEventConfigItem &config)
+void Report::OutputStdStatistics(ReportEventConfigItem& config)
 {
     if (fprintf(output_, "\n") < 0) {
         return;
     } // make a blank line for new event
-    if (fprintf(output_, "Event: %s (type %" PRIu32 " id %" PRIu64 ")\n", config.eventName_.c_str(),
-            config.type_, config.config_) < 0) {
+    if (fprintf(output_, "Event: %s (type %" PRIu32 " id %" PRIu64 ")\n", config.eventName_.c_str(), config.type_,
+                config.config_) < 0) {
         return;
     }
     if (fprintf(output_, "Samples Count: %" PRIu64 "\n", config.sampleCount_) < 0) {
@@ -351,16 +350,15 @@ void Report::OutputStdStatistics(ReportEventConfigItem &config)
     fprintf(output_, "%" PRIu64 "\n", config.eventCount_);
 }
 
-bool Report::OutputStdStatistics(ReportEventConfigItem &config, ReportEventConfigItem &otherConfig)
+bool Report::OutputStdStatistics(ReportEventConfigItem& config, ReportEventConfigItem& otherConfig)
 {
     if (config != otherConfig) {
         fprintf(output_, "diff config unable compare\n");
         return false;
     }
-    fprintf(output_, "Event: %s (type %" PRIu32 " id %" PRIu64 ")", config.eventName_.c_str(),
-            config.type_, config.config_);
-    fprintf(output_, "Samples Count: %" PRIu64 " vs %" PRIu64 "\n", config.sampleCount_,
-            otherConfig.sampleCount_);
+    fprintf(output_, "Event: %s (type %" PRIu32 " id %" PRIu64 ")", config.eventName_.c_str(), config.type_,
+            config.config_);
+    fprintf(output_, "Samples Count: %" PRIu64 " vs %" PRIu64 "\n", config.sampleCount_, otherConfig.sampleCount_);
     if (config.coutMode_) {
         fprintf(output_, "Time in ns: ");
     } else {
@@ -370,7 +368,7 @@ bool Report::OutputStdStatistics(ReportEventConfigItem &config, ReportEventConfi
     return true;
 }
 
-void Report::OutputStdHead(ReportEventConfigItem &config, bool diffMode)
+void Report::OutputStdHead(ReportEventConfigItem& config, bool diffMode)
 {
     // head print
     const std::string head = "Heating";
@@ -392,25 +390,27 @@ void Report::OutputStdHead(ReportEventConfigItem &config, bool diffMode)
 
     int remainingWidth = consoleWidth_;
     // sort key head
-    for (auto &keyName : displayKeyNames_) {
-        auto &key = reportKeyMap_.at(keyName);
+    for (auto& keyName : displayKeyNames_) {
+        auto& key = reportKeyMap_.at(keyName);
         remainingWidth -= key.maxLen_;
         if (remainingWidth <= 0) {
             key.maxLen_ = 0;
         }
-        if (fprintf(output_, "%-*s ", (remainingWidth > 0) ? static_cast<int>(key.maxLen_) : 0,
-            key.keyName_.c_str()) < 0) {
+        if (fprintf(output_, "%-*s ", (remainingWidth > 0) ? static_cast<int>(key.maxLen_) : 0, key.keyName_.c_str()) <
+            0) {
             return;
         }
-        HLOGD("'%s' max len %zu(from '%s') console width %d", key.keyName_.c_str(), key.maxLen_,
-              key.maxValue_.c_str(), remainingWidth);
+        HLOGD("'%s' max len %zu(from '%s') console width %d", key.keyName_.c_str(), key.maxLen_, key.maxValue_.c_str(),
+              remainingWidth);
     }
     if (fprintf(output_, "\n") < 0) {
         return;
     }
 }
 
-bool Report::OutputStdCallFrame(int indent, const std::string_view &funcName, uint64_t eventCount,
+bool Report::OutputStdCallFrame(int indent,
+                                const std::string_view& funcName,
+                                uint64_t eventCount,
                                 uint64_t totalEventCount)
 {
     float heat = Percentage(eventCount, totalEventCount);
@@ -430,20 +430,16 @@ bool Report::OutputStdCallFrame(int indent, const std::string_view &funcName, ui
         fprintf(output_, "%*.2f%% ", FULL_PERCENTAGE_NUM_LEN, heat);
     }
     if (option_.debug_) {
-        fprintf(output_, "%" PRIu64 "/%" PRIu64 " %s\n", eventCount, totalEventCount,
-                funcName.data());
+        fprintf(output_, "%" PRIu64 "/%" PRIu64 " %s\n", eventCount, totalEventCount, funcName.data());
     } else {
         fprintf(output_, "%s\n", funcName.data());
     }
     return true;
 }
 
-void Report::PrepareConsole()
-{
-}
+void Report::PrepareConsole() {}
 
-void Report::OutputStdCallFrames(int indent, const ReportItemCallFrame &callFrame,
-                                 uint64_t totalEventCount)
+void Report::OutputStdCallFrames(int indent, const ReportItemCallFrame& callFrame, uint64_t totalEventCount)
 {
     /*
     90% a
@@ -462,32 +458,31 @@ void Report::OutputStdCallFrames(int indent, const ReportItemCallFrame &callFram
 
     // print it self
     if (callFrame.selfEventCount_ != 0 and callFrame.selfEventCount_ != callFrame.eventCount_) {
-        OutputStdCallFrame(indent + CALLSTACK_INDENT, "[run in self function]",
-                           callFrame.selfEventCount_, callFrame.eventCount_);
+        OutputStdCallFrame(indent + CALLSTACK_INDENT, "[run in self function]", callFrame.selfEventCount_,
+                           callFrame.eventCount_);
     }
 
     // printf children
     // if only one children
-    if (callFrame.childs.size() == 1u and
-        callFrame.childs[0].eventCount_ == callFrame.eventCount_) {
+    if (callFrame.childs.size() == 1u and callFrame.childs[0].eventCount_ == callFrame.eventCount_) {
         HLOGV("childCallFream %*c %s", indent, ' ', callFrame.childs[0].func_.data());
         // don't indent if same count (only one 100% children)
         OutputStdCallFrames(indent, callFrame.childs[0], callFrame.eventCount_);
     } else {
         // else a lot children
-        for (const ReportItemCallFrame &childCallFrame : callFrame.childs) {
+        for (const ReportItemCallFrame& childCallFrame : callFrame.childs) {
             HLOGV("childCallFream %*c %s", indent, ' ', childCallFrame.func_.data());
             OutputStdCallFrames(indent + CALLSTACK_INDENT, childCallFrame, callFrame.eventCount_);
         }
     }
 }
 
-void Report::OutputStdContent(ReportEventConfigItem &config)
+void Report::OutputStdContent(ReportEventConfigItem& config)
 {
     // content print
     auto it = config.reportItems_.begin();
     while (it != config.reportItems_.end()) {
-        const ReportItem &reportItem = it.operator*();
+        const ReportItem& reportItem = it.operator*();
         // if we need skip it ?
         if (reportItem.heat < option_.heatLimit_) {
             it++;
@@ -497,10 +492,9 @@ void Report::OutputStdContent(ReportEventConfigItem &config)
         }
         OutputStdContentItem(reportItem);
         if (reportItem.callStacks_.size() != 0) {
-            HLOGV("reportItem.callStacks_ %zu %s", reportItem.callStacks_.size(),
-                  reportItem.ToDebugString().c_str());
+            HLOGV("reportItem.callStacks_ %zu %s", reportItem.callStacks_.size(), reportItem.ToDebugString().c_str());
             HLOG_ASSERT(reportItem.callStacks_.size() == 1u);
-            for (auto &callFrame : reportItem.callStacks_) {
+            for (auto& callFrame : reportItem.callStacks_) {
                 OutputStdCallFrames(CALLSTACK_INDENT, callFrame, reportItem.eventCount_);
             }
         }
@@ -508,11 +502,11 @@ void Report::OutputStdContent(ReportEventConfigItem &config)
     }
 }
 
-void Report::OutputStdContentItem(const ReportItem &reportItem)
+void Report::OutputStdContentItem(const ReportItem& reportItem)
 {
     // output by sort keys
     for (auto sortKey : displayKeyNames_) {
-        ReportKey &reportKey = Report::reportKeyMap_.at(sortKey);
+        ReportKey& reportKey = Report::reportKeyMap_.at(sortKey);
         if (fprintf(output_, "%s ", reportKey.GetValue(reportItem).c_str()) < 0) {
             return;
         }
@@ -535,15 +529,13 @@ void Report::OutputStdItemHeating(float heat, float heat2)
         fprintf(output_, "%*s  ", FULL_PERCENTAGE_LEN, "");
         fprintf(output_, "%+*.2f%% ", FULL_PERCENTAGE_DIFF_NUM_LEN, heat2);
     } else if (heat2 > heat) {
-        fprintf(output_, "%s%*.2f%%%s  ", TEXT_RED.c_str(), FULL_PERCENTAGE_NUM_LEN, heat,
+        fprintf(output_, "%s%*.2f%%%s  ", TEXT_RED.c_str(), FULL_PERCENTAGE_NUM_LEN, heat, TEXT_RESET.c_str());
+        fprintf(output_, "%s%+*.2f%%%s ", TEXT_GREEN.c_str(), FULL_PERCENTAGE_DIFF_NUM_LEN, heat2 - heat,
                 TEXT_RESET.c_str());
-        fprintf(output_, "%s%+*.2f%%%s ", TEXT_GREEN.c_str(), FULL_PERCENTAGE_DIFF_NUM_LEN,
-                heat2 - heat, TEXT_RESET.c_str());
     } else if (heat2 < heat) {
-        fprintf(output_, "%s%*.2f%%%s  ", TEXT_GREEN.c_str(), FULL_PERCENTAGE_NUM_LEN, heat,
+        fprintf(output_, "%s%*.2f%%%s  ", TEXT_GREEN.c_str(), FULL_PERCENTAGE_NUM_LEN, heat, TEXT_RESET.c_str());
+        fprintf(output_, "%s%+*.2f%%%s ", TEXT_RED.c_str(), FULL_PERCENTAGE_DIFF_NUM_LEN, heat2 - heat,
                 TEXT_RESET.c_str());
-        fprintf(output_, "%s%+*.2f%%%s ", TEXT_RED.c_str(), FULL_PERCENTAGE_DIFF_NUM_LEN,
-                heat2 - heat, TEXT_RESET.c_str());
     } else {
         // same heating
         fprintf(output_, "%*.2f%% ", FULL_PERCENTAGE_NUM_LEN, heat);
@@ -551,7 +543,7 @@ void Report::OutputStdItemHeating(float heat, float heat2)
     }
 }
 
-void Report::OutputStdContentDiff(ReportEventConfigItem &left, ReportEventConfigItem &right)
+void Report::OutputStdContentDiff(ReportEventConfigItem& left, ReportEventConfigItem& right)
 {
     // first we need found the match config
     HLOGD("first count %zu second count %zu", left.reportItems_.size(), right.reportItems_.size());
@@ -601,7 +593,7 @@ void Report::OutputStdContentDiff(ReportEventConfigItem &left, ReportEventConfig
     }
 }
 
-void Report::OutputStdContentDiffOneSide(bool leftOnly, ReportItem &reportItem)
+void Report::OutputStdContentDiffOneSide(bool leftOnly, ReportItem& reportItem)
 {
     if (reportItem.heat > option_.heatLimit_) {
         if (leftOnly) {
@@ -613,19 +605,19 @@ void Report::OutputStdContentDiffOneSide(bool leftOnly, ReportItem &reportItem)
     }
 }
 
-void Report::OutputStd(FILE *output)
+void Report::OutputStd(FILE* output)
 {
     output_ = output;
     PrepareConsole();
 
-    for (auto &config : configs_) {
+    for (auto& config : configs_) {
         OutputStdStatistics(config);
         OutputStdHead(config);
         OutputStdContent(config);
     }
 }
 
-void Report::OutputStdDiff(FILE *output, Report &other)
+void Report::OutputStdDiff(FILE* output, Report& other)
 {
     output_ = output;
     PrepareConsole();

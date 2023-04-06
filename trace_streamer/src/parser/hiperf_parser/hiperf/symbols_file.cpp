@@ -86,8 +86,8 @@ bool SymbolsFile::UpdateBuildIdIfMatch(std::string buildId)
     }
 }
 
-std::string SymbolsFile::SearchReadableFile(const std::vector<std::string> &searchPaths,
-                                            const std::string &filePath) const
+std::string SymbolsFile::SearchReadableFile(const std::vector<std::string>& searchPaths,
+                                            const std::string& filePath) const
 {
     if (filePath.empty()) {
         HLOGW("nothing to found");
@@ -106,8 +106,8 @@ std::string SymbolsFile::SearchReadableFile(const std::vector<std::string> &sear
     return EMPTY_STRING;
 }
 
-const std::string SymbolsFile::FindSymbolFile(
-    const std::vector<std::string> &symbolsFileSearchPaths, std::string symboleFilePath) const
+const std::string SymbolsFile::FindSymbolFile(const std::vector<std::string>& symbolsFileSearchPaths,
+                                              std::string symboleFilePath) const
 {
     /*
         this function do 2 things:
@@ -129,8 +129,7 @@ const std::string SymbolsFile::FindSymbolFile(
     if (symbolsFileSearchPaths.size() != 0) {
         foundPath = SearchReadableFile(symbolsFileSearchPaths, symboleFilePath);
         if (foundPath.empty()) {
-            HLOGV("try base name for: %s split with %s", symboleFilePath.c_str(),
-                  PATH_SEPARATOR_STR.c_str());
+            HLOGV("try base name for: %s split with %s", symboleFilePath.c_str(), PATH_SEPARATOR_STR.c_str());
             auto pathSplit = StringSplit(symboleFilePath, PATH_SEPARATOR_STR);
             if (pathSplit.size() > 1) {
                 HLOGV("base name is: %s ", pathSplit.back().c_str());
@@ -155,8 +154,7 @@ const std::string SymbolsFile::FindSymbolFile(
 
 class ElfFileSymbols : public SymbolsFile {
 public:
-    explicit ElfFileSymbols(const std::string &symbolFilePath,
-                            const SymbolsFileType symbolsFileType = SYMBOL_ELF_FILE)
+    explicit ElfFileSymbols(const std::string& symbolFilePath, const SymbolsFileType symbolsFileType = SYMBOL_ELF_FILE)
         : SymbolsFile(symbolsFileType, symbolFilePath)
     {
     }
@@ -170,7 +168,7 @@ public:
         }
     }
 
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
         std::string findPath = FindSymbolFile(symbolsFileSearchPaths_, symbolFilePath);
@@ -187,18 +185,17 @@ public:
         return false;
     }
 
-    size_t ReadRoMemory(uint64_t addr, uint8_t * const data, size_t size) const override
+    size_t ReadRoMemory(uint64_t addr, uint8_t* const data, size_t size) const override
     {
         size_t readSize = 0;
 
         if (mmap_ != MMAP_FAILED) {
             if ((addr + size) <= mmapSize_) {
-                std::copy_n(static_cast<uint8_t *>(mmap_) + addr, size, data);
+                std::copy_n(static_cast<uint8_t*>(mmap_) + addr, size, data);
                 readSize = size;
             } else {
                 HLOGW("read out of range.");
-                HLOGW("try read 0x%" PRIx64 "(elf offset)+%zu max is 0x%" PRIx64 "", addr, size,
-                      mmapSize_);
+                HLOGW("try read 0x%" PRIx64 "(elf offset)+%zu max is 0x%" PRIx64 "", addr, size, mmapSize_);
             }
         } else {
             if (readFd_ != nullptr) {
@@ -220,7 +217,7 @@ public:
     }
 
 protected:
-    std::string CovertByteBufferToHexString(const unsigned char *buffer, size_t size) const
+    std::string CovertByteBufferToHexString(const unsigned char* buffer, size_t size) const
     {
         if (buffer == nullptr) {
             HLOGE("param is null");
@@ -235,13 +232,13 @@ protected:
         return descString;
     }
 
-    std::string ElfGetBuildId(const unsigned char *buffer, size_t size) const
+    std::string ElfGetBuildId(const unsigned char* buffer, size_t size) const
     {
         if (buffer == nullptr) {
             HLOGE("param is null");
             return "";
         }
-        const unsigned char *end = buffer + size;
+        const unsigned char* end = buffer + size;
         HLOGV("size:%zu", size);
 
         /*
@@ -325,7 +322,7 @@ protected:
         return EMPTY_STRING; // found nothing
     }
 
-    bool LoadDebugInfo(const std::string &symbolFilePath) override
+    bool LoadDebugInfo(const std::string& symbolFilePath) override
     {
         if (debugInfoLoaded_) {
             return true;
@@ -344,7 +341,7 @@ protected:
         } else {
             HLOGD("loaded elf %s", elfPath.c_str());
         }
-        for (auto &phdr : elfFile->phdrs_) {
+        for (auto& phdr : elfFile->phdrs_) {
             if ((phdr->type_ == PT_LOAD) && (phdr->flags_ & PF_X)) {
                 // find the min addr
                 if (textExecVaddr_ != std::min(textExecVaddr_, phdr->vaddr_)) {
@@ -354,8 +351,7 @@ protected:
             }
         }
 
-        HLOGD("textExecVaddr_ 0x%016" PRIx64 " file offset 0x%016" PRIx64 "", textExecVaddr_,
-              textExecVaddrFileOffset_);
+        HLOGD("textExecVaddr_ 0x%016" PRIx64 " file offset 0x%016" PRIx64 "", textExecVaddr_, textExecVaddrFileOffset_);
 
         if (!ParseShdr(std::move(elfFile))) {
             return false;
@@ -367,42 +363,40 @@ protected:
     }
 
 private:
-    bool EhFrameHDRValid_ {false};
-    uint64_t ehFrameHDRElfOffset_ {0};
-    uint64_t ehFrameHDRFdeCount_ {0};
-    uint64_t ehFrameHDRFdeTableItemSize_ {0};
-    uint64_t ehFrameHDRFdeTableElfOffset_ {0};
-    OHOS::UniqueFd fd_ {-1};
-    std::unique_ptr<FILE, decltype(&fclose)> readFd_ {nullptr, &fclose};
+    bool EhFrameHDRValid_{false};
+    uint64_t ehFrameHDRElfOffset_{0};
+    uint64_t ehFrameHDRFdeCount_{0};
+    uint64_t ehFrameHDRFdeTableItemSize_{0};
+    uint64_t ehFrameHDRFdeTableElfOffset_{0};
+    OHOS::UniqueFd fd_{-1};
+    std::unique_ptr<FILE, decltype(&fclose)> readFd_{nullptr, &fclose};
     struct ShdrInfo {
         uint64_t sectionVaddr_;
         uint64_t sectionSize_;
         uint64_t sectionFileOffset_;
         ShdrInfo(uint64_t sectionVaddr, uint64_t sectionSize, uint64_t sectionFileOffset)
-            : sectionVaddr_(sectionVaddr),
-              sectionSize_(sectionSize),
-              sectionFileOffset_(sectionFileOffset)
+            : sectionVaddr_(sectionVaddr), sectionSize_(sectionSize), sectionFileOffset_(sectionFileOffset)
         {
         }
     };
-    std::map<const std::string, ShdrInfo> shdrMap_ {};
-    void *mmap_ {MMAP_FAILED};
+    std::map<const std::string, ShdrInfo> shdrMap_{};
+    void* mmap_{MMAP_FAILED};
     uint64_t mmapSize_ = {0};
 
-    const std::string GetReadableName(const std::string &name) const
+    const std::string GetReadableName(const std::string& name) const
     {
         int status = 0;
-        const char *nameStart = name.c_str();
+        const char* nameStart = name.c_str();
         bool linkerName = false;
         if (StringStartsWith(name, LINKER_PREFIX)) {
             nameStart += LINKER_PREFIX.size();
             linkerName = true;
         }
 
-        char *demangle = abi::__cxa_demangle(nameStart, nullptr, nullptr, &status);
+        char* demangle = abi::__cxa_demangle(nameStart, nullptr, nullptr, &status);
         if (status == 0) {
             std::string demangleName = demangle;
-            free(static_cast<void *>(demangle));
+            free(static_cast<void*>(demangle));
             return linkerName ? (LINKER_PREFIX_NAME + demangleName) : demangleName;
         } else {
             return linkerName ? (LINKER_PREFIX_NAME + nameStart) : nameStart;
@@ -423,18 +417,19 @@ private:
         }
     }
 
-    bool GetSectionInfo(const std::string &name, uint64_t &sectionVaddr, uint64_t &sectionSize,
-                        uint64_t &sectionFileOffset) const override
+    bool GetSectionInfo(const std::string& name,
+                        uint64_t& sectionVaddr,
+                        uint64_t& sectionSize,
+                        uint64_t& sectionFileOffset) const override
     {
         HLOGM("Section '%s' found in %zu", name.c_str(), shdrMap_.size());
         if (shdrMap_.count(name) > 0) {
             HLOGM("Section '%s' found", name.c_str());
-            const auto &shdrInfo = shdrMap_.at(name);
+            const auto& shdrInfo = shdrMap_.at(name);
             sectionVaddr = shdrInfo.sectionVaddr_;
             sectionSize = shdrInfo.sectionSize_;
             sectionFileOffset = shdrInfo.sectionFileOffset_;
-            HLOGM("Get Section '%s' %" PRIx64 " - %" PRIx64 "", name.c_str(), sectionVaddr,
-                  sectionSize);
+            HLOGM("Get Section '%s' %" PRIx64 " - %" PRIx64 "", name.c_str(), sectionVaddr, sectionSize);
             return true;
         } else {
             HLOGW("Section '%s' not found", name.c_str());
@@ -443,8 +438,9 @@ private:
     }
 
 #ifndef target_cpu_arm
-    bool GetHDRSectionInfo(uint64_t &ehFrameHdrElfOffset, uint64_t &fdeTableElfOffset,
-                           uint64_t &fdeTableSize) const override
+    bool GetHDRSectionInfo(uint64_t& ehFrameHdrElfOffset,
+                           uint64_t& fdeTableElfOffset,
+                           uint64_t& fdeTableSize) const override
     {
         if (EhFrameHDRValid_) {
             ehFrameHdrElfOffset = ehFrameHDRElfOffset_;
@@ -466,10 +462,10 @@ private:
         HLOGD("  ehFrameHDRFdeTableItemSize_:   0x%" PRIx64 "", ehFrameHDRFdeTableItemSize_);
     }
 
-    bool LoadEhFrameHDR(const unsigned char *buffer, size_t bufferSize, uint64_t shdrOffset)
+    bool LoadEhFrameHDR(const unsigned char* buffer, size_t bufferSize, uint64_t shdrOffset)
     {
-        eh_frame_hdr *ehFrameHdr = (eh_frame_hdr *)buffer;
-        const uint8_t *dataPtr = ehFrameHdr->encode_data;
+        eh_frame_hdr* ehFrameHdr = (eh_frame_hdr*)buffer;
+        const uint8_t* dataPtr = ehFrameHdr->encode_data;
         DwarfEncoding dwEhFramePtr(ehFrameHdr->eh_frame_ptr_enc, dataPtr);
         DwarfEncoding dwFdeCount(ehFrameHdr->fde_count_enc, dataPtr);
         DwarfEncoding dwTable(ehFrameHdr->table_enc, dataPtr);
@@ -506,17 +502,16 @@ private:
         return false;
     }
 
-    void LoadFileToMemory(const std::string &loadElfPath)
+    void LoadFileToMemory(const std::string& loadElfPath)
     {
 #ifndef HIPERF_ELF_READ_USE_MMAP
         if (readFd_ == nullptr) {
             std::string resolvedPath = CanonicalizeSpecPath(loadElfPath.c_str());
-            FILE *fp = fopen(resolvedPath.c_str(), "rb");
+            FILE* fp = fopen(resolvedPath.c_str(), "rb");
             if (fp == nullptr) {
                 return;
             }
-            readFd_ =
-                std::unique_ptr<FILE, decltype(&fclose)>(fp, &fclose);
+            readFd_ = std::unique_ptr<FILE, decltype(&fclose)>(fp, &fclose);
             fclose(fp);
             return;
         }
@@ -560,8 +555,9 @@ private:
 #endif
     }
 
-    bool ReadSymTab(const std::unique_ptr<ElfFile> &elfFile, const ELF::SectionHeader *shdr,
-                    std::vector<Symbol> &symbolsTable) const
+    bool ReadSymTab(const std::unique_ptr<ElfFile>& elfFile,
+                    const ELF::SectionHeader* shdr,
+                    std::vector<Symbol>& symbolsTable) const
     {
         if (shdr == nullptr) {
             HLOGE("param is null");
@@ -575,9 +571,8 @@ private:
         HLOGV("Symbol Table:%s", shdr->secTypeName_.c_str());
         HLOGM("%*s|%16s|%4s|%s", MAX_SYMBOLS_TYPE_NAME_LEN, "type", "addr", "size", "name");
 
-        for (const std::unique_ptr<ElfSymbol> &symbol : elfFile->symTable_->symbols_) {
-            if (ELF64_ST_TYPE(symbol->symInfo_) == STT_FUNC or
-                ELF64_ST_TYPE(symbol->symInfo_) == STT_GNU_IFUNC) {
+        for (const std::unique_ptr<ElfSymbol>& symbol : elfFile->symTable_->symbols_) {
+            if (ELF64_ST_TYPE(symbol->symInfo_) == STT_FUNC or ELF64_ST_TYPE(symbol->symInfo_) == STT_GNU_IFUNC) {
                 /*
                     name|            addr|size|name
                 function|00000000c0102b8c|  56|__lookup_processor_type
@@ -596,14 +591,13 @@ private:
                 std::string type = ElfStTypeName(ELF64_ST_TYPE(symbol->symInfo_));
                 // this will cause malloc , maybe need do this in report ?
                 std::string demangle = GetReadableName(name);
-                HLOGV("%10s|%016" PRIx64 "|%4" PRIu64 "|%s", type.c_str(), symbol->symValue_,
-                      symbol->symSize_, demangle.c_str());
+                HLOGV("%10s|%016" PRIx64 "|%4" PRIu64 "|%s", type.c_str(), symbol->symValue_, symbol->symSize_,
+                      demangle.c_str());
 
                 if (symbol->symValue_ == 0) {
                     continue; // we don't need 0 addr symbol
                 }
-                symbolsTable.emplace_back(symbol->symValue_, symbol->symSize_, name, demangle,
-                                          filePath_);
+                symbolsTable.emplace_back(symbol->symValue_, symbol->symSize_, name, demangle, filePath_);
             } else {
                 continue;
             }
@@ -614,19 +608,18 @@ private:
     bool ParseShdr(const std::unique_ptr<ElfFile> elfFile)
     {
         // only save the section info , not actually read any file content
-        for (const auto &shdrPair : elfFile->shdrs_) {
-            const auto &shdr = shdrPair.second;
-            const char *sh_name =
-                elfFile->GetStrPtr(elfFile->ehdr_->shdrStrTabIdx_, shdr->nameIndex_);
-            const unsigned char *data = elfFile->GetSectionData(shdr->secIndex_);
+        for (const auto& shdrPair : elfFile->shdrs_) {
+            const auto& shdr = shdrPair.second;
+            const char* sh_name = elfFile->GetStrPtr(elfFile->ehdr_->shdrStrTabIdx_, shdr->nameIndex_);
+            const unsigned char* data = elfFile->GetSectionData(shdr->secIndex_);
 
             if (sh_name == nullptr || data == nullptr) {
                 HLOGE("name or data get failed.");
                 return false;
             }
 
-            HLOGV("shdr name '%s' vaddr 0x%" PRIx64 " offset 0x%" PRIx64 " size 0x%" PRIx64
-                  " type 0x%" PRIx64 "(%s) index %u link 0x%u entry 0x%" PRIx64 "",
+            HLOGV("shdr name '%s' vaddr 0x%" PRIx64 " offset 0x%" PRIx64 " size 0x%" PRIx64 " type 0x%" PRIx64
+                  "(%s) index %u link 0x%u entry 0x%" PRIx64 "",
                   sh_name, shdr->secVaddr_, shdr->fileOffset_, shdr->secSize_, shdr->secType_,
                   shdr->secTypeName_.c_str(), shdr->secIndex_, shdr->link_, shdr->secEntrySize_);
 
@@ -635,32 +628,31 @@ private:
         return true;
     }
 
-    void AddSectionAsSymbol(const std::unique_ptr<ELF::SectionHeader> &shdr, const char *name,
-                            std::vector<Symbol> &symbolsTable) const
+    void AddSectionAsSymbol(const std::unique_ptr<ELF::SectionHeader>& shdr,
+                            const char* name,
+                            std::vector<Symbol>& symbolsTable) const
     {
-        HLOGV("add section %s as function symbol from 0x%" PRIx64 " size 0x%" PRIx64 "", name,
-              shdr->secVaddr_, shdr->secSize_);
+        HLOGV("add section %s as function symbol from 0x%" PRIx64 " size 0x%" PRIx64 "", name, shdr->secVaddr_,
+              shdr->secSize_);
         symbolsTable.emplace_back(shdr->secVaddr_, shdr->secSize_, name, name, filePath_);
     }
 
-    bool ParseShdr(const std::unique_ptr<ElfFile> elfFile, std::vector<Symbol> &symbolsTable,
-                   std::string &buildIdFound)
+    bool ParseShdr(const std::unique_ptr<ElfFile> elfFile, std::vector<Symbol>& symbolsTable, std::string& buildIdFound)
     {
-        const ELF::SectionHeader *symTableShdr = nullptr;
+        const ELF::SectionHeader* symTableShdr = nullptr;
         // walkthough
-        for (const auto &shdrPair : elfFile->shdrs_) {
-            const auto &shdr = shdrPair.second;
-            const char *sh_name =
-                elfFile->GetStrPtr(elfFile->ehdr_->shdrStrTabIdx_, shdr->nameIndex_);
-            const unsigned char *data = elfFile->GetSectionData(shdr->secIndex_);
+        for (const auto& shdrPair : elfFile->shdrs_) {
+            const auto& shdr = shdrPair.second;
+            const char* sh_name = elfFile->GetStrPtr(elfFile->ehdr_->shdrStrTabIdx_, shdr->nameIndex_);
+            const unsigned char* data = elfFile->GetSectionData(shdr->secIndex_);
 
             if (sh_name == nullptr || data == nullptr) {
                 HLOGE("name data get failed.");
                 return false;
             }
 
-            HLOGVVV("shdr name '%s' vaddr 0x%" PRIx64 " offset 0x%" PRIx64 " size 0x%" PRIx64
-                    " type 0x%" PRIx64 "(%s) index %u link 0x%u entry 0x%" PRIx64 "",
+            HLOGVVV("shdr name '%s' vaddr 0x%" PRIx64 " offset 0x%" PRIx64 " size 0x%" PRIx64 " type 0x%" PRIx64
+                    "(%s) index %u link 0x%u entry 0x%" PRIx64 "",
                     sh_name, shdr->secVaddr_, shdr->fileOffset_, shdr->secSize_, shdr->secType_,
                     shdr->secTypeName_.c_str(), shdr->secIndex_, shdr->link_, shdr->secEntrySize_);
 
@@ -712,7 +704,7 @@ private:
         return true;
     }
 
-    std::unique_ptr<ElfFile> LoadElfFile(std::string &elfPath) const
+    std::unique_ptr<ElfFile> LoadElfFile(std::string& elfPath) const
     {
         HLOGD("try load elf %s", elfPath.c_str());
         if (elfPath.empty()) {
@@ -722,7 +714,7 @@ private:
         return ElfFile::MakeUnique(elfPath);
     }
 
-    void UpdateSymbols(std::vector<Symbol> &symbolsTable, const std::string &elfPath)
+    void UpdateSymbols(std::vector<Symbol>& symbolsTable, const std::string& elfPath)
     {
         symbols_.clear();
         HLOGD("%zu symbols loadded from symbolsTable.", symbolsTable.size());
@@ -755,7 +747,7 @@ private:
         // or both drop if build id is not same
         std::vector<Symbol> symbolsTable;
         std::string buildIdFound;
-        for (auto &phdr : elfFile->phdrs_) {
+        for (auto& phdr : elfFile->phdrs_) {
             if ((phdr->type_ == PT_LOAD) && (phdr->flags_ & PF_X)) {
                 // find the min addr
                 if (textExecVaddr_ != std::min(textExecVaddr_, phdr->vaddr_)) {
@@ -765,8 +757,7 @@ private:
             }
         }
 
-        HLOGD("textExecVaddr_ 0x%016" PRIx64 " file offset 0x%016" PRIx64 "", textExecVaddr_,
-              textExecVaddrFileOffset_);
+        HLOGD("textExecVaddr_ 0x%016" PRIx64 " file offset 0x%016" PRIx64 "", textExecVaddr_, textExecVaddrFileOffset_);
 
         if (!ParseShdr(std::move(elfFile), symbolsTable, buildIdFound)) {
             return false;
@@ -775,8 +766,7 @@ private:
         if (UpdateBuildIdIfMatch(buildIdFound)) {
             UpdateSymbols(symbolsTable, elfPath);
         } else {
-            HLOGW("symbols will not update for '%s' because buildId is not match.",
-                  elfPath.c_str());
+            HLOGW("symbols will not update for '%s' because buildId is not match.", elfPath.c_str());
             // this mean failed . we don't goon for this.
             return false;
         }
@@ -787,15 +777,13 @@ private:
         auto usedTime = duration_cast<microseconds>(steady_clock::now() - startTime);
         if (usedTime.count() != 0) {
             HLOGV("cost %0.3f ms to load symbols '%s'",
-                  usedTime.count() / static_cast<double>(milliseconds::duration::period::den),
-                  elfPath.c_str());
+                  usedTime.count() / static_cast<double>(milliseconds::duration::period::den), elfPath.c_str());
         }
 #endif
         return true;
     }
 
-    uint64_t GetVaddrInSymbols(uint64_t ip, uint64_t mapStart,
-                               uint64_t mapPageOffset) const override
+    uint64_t GetVaddrInSymbols(uint64_t ip, uint64_t mapStart, uint64_t mapPageOffset) const override
     {
         /*
             00200000-002c5000 r--p 00000000 08:02 46400311
@@ -812,20 +800,17 @@ private:
             5. ip offset + exec begin vaddr(2c5000) = virtual ip in elf
         */
         uint64_t vaddr = ip - mapStart + mapPageOffset - textExecVaddrFileOffset_ + textExecVaddr_;
-        HLOGM(" ip :0x%016" PRIx64 " -> elf offset :0x%016" PRIx64 " -> vaddr :0x%016" PRIx64 " ",
-              ip, ip - mapStart + mapPageOffset, vaddr);
-        HLOGM("(minExecAddrFileOffset_ is 0x%" PRIx64 " textExecVaddr_ is 0x%" PRIx64 ")",
-              textExecVaddrFileOffset_, textExecVaddr_);
+        HLOGM(" ip :0x%016" PRIx64 " -> elf offset :0x%016" PRIx64 " -> vaddr :0x%016" PRIx64 " ", ip,
+              ip - mapStart + mapPageOffset, vaddr);
+        HLOGM("(minExecAddrFileOffset_ is 0x%" PRIx64 " textExecVaddr_ is 0x%" PRIx64 ")", textExecVaddrFileOffset_,
+              textExecVaddr_);
         return vaddr;
     }
 };
 
 class KernelSymbols : public ElfFileSymbols {
 public:
-    explicit KernelSymbols(const std::string &symbolFilePath)
-        : ElfFileSymbols(symbolFilePath, SYMBOL_KERNEL_FILE)
-    {
-    }
+    explicit KernelSymbols(const std::string& symbolFilePath) : ElfFileSymbols(symbolFilePath, SYMBOL_KERNEL_FILE) {}
 
     static constexpr const int KSYM_MIN_TOKENS = 3;
     static constexpr const int KSYM_DEFAULT_LINE = 35000;
@@ -856,10 +841,10 @@ public:
         // reduce the mem alloc
         symbols_.reserve(KSYM_DEFAULT_LINE);
 
-        char *lineBegin = kallsym.data();
-        char *dataEnd = lineBegin + kallsym.size();
+        char* lineBegin = kallsym.data();
+        char* dataEnd = lineBegin + kallsym.size();
         while (lineBegin < dataEnd) {
-            char *lineEnd = strchr(lineBegin, '\n');
+            char* lineEnd = strchr(lineBegin, '\n');
             if (lineEnd != nullptr) {
                 *lineEnd = '\0';
             }
@@ -874,8 +859,8 @@ public:
 
             char nameRaw[lineSize];
             char moduleRaw[lineSize];
-            int ret = sscanf_s(lineBegin, "%" PRIx64 " %c %s%s", &addr, &type, sizeof(type),
-                               nameRaw, sizeof(nameRaw), moduleRaw, sizeof(moduleRaw));
+            int ret = sscanf_s(lineBegin, "%" PRIx64 " %c %s%s", &addr, &type, sizeof(type), nameRaw, sizeof(nameRaw),
+                               moduleRaw, sizeof(moduleRaw));
 
             lineBegin = lineEnd + 1;
 #ifdef HIPERF_DEBUG_SYMBOLS_TIME
@@ -921,8 +906,7 @@ public:
 #endif
         }
 #ifdef HIPERF_DEBUG_SYMBOLS_TIME
-        std::chrono::microseconds usedTime =
-            duration_cast<milliseconds>(steady_clock::now() - startTime);
+        std::chrono::microseconds usedTime = duration_cast<milliseconds>(steady_clock::now() - startTime);
         printf("parse kernel symbols use : %0.3f ms\n", usedTime.count() / MS_DUARTION);
         printf("parse line use : %0.3f ms\n", parseLineTime.count() / MS_DUARTION);
         printf("sscanf line use : %0.3f ms\n", sscanfTime.count() / MS_DUARTION);
@@ -956,10 +940,11 @@ public:
         }
 
         if (symbols_.empty()) {
-            printf("The symbol table addresses in /proc/kallsyms are all 0.\n"
-                   "Please check the value of /proc/sys/kernel/kptr_restrict, it "
-                   "should be 0.\n"
-                   "Or provide a separate vmlinux path.\n");
+            printf(
+                "The symbol table addresses in /proc/kallsyms are all 0.\n"
+                "Please check the value of /proc/sys/kernel/kptr_restrict, it "
+                "should be 0.\n"
+                "Or provide a separate vmlinux path.\n");
 
             if (buildId_.size() != 0) {
                 // but we got the buildid , so we make a dummpy symbols
@@ -975,11 +960,11 @@ public:
             return true;
         }
     }
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
-        HLOGV("KernelSymbols try read '%s' search paths size %zu, inDeviceRecord %d",
-              symbolFilePath.c_str(), symbolsFileSearchPaths_.size(), onRecording_);
+        HLOGV("KernelSymbols try read '%s' search paths size %zu, inDeviceRecord %d", symbolFilePath.c_str(),
+              symbolsFileSearchPaths_.size(), onRecording_);
 
         if (onRecording_) {
             // try read
@@ -990,7 +975,7 @@ public:
                 return false;
             } else {
                 HLOGD("kernel notes size: %zu", notes.size());
-                buildId_ = ElfGetBuildId((const unsigned char *)notes.data(), notes.size());
+                buildId_ = ElfGetBuildId((const unsigned char*)notes.data(), notes.size());
             }
 
             const auto startTime = std::chrono::steady_clock::now();
@@ -999,8 +984,7 @@ public:
                 return false;
             } else {
                 const auto thisTime = std::chrono::steady_clock::now();
-                const auto usedTimeMsTick =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(thisTime - startTime);
+                const auto usedTimeMsTick = std::chrono::duration_cast<std::chrono::milliseconds>(thisTime - startTime);
                 HLOGV("Load kernel symbols (total %" PRId64 " ms)\n", (int64_t)usedTimeMsTick.count());
                 // load complete
                 return true;
@@ -1020,22 +1004,22 @@ public:
 
 class KernelModuleSymbols : public ElfFileSymbols {
 public:
-    explicit KernelModuleSymbols(const std::string &symbolFilePath) : ElfFileSymbols(symbolFilePath)
+    explicit KernelModuleSymbols(const std::string& symbolFilePath) : ElfFileSymbols(symbolFilePath)
     {
         HLOGV("create %s", symbolFilePath.c_str());
         symbolFileType_ = SYMBOL_KERNEL_MODULE_FILE;
         module_ = symbolFilePath;
     }
-    ~KernelModuleSymbols() override {};
+    ~KernelModuleSymbols() override{};
 
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
         if (module_ == filePath_ and onRecording_) {
             // file name still not convert to ko file path
             // this is in record mode
             HLOGV("find ko name %s", module_.c_str());
-            for (const std::string &path : kernelModulePaths) {
+            for (const std::string& path : kernelModulePaths) {
                 if (access(path.c_str(), R_OK) == 0) {
                     std::string koPath = path + module_ + KERNEL_MODULES_EXT_NAME;
                     HLOGV("found ko in %s", koPath.c_str());
@@ -1064,9 +1048,8 @@ private:
         std::string sysFile = "/sys/module/" + module_ + "/notes/.note.gnu.build-id";
         std::string buildIdRaw = ReadFileToString(sysFile);
         if (!buildIdRaw.empty()) {
-            buildId_ = ElfGetBuildId((const unsigned char *)buildIdRaw.data(), buildIdRaw.size());
-            HLOGD("kerne module %s(%s) build id %s", module_.c_str(), filePath_.c_str(),
-                  buildId_.c_str());
+            buildId_ = ElfGetBuildId((const unsigned char*)buildIdRaw.data(), buildIdRaw.size());
+            HLOGD("kerne module %s(%s) build id %s", module_.c_str(), filePath_.c_str(), buildId_.c_str());
             return buildId_.empty() ? false : true;
         }
         return false;
@@ -1078,19 +1061,18 @@ private:
 
 class JavaFileSymbols : public ElfFileSymbols {
 public:
-    explicit JavaFileSymbols(const std::string &symbolFilePath) : ElfFileSymbols(symbolFilePath)
+    explicit JavaFileSymbols(const std::string& symbolFilePath) : ElfFileSymbols(symbolFilePath)
     {
         symbolFileType_ = SYMBOL_KERNEL_FILE;
     }
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
         return false;
     }
     ~JavaFileSymbols() override {}
 
-    uint64_t GetVaddrInSymbols(uint64_t ip, uint64_t mapStart,
-                                       uint64_t mapPageOffset) const override
+    uint64_t GetVaddrInSymbols(uint64_t ip, uint64_t mapStart, uint64_t mapPageOffset) const override
     {
         // this is different with elf
         // elf use  ip - mapStart + mapPageOffset - minExecAddrFileOffset_ + textExecVaddr_
@@ -1100,11 +1082,11 @@ public:
 
 class JSFileSymbols : public ElfFileSymbols {
 public:
-    explicit JSFileSymbols(const std::string &symbolFilePath) : ElfFileSymbols(symbolFilePath)
+    explicit JSFileSymbols(const std::string& symbolFilePath) : ElfFileSymbols(symbolFilePath)
     {
         symbolFileType_ = SYMBOL_KERNEL_FILE;
     }
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
         return false;
@@ -1114,11 +1096,8 @@ public:
 
 class UnknowFileSymbols : public SymbolsFile {
 public:
-    explicit UnknowFileSymbols(const std::string &symbolFilePath)
-        : SymbolsFile(SYMBOL_UNKNOW_FILE, symbolFilePath)
-    {
-    }
-    bool LoadSymbols(const std::string &symbolFilePath) override
+    explicit UnknowFileSymbols(const std::string& symbolFilePath) : SymbolsFile(SYMBOL_UNKNOW_FILE, symbolFilePath) {}
+    bool LoadSymbols(const std::string& symbolFilePath) override
     {
         symbolsLoaded_ = true;
         return false;
@@ -1133,8 +1112,7 @@ std::unique_ptr<SymbolsFile> SymbolsFile::CreateSymbolsFile(SymbolsFileType symb
 {
     switch (symbolType) {
         case SYMBOL_KERNEL_FILE:
-            return std::make_unique<KernelSymbols>(symbolFilePath.empty() ? KERNEL_MMAP_NAME
-                                                                          : symbolFilePath);
+            return std::make_unique<KernelSymbols>(symbolFilePath.empty() ? KERNEL_MMAP_NAME : symbolFilePath);
         case SYMBOL_KERNEL_MODULE_FILE:
             return std::make_unique<KernelModuleSymbols>(symbolFilePath);
         case SYMBOL_ELF_FILE:
@@ -1148,7 +1126,7 @@ std::unique_ptr<SymbolsFile> SymbolsFile::CreateSymbolsFile(SymbolsFileType symb
     }
 }
 
-std::unique_ptr<SymbolsFile> SymbolsFile::CreateSymbolsFile(const std::string &symbolFilePath)
+std::unique_ptr<SymbolsFile> SymbolsFile::CreateSymbolsFile(const std::string& symbolFilePath)
 {
     // we need check file name here
     if (symbolFilePath == KERNEL_MMAP_NAME) {
@@ -1192,10 +1170,8 @@ void SymbolsFile::AdjustSymbols()
         textExecVaddrRange_ = symbols_.back().funcVaddr_ - symbols_.front().funcVaddr_;
     }
 
-    HLOGDDD("%zu symbols after adjust (%zu erased) 0x%016" PRIx64 " - 0x%016" PRIx64
-            " @0x%016" PRIx64 " ",
-            symbols_.size(), erased, symbols_.front().funcVaddr_, symbols_.back().funcVaddr_,
-            textExecVaddrFileOffset_);
+    HLOGDDD("%zu symbols after adjust (%zu erased) 0x%016" PRIx64 " - 0x%016" PRIx64 " @0x%016" PRIx64 " ",
+            symbols_.size(), erased, symbols_.front().funcVaddr_, symbols_.back().funcVaddr_, textExecVaddrFileOffset_);
 }
 
 void SymbolsFile::SortMatchedSymbols()
@@ -1206,12 +1182,12 @@ void SymbolsFile::SortMatchedSymbols()
     sort(matchedSymbols_.begin(), matchedSymbols_.end(), Symbol::CompareByPointer);
 }
 
-const std::vector<Symbol> &SymbolsFile::GetSymbols()
+const std::vector<Symbol>& SymbolsFile::GetSymbols()
 {
     return symbols_;
 }
 
-const std::vector<Symbol *> &SymbolsFile::GetMatchedSymbols()
+const std::vector<Symbol*>& SymbolsFile::GetMatchedSymbols()
 {
     return matchedSymbols_;
 }
@@ -1223,8 +1199,7 @@ const Symbol SymbolsFile::GetSymbolWithVaddr(uint64_t vaddrInFile)
 #endif
     Symbol symbol;
     // it should be already order from small to large
-    auto found =
-        std::upper_bound(symbols_.begin(), symbols_.end(), vaddrInFile, Symbol::ValueLessThen);
+    auto found = std::upper_bound(symbols_.begin(), symbols_.end(), vaddrInFile, Symbol::ValueLessThen);
     /*
     if data is { 1, 2, 4, 5, 5, 6 };
     upper_bound for each val :
@@ -1261,8 +1236,7 @@ const Symbol SymbolsFile::GetSymbolWithVaddr(uint64_t vaddrInFile)
     }
 
     if (!symbol.isValid()) {
-        HLOGV("NOT found vaddr 0x%" PRIx64 " in symbole file %s(%zu)", vaddrInFile,
-              filePath_.c_str(), symbols_.size());
+        HLOGV("NOT found vaddr 0x%" PRIx64 " in symbole file %s(%zu)", vaddrInFile, filePath_.c_str(), symbols_.size());
     }
     symbol.fileVaddr_ = vaddrInFile;
 
@@ -1275,7 +1249,7 @@ const Symbol SymbolsFile::GetSymbolWithVaddr(uint64_t vaddrInFile)
     return symbol;
 }
 
-bool SymbolsFile::CheckPathReadable(const std::string &path) const
+bool SymbolsFile::CheckPathReadable(const std::string& path) const
 {
     if (access(path.c_str(), R_OK) == 0) {
         return true;
@@ -1285,10 +1259,10 @@ bool SymbolsFile::CheckPathReadable(const std::string &path) const
     }
 }
 
-bool SymbolsFile::setSymbolsFilePath(const std::vector<std::string> &symbolsSearchPaths)
+bool SymbolsFile::setSymbolsFilePath(const std::vector<std::string>& symbolsSearchPaths)
 {
     symbolsFileSearchPaths_.clear();
-    for (auto &symbolsSearchPath : symbolsSearchPaths) {
+    for (auto& symbolsSearchPath : symbolsSearchPaths) {
         if (CheckPathReadable(symbolsSearchPath)) {
             symbolsFileSearchPaths_.emplace_back(symbolsSearchPath);
             HLOGV("'%s' is add to symbolsSearchPath", symbolsSearchPath.c_str());
@@ -1297,8 +1271,7 @@ bool SymbolsFile::setSymbolsFilePath(const std::vector<std::string> &symbolsSear
     return (symbolsFileSearchPaths_.size() > 0);
 }
 
-std::unique_ptr<SymbolsFile> SymbolsFile::LoadSymbolsFromSaved(
-    const SymbolFileStruct &symbolFileStruct)
+std::unique_ptr<SymbolsFile> SymbolsFile::LoadSymbolsFromSaved(const SymbolFileStruct& symbolFileStruct)
 {
     auto symbolsFile = CreateSymbolsFile(symbolFileStruct.filePath_);
     symbolsFile->filePath_ = symbolFileStruct.filePath_;
@@ -1306,9 +1279,9 @@ std::unique_ptr<SymbolsFile> SymbolsFile::LoadSymbolsFromSaved(
     symbolsFile->textExecVaddr_ = symbolFileStruct.textExecVaddr_;
     symbolsFile->textExecVaddrFileOffset_ = symbolFileStruct.textExecVaddrFileOffset_;
     symbolsFile->buildId_ = symbolFileStruct.buildId_;
-    for (auto &symbolStruct : symbolFileStruct.symbolStructs_) {
-        symbolsFile->symbols_.emplace_back(symbolStruct.vaddr_, symbolStruct.len_,
-                                           symbolStruct.symbolName_, symbolFileStruct.filePath_);
+    for (auto& symbolStruct : symbolFileStruct.symbolStructs_) {
+        symbolsFile->symbols_.emplace_back(symbolStruct.vaddr_, symbolStruct.len_, symbolStruct.symbolName_,
+                                           symbolFileStruct.filePath_);
     }
     symbolsFile->AdjustSymbols(); // reorder
     HLOGV("load %zu symbol from SymbolFileStruct for file '%s'", symbolsFile->symbols_.size(),
@@ -1316,7 +1289,7 @@ std::unique_ptr<SymbolsFile> SymbolsFile::LoadSymbolsFromSaved(
     return symbolsFile;
 }
 
-void SymbolsFile::ExportSymbolToFileFormat(SymbolFileStruct &symbolFileStruct)
+void SymbolsFile::ExportSymbolToFileFormat(SymbolFileStruct& symbolFileStruct)
 {
     symbolFileStruct.filePath_ = filePath_;
     symbolFileStruct.symbolType_ = symbolFileType_;
@@ -1328,14 +1301,13 @@ void SymbolsFile::ExportSymbolToFileFormat(SymbolFileStruct &symbolFileStruct)
     auto symbols = GetMatchedSymbols();
     symbolFileStruct.symbolStructs_.reserve(symbols.size());
     for (auto symbol : symbols) {
-        auto &symbolStruct = symbolFileStruct.symbolStructs_.emplace_back();
+        auto& symbolStruct = symbolFileStruct.symbolStructs_.emplace_back();
         symbolStruct.vaddr_ = symbol->funcVaddr_;
         symbolStruct.len_ = symbol->len_;
         symbolStruct.symbolName_ = symbol->Name();
     }
 
-    HLOGV("export %zu symbol to SymbolFileStruct from %s", symbolFileStruct.symbolStructs_.size(),
-          filePath_.c_str());
+    HLOGV("export %zu symbol to SymbolFileStruct from %s", symbolFileStruct.symbolStructs_.size(), filePath_.c_str());
 }
 
 uint64_t SymbolsFile::GetVaddrInSymbols(uint64_t ip, uint64_t, uint64_t) const

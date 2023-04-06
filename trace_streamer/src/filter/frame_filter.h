@@ -32,8 +32,8 @@ public:
                          uint64_t expectStart,
                          uint64_t expectEnd,
                          uint32_t vsyncId,
-                         uint32_t callStackSliceRow);
-    bool BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart, uint64_t callStackSliceRow);
+                         uint32_t callStackSliceId);
+    bool BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart);
     bool MarkRSOnvsyncEvent(uint64_t ts, uint32_t itid);
     bool EndOnVsyncEvent(uint64_t ts, uint32_t itid);
     bool BeginRSTransactionData(uint64_t ts, uint32_t itid, uint32_t franeNum);
@@ -48,14 +48,10 @@ public:
     void Finish();
 
 private:
-    typedef enum FrameSliceType {
-        ACTURAL_SLICE,
-        EXPECT_SLICE
-    } FrameSliceType;
+    typedef enum FrameSliceType { ACTURAL_SLICE, EXPECT_SLICE } FrameSliceType;
     class FrameSlice {
     public:
-        FrameSlice() {
-        }
+        FrameSlice() {}
         uint64_t startTs_ = INVALID_UINT64;
         uint64_t expectedStartTs_ = INVALID_UINT64;
         uint64_t expectedEndTs_ = INVALID_UINT64;
@@ -67,7 +63,7 @@ private:
         bool vsyncEnd_ = false;
         bool isRsMainThread_ = false;
         uint32_t frameNum_ = INVALID_UINT32;
-        uint64_t callStackSliceRow_ = INVALID_UINT64;
+        uint64_t callStackSliceId_ = INVALID_UINT64;
         uint64_t frameSliceRow_ = INVALID_UINT64;
         uint64_t frameExpectedSliceRow_ = INVALID_UINT64;
         std::vector<uint64_t> sourceSlice_ = {};

@@ -61,7 +61,7 @@ const std::string CallStack::GetUnwErrorName(int error)
     }
 }
 
-void CallStack::dumpUDI(unw_dyn_info_t &di)
+void CallStack::dumpUDI(unw_dyn_info_t& di)
 {
     HLOGV("unwind_table info: ");
     HLOGV(" di.start_ip:            0x%016" UNW_WORD_PFLAG "", di.start_ip);
@@ -71,8 +71,10 @@ void CallStack::dumpUDI(unw_dyn_info_t &di)
     HLOGV(" di.u.rti.table_len:     0x%016" UNW_WORD_PFLAG "", di.u.rti.table_len);
 }
 
-bool CallStack::fillUDI(unw_dyn_info_t &di, SymbolsFile &symbolsFile, const MemMapItem &mmap,
-                        const VirtualThread &thread)
+bool CallStack::fillUDI(unw_dyn_info_t& di,
+                        SymbolsFile& symbolsFile,
+                        const MemMapItem& mmap,
+                        const VirtualThread& thread)
 {
     di.start_ip = mmap.begin_;
     di.end_ip = mmap.end_;
@@ -104,7 +106,7 @@ bool CallStack::fillUDI(unw_dyn_info_t &di, SymbolsFile &symbolsFile, const MemM
                             0x000000000000bb04 0x000000000000bb04  R      0x4
 
         */
-        const MemMapItem *ehFrameMmap = thread.FindMapByFileInfo(mmap.name_, ehFrameHdrElfOffset);
+        const MemMapItem* ehFrameMmap = thread.FindMapByFileInfo(mmap.name_, ehFrameHdrElfOffset);
 
         if (ehFrameMmap == nullptr) {
             HLOGE("no ehframe mmap found.");
@@ -127,13 +129,12 @@ bool CallStack::fillUDI(unw_dyn_info_t &di, SymbolsFile &symbolsFile, const MemM
     uint64_t SectionVaddr, SectionSize, SectionFileOffset;
     if ((UNW_INFO_FORMAT_ARM_EXIDX == di.format) &&
         symbolsFile.GetSectionInfo(ARM_EXIDX, SectionVaddr, SectionSize, SectionFileOffset)) {
-        const MemMapItem *targetMmap = thread.FindMapByFileInfo(mmap.name_, SectionFileOffset);
+        const MemMapItem* targetMmap = thread.FindMapByFileInfo(mmap.name_, SectionFileOffset);
         if (targetMmap == nullptr) {
             HLOGE("no debug mmap found.");
             return false;
         }
-        HLOGV(" begin: %" PRIx64 " offset:%" PRIx64 "", targetMmap->begin_,
-              targetMmap->pageoffset_);
+        HLOGV(" begin: %" PRIx64 " offset:%" PRIx64 "", targetMmap->begin_, targetMmap->pageoffset_);
 
         di.u.rti.table_data = targetMmap->begin_ + SectionFileOffset - targetMmap->pageoffset_;
         di.u.rti.table_len = SectionSize;
@@ -155,17 +156,22 @@ bool CallStack::fillUDI(unw_dyn_info_t &di, SymbolsFile &symbolsFile, const MemM
 /*
     https://www.nongnu.org/libunwind/man/libunwind-dynamic(3).html
 */
-int CallStack::FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
-                               UnwindInfo *unwindInfoPtr, unw_addr_space_t as, unw_word_t ip,
-                               unw_proc_info_t *pi, int need_unwind_info, void *arg)
+int CallStack::FindUnwindTable(SymbolsFile* symbolsFile,
+                               const MemMapItem& mmap,
+                               UnwindInfo* unwindInfoPtr,
+                               unw_addr_space_t as,
+                               unw_word_t ip,
+                               unw_proc_info_t* pi,
+                               int need_unwind_info,
+                               void* arg)
 {
     HLOGM("try search debug info at %s", symbolsFile->filePath_.c_str());
-    auto &dynInfoProcessMap = unwindInfoPtr->callStack.unwindDynInfoMap_;
+    auto& dynInfoProcessMap = unwindInfoPtr->callStack.unwindDynInfoMap_;
     // all the thread in same process have same mmap and symbols
     if (dynInfoProcessMap.find(unwindInfoPtr->thread.pid_) == dynInfoProcessMap.end()) {
-        dynInfoProcessMap.emplace(unwindInfoPtr->thread.pid_, dsoUnwDynInfoMap {});
+        dynInfoProcessMap.emplace(unwindInfoPtr->thread.pid_, dsoUnwDynInfoMap{});
     }
-    dsoUnwDynInfoMap &dynFileMap = dynInfoProcessMap[unwindInfoPtr->thread.pid_];
+    dsoUnwDynInfoMap& dynFileMap = dynInfoProcessMap[unwindInfoPtr->thread.pid_];
     // find use dso name as key
     if (dynFileMap.find(symbolsFile->filePath_) == dynFileMap.end()) {
         unw_dyn_info_t newdi;
@@ -183,7 +189,7 @@ int CallStack::FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
         if (fillUDI(newdi, *symbolsFile, mmap, unwindInfoPtr->thread)) {
             dumpUDI(newdi);
             // we make a option empty value first
-            std::optional<unw_dyn_info_t> &odi = dynFileMap[symbolsFile->filePath_];
+            std::optional<unw_dyn_info_t>& odi = dynFileMap[symbolsFile->filePath_];
             odi = newdi;
         } else {
             HLOGV("fillUDI failed()");
@@ -194,11 +200,10 @@ int CallStack::FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
     HLOG_ASSERT(dynInfoProcessMap.find(unwindInfoPtr->thread.pid_) != dynInfoProcessMap.end());
     HLOG_ASSERT_MESSAGE(dynFileMap.find(symbolsFile->filePath_) != dynFileMap.end(), "%s",
                         symbolsFile->filePath_.c_str());
-    std::optional<unw_dyn_info_t> &odi =
-        dynInfoProcessMap.at(unwindInfoPtr->thread.pid_).at(symbolsFile->filePath_);
+    std::optional<unw_dyn_info_t>& odi = dynInfoProcessMap.at(unwindInfoPtr->thread.pid_).at(symbolsFile->filePath_);
 
     if (odi.has_value()) {
-        unw_dyn_info_t &di = odi.value();
+        unw_dyn_info_t& di = odi.value();
         /*
             we don't use dwarf_search_unwind_table
             because in arm it will search two function:
@@ -209,8 +214,7 @@ int CallStack::FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
             define tdep_search_unwind_table UNW_OBJ(search_unwind_table)
 
         */
-        int ret = static_cast<unw_error_t>(
-            tdep_search_unwind_table(as, ip, &di, pi, need_unwind_info, arg));
+        int ret = static_cast<unw_error_t>(tdep_search_unwind_table(as, ip, &di, pi, need_unwind_info, arg));
 
         HLOGM("search_unwind_table ret %d:%s", ret, GetUnwErrorName(ret).c_str());
 
@@ -223,38 +227,34 @@ int CallStack::FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
             return UNW_ESUCCESS;
         }
     } else {
-        HLOGW("no debug info found for thread %d:%s", unwindInfoPtr->thread.tid_,
-              unwindInfoPtr->thread.name_.c_str());
+        HLOGW("no debug info found for thread %d:%s", unwindInfoPtr->thread.tid_, unwindInfoPtr->thread.name_.c_str());
         return -UNW_EUNSPEC;
     }
 }
 
-int CallStack::FindProcInfo(unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
-                            int need_unwind_info, void *arg)
+int CallStack::FindProcInfo(unw_addr_space_t as, unw_word_t ip, unw_proc_info_t* pi, int need_unwind_info, void* arg)
 {
-    UnwindInfo *unwindInfoPtr = static_cast<UnwindInfo *>(arg);
+    UnwindInfo* unwindInfoPtr = static_cast<UnwindInfo*>(arg);
 
     HLOGM("need_unwind_info ret %d ip %" UNW_WORD_PFLAG "", need_unwind_info, ip);
-    const MemMapItem *mmap = unwindInfoPtr->thread.FindMapByAddr(ip);
+    const MemMapItem* mmap = unwindInfoPtr->thread.FindMapByAddr(ip);
     if (mmap != nullptr) {
-        SymbolsFile *symbolsFile = unwindInfoPtr->thread.FindSymbolsFileByMap(*mmap);
+        SymbolsFile* symbolsFile = unwindInfoPtr->thread.FindSymbolsFileByMap(*mmap);
         if (symbolsFile != nullptr) {
-            return FindUnwindTable(symbolsFile, *mmap, unwindInfoPtr, as, ip, pi, need_unwind_info,
-                                   arg);
+            return FindUnwindTable(symbolsFile, *mmap, unwindInfoPtr, as, ip, pi, need_unwind_info, arg);
         } else {
             HLOGW("no symbols file found for thread %d:%s", unwindInfoPtr->thread.tid_,
                   unwindInfoPtr->thread.name_.c_str());
         }
     } else {
-        HLOGE("ip 0x%016" UNW_WORD_PFLAG " not found in thread %d:%s", ip,
-              unwindInfoPtr->thread.tid_, unwindInfoPtr->thread.name_.c_str());
+        HLOGE("ip 0x%016" UNW_WORD_PFLAG " not found in thread %d:%s", ip, unwindInfoPtr->thread.tid_,
+              unwindInfoPtr->thread.name_.c_str());
     }
 
     return -UNW_EUNSPEC;
 }
 
-bool CallStack::ReadVirtualThreadMemory(UnwindInfo &unwindInfoPtr, unw_word_t addr,
-                                        unw_word_t *data)
+bool CallStack::ReadVirtualThreadMemory(UnwindInfo& unwindInfoPtr, unw_word_t addr, unw_word_t* data)
 {
     auto process = unwindInfoPtr.callStack.porcessMemoryMap_.find(unwindInfoPtr.thread.pid_);
     if (process != unwindInfoPtr.callStack.porcessMemoryMap_.end()) {
@@ -273,10 +273,13 @@ bool CallStack::ReadVirtualThreadMemory(UnwindInfo &unwindInfoPtr, unw_word_t ad
     }
 }
 
-int CallStack::AccessMem([[maybe_unused]] unw_addr_space_t as, unw_word_t addr,
-                         unw_word_t *valuePoint, int writeOperation, void *arg)
+int CallStack::AccessMem([[maybe_unused]] unw_addr_space_t as,
+                         unw_word_t addr,
+                         unw_word_t* valuePoint,
+                         int writeOperation,
+                         void* arg)
 {
-    UnwindInfo *unwindInfoPtr = static_cast<UnwindInfo *>(arg);
+    UnwindInfo* unwindInfoPtr = static_cast<UnwindInfo*>(arg);
     *valuePoint = 0;
     HLOGDUMMY("try access addr 0x%" UNW_WORD_PFLAG " ", addr);
     HLOG_ASSERT(writeOperation == 0);
@@ -307,10 +310,13 @@ int CallStack::AccessMem([[maybe_unused]] unw_addr_space_t as, unw_word_t addr,
     return UNW_ESUCCESS;
 }
 
-int CallStack::AccessReg([[maybe_unused]] unw_addr_space_t as, unw_regnum_t regnum,
-                         unw_word_t *valuePoint, int writeOperation, void *arg)
+int CallStack::AccessReg([[maybe_unused]] unw_addr_space_t as,
+                         unw_regnum_t regnum,
+                         unw_word_t* valuePoint,
+                         int writeOperation,
+                         void* arg)
 {
-    UnwindInfo *unwindInfoPtr = static_cast<UnwindInfo *>(arg);
+    UnwindInfo* unwindInfoPtr = static_cast<UnwindInfo*>(arg);
     uint64_t val;
     int perfRegIndex = LibunwindRegIdToPerfReg(regnum);
     if (perfRegIndex < 0) {
@@ -340,38 +346,45 @@ int CallStack::AccessReg([[maybe_unused]] unw_addr_space_t as, unw_regnum_t regn
 }
 
 void CallStack::PutUnwindInfo([[maybe_unused]] unw_addr_space_t as,
-                              [[maybe_unused]] unw_proc_info_t *pi, [[maybe_unused]] void *arg)
+                              [[maybe_unused]] unw_proc_info_t* pi,
+                              [[maybe_unused]] void* arg)
 {
 }
 
-int CallStack::AccessFpreg([[maybe_unused]] unw_addr_space_t as, [[maybe_unused]] unw_regnum_t num,
-                           [[maybe_unused]] unw_fpreg_t *val, [[maybe_unused]] int writeOperation,
-                           [[maybe_unused]] void *arg)
+int CallStack::AccessFpreg([[maybe_unused]] unw_addr_space_t as,
+                           [[maybe_unused]] unw_regnum_t num,
+                           [[maybe_unused]] unw_fpreg_t* val,
+                           [[maybe_unused]] int writeOperation,
+                           [[maybe_unused]] void* arg)
 {
     return -UNW_EINVAL;
 }
 
 int CallStack::GetDynInfoListAaddr([[maybe_unused]] unw_addr_space_t as,
-                                   [[maybe_unused]] unw_word_t *dil_vaddr,
-                                   [[maybe_unused]] void *arg)
+                                   [[maybe_unused]] unw_word_t* dil_vaddr,
+                                   [[maybe_unused]] void* arg)
 {
     return -UNW_ENOINFO;
 }
 
-int CallStack::Resume([[maybe_unused]] unw_addr_space_t as, [[maybe_unused]] unw_cursor_t *cu,
-                      [[maybe_unused]] void *arg)
+int CallStack::Resume([[maybe_unused]] unw_addr_space_t as,
+                      [[maybe_unused]] unw_cursor_t* cu,
+                      [[maybe_unused]] void* arg)
 {
     return -UNW_EINVAL;
 }
 
-int CallStack::getProcName([[maybe_unused]] unw_addr_space_t as, [[maybe_unused]] unw_word_t addr,
-                           [[maybe_unused]] char *bufp, [[maybe_unused]] size_t buf_len,
-                           [[maybe_unused]] unw_word_t *offp, [[maybe_unused]] void *arg)
+int CallStack::getProcName([[maybe_unused]] unw_addr_space_t as,
+                           [[maybe_unused]] unw_word_t addr,
+                           [[maybe_unused]] char* bufp,
+                           [[maybe_unused]] size_t buf_len,
+                           [[maybe_unused]] unw_word_t* offp,
+                           [[maybe_unused]] void* arg)
 {
     return -UNW_EINVAL;
 }
 
-void CallStack::UnwindStep(unw_cursor_t &c, std::vector<CallFrame> &callStack, size_t maxStackLevel)
+void CallStack::UnwindStep(unw_cursor_t& c, std::vector<CallFrame>& callStack, size_t maxStackLevel)
 {
     while (callStack.size() < maxStackLevel) {
         int ret = unw_step(&c);
@@ -395,8 +408,7 @@ void CallStack::UnwindStep(unw_cursor_t &c, std::vector<CallFrame> &callStack, s
             if (unw_is_signal_frame(&c) <= 0) {
                 --ip;
             }
-            HLOGV("unwind:%zu: ip 0x%" UNW_WORD_PFLAG " sp 0x%" UNW_WORD_PFLAG "", callStack.size(),
-                  ip, sp);
+            HLOGV("unwind:%zu: ip 0x%" UNW_WORD_PFLAG " sp 0x%" UNW_WORD_PFLAG "", callStack.size(), ip, sp);
             if (callStack.back().ip_ == ip && callStack.back().sp_ == sp) {
                 HLOGW("we found a same frame, stop here");
                 break;
@@ -410,7 +422,7 @@ void CallStack::UnwindStep(unw_cursor_t &c, std::vector<CallFrame> &callStack, s
 }
 #endif
 
-bool CallStack::GetIpSP(uint64_t &ip, uint64_t &sp, const u64 *regs, size_t regNum) const
+bool CallStack::GetIpSP(uint64_t& ip, uint64_t& sp, const u64* regs, size_t regNum) const
 {
     if (regNum > 0) {
         if (!RegisterGetSPValue(sp, arch_, regs, regNum)) {
@@ -432,8 +444,7 @@ bool CallStack::GetIpSP(uint64_t &ip, uint64_t &sp, const u64 *regs, size_t regN
 }
 
 #if HAVE_LIBUNWIND
-bool CallStack::DoUnwind(const VirtualThread &thread, std::vector<CallFrame> &callStack,
-                         size_t maxStackLevel)
+bool CallStack::DoUnwind(const VirtualThread& thread, std::vector<CallFrame>& callStack, size_t maxStackLevel)
 {
     unw_addr_space_t addr_space;
     UnwindInfo unwindInfo = {
@@ -465,8 +476,13 @@ bool CallStack::DoUnwind(const VirtualThread &thread, std::vector<CallFrame> &ca
 }
 #endif
 
-bool CallStack::UnwindCallStack(const VirtualThread &thread, bool abi32, u64 *regs, u64 regsNum,
-                                const u8 *stack, u64 stackSize, std::vector<CallFrame> &callStack,
+bool CallStack::UnwindCallStack(const VirtualThread& thread,
+                                bool abi32,
+                                u64* regs,
+                                u64 regsNum,
+                                const u8* stack,
+                                u64 stackSize,
+                                std::vector<CallFrame>& callStack,
                                 size_t maxStackLevel)
 {
     regs_ = regs;
@@ -506,7 +522,7 @@ bool CallStack::UnwindCallStack(const VirtualThread &thread, bool abi32, u64 *re
     return true;
 }
 
-void CallStack::LogFrame(const std::string msg, const std::vector<CallFrame> &frames)
+void CallStack::LogFrame(const std::string msg, const std::vector<CallFrame>& frames)
 {
     HLOGM("%s", msg.c_str());
 #ifndef NDEBUG
@@ -533,12 +549,11 @@ end                    begin
 use expandLimit to setup how may frame match is needs
 
 */
-size_t CallStack::DoExpandCallStack(std::vector<CallFrame> &newCallFrames,
-                                    const std::vector<CallFrame> &cachedCallFrames,
+size_t CallStack::DoExpandCallStack(std::vector<CallFrame>& newCallFrames,
+                                    const std::vector<CallFrame>& cachedCallFrames,
                                     size_t expandLimit)
 {
-    if (expandLimit == 0 or newCallFrames.size() < expandLimit or
-        cachedCallFrames.size() < expandLimit) {
+    if (expandLimit == 0 or newCallFrames.size() < expandLimit or cachedCallFrames.size() < expandLimit) {
         HLOGM("expandLimit %zu not match new %zu cache %zu", expandLimit, newCallFrames.size(),
               cachedCallFrames.size());
         return 0; // size not enough
@@ -549,8 +564,7 @@ size_t CallStack::DoExpandCallStack(std::vector<CallFrame> &newCallFrames,
     // in case2 newIt -> B
     const auto newIt = newCallFrames.end() - expandLimit;
 
-    HLOGM("try find new call chain bottom %s for limit %zu", newIt->ToString().c_str(),
-          expandLimit);
+    HLOGM("try find new call chain bottom %s for limit %zu", newIt->ToString().c_str(), expandLimit);
 
     // first frame search, from called - > caller
     // for case 2 it should found B
@@ -590,12 +604,11 @@ size_t CallStack::DoExpandCallStack(std::vector<CallFrame> &newCallFrames,
             }
         }
     }
-    HLOGM("cachedIt distance %zd , need %zd", std::distance(cachedCallFrames.begin(), cachedIt),
-          distances);
+    HLOGM("cachedIt distance %zd , need %zd", std::distance(cachedCallFrames.begin(), cachedIt), distances);
     return 0u; // nothing expand
 }
 
-size_t CallStack::ExpandCallStack(pid_t tid, std::vector<CallFrame> &callFrames, size_t expandLimit)
+size_t CallStack::ExpandCallStack(pid_t tid, std::vector<CallFrame>& callFrames, size_t expandLimit)
 {
     size_t expand = 0u;
     if (expandLimit == 0) {
@@ -609,7 +622,7 @@ size_t CallStack::ExpandCallStack(pid_t tid, std::vector<CallFrame> &callFrames,
     }
     if (callFrames.size() >= 1u) {
         // get top  (Earliest caller)
-        HashList<uint64_t, std::vector<CallFrame>> &cachedCallFrames = cachedCallFramesMap_[tid];
+        HashList<uint64_t, std::vector<CallFrame>>& cachedCallFrames = cachedCallFramesMap_[tid];
         HLOGV("find call stack frames in cache size %zu", cachedCallFrames.size());
         // compare
         using namespace std::rel_ops; // enable complement comparing operators
@@ -625,7 +638,7 @@ size_t CallStack::ExpandCallStack(pid_t tid, std::vector<CallFrame> &callFrames,
                 3 if new C == new C (if limit > 0)
                 4 insert A after B in new stack
             */
-            const std::vector<CallFrame> &cachedCallStack = *itr;
+            const std::vector<CallFrame>& cachedCallStack = *itr;
             if (cachedCallStack.size() < expandLimit) {
                 HLOGM("cache callstack is too small, skip it");
                 continue; // check next
@@ -649,7 +662,7 @@ CallStack::CallStack() {}
 CallStack::~CallStack()
 {
 #if HAVE_LIBUNWIND
-    for (auto &pair : unwindAddrSpaceMap_) {
+    for (auto& pair : unwindAddrSpaceMap_) {
         unw_destroy_addr_space(pair.second);
     }
 #endif

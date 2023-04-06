@@ -68,7 +68,8 @@ public:
     std::vector<std::unique_ptr<TsCpuData>> cpuData_;
 
 private:
-    std::string threadStateDesc_[ProtoReader::THREAD_WAITING + 1] = {"undefined", "Running", "Sleep", "Sloped", "Watting"};
+    std::string threadStateDesc_[ProtoReader::THREAD_WAITING + 1] = {"undefined", "Running", "Sleep", "Sloped",
+                                                                     "Watting"};
     uint64_t lastLineSeq_ = 0;
 };
 } // namespace TraceStreamer

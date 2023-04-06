@@ -157,8 +157,7 @@ int MeasureTable::Cursor::Filter(const FilterConstraints& fc, sqlite3_value** ar
                 FilterTS(c.op, argv[i], measureObj.TimeStampData());
                 break;
             case FILTER_ID:
-                indexMap_->MixRange(c.op, static_cast<uint32_t>(sqlite3_value_int(argv[i])),
-                                    measureObj.FilterIdData());
+                indexMap_->MixRange(c.op, static_cast<uint32_t>(sqlite3_value_int(argv[i])), measureObj.FilterIdData());
                 break;
             default:
                 break;

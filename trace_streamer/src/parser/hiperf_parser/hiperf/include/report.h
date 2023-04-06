@@ -35,39 +35,41 @@ public:
     uint64_t eventCount_ = 0;     // call chain event
     uint64_t selfEventCount_ = 0; // call chain event end in this function
     std::vector<ReportItemCallFrame> childs;
-    ReportItemCallFrame(std::string_view func, uint64_t vaddr, std::string_view dso,
-                        uint64_t eventCount, uint64_t selfEventCount)
-        : func_(func),
-          vaddr_(vaddr),
-          dso_(dso),
-          eventCount_(eventCount),
-          selfEventCount_(selfEventCount)
+    ReportItemCallFrame(std::string_view func,
+                        uint64_t vaddr,
+                        std::string_view dso,
+                        uint64_t eventCount,
+                        uint64_t selfEventCount)
+        : func_(func), vaddr_(vaddr), dso_(dso), eventCount_(eventCount), selfEventCount_(selfEventCount)
     {
     }
 
-    bool operator==(const ReportItemCallFrame &b) const
+    bool operator==(const ReportItemCallFrame& b) const
     {
         return Same(b);
     }
 
-    bool operator!=(const ReportItemCallFrame &b) const
+    bool operator!=(const ReportItemCallFrame& b) const
     {
         return !Same(b);
     }
 
-    static int CompareSortingEventCount(const ReportItemCallFrame &a, const ReportItemCallFrame &b)
+    static int CompareSortingEventCount(const ReportItemCallFrame& a, const ReportItemCallFrame& b)
     {
         return a.eventCount_ > b.eventCount_;
     }
 
-    static void OrderCallFrames(std::vector<ReportItemCallFrame> &callframes, int indent = 2)
+    static void OrderCallFrames(std::vector<ReportItemCallFrame>& callframes, int indent = 2)
     {
         int i = 2;
         if (callframes.size() > 0) {
-            std::sort(callframes.begin(), callframes.end(),
-                      &ReportItemCallFrame::CompareSortingEventCount);
-
-            for (auto &callframe : callframes) {
+            std::sort(callframes.begin(), callframes.end(), &ReportItemCallFrame::CompareSortingEventCount);
+#ifdef IS_WASM
+            std::sort(callframes.begin(), callframes.end(), &ReportItemCallFrame::CompareSortingEventCount);
+#else
+            std::stable_sort(callframes.begin(), callframes.end(), &ReportItemCallFrame::CompareSortingEventCount);
+#endif
+            for (auto& callframe : callframes) {
                 HLOGDUMMY("%*s%s", indent, "", callframe.ToDebugString().c_str());
                 if (callframe.childs.size() > 0) {
                     OrderCallFrames(callframe.childs, indent + i);
@@ -77,11 +79,11 @@ public:
     }
 
     // just a log
-    static void DumpCallFrames(std::vector<ReportItemCallFrame> &callframes, int indent = 2)
+    static void DumpCallFrames(std::vector<ReportItemCallFrame>& callframes, int indent = 2)
     {
         int y = 2;
         if (callframes.size() > 0) {
-            for (auto &callframe : callframes) {
+            for (auto& callframe : callframes) {
                 HLOGV("%*s%s", indent, "", callframe.ToDebugString().c_str());
                 if (callframe.childs.size() > 0) {
                     DumpCallFrames(callframe.childs, indent + y);
@@ -92,12 +94,12 @@ public:
 
     const std::string ToDebugString() const
     {
-        return StringPrintf("%" PRIu64 "(%" PRIu64 ")%s(%s+0x%" PRIx64 ") child %zu", eventCount_,
-                            selfEventCount_, func_.data(), dso_.data(), vaddr_, childs.size());
+        return StringPrintf("%" PRIu64 "(%" PRIu64 ")%s(%s+0x%" PRIx64 ") child %zu", eventCount_, selfEventCount_,
+                            func_.data(), dso_.data(), vaddr_, childs.size());
     }
 
 private:
-    bool Same(const ReportItemCallFrame &b) const
+    bool Same(const ReportItemCallFrame& b) const
     {
         return (func_ == b.func_) and (vaddr_ == b.vaddr_) and (dso_ == b.dso_);
     }
@@ -121,40 +123,38 @@ public:
     unsigned long long index_;
 
     // only for ut test
-    ReportItem(pid_t pid, pid_t tid, const char *comm, const char *dso, const char *func,
-               uint64_t vaddr, uint64_t eventCount)
-        : pid_(pid),
-          tid_(tid),
-          comm_(comm),
-          dso_(dso),
-          func_(func),
-          vaddr_(vaddr),
-          eventCount_(eventCount)
+    ReportItem(pid_t pid,
+               pid_t tid,
+               const char* comm,
+               const char* dso,
+               const char* func,
+               uint64_t vaddr,
+               uint64_t eventCount)
+        : pid_(pid), tid_(tid), comm_(comm), dso_(dso), func_(func), vaddr_(vaddr), eventCount_(eventCount)
     {
         HLOG_ASSERT(comm != nullptr);
         index_ = allIndex_++;
     }
 
-    ReportItem(pid_t pid, pid_t tid, std::string &comm, const std::string_view &dso,
-               const std::string_view &func, uint64_t vaddr, uint64_t eventCount)
-        : pid_(pid),
-          tid_(tid),
-          comm_(comm),
-          dso_(dso),
-          func_(func),
-          vaddr_(vaddr),
-          eventCount_(eventCount)
+    ReportItem(pid_t pid,
+               pid_t tid,
+               std::string& comm,
+               const std::string_view& dso,
+               const std::string_view& func,
+               uint64_t vaddr,
+               uint64_t eventCount)
+        : pid_(pid), tid_(tid), comm_(comm), dso_(dso), func_(func), vaddr_(vaddr), eventCount_(eventCount)
     {
         HLOG_ASSERT(!comm.empty());
         index_ = allIndex_++;
     }
 
-    bool operator==(const ReportItem &b) const
+    bool operator==(const ReportItem& b) const
     {
         return Same(b);
     }
 
-    bool operator!=(const ReportItem &b) const
+    bool operator!=(const ReportItem& b) const
     {
         return !Same(b);
     }
@@ -162,12 +162,12 @@ public:
     // debug only
     const std::string ToDebugString() const
     {
-        return StringPrintf("%d:%d:%s-%s(%s):%zu i:%llu", pid_, tid_, comm_.data(), func_.data(),
-                            dso_.data(), eventCount_, index_);
+        return StringPrintf("%d:%d:%s-%s(%s):%zu i:%llu", pid_, tid_, comm_.data(), func_.data(), dso_.data(),
+                            eventCount_, index_);
     }
 
     // Count
-    static int CompareEventCount(const ReportItem &a, const ReportItem &b)
+    static int CompareEventCount(const ReportItem& a, const ReportItem& b)
     {
         if (a.eventCount_ != b.eventCount_) {
             return (a.eventCount_ > b.eventCount_) ? 1 : -1;
@@ -176,19 +176,18 @@ public:
         }
     }
 
-    static int CompareSortingEventCount(const ReportItem &a, const ReportItem &b)
+    static int CompareSortingEventCount(const ReportItem& a, const ReportItem& b)
     {
         return a.eventCount_ > b.eventCount_;
     }
 
-    static const std::string GetEventCount(const ReportItem &a, size_t len,
-                                           const std::string &format)
+    static const std::string GetEventCount(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.eventCount_);
     }
 
     // Pid
-    static int ComparePid(const ReportItem &a, const ReportItem &b)
+    static int ComparePid(const ReportItem& a, const ReportItem& b)
     {
         if (a.pid_ != b.pid_) {
             return (a.pid_ > b.pid_) ? 1 : -1;
@@ -196,13 +195,13 @@ public:
             return 0;
         }
     }
-    static const std::string GetPid(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetPid(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.pid_);
     }
 
     // Tid
-    static int CompareTid(const ReportItem &a, const ReportItem &b)
+    static int CompareTid(const ReportItem& a, const ReportItem& b)
     {
         if (a.tid_ != b.tid_) {
             return (a.tid_ > b.tid_) ? 1 : -1;
@@ -210,72 +209,72 @@ public:
             return 0;
         }
     }
-    static const std::string GetTid(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetTid(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.tid_);
     }
 
     // Comm
-    static int CompareComm(const ReportItem &a, const ReportItem &b)
+    static int CompareComm(const ReportItem& a, const ReportItem& b)
     {
         int result = a.comm_.compare(b.comm_);
         return result;
     }
-    static const std::string GetComm(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetComm(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.comm_.data());
     }
 
     // Func
-    static int CompareFunc(const ReportItem &a, const ReportItem &b)
+    static int CompareFunc(const ReportItem& a, const ReportItem& b)
     {
         return a.func_.compare(b.func_);
     }
-    static const std::string GetFunc(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetFunc(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.func_.data());
     }
 
     // Dso
-    static int CompareDso(const ReportItem &a, const ReportItem &b)
+    static int CompareDso(const ReportItem& a, const ReportItem& b)
     {
         return a.dso_.compare(b.dso_);
     }
-    static const std::string GetDso(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetDso(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.dso_.data());
     }
 
     // fromDso
-    static int CompareFromDso(const ReportItem &a, const ReportItem &b)
+    static int CompareFromDso(const ReportItem& a, const ReportItem& b)
     {
         return a.fromDso_.compare(b.fromDso_);
     }
-    static const std::string GetFromDso(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetFromDso(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.fromDso_.data());
     }
 
     // fromFunc
-    static int CompareFromFunc(const ReportItem &a, const ReportItem &b)
+    static int CompareFromFunc(const ReportItem& a, const ReportItem& b)
     {
         return a.fromFunc_.compare(b.fromFunc_);
     }
-    static const std::string GetFromFunc(const ReportItem &a, size_t len, const std::string &format)
+    static const std::string GetFromFunc(const ReportItem& a, size_t len, const std::string& format)
     {
         return StringPrintf(format.c_str(), len, a.fromFunc_.data());
     }
 
 private:
-    bool Same(const ReportItem &b) const
+    bool Same(const ReportItem& b) const
     {
-        return (comm_ == b.comm_) && (pid_ == b.pid_) && (tid_ == b.tid_) && (func_ == b.func_) &&
-               (dso_ == b.dso_) && (vaddr_ == b.vaddr_);
+        return (comm_ == b.comm_) && (pid_ == b.pid_) && (tid_ == b.tid_) && (func_ == b.func_) && (dso_ == b.dso_) &&
+               (vaddr_ == b.vaddr_);
     }
 };
 
-using ReportKeyCompareFunction = int(const ReportItem &, const ReportItem &);
-using ReportKeyGetFunction = const std::string(const ReportItem &, size_t, const std::string &);
+using ReportKeyCompareFunction = int(const ReportItem&, const ReportItem&);
+using ReportKeyGetFunction = const std::string(const ReportItem&, size_t, const std::string&);
 
 constexpr const int MAX_FILED_LEN = 20;
 constexpr const int CALLSTACK_INDENT = 4;
@@ -284,13 +283,15 @@ struct ReportKey {
     const std::string valueFormat_;
     size_t maxLen_ = 0u;
     std::string maxValue_;
-    ReportKeyCompareFunction &compareFunction_;
-    ReportKeyGetFunction &GetFunction_;
-    const std::vector<std::string> &displayFilter_;
+    ReportKeyCompareFunction& compareFunction_;
+    ReportKeyGetFunction& GetFunction_;
+    const std::vector<std::string>& displayFilter_;
 
-    ReportKey(const std::string keyName, ReportKeyCompareFunction &compareFunction,
-              ReportKeyGetFunction &GetFunction, const std::string valueFormat,
-              const std::vector<std::string> &displayFilter)
+    ReportKey(const std::string keyName,
+              ReportKeyCompareFunction& compareFunction,
+              ReportKeyGetFunction& GetFunction,
+              const std::string valueFormat,
+              const std::vector<std::string>& displayFilter)
         : keyName_(keyName),
           valueFormat_(valueFormat),
           compareFunction_(compareFunction),
@@ -300,7 +301,7 @@ struct ReportKey {
         maxLen_ = keyName.size();
     }
 
-    void UpdateValueMaxLen(const std::string &value)
+    void UpdateValueMaxLen(const std::string& value)
     {
         size_t newMaxLen = std::max(maxLen_, value.size());
         if (maxLen_ < newMaxLen) {
@@ -318,12 +319,12 @@ struct ReportKey {
         }
     }
 
-    std::string GetValue(const ReportItem &i)
+    std::string GetValue(const ReportItem& i)
     {
         return GetFunction_(i, maxLen_, valueFormat_);
     }
 
-    bool ShouldDisplay(const ReportItem &i)
+    bool ShouldDisplay(const ReportItem& i)
     {
         if (displayFilter_.size() == 0) {
             return true;
@@ -331,8 +332,7 @@ struct ReportKey {
             std::string value = GetFunction_(i, 0, valueFormat_);
             auto it = find(displayFilter_.begin(), displayFilter_.end(), value);
             if (it == displayFilter_.end()) {
-                HLOGV("  not found '%s' in %s", value.c_str(),
-                      VectorToString(displayFilter_).c_str());
+                HLOGV("  not found '%s' in %s", value.c_str(), VectorToString(displayFilter_).c_str());
             }
             return (it != displayFilter_.end());
         }
@@ -348,14 +348,14 @@ struct ReportOption {
     float callStackHeatLimit_ = 0.0f;
 
     // display filter
-    std::vector<std::string> displayComms_ {};
-    std::vector<std::string> displayPids_ {};
-    std::vector<std::string> displayTids_ {};
-    std::vector<std::string> displayDsos_ {};
-    std::vector<std::string> displayFromDsos_ {};
-    std::vector<std::string> displayFuncs_ {};
-    std::vector<std::string> displayFromFuncs_ {};
-    std::vector<std::string> displayDummy_ {};
+    std::vector<std::string> displayComms_{};
+    std::vector<std::string> displayPids_{};
+    std::vector<std::string> displayTids_{};
+    std::vector<std::string> displayDsos_{};
+    std::vector<std::string> displayFromDsos_{};
+    std::vector<std::string> displayFuncs_{};
+    std::vector<std::string> displayFromFuncs_{};
+    std::vector<std::string> displayDummy_{};
 
     std::vector<std::string> sortKeys_ = {"comm", "pid", "tid", "dso", "func"};
 
@@ -369,15 +369,15 @@ public:
     {
         // works for ut test
     }
-    Report(ReportOption &option) : option_(option), virtualRuntime_(false) {}
-    bool MultiLevelSame(const ReportItem &a, const ReportItem &b);
+    Report(ReportOption& option) : option_(option), virtualRuntime_(false) {}
+    bool MultiLevelSame(const ReportItem& a, const ReportItem& b);
     void AdjustReportItems();
-    void AddReportItem(const PerfRecordSample &sample, bool includeCallStack);
-    void AddReportItemBranch(const PerfRecordSample &sample);
-    void OutputStd(FILE *output);
-    void OutputStdDiff(FILE *output, Report &other);
+    void AddReportItem(const PerfRecordSample& sample, bool includeCallStack);
+    void AddReportItemBranch(const PerfRecordSample& sample);
+    void OutputStd(FILE* output);
+    void OutputStdDiff(FILE* output, Report& other);
 
-    ReportOption &option_;
+    ReportOption& option_;
 
     VirtualRuntime virtualRuntime_;
 
@@ -464,9 +464,9 @@ public:
         },
     };
     struct ReportEventConfigItem {
-        ReportEventConfigItem(const ReportEventConfigItem &) = delete;
-        ReportEventConfigItem &operator=(const ReportEventConfigItem &) = delete;
-        ReportEventConfigItem(ReportEventConfigItem &&) = default;
+        ReportEventConfigItem(const ReportEventConfigItem&) = delete;
+        ReportEventConfigItem& operator=(const ReportEventConfigItem&) = delete;
+        ReportEventConfigItem(ReportEventConfigItem&&) = default;
         std::string eventName_;
         uint64_t sampleCount_ = 0;
         uint64_t eventCount_ = 0;
@@ -476,21 +476,19 @@ public:
         std::vector<uint64_t> ids_;
 
         bool coutMode_ = true; // use cout or time ?
-        bool operator==(const ReportEventConfigItem &o) const
+        bool operator==(const ReportEventConfigItem& o) const
         {
             return (type_ == o.type_) && (config_ == o.config_);
         }
-        bool operator!=(const ReportEventConfigItem &o) const
+        bool operator!=(const ReportEventConfigItem& o) const
         {
             return !(operator==(o));
         }
         std::string toDebugString()
         {
-            return StringPrintf("%s(%" PRIu32 "-%" PRIu64 "):PRIu64", eventName_.c_str(), type_,
-                                config_, sampleCount_);
+            return StringPrintf("%s(%" PRIu32 "-%" PRIu64 "):PRIu64", eventName_.c_str(), type_, config_, sampleCount_);
         }
-        ReportEventConfigItem(std::string eventName, uint32_t type, uint64_t config,
-                              bool coutMode = true)
+        ReportEventConfigItem(std::string eventName, uint32_t type, uint64_t config, bool coutMode = true)
             : eventName_(eventName), type_(type), config_(config), coutMode_(coutMode)
         {
         }
@@ -505,13 +503,12 @@ public:
     }
     size_t GetConfigIndex(uint64_t id)
     {
-        HLOG_ASSERT_MESSAGE(configIdIndexMaps_.find(id) != configIdIndexMaps_.end(),
-                            "unable found id %" PRIx64 "", id);
+        HLOG_ASSERT_MESSAGE(configIdIndexMaps_.find(id) != configIdIndexMaps_.end(), "unable found id %" PRIx64 "", id);
         return configIdIndexMaps_.at(id);
     }
 
 private:
-    FILE *output_ = nullptr;
+    FILE* output_ = nullptr;
     const std::string TEXT_RED = "\x1b[31m";
     const std::string TEXT_GREEN = "\x1b[32m";
     const std::string TEXT_RESET = "\033[0m";
@@ -523,10 +520,10 @@ private:
     std::vector<std::string> displayKeyNames_;
 
     // use virtual only for gmock test
-    bool MultiLevelSorting(const ReportItem &a, const ReportItem &b);
-    bool MultiLevelSameAndUpdateCount(ReportItem &l, ReportItem &r);
-    void MergeCallFrameCount(ReportItem &l, ReportItem &r);
-    virtual int MultiLevelCompare(const ReportItem &a, const ReportItem &b);
+    bool MultiLevelSorting(const ReportItem& a, const ReportItem& b);
+    bool MultiLevelSameAndUpdateCount(ReportItem& l, ReportItem& r);
+    void MergeCallFrameCount(ReportItem& l, ReportItem& r);
+    virtual int MultiLevelCompare(const ReportItem& a, const ReportItem& b);
 
     void StatisticsRecords();
     void FilterDisplayRecords();
@@ -536,20 +533,21 @@ private:
     int consoleWidth_ = 0;
     void PrepareConsole();
 
-    void OutputStdStatistics(ReportEventConfigItem &);
-    bool OutputStdStatistics(ReportEventConfigItem &config, ReportEventConfigItem &otherConfig);
+    void OutputStdStatistics(ReportEventConfigItem&);
+    bool OutputStdStatistics(ReportEventConfigItem& config, ReportEventConfigItem& otherConfig);
 
-    void OutputStdHead(ReportEventConfigItem &, bool diffMode = false);
+    void OutputStdHead(ReportEventConfigItem&, bool diffMode = false);
 
-    void OutputStdContent(ReportEventConfigItem &);
-    void OutputStdContentDiff(ReportEventConfigItem &, ReportEventConfigItem &);
+    void OutputStdContent(ReportEventConfigItem&);
+    void OutputStdContentDiff(ReportEventConfigItem&, ReportEventConfigItem&);
 
-    void OutputStdContentItem(const ReportItem &reportItem);
-    void OutputStdContentDiffOneSide(bool leftOnly, ReportItem &reportItem);
+    void OutputStdContentItem(const ReportItem& reportItem);
+    void OutputStdContentDiffOneSide(bool leftOnly, ReportItem& reportItem);
 
-    void OutputStdCallFrames(int indent, const ReportItemCallFrame &callFrames,
-                             uint64_t totalEventCount);
-    bool OutputStdCallFrame(int indent, const std::string_view &funcName, uint64_t eventCount,
+    void OutputStdCallFrames(int indent, const ReportItemCallFrame& callFrames, uint64_t totalEventCount);
+    bool OutputStdCallFrame(int indent,
+                            const std::string_view& funcName,
+                            uint64_t eventCount,
                             uint64_t totalEventCount);
     void OutputStdItemHeating(float heat, float heat2);
 };

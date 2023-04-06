@@ -31,32 +31,27 @@ namespace HiPerf {
 namespace Option {
 struct MainOption {
     std::string help;
-    std::function<bool(std::vector<std::string> &)> callBackFunction;
+    std::function<bool(std::vector<std::string>&)> callBackFunction;
 };
 
 // called from main
-bool RegisterMainOption(const std::string &, const std::string &,
-                        std::function<bool(std::vector<std::string> &)>);
+bool RegisterMainOption(const std::string&, const std::string&, std::function<bool(std::vector<std::string>&)>);
 
 void ClearMainOptions();
 
-bool CheckOptionFormat(const std::string &optionName);
+bool CheckOptionFormat(const std::string& optionName);
 
-argsVector::iterator FindOption(argsVector &args, const std::string &optionName);
+argsVector::iterator FindOption(argsVector& args, const std::string& optionName);
 
 // some option function
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName, bool &value);
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName, int &);
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        float &value);
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::string &value);
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::vector<int> &value);
-bool GetValueFromString(const std::string &optionValue, const std::string &optionName,
-                        std::vector<std::string> &value);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, bool& value);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, int&);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, float& value);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::string& value);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::vector<int>& value);
+bool GetValueFromString(const std::string& optionValue, const std::string& optionName, std::vector<std::string>& value);
 
-bool GetOptionTrackedCommand(argsVector &args, std::vector<std::string> &trackedCommand);
+bool GetOptionTrackedCommand(argsVector& args, std::vector<std::string>& trackedCommand);
 
 /*
 Return false to indicate that the parameter is illegal
@@ -65,8 +60,8 @@ The program should exit with an error.
 Return true, indicating that the parameter is legal (but the user does not necessarily enter the
 parameter)
 */
-template<class T>
-bool GetOptionValue(argsVector &args, std::string optionName, T &value)
+template <class T>
+bool GetOptionValue(argsVector& args, std::string optionName, T& value)
 {
     // we need keep the ref if we got failed
     // so we use a local value first.
@@ -94,8 +89,7 @@ bool GetOptionValue(argsVector &args, std::string optionName, T &value)
             if (optionName.empty()) {
                 printf("unable to use empty option name!\n");
             } else {
-                printf("format error. must use '-' at the begin of option '%s'!\n",
-                       optionName.c_str());
+                printf("format error. must use '-' at the begin of option '%s'!\n", optionName.c_str());
             }
             return false; // something wrong
         }
@@ -122,17 +116,16 @@ bool GetOptionValue(argsVector &args, std::string optionName, T &value)
                 return true;
             } else {
                 // have value but convert failed.
-                printf("incorrect option value '%s'. View the usage with the --help option.\n",
-                       (*it).c_str());
+                printf("incorrect option value '%s'. View the usage with the --help option.\n", (*it).c_str());
                 return false;
             }
         }
     }
 }
 
-const MainOption *FindMainOption(std::string);
+const MainOption* FindMainOption(std::string);
 
-const std::map<std::string, std::unique_ptr<MainOption>> &GetMainOptions();
+const std::map<std::string, std::unique_ptr<MainOption>>& GetMainOptions();
 } // namespace Option
 } // namespace HiPerf
 } // namespace Developtools

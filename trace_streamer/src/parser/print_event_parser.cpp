@@ -18,7 +18,7 @@
 #include "string_to_numerical.h"
 namespace SysTuning {
 namespace TraceStreamer {
-PrintEventParser::PrintEventParser(TraceDataCache *dataCache, const TraceStreamerFilters *filter)
+PrintEventParser::PrintEventParser(TraceDataCache* dataCache, const TraceStreamerFilters* filter)
     : EventParserBase(dataCache, filter), pointLength_(1), maxPointLength_(2)
 {
     eventToFrameFunctionMap_ = {
@@ -34,7 +34,11 @@ PrintEventParser::PrintEventParser(TraceDataCache *dataCache, const TraceStreame
                                        std::placeholders::_2, std::placeholders::_3)}};
 }
 
-bool PrintEventParser::ParsePrintEvent(const std::string& comm, uint64_t ts, uint32_t pid, std::string_view event, const BytraceLine& line)
+bool PrintEventParser::ParsePrintEvent(const std::string& comm,
+                                       uint64_t ts,
+                                       uint32_t pid,
+                                       std::string_view event,
+                                       const BytraceLine& line)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_RECEIVED);
     TracePoint point;
@@ -166,7 +170,7 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
         if (space != std::string::npos) {
             outPoint.funcPrefix_ = outPoint.name_.substr(0, space);
             outPoint.funcPrefixId_ = traceDataCache_->GetDataIndex(outPoint.funcPrefix_);
-            outPoint.funcArgs_ =  outPoint.name_.substr(space + 1, -1);
+            outPoint.funcArgs_ = outPoint.name_.substr(space + 1, -1);
         } else {
             outPoint.funcPrefixId_ = traceDataCache_->GetDataIndex(outPoint.name_);
         }
@@ -177,8 +181,7 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
     // system-1298 ( 1298) [001] ...1 174330.287420: tracing_mark_write: B|1298|[8b00e96b2,2,1]:C$#decodeFrame$#"
     //    "{\"Process\":\"DecodeVideoFrame\",\"frameTimestamp\":37313484466} \
     //        system - 1298(1298)[001]... 1 174330.287622 : tracing_mark_write : E | 1298 \n
-    const std::regex distributeMatcher =
-        std::regex(R"((?:^\[([a-z0-9]+),(\d+),(\d+)\]:?([CS]?)\$#)?(.*)\$#(.*)$)");
+    const std::regex distributeMatcher = std::regex(R"((?:^\[([a-z0-9]+),(\d+),(\d+)\]:?([CS]?)\$#)?(.*)\$#(.*)$)");
     std::smatch matcheLine;
     bool matched = std::regex_match(outPoint.name_, matcheLine, distributeMatcher);
     if (matched) {
@@ -193,18 +196,21 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
     return SUCCESS;
 }
 
-void PrintEventParser::HandleFrameSliceBeginEvent(DataIndex eventName, size_t callStackRow, std::string& args, const BytraceLine& line)
+void PrintEventParser::HandleFrameSliceBeginEvent(DataIndex eventName,
+                                                  size_t callStackRow,
+                                                  std::string& args,
+                                                  const BytraceLine& line)
 {
     auto it = eventToFrameFunctionMap_.find(eventName);
     if (it != eventToFrameFunctionMap_.end()) {
         it->second(callStackRow, args, line);
     }
 }
-bool PrintEventParser::ReciveVsync(size_t callStackRow, std::string& args, const BytraceLine &line)
+bool PrintEventParser::ReciveVsync(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_VSYNC, STAT_EVENT_RECEIVED);
     // args is like "dataCount:24bytes now:211306766162 expectedEnd:211323423844 vsyncId:3179"
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
     std::sregex_iterator it(args.begin(), args.end(), recvVsyncPattern_);
     std::sregex_iterator end;
     uint64_t now = INVALID_UINT64;
@@ -229,10 +235,10 @@ bool PrintEventParser::ReciveVsync(size_t callStackRow, std::string& args, const
     vsyncSliceIds_.push_back(callStackRow);
     return true;
 }
-bool PrintEventParser::ReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine &line)
+bool PrintEventParser::ReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_RECEIVED);
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
     std::sregex_iterator it(args.begin(), args.end(), recvVsyncPattern_);
     std::sregex_iterator end;
     uint64_t now = INVALID_UINT64;
@@ -246,23 +252,23 @@ bool PrintEventParser::ReciveOnVsync(size_t callStackRow, std::string& args, con
         ++it;
     }
     auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
-    if (streamFilters_->frameFilter_->BeginOnvsyncEvent(line.ts, iTid, now, callStackRow)) {
+    if (streamFilters_->frameFilter_->BeginOnvsyncEvent(line.ts, iTid, now)) {
         onVsyncCallIds_.push_back(callStackRow);
     }
     return true;
 }
-bool PrintEventParser::RSReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine &line)
+bool PrintEventParser::RSReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_RECEIVED);
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
     auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
     (void)streamFilters_->frameFilter_->MarkRSOnvsyncEvent(line.ts, iTid);
     return true;
 }
-bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string& args, const BytraceLine &line)
+bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
     // H:MarshRSTransactionData cmdCount:20 transactionFlag:[3799,8] isUni:1
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
     std::smatch match;
     if (std::regex_search(args, match, transFlagPattern_)) {
         std::string flag2 = match.str(2);
@@ -271,9 +277,9 @@ bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string& args, c
     }
     return true;
 }
-bool PrintEventParser::OnMainThreadProcessCmd(size_t callStackRow, std::string& args, const BytraceLine &line)
+bool PrintEventParser::OnMainThreadProcessCmd(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu",line.ts, line.pid, args.c_str(), callStackRow);
+    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
     std::sregex_iterator it(args.begin(), args.end(), mainProcessCmdPattern);
     std::sregex_iterator end;
     std::vector<FrameFilter::FrameMap> frames;
@@ -298,7 +304,8 @@ bool PrintEventParser::OnFrameQueueStart(uint64_t ts, size_t callStackRow, uint6
     }
     return true;
 }
-void PrintEventParser::HandleFrameSliceEndEvent(uint64_t ts, uint64_t pid, uint64_t tid, size_t callStackRow) {
+void PrintEventParser::HandleFrameSliceEndEvent(uint64_t ts, uint64_t pid, uint64_t tid, size_t callStackRow)
+{
     // it can be frame or slice
     auto iTid = streamFilters_->processFilter_->GetInternalTid(tid);
     auto pos = std::find(vsyncSliceIds_.begin(), vsyncSliceIds_.end(), callStackRow);
@@ -323,7 +330,8 @@ void PrintEventParser::HandleFrameSliceEndEvent(uint64_t ts, uint64_t pid, uint6
     return;
 }
 
-void PrintEventParser::HandleFrameQueueEndEvent(uint64_t ts, uint64_t pid, uint64_t tid, size_t callStackRow) {
+void PrintEventParser::HandleFrameQueueEndEvent(uint64_t ts, uint64_t pid, uint64_t tid, size_t callStackRow)
+{
     // it can be frame or slice
     auto iTid = streamFilters_->processFilter_->GetInternalTid(tid);
     auto pos = std::find(frameCallIds_.begin(), frameCallIds_.end(), callStackRow);

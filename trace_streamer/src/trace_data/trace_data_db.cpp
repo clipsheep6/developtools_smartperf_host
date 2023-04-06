@@ -33,8 +33,8 @@
 const int ONCE_MAX_MB = 1024 * 1024 * 4;
 namespace SysTuning {
 namespace TraceStreamer {
-#define UNUSED(expr)  \
-    do {              \
+#define UNUSED(expr)             \
+    do {                         \
         static_cast<void>(expr); \
     } while (0)
 using namespace SysTuning::base;

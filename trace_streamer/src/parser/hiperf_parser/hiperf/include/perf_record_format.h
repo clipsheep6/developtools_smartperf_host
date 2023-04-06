@@ -150,17 +150,17 @@ struct PerfRecordSampleData {
     struct read_format v;
     /* if PERF_SAMPLE_READ */
     u64 nr;                        /* if PERF_SAMPLE_CALLCHAIN */
-    u64 *ips;                      /* if PERF_SAMPLE_CALLCHAIN */
+    u64* ips;                      /* if PERF_SAMPLE_CALLCHAIN */
     u32 raw_size;                  /* if PERF_SAMPLE_RAW */
-    u8 *raw_data;                  /* if PERF_SAMPLE_RAW */
+    u8* raw_data;                  /* if PERF_SAMPLE_RAW */
     u64 bnr;                       /* if PERF_SAMPLE_BRANCH_STACK */
-    struct perf_branch_entry *lbr; /* if PERF_SAMPLE_BRANCH_STACK */
+    struct perf_branch_entry* lbr; /* if PERF_SAMPLE_BRANCH_STACK */
     u64 user_abi;                  /* if PERF_SAMPLE_REGS_USER */
     u64 reg_mask;
     u64 reg_nr;
-    u64 *user_regs;   /* if PERF_SAMPLE_REGS_USER */
+    u64* user_regs;   /* if PERF_SAMPLE_REGS_USER */
     u64 stack_size;   /* if PERF_SAMPLE_STACK_USER */
-    u8 *stack_data;   /* if PERF_SAMPLE_STACK_USER */
+    u8* stack_data;   /* if PERF_SAMPLE_STACK_USER */
     u64 dyn_size;     /* if PERF_SAMPLE_STACK_USER && stack_size != 0 */
     u64 weight;       /* if PERF_SAMPLE_WEIGHT */
     u64 data_src;     /* if PERF_SAMPLE_DATA_SRC */

@@ -28,22 +28,22 @@ void FrameFilter::BeginVsyncEvent(uint64_t ts,
                                   uint64_t expectStart,
                                   uint64_t expectEnd,
                                   uint32_t vsyncId,
-                                  uint32_t callStackSliceRow)
+                                  uint32_t callStackSliceId)
 {
     auto frame = std::make_shared<FrameSlice>();
     frame->startTs_ = ts;
-    frame->callStackSliceRow_ = callStackSliceRow;
+    frame->callStackSliceId_ = callStackSliceId;
     frame->expectedStartTs_ = expectStart;
     frame->expectedEndTs_ = expectEnd;
     frame->expectedDur_ = expectEnd - expectStart;
     frame->vsyncId_ = vsyncId;
     frame->frameSliceRow_ =
-        traceDataCache_->GetFrameSliceData()->AppendFrame(ts, ipid, itid, vsyncId, callStackSliceRow);
+        traceDataCache_->GetFrameSliceData()->AppendFrame(ts, ipid, itid, vsyncId, callStackSliceId);
     frame->frameExpectedSliceRow_ = traceDataCache_->GetFrameSliceData()->AppendFrame(
-        expectStart, ipid, itid, vsyncId, callStackSliceRow, expectEnd, (uint8_t)EXPECT_SLICE);
+        expectStart, ipid, itid, vsyncId, callStackSliceId, expectEnd, (uint8_t)EXPECT_SLICE);
     vsyncRenderSlice_[itid].emplace(std::make_pair(vsyncId, frame));
 }
-bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart, uint64_t callStackSliceRow)
+bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
@@ -64,8 +64,6 @@ bool FrameFilter::BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectS
         return false;
     }
     pos->second.get()->vsyncEnd_ = false;
-    pos->second.get()->callStackSliceRow_ = callStackSliceRow;
-    traceDataCache_->GetFrameSliceData()->UpdateCallStackSliceRow(pos->second.get()->frameSliceRow_, callStackSliceRow);
     return true;
 }
 
@@ -73,7 +71,7 @@ bool FrameFilter::MarkRSOnvsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed", itid);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed, ts:%llu", itid, ts);
         return false;
     }
     if (!frame->second.size()) {

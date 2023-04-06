@@ -33,8 +33,7 @@ bool SubCommand::OnSubCommandOptions(std::vector<std::string> args)
     if (!Option::GetOptionValue(args, "--dumpoptions", dumpOptions_)) {
         return false;
     }
-    if (!Option::GetOptionValue(args, "--help", showHelp_)
-        || !Option::GetOptionValue(args, "-h", showHelp_)) {
+    if (!Option::GetOptionValue(args, "--help", showHelp_) || !Option::GetOptionValue(args, "-h", showHelp_)) {
         return false;
     }
 
@@ -90,13 +89,13 @@ void SubCommand::ClearSubCommands()
     g_SubCommandsMap.clear();
 }
 
-const std::map<std::string, std::unique_ptr<SubCommand>> &SubCommand::GetSubCommands()
+const std::map<std::string, std::unique_ptr<SubCommand>>& SubCommand::GetSubCommands()
 {
     HLOGV("enter");
     return g_SubCommandsMap;
 }
 
-SubCommand *SubCommand::FindSubCommand(std::string cmdName)
+SubCommand* SubCommand::FindSubCommand(std::string cmdName)
 {
     HLOGV("%s", cmdName.c_str());
     auto found = g_SubCommandsMap.find(cmdName);

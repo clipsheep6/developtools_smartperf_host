@@ -43,8 +43,7 @@ namespace Developtools {
 namespace HiPerf {
 static std::atomic_bool g_trackRunning = false;
 
-OHOS::UniqueFd PerfEvents::Open(perf_event_attr &attr, pid_t pid, int cpu, int group_fd,
-                                unsigned long flags)
+OHOS::UniqueFd PerfEvents::Open(perf_event_attr& attr, pid_t pid, int cpu, int group_fd, unsigned long flags)
 {
     if (perfEventParanoid_ >= PerfEventParanoid::USER) {
         attr.exclude_kernel = true; // kernel restrict
@@ -55,8 +54,8 @@ OHOS::UniqueFd PerfEvents::Open(perf_event_attr &attr, pid_t pid, int cpu, int g
         // dump when open failed.
         SubCommandDump::DumpPrintEventAttr(attr, std::numeric_limits<int>::min());
     }
-    HLOGV("perf_event_open: got fd %d for pid %d cpu %d group %d flags %lu perfEventParanoid %d",
-          fd.Get(), pid, cpu, group_fd, flags, perfEventParanoid_);
+    HLOGV("perf_event_open: got fd %d for pid %d cpu %d group %d flags %lu perfEventParanoid %d", fd.Get(), pid, cpu,
+          group_fd, flags, perfEventParanoid_);
     return fd;
 }
 
@@ -70,15 +69,15 @@ PerfEvents::~PerfEvents()
 {
     // close mmap
     for (auto it = cpuMmap_.begin(); it != cpuMmap_.end();) {
-        const MmapFd &mmapItem = it->second;
+        const MmapFd& mmapItem = it->second;
         munmap(mmapItem.mmapPage, (1 + mmapPages_) * pageSize_);
         it = cpuMmap_.erase(it);
     }
 
     // close file descriptor of perf_event_open() created
     for (auto eventGroupItem = eventGroupItem_.begin(); eventGroupItem != eventGroupItem_.end();) {
-        for (const auto &eventItem : eventGroupItem->eventItems) {
-            for (const auto &fdItem : eventItem.fdItems) {
+        for (const auto& eventItem : eventGroupItem->eventItems) {
+            for (const auto& fdItem : eventItem.fdItems) {
                 close(fdItem.fd);
             }
         }
@@ -167,7 +166,7 @@ bool PerfEvents::IsEventSupport(perf_type_id type, __u64 config)
         return true;
     }
 }
-bool PerfEvents::IsEventAttrSupport(perf_event_attr &attr)
+bool PerfEvents::IsEventAttrSupport(perf_event_attr& attr)
 {
     HLOGV("enter");
     UniqueFd fd = Open(attr);
@@ -182,8 +181,7 @@ bool PerfEvents::SetBranchSampleType(uint64_t value)
 {
     if (value != 0) {
         // cpu-clcles event must be supported
-        unique_ptr<perf_event_attr> attr =
-            PerfEvents::CreateDefaultAttr(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+        unique_ptr<perf_event_attr> attr = PerfEvents::CreateDefaultAttr(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
         attr->sample_type |= PERF_SAMPLE_BRANCH_STACK;
         attr->branch_sample_type = value;
         if (!IsEventAttrSupport(*attr.get())) {
@@ -217,7 +215,7 @@ bool PerfEvents::AddOffCpuEvent()
     return AddEvent(eventName);
 }
 
-bool PerfEvents::AddEvents(const std::vector<std::string> &eventStrings, bool group)
+bool PerfEvents::AddEvents(const std::vector<std::string>& eventStrings, bool group)
 {
     bool followGroup = false;
     HLOGV(" %s %s", VectorToString(eventStrings).c_str(), followGroup ? "followGroup" : "");
@@ -283,9 +281,8 @@ bool PerfEvents::ParseEventName(const std::string &nameStr,
         if (reportCallBack_) {
             if ((eventTokens[0] == "sw-task-clock" || eventTokens[0] == "sw-cpu-clock") &&
                 (excludeUser || excludeKernel)) {
-                printf(
-                    "event type %s with modifier u and modifier k is not supported by the kernel.",
-                    eventTokens[0].c_str());
+                printf("event type %s with modifier u and modifier k is not supported by the kernel.",
+                       eventTokens[0].c_str());
                 return false;
             }
         }
@@ -293,7 +290,7 @@ bool PerfEvents::ParseEventName(const std::string &nameStr,
     return true;
 }
 
-bool PerfEvents::AddEvent(const std::string &eventString, bool followGroup)
+bool PerfEvents::AddEvent(const std::string& eventString, bool followGroup)
 {
     std::string eventName;
     bool excludeUser = false;
@@ -324,16 +321,14 @@ bool PerfEvents::AddEvent(const std::string &eventString, bool followGroup)
     if (isTracePointEvent) {
         for (auto traceType : traceConfigTable) {
             if (traceType.second == eventName) {
-                return AddEvent(PERF_TYPE_TRACEPOINT, traceType.first, excludeUser, excludeKernel,
-                                followGroup);
+                return AddEvent(PERF_TYPE_TRACEPOINT, traceType.first, excludeUser, excludeKernel, followGroup);
             }
         }
     } else {
         for (auto type : TYPE_CONFIGS) {
             for (auto config : (type.second)) {
                 if (config.second == eventName) {
-                    return AddEvent(type.first, config.first, excludeUser, excludeKernel,
-                                    followGroup);
+                    return AddEvent(type.first, config.first, excludeUser, excludeKernel, followGroup);
                 }
             }
         }
@@ -343,8 +338,7 @@ bool PerfEvents::AddEvent(const std::string &eventString, bool followGroup)
     return false;
 }
 
-bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, bool excludeKernel,
-                          bool followGroup)
+bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, bool excludeKernel, bool followGroup)
 {
     HLOG_ASSERT(!excludeUser or !excludeKernel);
     if (followGroup && eventGroupItem_.empty()) {
@@ -355,14 +349,13 @@ bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, boo
     if (!IsEventSupport(type, config)) {
         return false;
     }
-    HLOGV("type %d config %llu excludeUser %d excludeKernel %d followGroup %d", type, config,
-          excludeUser, excludeKernel, followGroup);
+    HLOGV("type %d config %llu excludeUser %d excludeKernel %d followGroup %d", type, config, excludeUser,
+          excludeKernel, followGroup);
 
     // if use follow ?
-    EventGroupItem &eventGroupItem = followGroup ? eventGroupItem_.back()
-                                                 : eventGroupItem_.emplace_back();
+    EventGroupItem& eventGroupItem = followGroup ? eventGroupItem_.back() : eventGroupItem_.emplace_back();
     // always new item
-    EventItem &eventItem = eventGroupItem.eventItems.emplace_back();
+    EventItem& eventItem = eventGroupItem.eventItems.emplace_back();
 
     eventItem.typeName = GetTypeName(type);
     if (type == PERF_TYPE_TRACEPOINT) {
@@ -380,8 +373,7 @@ bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, boo
     eventItem.attr.type = type;
     eventItem.attr.config = config;
     eventItem.attr.disabled = 1;
-    eventItem.attr.read_format =
-        PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING | PERF_FORMAT_ID;
+    eventItem.attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING | PERF_FORMAT_ID;
 
     eventItem.attr.inherit = (inherit_ ? 1 : 0);
     eventItem.attr.exclude_kernel = excludeKernel;
@@ -423,8 +415,8 @@ bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, boo
         }
 
         if (sampleStackType_ == SampleStackType::DWARF) {
-            eventItem.attr.sample_type = SAMPLE_TYPE | PERF_SAMPLE_CALLCHAIN |
-                                         PERF_SAMPLE_STACK_USER | PERF_SAMPLE_REGS_USER;
+            eventItem.attr.sample_type =
+                SAMPLE_TYPE | PERF_SAMPLE_CALLCHAIN | PERF_SAMPLE_STACK_USER | PERF_SAMPLE_REGS_USER;
             eventItem.attr.exclude_callchain_user = 1;
             eventItem.attr.sample_regs_user = GetSupportedRegMask(GetDeviceArch());
             eventItem.attr.sample_stack_user = dwarfSampleStackSize_;
@@ -446,8 +438,7 @@ bool PerfEvents::AddEvent(perf_type_id type, __u64 config, bool excludeUser, boo
     }
 
     HLOGV("Add Event: '%s':'%s' %s %s %s", eventItem.typeName.c_str(), eventItem.configName.c_str(),
-          excludeUser ? "excludeUser" : "", excludeKernel ? "excludeKernel" : "",
-          followGroup ? "" : "group leader");
+          excludeUser ? "excludeUser" : "", excludeKernel ? "excludeKernel" : "", followGroup ? "" : "group leader");
 
     return true;
 }
@@ -540,7 +531,7 @@ bool PerfEvents::PrepareRecordThread()
 {
     try {
         recordBuf_ = std::make_unique<RingBuffer>(CalcBufferSize());
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         printf("create record buffer(size %zu) failed: %s\n", CalcBufferSize(), e.what());
         return false;
     }
@@ -771,23 +762,23 @@ std::map<__u64, std::string> PerfEvents::GetSupportEvents(perf_type_id type)
 void PerfEvents::LoadTracepointEventTypesFromSystem()
 {
     if (PERF_TRACEPOINT_CONFIGS.empty()) {
-        std::string basePath {"/sys/kernel/tracing/events"};
+        std::string basePath{"/sys/kernel/tracing/events"};
         if (access(basePath.c_str(), R_OK) != 0) {
             basePath = "/sys/kernel/debug/tracing/events";
         }
-        for (const auto &eventName : GetSubDirs(basePath)) {
+        for (const auto& eventName : GetSubDirs(basePath)) {
             std::string eventPath = basePath + "/" + eventName;
-            for (const auto &concreteEvent : GetSubDirs(eventPath)) {
+            for (const auto& concreteEvent : GetSubDirs(eventPath)) {
                 std::string idPath = eventPath + "/" + concreteEvent + "/id";
                 {
-                    std::ifstream ifs {idPath};
+                    std::ifstream ifs{idPath};
                     // clang-format off
                     const std::string idStr = {
                         std::istreambuf_iterator<char>(ifs),
                         std::istreambuf_iterator<char>()
                     };
                     // clang-format on
-                    __u64 id {0};
+                    __u64 id{0};
                     try {
                         id = std::stoul(idStr, nullptr);
                     } catch (...) {
@@ -795,12 +786,10 @@ void PerfEvents::LoadTracepointEventTypesFromSystem()
                     }
                     auto typeConfigs = TYPE_CONFIGS.find(PERF_TYPE_TRACEPOINT);
                     HLOG_ASSERT(typeConfigs != TYPE_CONFIGS.end());
-                    auto configPair = typeConfigs->second.insert(
-                        std::make_pair(id, eventName + ":" + concreteEvent));
+                    auto configPair = typeConfigs->second.insert(std::make_pair(id, eventName + ":" + concreteEvent));
                     traceConfigTable.insert(std::make_pair(id, eventName + ":" + concreteEvent));
                     ConfigTable::iterator it = configPair.first;
-                    HLOGV("TYPE_CONFIGS add %llu:%s in %zu", it->first, it->second.c_str(),
-                          typeConfigs->second.size());
+                    HLOGV("TYPE_CONFIGS add %llu:%s in %zu", it->first, it->second.c_str(), typeConfigs->second.size());
                 }
             }
         }
@@ -845,15 +834,13 @@ void PerfEvents::SetDwarfSampleStackSize(uint32_t stackSize)
 bool PerfEvents::PerfEventsEnable(bool enable)
 {
     HLOGV("%s", std::to_string(enable).c_str());
-    for (const auto &eventGroupItem : eventGroupItem_) {
-        for (const auto &eventItem : eventGroupItem.eventItems) {
-            for (const auto &fdItem : eventItem.fdItems) {
-                int result =
-                    ioctl(fdItem.fd, enable ? PERF_EVENT_IOC_ENABLE : PERF_EVENT_IOC_DISABLE, 0);
+    for (const auto& eventGroupItem : eventGroupItem_) {
+        for (const auto& eventItem : eventGroupItem.eventItems) {
+            for (const auto& fdItem : eventItem.fdItems) {
+                int result = ioctl(fdItem.fd, enable ? PERF_EVENT_IOC_ENABLE : PERF_EVENT_IOC_DISABLE, 0);
                 if (result < 0) {
-                    printf("Cannot '%s' perf fd! type config name: '%s:%s'\n",
-                           enable ? "enable" : "disable", eventItem.typeName.c_str(),
-                           eventItem.configName.c_str());
+                    printf("Cannot '%s' perf fd! type config name: '%s:%s'\n", enable ? "enable" : "disable",
+                           eventItem.typeName.c_str(), eventItem.configName.c_str());
                     return false;
                 }
             }
@@ -971,7 +958,7 @@ bool PerfEvents::CreateFdEvents(void)
     uint fdNumber = 0;
     uint eventNumber = 0;
     uint groupNumber = 0;
-    for (auto &eventGroupItem : eventGroupItem_) {
+    for (auto& eventGroupItem : eventGroupItem_) {
         /*
             Explain what is the configuration of the group:
             Suppose we have 2 Event, 2 PID, and 3 CPU settings
@@ -1008,7 +995,7 @@ bool PerfEvents::CreateFdEvents(void)
         }
 
         uint eventIndex = 0;
-        for (auto &eventItem : eventGroupItem.eventItems) {
+        for (auto& eventItem : eventGroupItem.eventItems) {
             HLOGV(" - event %2u. eventName: '%s:%s'", eventIndex++, eventItem.typeName.c_str(),
                   eventItem.configName.c_str());
 
@@ -1045,7 +1032,7 @@ bool PerfEvents::CreateFdEvents(void)
                     }
                     // after open successed , fill the result
                     // make a new FdItem
-                    FdItem &fdItem = eventItem.fdItems.emplace_back();
+                    FdItem& fdItem = eventItem.fdItems.emplace_back();
                     fdItem.fd = move(fd);
                     fdItem.cpu = cpus_[icpu];
                     fdItem.pid = pids_[ipid];
@@ -1070,13 +1057,12 @@ bool PerfEvents::CreateFdEvents(void)
         return false;
     }
 
-    HLOGD("will try read %u events from %u fd (%zu groups):", eventNumber, fdNumber,
-          eventGroupItem_.size());
+    HLOGD("will try read %u events from %u fd (%zu groups):", eventNumber, fdNumber, eventGroupItem_.size());
 
     return true;
 }
 
-bool PerfEvents::StatReport(const __u64 &durationInSec)
+bool PerfEvents::StatReport(const __u64& durationInSec)
 {
     read_format_no_group readNoGroupValue;
 
@@ -1085,10 +1071,10 @@ bool PerfEvents::StatReport(const __u64 &durationInSec)
     __u64 groupId = 0;
     // clear countEvents data
     countEvents_.clear();
-    for (const auto &eventGroupItem : eventGroupItem_) {
+    for (const auto& eventGroupItem : eventGroupItem_) {
         HLOGM("eventItems:%zu", eventGroupItem.eventItems.size());
         groupId++;
-        for (const auto &eventItem : eventGroupItem.eventItems) {
+        for (const auto& eventItem : eventGroupItem.eventItems) {
             // count event info together (every cpu , every pid)
             std::string configName = "";
             if (eventItem.attr.exclude_kernel) {
@@ -1099,29 +1085,28 @@ bool PerfEvents::StatReport(const __u64 &durationInSec)
                 configName = eventItem.configName;
             }
             if (countEvents_.count(configName) == 0) {
-                auto countEvent = make_unique<CountEvent>(CountEvent {});
+                auto countEvent = make_unique<CountEvent>(CountEvent{});
                 countEvents_[configName] = std::move(countEvent);
                 countEvents_[configName]->userOnly = eventItem.attr.exclude_kernel;
                 countEvents_[configName]->kernelOnly = eventItem.attr.exclude_user;
             }
-            std::unique_ptr<CountEvent> &countEvent = countEvents_[configName];
+            std::unique_ptr<CountEvent>& countEvent = countEvents_[configName];
             HLOGM("eventItem.fdItems:%zu", eventItem.fdItems.size());
-            for (const auto &fditem : eventItem.fdItems) {
+            for (const auto& fditem : eventItem.fdItems) {
                 if (read(fditem.fd, &readNoGroupValue, sizeof(readNoGroupValue)) > 0) {
                     countEvent->eventCount += readNoGroupValue.value;
                     countEvent->time_enabled += readNoGroupValue.time_enabled;
                     countEvent->time_running += readNoGroupValue.time_running;
                     countEvent->id = groupId;
                     if (durationInSec != 0) {
-                        countEvent->used_cpus =
-                            (countEvent->eventCount / 1e9) / (durationInSec / THOUSANDS);
+                        countEvent->used_cpus = (countEvent->eventCount / 1e9) / (durationInSec / THOUSANDS);
                     }
                     if (verboseReport_) {
-                        printf("%s id:%llu(c%d:p%d) time_enabled:%llu time_running:%llu "
-                               "value:%llu\n",
-                               eventItem.configName.c_str(), readNoGroupValue.id, fditem.cpu,
-                               fditem.pid, readNoGroupValue.time_enabled,
-                               readNoGroupValue.time_running, readNoGroupValue.value);
+                        printf(
+                            "%s id:%llu(c%d:p%d) time_enabled:%llu time_running:%llu "
+                            "value:%llu\n",
+                            eventItem.configName.c_str(), readNoGroupValue.id, fditem.cpu, fditem.pid,
+                            readNoGroupValue.time_enabled, readNoGroupValue.time_running, readNoGroupValue.value);
                     }
                 } else {
                     printf("read failed from event '%s'\n", eventItem.configName.c_str());
@@ -1135,29 +1120,28 @@ bool PerfEvents::StatReport(const __u64 &durationInSec)
     return true;
 }
 
-bool PerfEvents::CreateMmap(const FdItem &item, const perf_event_attr &attr)
+bool PerfEvents::CreateMmap(const FdItem& item, const perf_event_attr& attr)
 {
     auto it = cpuMmap_.find(item.cpu);
     if (it == cpuMmap_.end()) {
-        void *rbuf = mmap(nullptr, (1 + mmapPages_) * pageSize_, PROT_READ | PROT_WRITE, MAP_SHARED,
-                          item.fd.Get(), 0);
+        void* rbuf = mmap(nullptr, (1 + mmapPages_) * pageSize_, PROT_READ | PROT_WRITE, MAP_SHARED, item.fd.Get(), 0);
         if (rbuf == MMAP_FAILED) {
             perror("Fail to call mmap \n");
             return false;
         }
         MmapFd mmapItem;
         mmapItem.fd = item.fd.Get();
-        mmapItem.mmapPage = reinterpret_cast<perf_event_mmap_page *>(rbuf);
-        mmapItem.buf = reinterpret_cast<uint8_t *>(rbuf) + pageSize_;
+        mmapItem.mmapPage = reinterpret_cast<perf_event_mmap_page*>(rbuf);
+        mmapItem.buf = reinterpret_cast<uint8_t*>(rbuf) + pageSize_;
         mmapItem.bufSize = mmapPages_ * pageSize_;
         mmapItem.attr = &attr;
         mmapItem.posCallChain = GetCallChainPosInSampleRecord(attr);
 
         cpuMmap_[item.cpu] = mmapItem;
-        pollFds_.emplace_back(pollfd {mmapItem.fd, POLLIN, 0});
+        pollFds_.emplace_back(pollfd{mmapItem.fd, POLLIN, 0});
         HLOGD("CreateMmap success cpu %d fd %d", item.cpu, mmapItem.fd);
     } else {
-        const MmapFd &mmapItem = it->second;
+        const MmapFd& mmapItem = it->second;
         int rc = ioctl(item.fd.Get(), PERF_EVENT_IOC_SET_OUTPUT, mmapItem.fd);
         if (rc != 0) {
             HLOGEP("ioctl PERF_EVENT_IOC_SET_OUTPUT (%d -> %d) ", item.fd.Get(), mmapItem.fd);
@@ -1173,15 +1157,15 @@ std::vector<AttrWithId> PerfEvents::GetAttrWithId() const
     std::vector<AttrWithId> result;
     HLOGV("eventGroupItem_ %zu :", eventGroupItem_.size());
 
-    for (const auto &eventGroupItem : eventGroupItem_) {
+    for (const auto& eventGroupItem : eventGroupItem_) {
         HLOGV(" eventItems %zu eventItems:", eventGroupItem.eventItems.size());
-        for (const auto &eventItem : eventGroupItem.eventItems) {
+        for (const auto& eventItem : eventGroupItem.eventItems) {
             AttrWithId attrId;
             attrId.attr = eventItem.attr;
             attrId.name = eventItem.configName;
             HLOGV("  fdItems %zu fdItems:", eventItem.fdItems.size());
-            for (const auto &fdItem : eventItem.fdItems) {
-                auto &id = attrId.ids.emplace_back(fdItem.GetPrefId());
+            for (const auto& fdItem : eventItem.fdItems) {
+                auto& id = attrId.ids.emplace_back(fdItem.GetPrefId());
                 HLOGV("    eventItem.fdItems GetPrefId %" PRIu64 "", id);
             }
             result.emplace_back(attrId);
@@ -1210,7 +1194,7 @@ size_t PerfEvents::CalcBufferSize()
 inline bool PerfEvents::IsRecordInMmap()
 {
     if (pollFds_.size() > 0) {
-        if (poll((struct pollfd *)pollFds_.data(), pollFds_.size(), pollTimeOut_) <= 0) {
+        if (poll((struct pollfd*)pollFds_.data(), pollFds_.size(), pollTimeOut_) <= 0) {
             // time out try again
             return false;
         }
@@ -1218,7 +1202,7 @@ inline bool PerfEvents::IsRecordInMmap()
     return true;
 }
 
-static bool CompareRecordTime(const PerfEvents::MmapFd *left, const PerfEvents::MmapFd *right)
+static bool CompareRecordTime(const PerfEvents::MmapFd* left, const PerfEvents::MmapFd* right)
 {
     return left->timeStamp > right->timeStamp;
 }
@@ -1229,7 +1213,7 @@ void PerfEvents::ReadRecordsFromMmaps()
     const auto readKenelStartTime = steady_clock::now();
 #endif
     // get readable mmap at this time
-    for (auto &it : cpuMmap_) {
+    for (auto& it : cpuMmap_) {
         ssize_t dataSize = it.second.mmapPage->data_head - it.second.mmapPage->data_tail;
         __sync_synchronize(); // this same as rmb in gcc, after reading mmapPage->data_head
         if (dataSize <= 0) {
@@ -1243,19 +1227,17 @@ void PerfEvents::ReadRecordsFromMmaps()
     }
 
     if (MmapRecordHeap_.size() > 1) {
-        for (auto &it : MmapRecordHeap_) {
+        for (auto& it : MmapRecordHeap_) {
             GetRecordFromMmap(*it);
         }
         std::make_heap(MmapRecordHeap_.begin(), MmapRecordHeap_.end(), CompareRecordTime);
 
         size_t heapSize = MmapRecordHeap_.size();
         while (heapSize > 1) {
-            std::pop_heap(MmapRecordHeap_.begin(), MmapRecordHeap_.begin() + heapSize,
-                          CompareRecordTime);
+            std::pop_heap(MmapRecordHeap_.begin(), MmapRecordHeap_.begin() + heapSize, CompareRecordTime);
             MoveRecordToBuf(*MmapRecordHeap_[heapSize - 1]);
             if (GetRecordFromMmap(*MmapRecordHeap_[heapSize - 1])) {
-                std::push_heap(MmapRecordHeap_.begin(), MmapRecordHeap_.begin() + heapSize,
-                               CompareRecordTime);
+                std::push_heap(MmapRecordHeap_.begin(), MmapRecordHeap_.begin() + heapSize, CompareRecordTime);
             } else {
                 heapSize--;
             }
@@ -1273,7 +1255,7 @@ void PerfEvents::ReadRecordsFromMmaps()
 #endif
 }
 
-bool PerfEvents::GetRecordFromMmap(MmapFd &mmap)
+bool PerfEvents::GetRecordFromMmap(MmapFd& mmap)
 {
     if (mmap.dataSize <= 0) {
         return false;
@@ -1285,14 +1267,13 @@ bool PerfEvents::GetRecordFromMmap(MmapFd &mmap)
         return true;
     }
     // in PERF_RECORD_SAMPLE : header + u64 sample_id + u64 ip + u32 pid + u32 tid + u64 time
-    constexpr size_t timePos = sizeof(perf_event_header) + sizeof(uint64_t) + sizeof(uint64_t) +
-                               sizeof(uint32_t) + sizeof(uint32_t);
-    GetRecordFieldFromMmap(mmap, &(mmap.timeStamp), mmap.mmapPage->data_tail + timePos,
-                           sizeof(mmap.timeStamp));
+    constexpr size_t timePos =
+        sizeof(perf_event_header) + sizeof(uint64_t) + sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint32_t);
+    GetRecordFieldFromMmap(mmap, &(mmap.timeStamp), mmap.mmapPage->data_tail + timePos, sizeof(mmap.timeStamp));
     return true;
 }
 
-void PerfEvents::GetRecordFieldFromMmap(MmapFd &mmap, void *dest, size_t pos, size_t size)
+void PerfEvents::GetRecordFieldFromMmap(MmapFd& mmap, void* dest, size_t pos, size_t size)
 {
     pos = pos % mmap.bufSize;
     size_t tailSize = mmap.bufSize - pos;
@@ -1308,13 +1289,13 @@ void PerfEvents::GetRecordFieldFromMmap(MmapFd &mmap, void *dest, size_t pos, si
     }
 }
 
-size_t PerfEvents::GetCallChainPosInSampleRecord(const perf_event_attr &attr)
+size_t PerfEvents::GetCallChainPosInSampleRecord(const perf_event_attr& attr)
 {
     // reference struct PerfRecordSampleData
-    int fixedFieldNumber = __builtin_popcountll(
-        attr.sample_type & (PERF_SAMPLE_IDENTIFIER | PERF_SAMPLE_IP | PERF_SAMPLE_TID |
-                            PERF_SAMPLE_TIME | PERF_SAMPLE_ADDR | PERF_SAMPLE_ID |
-                            PERF_SAMPLE_STREAM_ID | PERF_SAMPLE_CPU | PERF_SAMPLE_PERIOD));
+    int fixedFieldNumber =
+        __builtin_popcountll(attr.sample_type & (PERF_SAMPLE_IDENTIFIER | PERF_SAMPLE_IP | PERF_SAMPLE_TID |
+                                                 PERF_SAMPLE_TIME | PERF_SAMPLE_ADDR | PERF_SAMPLE_ID |
+                                                 PERF_SAMPLE_STREAM_ID | PERF_SAMPLE_CPU | PERF_SAMPLE_PERIOD));
     size_t pos = sizeof(perf_event_header) + sizeof(uint64_t) * fixedFieldNumber;
     if (attr.sample_type & PERF_SAMPLE_READ) {
         pos += sizeof(read_format);
@@ -1322,7 +1303,7 @@ size_t PerfEvents::GetCallChainPosInSampleRecord(const perf_event_attr &attr)
     return pos;
 }
 
-size_t PerfEvents::GetStackSizePosInSampleRecord(MmapFd &mmap)
+size_t PerfEvents::GetStackSizePosInSampleRecord(MmapFd& mmap)
 {
     size_t pos = mmap.posCallChain;
     if (mmap.attr->sample_type & PERF_SAMPLE_CALLCHAIN) {
@@ -1352,7 +1333,7 @@ size_t PerfEvents::GetStackSizePosInSampleRecord(MmapFd &mmap)
     return pos;
 }
 
-bool PerfEvents::CutStackAndMove(MmapFd &mmap)
+bool PerfEvents::CutStackAndMove(MmapFd& mmap)
 {
     constexpr uint32_t alignSize = 64;
     if (!(mmap.attr->sample_type & PERF_SAMPLE_STACK_USER)) {
@@ -1360,8 +1341,7 @@ bool PerfEvents::CutStackAndMove(MmapFd &mmap)
     }
     size_t stackSizePos = GetStackSizePosInSampleRecord(mmap);
     uint64_t stackSize = 0;
-    GetRecordFieldFromMmap(mmap, &stackSize, mmap.mmapPage->data_tail + stackSizePos,
-                           sizeof(stackSize));
+    GetRecordFieldFromMmap(mmap, &stackSize, mmap.mmapPage->data_tail + stackSizePos, sizeof(stackSize));
     if (stackSize == 0) {
         return false;
     }
@@ -1379,7 +1359,7 @@ bool PerfEvents::CutStackAndMove(MmapFd &mmap)
     //         new_header          stackSizePos         <stackSize-dynSize>     dynSizePos
     uint16_t recordSize = mmap.header.size;
     mmap.header.size -= stackSize - newStackSize; // reduce the stack size
-    uint8_t *buf = recordBuf_->AllocForWrite(mmap.header.size);
+    uint8_t* buf = recordBuf_->AllocForWrite(mmap.header.size);
     // copy1: new_header
     if (memcpy_s(buf, sizeof(perf_event_header), &(mmap.header), sizeof(perf_event_header)) != 0) {
         HLOGEP("memcpy_s failed. size %zd", sizeof(perf_event_header));
@@ -1390,8 +1370,7 @@ bool PerfEvents::CutStackAndMove(MmapFd &mmap)
     GetRecordFieldFromMmap(mmap, buf + copyPos, mmap.mmapPage->data_tail + copyPos, copySize);
     copyPos += copySize;
     // copy3: copy dyn_size
-    GetRecordFieldFromMmap(mmap, buf + copyPos, mmap.mmapPage->data_tail + dynSizePos,
-                           recordSize - dynSizePos);
+    GetRecordFieldFromMmap(mmap, buf + copyPos, mmap.mmapPage->data_tail + dynSizePos, recordSize - dynSizePos);
     // update stack_size
     if (memcpy_s(buf + stackSizePos, sizeof(stackSize), &(newStackSize), sizeof(newStackSize)) != 0) {
         HLOGEP("memcpy_s failed. size %zd", sizeof(newStackSize));
@@ -1403,9 +1382,9 @@ bool PerfEvents::CutStackAndMove(MmapFd &mmap)
     return true;
 }
 
-void PerfEvents::MoveRecordToBuf(MmapFd &mmap)
+void PerfEvents::MoveRecordToBuf(MmapFd& mmap)
 {
-    uint8_t *buf = nullptr;
+    uint8_t* buf = nullptr;
     if (mmap.header.type == PERF_RECORD_SAMPLE) {
         if (recordBuf_->GetFreeSize() <= BUFFER_CRITICAL_LEVEL) {
             lostSamples_++;
@@ -1444,8 +1423,8 @@ void PerfEvents::ReadRecordFromBuf()
 {
     HLOGV("enter");
 
-    const perf_event_attr *attr = GetDefaultAttr();
-    uint8_t *p = nullptr;
+    const perf_event_attr* attr = GetDefaultAttr();
+    uint8_t* p = nullptr;
 
     while (readRecordThreadRunning_) {
         {
@@ -1453,7 +1432,7 @@ void PerfEvents::ReadRecordFromBuf()
             cvRecordBuf_.wait(lk);
         }
         while ((p = recordBuf_->GetReadData()) != nullptr) {
-            uint32_t *type = reinterpret_cast<uint32_t *>(p);
+            uint32_t* type = reinterpret_cast<uint32_t*>(p);
 #ifdef HIPERF_DEBUG_TIME
             const auto readingStartTime_ = steady_clock::now();
 #endif
@@ -1462,8 +1441,7 @@ void PerfEvents::ReadRecordFromBuf()
 #endif
             recordEventCount_++;
 #ifdef HIPERF_DEBUG_TIME
-            recordCallBackTime_ +=
-                duration_cast<milliseconds>(steady_clock::now() - readingStartTime_);
+            recordCallBackTime_ += duration_cast<milliseconds>(steady_clock::now() - readingStartTime_);
 #endif
             recordBuf_->EndRead();
         }
@@ -1472,7 +1450,7 @@ void PerfEvents::ReadRecordFromBuf()
 
     // read the data left over in buffer
     while ((p = recordBuf_->GetReadData()) != nullptr) {
-        uint32_t *type = reinterpret_cast<uint32_t *>(p);
+        uint32_t* type = reinterpret_cast<uint32_t*>(p);
 #ifdef HIPERF_DEBUG_TIME
         const auto readingStartTime_ = steady_clock::now();
 #endif
@@ -1488,7 +1466,7 @@ void PerfEvents::ReadRecordFromBuf()
     HLOGD("read all records from buffer");
 }
 
-bool PerfEvents::HaveTargetsExit(const std::chrono::steady_clock::time_point &startTime)
+bool PerfEvents::HaveTargetsExit(const std::chrono::steady_clock::time_point& startTime)
 {
     if (systemTarget_) {
         return false;
@@ -1500,8 +1478,8 @@ bool PerfEvents::HaveTargetsExit(const std::chrono::steady_clock::time_point &st
         int wstatus;
         if (trackedCommand_->WaitCommand(wstatus)) {
             milliseconds usedMsTick = duration_cast<milliseconds>(steady_clock::now() - startTime);
-            printf("tracked command(%s) has exited (total %" PRId64 " ms)\n",
-                   trackedCommand_->GetCommandName().c_str(), (uint64_t)usedMsTick.count());
+            printf("tracked command(%s) has exited (total %" PRId64 " ms)\n", trackedCommand_->GetCommandName().c_str(),
+                   (uint64_t)usedMsTick.count());
             return true;
         }
         return false;
@@ -1530,7 +1508,7 @@ void PerfEvents::RecordLoop()
     // calc the time
     const auto startTime = steady_clock::now();
     const auto endTime = startTime + timeOut_;
-    milliseconds usedTimeMsTick {};
+    milliseconds usedTimeMsTick{};
 
     while (g_trackRunning) {
         // time check point
@@ -1570,7 +1548,7 @@ void PerfEvents::StatLoop()
     const auto startTime = steady_clock::now();
     const auto endTime = startTime + timeOut_;
     auto nextReportTime = startTime + timeReport_;
-    milliseconds usedTimeMsTick {};
+    milliseconds usedTimeMsTick{};
     __u64 durationInSec = 0;
     int64_t thesholdTimeInMs = 2 * HUNDREDS;
 
@@ -1584,8 +1562,8 @@ void PerfEvents::StatLoop()
                 usedTimeMsTick = duration_cast<milliseconds>(thisTime - startTime);
                 durationInSec = usedTimeMsTick.count();
                 auto lefTimeMsTick = duration_cast<milliseconds>(endTime - thisTime);
-                printf("\nReport at %" PRId64 " ms (%" PRId64 " ms left):\n",
-                       (uint64_t)usedTimeMsTick.count(), (uint64_t)lefTimeMsTick.count());
+                printf("\nReport at %" PRId64 " ms (%" PRId64 " ms left):\n", (uint64_t)usedTimeMsTick.count(),
+                       (uint64_t)lefTimeMsTick.count());
                 // end of comments
                 nextReportTime += timeReport_;
                 StatReport(durationInSec);
@@ -1608,8 +1586,7 @@ void PerfEvents::StatLoop()
 
         // lefttime > 200ms sleep 100ms, else sleep 200us
         uint64_t defaultSleepUs = 2 * HUNDREDS; // 200us
-        if (timeReport_ == milliseconds::zero()
-            && (timeOut_.count() * THOUSANDS) > thesholdTimeInMs) {
+        if (timeReport_ == milliseconds::zero() && (timeOut_.count() * THOUSANDS) > thesholdTimeInMs) {
             milliseconds leftTimeMsTmp = duration_cast<milliseconds>(endTime - thisTime);
             if (leftTimeMsTmp.count() > thesholdTimeInMs) {
                 defaultSleepUs = HUNDREDS * THOUSANDS; // 100ms

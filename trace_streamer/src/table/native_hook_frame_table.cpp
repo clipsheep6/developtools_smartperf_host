@@ -188,7 +188,8 @@ int NativeHookFrameTable::Cursor::Column(int column) const
             break;
         case CALLCHAIN_ID:
             if (nativeHookFrameInfoObj_.CallChainIds()[CurrentRow()] != INVALID_UINT32) {
-                sqlite3_result_int64(context_, static_cast<int64_t>(nativeHookFrameInfoObj_.CallChainIds()[CurrentRow()]));
+                sqlite3_result_int64(context_,
+                                     static_cast<int64_t>(nativeHookFrameInfoObj_.CallChainIds()[CurrentRow()]));
             } else {
                 sqlite3_result_int64(context_, static_cast<int64_t>(INVALID_CALL_CHAIN_ID));
             }
@@ -198,8 +199,7 @@ int NativeHookFrameTable::Cursor::Column(int column) const
             break;
         case IP:
             if (nativeHookFrameInfoObj_.Ips()[CurrentRow()] != INVALID_UINT64) {
-                sqlite3_result_int64(context_,
-                                     static_cast<int64_t>(nativeHookFrameInfoObj_.Ips()[CurrentRow()]));
+                sqlite3_result_int64(context_, static_cast<int64_t>(nativeHookFrameInfoObj_.Ips()[CurrentRow()]));
             }
             break;
         case SYMBOL_ID:

@@ -54,7 +54,7 @@ class FileSymbol {
     [[maybe_unused]] uint64_t len_ = 0;
     std::string name_ = "";
     std::string demangle_ = ""; // demangle string
-    FileSymbol(uint64_t vaddr, uint64_t len, const char *name, const char *demangle)
+    FileSymbol(uint64_t vaddr, uint64_t len, const char* name, const char* demangle)
         : vaddr_(vaddr), len_(len), name_(name), demangle_(demangle)
     {
     }
@@ -75,44 +75,43 @@ struct Symbol {
     int32_t hit_ = 0;
 
     // elf use this
-    Symbol(uint64_t vaddr, uint64_t len, const std::string &name, const std::string &demangle,
-           const std::string module)
+    Symbol(uint64_t vaddr, uint64_t len, const std::string& name, const std::string& demangle, const std::string module)
         : funcVaddr_(vaddr),
           fileVaddr_(vaddr),
           len_(len),
           name_(MemoryHold::Get().HoldStringView(name)),
           demangle_(MemoryHold::Get().HoldStringView(demangle)),
-          module_(MemoryHold::Get().HoldStringView(module)) {}
-    Symbol(uint64_t vaddr, uint64_t len, const std::string &name, const std::string &module)
-        : Symbol(vaddr, len, name, name, module) {}
-
-    // kernel use this
-    Symbol(uint64_t vaddr, const std::string &name, const std::string &module)
-        : Symbol(vaddr, 0, name, name, module) {}
-
-    // Symbolic use this
-    Symbol(uint64_t taskVaddr = 0, const std::string &comm = "")
-        : taskVaddr_(taskVaddr), comm_(comm)
+          module_(MemoryHold::Get().HoldStringView(module))
+    {
+    }
+    Symbol(uint64_t vaddr, uint64_t len, const std::string& name, const std::string& module)
+        : Symbol(vaddr, len, name, name, module)
     {
     }
 
-    // copy
-    Symbol(const Symbol &other) = default;
+    // kernel use this
+    Symbol(uint64_t vaddr, const std::string& name, const std::string& module) : Symbol(vaddr, 0, name, name, module) {}
 
-    static bool SameVaddr(const Symbol &a, const Symbol &b)
+    // Symbolic use this
+    Symbol(uint64_t taskVaddr = 0, const std::string& comm = "") : taskVaddr_(taskVaddr), comm_(comm) {}
+
+    // copy
+    Symbol(const Symbol& other) = default;
+
+    static bool SameVaddr(const Symbol& a, const Symbol& b)
     {
         return (a.funcVaddr_ == b.funcVaddr_);
     }
-    bool Same(const Symbol &b) const
+    bool Same(const Symbol& b) const
     {
         return (funcVaddr_ == b.funcVaddr_ and demangle_ == b.demangle_);
     }
-    bool operator==(const Symbol &b) const
+    bool operator==(const Symbol& b) const
     {
         return Same(b);
     }
 
-    bool operator!=(const Symbol &b) const
+    bool operator!=(const Symbol& b) const
     {
         return !Same(b);
     }
@@ -168,8 +167,8 @@ struct Symbol {
     std::string ToDebugString() const
     {
         std::stringstream sstream;
-        sstream << "0x" << std::setfill('0') << std::setw(sizeof(funcVaddr_) * BYTE_PRINT_WIDTH)
-                << std::hex << funcVaddr_;
+        sstream << "0x" << std::setfill('0') << std::setw(sizeof(funcVaddr_) * BYTE_PRINT_WIDTH) << std::hex
+                << funcVaddr_;
         sstream << "|";
         sstream << std::setfill('0') << std::setw(sizeof(len_)) << len_;
         sstream << "|";
@@ -196,19 +195,19 @@ struct Symbol {
 
     // The range [first, last) must be partitioned with respect to the expression !(value < element)
     // or !comp(value, element)
-    static bool ValueLessThen(uint64_t vaddr, const Symbol &a)
+    static bool ValueLessThen(uint64_t vaddr, const Symbol& a)
     {
         return vaddr < a.funcVaddr_;
     }
-    static bool ValueLessEqual(uint64_t vaddr, const Symbol &a)
+    static bool ValueLessEqual(uint64_t vaddr, const Symbol& a)
     {
         return vaddr <= a.funcVaddr_;
     }
-    static bool CompareLessThen(const Symbol &a, const Symbol &b)
+    static bool CompareLessThen(const Symbol& a, const Symbol& b)
     {
         return a.funcVaddr_ < b.funcVaddr_; // we should use vaddr to sort
     };
-    static bool CompareByPointer(const Symbol *a, const Symbol *b)
+    static bool CompareByPointer(const Symbol* a, const Symbol* b)
     {
         return a->funcVaddr_ < b->funcVaddr_; // we should use vaddr to sort
     };
@@ -237,32 +236,31 @@ public:
     uint64_t textExecVaddrFileOffset_ = 0;
     uint64_t textExecVaddrRange_ = maxVaddr;
 
-    SymbolsFile(SymbolsFileType symbolType, const std::string path)
-        : symbolFileType_(symbolType), filePath_(path) {};
+    SymbolsFile(SymbolsFileType symbolType, const std::string path) : symbolFileType_(symbolType), filePath_(path){};
     virtual ~SymbolsFile();
 
     // create the symbols file object
-    static std::unique_ptr<SymbolsFile> CreateSymbolsFile(
-        SymbolsFileType = SYMBOL_UNKNOW_FILE, const std::string symbolFilePath = EMPTY_STRING);
-    static std::unique_ptr<SymbolsFile> CreateSymbolsFile(const std::string &symbolFilePath);
+    static std::unique_ptr<SymbolsFile> CreateSymbolsFile(SymbolsFileType = SYMBOL_UNKNOW_FILE,
+                                                          const std::string symbolFilePath = EMPTY_STRING);
+    static std::unique_ptr<SymbolsFile> CreateSymbolsFile(const std::string& symbolFilePath);
 
     // set symbols path
-    bool setSymbolsFilePath(const std::string &symbolsSearchPath)
+    bool setSymbolsFilePath(const std::string& symbolsSearchPath)
     {
         std::vector<std::string> symbolsSearchPaths = {symbolsSearchPath};
         return setSymbolsFilePath(symbolsSearchPaths);
     };
-    bool setSymbolsFilePath(const std::vector<std::string> &);
+    bool setSymbolsFilePath(const std::vector<std::string>&);
 
     // load symbol from file
-    virtual bool LoadSymbols([[maybe_unused]] const std::string &symbolFilePath = EMPTY_STRING)
+    virtual bool LoadSymbols([[maybe_unused]] const std::string& symbolFilePath = EMPTY_STRING)
     {
         HLOGV("virtual dummy function called");
         symbolsLoaded_ = true;
         return false;
     };
     // load debug info for unwind
-    virtual bool LoadDebugInfo([[maybe_unused]] const std::string &symbolFilePath = EMPTY_STRING)
+    virtual bool LoadDebugInfo([[maybe_unused]] const std::string& symbolFilePath = EMPTY_STRING)
     {
         HLOGV("virtual dummy function called");
         debugInfoLoaded_ = true;
@@ -272,8 +270,8 @@ public:
     const std::string GetBuildId() const;
 
     // get the symbols vector
-    const std::vector<Symbol> &GetSymbols();
-    const std::vector<Symbol *> &GetMatchedSymbols();
+    const std::vector<Symbol>& GetSymbols();
+    const std::vector<Symbol*>& GetMatchedSymbols();
 
     // get vaddr(in symbol) from ip(real addr , after mmap reloc)
     virtual uint64_t GetVaddrInSymbols(uint64_t ip, uint64_t mapStart, uint64_t mapOffset) const;
@@ -283,35 +281,35 @@ public:
 
     // read the .text section and .eh_frame section (RO) memory from elf mmap
     // unwind use this to check the DWARF and so on
-    virtual size_t ReadRoMemory(uint64_t, uint8_t * const, size_t) const
+    virtual size_t ReadRoMemory(uint64_t, uint8_t* const, size_t) const
     {
         HLOGV("virtual dummy function called");
         return 0; // default not support
     }
 
     // get the section info , like .ARM.exidx
-    virtual bool GetSectionInfo([[maybe_unused]] const std::string &name,
-                                [[maybe_unused]] uint64_t &sectionVaddr,
-                                [[maybe_unused]] uint64_t &sectionSize,
-                                [[maybe_unused]] uint64_t &sectionFileOffset) const
+    virtual bool GetSectionInfo([[maybe_unused]] const std::string& name,
+                                [[maybe_unused]] uint64_t& sectionVaddr,
+                                [[maybe_unused]] uint64_t& sectionSize,
+                                [[maybe_unused]] uint64_t& sectionFileOffset) const
     {
         HLOGV("virtual dummy function called");
         return false;
     }
 #ifndef target_cpu_arm
     // get hdr info for unwind , need provide the fde table location and entry count
-    virtual bool GetHDRSectionInfo([[maybe_unused]] uint64_t &ehFrameHdrElfOffset,
-                                   [[maybe_unused]] uint64_t &fdeTableElfOffset,
-                                   [[maybe_unused]] uint64_t &fdeTableSize) const
+    virtual bool GetHDRSectionInfo([[maybe_unused]] uint64_t& ehFrameHdrElfOffset,
+                                   [[maybe_unused]] uint64_t& fdeTableElfOffset,
+                                   [[maybe_unused]] uint64_t& fdeTableSize) const
     {
         HLOGV("virtual dummy function called");
         return false;
     }
 #endif
     // load from symbols from the perf.data format
-    static std::unique_ptr<SymbolsFile> LoadSymbolsFromSaved(const SymbolFileStruct &);
+    static std::unique_ptr<SymbolsFile> LoadSymbolsFromSaved(const SymbolFileStruct&);
     // save the symbols to perf.data format
-    void ExportSymbolToFileFormat(SymbolFileStruct &symbolFileStruct);
+    void ExportSymbolToFileFormat(SymbolFileStruct& symbolFileStruct);
 
     bool SymbolsLoaded()
     {
@@ -325,11 +323,9 @@ public:
 protected:
     bool symbolsLoaded_ = false;
     bool debugInfoLoaded_ = false;
-    const std::string FindSymbolFile(const std::vector<std::string> &,
-                                     std::string symboleFilePath = EMPTY_STRING) const;
+    const std::string FindSymbolFile(const std::vector<std::string>&, std::string symboleFilePath = EMPTY_STRING) const;
 
-    std::string SearchReadableFile(const std::vector<std::string> &searchPaths,
-                                   const std::string &filePath) const;
+    std::string SearchReadableFile(const std::vector<std::string>& searchPaths, const std::string& filePath) const;
     bool UpdateBuildIdIfMatch(std::string buildId);
     std::string buildId_;
     std::vector<std::string> symbolsFileSearchPaths_;

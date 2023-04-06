@@ -74,10 +74,8 @@ void HtraceNativeHookParser::ParseFrameMap(std::unique_ptr<NativeHookMetaData>& 
 void HtraceNativeHookParser::ParseTagEvent(const ProtoReader::BytesView& bytesView)
 {
     ProtoReader::MemTagEvent_Reader memTagEventReader(bytesView);
-    auto addr = memTagEventReader.addr();
-    auto size = memTagEventReader.size();
     auto tagIndex = traceDataCache_->dataDict_.GetStringIndex(memTagEventReader.tag().ToStdString());
-    nativeHookFilter_->AppendMmapTagMaps(addr, size, tagIndex);
+    traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(memTagEventReader.addr(), tagIndex);
 }
 void HtraceNativeHookParser::ParseFileEvent(const ProtoReader::BytesView& bytesView)
 {
@@ -107,8 +105,8 @@ void HtraceNativeHookParser::ParseNativeHookEvent(SupportedTraceEventType type,
 {
     if (type != TRACE_NATIVE_HOOK_MALLOC and type != TRACE_NATIVE_HOOK_FREE and type != TRACE_NATIVE_HOOK_MMAP and
         type != TRACE_NATIVE_HOOK_MUNMAP and type != TRACE_NATIVE_HOOK_RECORD_STATISTICS) {
-            TS_LOGE("unsupported native hook event!!!");
-            return;
+        TS_LOGE("unsupported native hook event!!!");
+        return;
     }
     uint64_t newTimeStamp = streamFilters_->clockFilter_->ToPrimaryTraceTime(TS_CLOCK_REALTIME, timeStamp);
     UpdatePluginTimeRange(TS_CLOCK_REALTIME, timeStamp, newTimeStamp);

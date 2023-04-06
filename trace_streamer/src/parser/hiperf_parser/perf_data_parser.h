@@ -89,12 +89,10 @@ private:
     DataIndex suspendStatIndex_ = 0;
     DataIndex unkonwnStateIndex_ = 0;
     std::unordered_multimap<uint64_t, uint64_t> tidToPid_ = {};
-    const std::map<uint32_t, uint32_t> perfToTSClockType_ = {
-        {PERF_CLOCK_REALTIME, TS_CLOCK_REALTIME},
-        {PERF_CLOCK_MONOTONIC, TS_MONOTONIC},
-        {PERF_CLOCK_MONOTONIC_RAW, TS_MONOTONIC_RAW},
-        {PERF_CLOCK_BOOTTIME, TS_CLOCK_BOOTTIME}
-    };
+    const std::map<uint32_t, uint32_t> perfToTSClockType_ = {{PERF_CLOCK_REALTIME, TS_CLOCK_REALTIME},
+                                                             {PERF_CLOCK_MONOTONIC, TS_MONOTONIC},
+                                                             {PERF_CLOCK_MONOTONIC_RAW, TS_MONOTONIC_RAW},
+                                                             {PERF_CLOCK_BOOTTIME, TS_CLOCK_BOOTTIME}};
     std::map<uint64_t, uint64_t> fileDataDictIdToFileId_ = {};
     QuatraMap<uint64_t, uint64_t, uint64_t, uint64_t, uint32_t> frameToCallChainId_;
 };

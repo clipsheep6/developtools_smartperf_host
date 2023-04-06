@@ -20,7 +20,7 @@ public:
     ~Noncopyable() = default;
 
 private:
-    Noncopyable(const Noncopyable &);
-    const Noncopyable &operator=(const Noncopyable &);
+    Noncopyable(const Noncopyable&);
+    const Noncopyable& operator=(const Noncopyable&);
 };
 #endif // NONCOPYABLE_H_

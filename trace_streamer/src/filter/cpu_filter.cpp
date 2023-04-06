@@ -77,17 +77,29 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
             traceDataCache_->GetThreadStateData()->UpdateDuration(static_cast<TableRowId>(lastRow), ts);
             streamFilters_->processFilter_->AddCpuStateCount(prevPid);
             auto thread = traceDataCache_->GetThreadData(prevPid);
-            if (thread && !thread->switchCount_){
+            if (thread && !thread->switchCount_) {
                 thread->switchCount_ = 1;
             }
         }
-        auto temp = traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, INVALID_CPU,
-                                                                             prevPid, prevState);
+        auto temp =
+            traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, INVALID_CPU, prevPid, prevState);
+        if (prevState == TASK_UNINTERRUPTIBLE || prevState == TASK_DK) {
+            if (!pidToThreadSliceRow.count(prevPid)) {
+                pidToThreadSliceRow.emplace(std::make_pair(prevPid, temp));
+            } else {
+                pidToThreadSliceRow.at(prevPid) = temp;
+            }
+        }
         RemberInternalTidInStateTable(prevPid, temp, prevState);
     }
 }
 
-bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint32_t iTid, bool iowait, DataIndex caller, uint32_t delay)
+bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts,
+                                         uint64_t cpu,
+                                         uint32_t iTid,
+                                         bool iowait,
+                                         DataIndex caller,
+                                         uint32_t delay)
 {
     if (!pidToSchedSliceRow.count(iTid)) {
         return false;
@@ -101,13 +113,15 @@ bool CpuFilter::InsertBlockedReasonEvent(uint64_t ts, uint64_t cpu, uint32_t iTi
     auto argSetId = streamFilters_->argsFilter_->NewArgs(args);
 
     traceDataCache_->GetSchedSliceData()->UpdateArg(row, argSetId);
-    if (iowait) {
+    if (iowait && pidToThreadSliceRow.count(iTid)) {
+        row = pidToThreadSliceRow.at(iTid);
         auto state = traceDataCache_->GetThreadStateData()->StatesData()[row];
         if (state == TASK_UNINTERRUPTIBLE) {
             traceDataCache_->GetThreadStateData()->UpdateState(row, TASK_UNINTERRUPTIBLE_IO);
-        } else if (state == TASK_DK_IO) { // state == TASK_DK
+        } else if (state == TASK_DK) { // state == TASK_DK
             traceDataCache_->GetThreadStateData()->UpdateState(row, TASK_DK_IO);
         }
+        pidToThreadSliceRow.erase(iTid);
     }
     pidToSchedSliceRow.erase(iTid);
     return true;

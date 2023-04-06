@@ -25,7 +25,8 @@ target_operator="$8"
 if [ "$#" -ge "7" ];then
     if [ $target != "trace" ] && [ $target != "pbdecoder" ] && [ $target != "linux" ] && [ $target != "windows" ] &&
         [ $target != "macx" ] && [ $target != "trace_streamer" ] && [ $target != "wasm" ] && [ $target != "wasmpb" ] &&
-        [ $target != "test" ] && [ $target != "testpb" ] && [ $target != "spb" ]&& [ $target != "fuzz" ] && [ $target != "protoc" ];then
+        [ $target != "test" ] && [ $target != "testpb" ] && [ $target != "spb" ] && [ $target != "fuzz" ] &&
+        [ $target != "protoc" ] && [ $target != "sdkdemo" ] && [ $target != "dubaisdk" ] && [ $target != "sdkdemotest" ];then
         echo "failed"
         exit
     fi

@@ -61,7 +61,7 @@ public:
     LogInfo* GetHilogData();
     NativeHook* GetNativeHookData();
     NativeHookFrame* GetNativeHookFrameData();
-NativeHookStatistic* GetNativeHookStatisticsData();
+    NativeHookStatistic* GetNativeHookStatisticsData();
     Hidump* GetHidumpData();
     PerfCallChain* GetPerfCallChainData();
     PerfFiles* GetPerfFilesData();

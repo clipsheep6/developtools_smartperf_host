@@ -24,22 +24,22 @@ namespace Developtools {
 namespace HiPerf {
 class SubCommand {
 public:
-    SubCommand(const std::string &name, const std::string &brief, const std::string &help)
+    SubCommand(const std::string& name, const std::string& brief, const std::string& help)
         : name_(name), brief_(brief), help_(help)
     {
     }
 
     virtual ~SubCommand() {}
 
-    const std::string &Name() const
+    const std::string& Name() const
     {
         return name_;
     }
-    const std::string &Brief() const
+    const std::string& Brief() const
     {
         return brief_;
     }
-    const std::string &Help() const
+    const std::string& Help() const
     {
         return help_;
     }
@@ -60,14 +60,14 @@ public:
     virtual void DumpOptions() const {}
 
     // args should be empty after all the args processed
-    virtual bool ParseOption(std::vector<std::string> &args)
+    virtual bool ParseOption(std::vector<std::string>& args)
     {
         args.clear(); // all the args is processed
         return true;
     }
 
     // return false means cmd failed
-    virtual bool OnSubCommand(std::vector<std::string> &args) = 0;
+    virtual bool OnSubCommand(std::vector<std::string>& args) = 0;
     // some test code will use this for simple
     bool OnSubCommand(std::string stringArgs)
     {
@@ -79,8 +79,8 @@ public:
     static bool RegisterSubCommand(std::string, std::unique_ptr<SubCommand>);
 
     // get some cmd
-    static const std::map<std::string, std::unique_ptr<SubCommand>> &GetSubCommands();
-    static SubCommand *FindSubCommand(std::string);
+    static const std::map<std::string, std::unique_ptr<SubCommand>>& GetSubCommands();
+    static SubCommand* FindSubCommand(std::string);
 
     // for test code
     static void ClearSubCommands();

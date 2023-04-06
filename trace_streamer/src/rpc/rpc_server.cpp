@@ -22,8 +22,8 @@
 #include "log.h"
 #include "meta.h"
 
-#define UNUSED(expr)  \
-    do {              \
+#define UNUSED(expr)             \
+    do {                         \
         static_cast<void>(expr); \
     } while (0)
 namespace SysTuning {

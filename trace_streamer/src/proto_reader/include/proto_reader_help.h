@@ -162,4 +162,4 @@ inline const uint8_t* VarIntDecode(const uint8_t* start, const uint8_t* end, uin
 }
 } // namespace ProtoReader
 } // namespace SysTuning
-#endif  // PROTO_READER_HELP_H
+#endif // PROTO_READER_HELP_H

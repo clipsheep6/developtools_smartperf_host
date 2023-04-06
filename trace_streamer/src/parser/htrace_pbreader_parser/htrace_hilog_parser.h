@@ -24,7 +24,6 @@
 #include "trace_streamer_config.h"
 #include "trace_streamer_filters.h"
 
-
 namespace SysTuning {
 namespace TraceStreamer {
 class HtraceHiLogParser : public HtracePluginTimeParser {

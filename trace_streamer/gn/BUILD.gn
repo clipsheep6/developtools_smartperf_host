@@ -59,7 +59,9 @@ config("default") {
   if (is_pbdecoder) {
     cflags += [ "-D IS_PBDECODER" ]
   }
-  if (is_linux || is_macx) {
+  if (target_os == "windows") {
+    cflags += []
+  } else if (is_linux || is_macx) {
     cflags += [
       "-Wa,--noexecstack",
       "-fcolor-diagnostics",
@@ -113,6 +115,11 @@ config("default") {
         "-fPIC",
       ]
     }
+  }
+  if (use_wasm) {
+    cflags += [
+      "-D IS_WASM"
+    ]
   }
   if (is_win) {
     cflags += [ "-D is_mingw" ]

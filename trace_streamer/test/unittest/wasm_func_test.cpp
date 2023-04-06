@@ -29,6 +29,7 @@ public:
         stream_.InitFilter();
     }
     void TearDown() {}
+
 public:
     TraceStreamerSelector stream_ = {};
 };

@@ -44,7 +44,7 @@ public:
 };
 struct NativeHookMetaData {
     NativeHookMetaData(const std::shared_ptr<const std::string>& seg,
-                        std::unique_ptr<ProtoReader::NativeHookData_Reader> reader)
+                       std::unique_ptr<ProtoReader::NativeHookData_Reader> reader)
         : seg_(seg), reader_(std::move(reader))
     {
     }

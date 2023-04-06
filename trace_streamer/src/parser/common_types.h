@@ -56,7 +56,6 @@ namespace TraceStreamer {
 enum ParseResult { ERROR = 0, SUCCESS };
 enum RawType { RAW_CPU_IDLE = 1, RAW_SCHED_WAKEUP = 2, RAW_SCHED_WAKING = 3 };
 
-
 struct BytraceLine {
     uint64_t ts = 0;
     uint32_t pid = 0;
@@ -115,16 +114,16 @@ class TracePoint {
 public:
     TracePoint() {}
     TracePoint(const TracePoint& point)
-    : phase_(point.phase_),
-      tgid_(point.tgid_),
-      name_(point.name_),
-      value_(point.value_),
-      categoryGroup_(point.categoryGroup_),
-      chainId_(point.chainId_),
-      spanId_(point.spanId_),
-      parentSpanId_(point.parentSpanId_),
-      flag_(point.flag_),
-      args_(point.args_)
+        : phase_(point.phase_),
+          tgid_(point.tgid_),
+          name_(point.name_),
+          value_(point.value_),
+          categoryGroup_(point.categoryGroup_),
+          chainId_(point.chainId_),
+          spanId_(point.spanId_),
+          parentSpanId_(point.parentSpanId_),
+          flag_(point.flag_),
+          args_(point.args_)
     {
     }
     void operator=(const TracePoint& point)

@@ -33,49 +33,48 @@ class PerfFileReader {
 public:
     virtual ~PerfFileReader();
 
-    static std::unique_ptr<PerfFileReader> Instance(const std::string &fileName, size_t begin = 0);
-    static std::unique_ptr<PerfFileReader> Instance(const uint8_t *buff, size_t size);
+    static std::unique_ptr<PerfFileReader> Instance(const std::string& fileName, size_t begin = 0);
+    static std::unique_ptr<PerfFileReader> Instance(const uint8_t* buff, size_t size);
 
-    const perf_file_header &GetHeader() const;
+    const perf_file_header& GetHeader() const;
 
     std::vector<AttrWithId> GetAttrSection() const;
 
     // read data section, construct record, call callback for each record
-    bool ReadDataSection(ProcessRecordCB &callback);
+    bool ReadDataSection(ProcessRecordCB& callback);
 
     bool ReadFeatureSection();
-    const std::vector<FEATURE> &GetFeatures() const;
-    const std::vector<std::unique_ptr<PerfFileSection>> &GetFeatureSections() const;
-    const PerfFileSection *GetFeatureSection(FEATURE feature) const;
-    explicit PerfFileReader(const std::string &fileName, FILE *fp, size_t begin = 0);
-    explicit PerfFileReader(const uint8_t *buff, size_t size);
+    const std::vector<FEATURE>& GetFeatures() const;
+    const std::vector<std::unique_ptr<PerfFileSection>>& GetFeatureSections() const;
+    const PerfFileSection* GetFeatureSection(FEATURE feature) const;
+    explicit PerfFileReader(const std::string& fileName, FILE* fp, size_t begin = 0);
+    explicit PerfFileReader(const uint8_t* buff, size_t size);
 
     const std::string GetFeatureString(const FEATURE feature) const;
 
     bool IsFeatrureStringSection(const FEATURE featureId) const
     {
-        return find(FeatureStrings.begin(), FeatureStrings.end(), featureId) !=
-               FeatureStrings.end();
+        return find(FeatureStrings.begin(), FeatureStrings.end(), featureId) != FeatureStrings.end();
     }
 
     // fuzz user this
 protected:
-    virtual bool Read(void *buf, size_t len);
-    virtual bool Read(char *buf, uint64_t offset, size_t len);
-    FILE *fp_ = nullptr;
+    virtual bool Read(void* buf, size_t len);
+    virtual bool Read(char* buf, uint64_t offset, size_t len);
+    FILE* fp_ = nullptr;
     bool ReadFileHeader();
     bool ReadAttrSection();
 
 private:
-    bool ReadRecord(ProcessRecordCB &callback);
+    bool ReadRecord(ProcessRecordCB& callback);
     bool IsValidDataFile();
     bool IsGzipFile();
 
     // file header must be read first
 
-    bool ReadIdsForAttr(const perf_file_attr &attr, std::vector<uint64_t> *ids);
+    bool ReadIdsForAttr(const perf_file_attr& attr, std::vector<uint64_t>* ids);
 
-    const perf_event_attr *GetDefaultAttr();
+    const perf_event_attr* GetDefaultAttr();
 
     const std::string fileName_;
     uint64_t dataSectionSize_;
@@ -93,7 +92,7 @@ private:
     size_t fileSize_ = 0;
     size_t fileBegin_ = 0;
     bool isMemory_ = false;
-    const uint8_t *buff_ = nullptr;
+    const uint8_t* buff_ = nullptr;
     const size_t buffSize_ = 0;
     size_t buffCurrent_ = 0;
 

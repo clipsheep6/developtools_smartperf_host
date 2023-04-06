@@ -56,19 +56,16 @@ class UniqueFdAddDeletor final {
     friend bool operator><Deleter>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs);
 
     friend bool operator<=<Deleter>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs);
-
+    // clang-format off
     friend bool operator< <Deleter>(const int& lhs, const UniqueFdAddDeletor<Deleter>& rhs);
-
+    // clang-format on
 public:
-    explicit UniqueFdAddDeletor(const int& value)
-        : fd_(value)
+    explicit UniqueFdAddDeletor(const int& value) : fd_(value) {}
+    UniqueFdAddDeletor() : fd_(-1) {}
+    ~UniqueFdAddDeletor()
     {
+        Reset(-1);
     }
-    UniqueFdAddDeletor()
-        : fd_(-1)
-    {
-    }
-    ~UniqueFdAddDeletor() { Reset(-1); }
 
     // get fd out
     int Release()
@@ -79,7 +76,10 @@ public:
     }
 
     // this is dangerous, when you use it , you should know it, donot operator on the ret
-    operator int() const { return Get(); } // NOLINT
+    operator int() const
+    {
+        return Get();
+    } // NOLINT
     // this is dangerous, when you use it , you should know it, donot operator on the ret
     int Get() const
     {

@@ -38,19 +38,23 @@ const std::string MMAP_NAME_ANON = "[anon]";
 
 class VirtualThread {
 public:
-    VirtualThread(const VirtualThread &) = delete;
-    VirtualThread &operator=(const VirtualThread &) = delete;
+    VirtualThread(const VirtualThread&) = delete;
+    VirtualThread& operator=(const VirtualThread&) = delete;
 
-    VirtualThread(pid_t pid, const std::vector<std::unique_ptr<SymbolsFile>> &symbolsFiles)
+    VirtualThread(pid_t pid, const std::vector<std::unique_ptr<SymbolsFile>>& symbolsFiles)
         : pid_(pid),
           tid_(pid),
           symbolsFiles_(symbolsFiles),
           processMemMaps_(),
           memMaps_(processMemMaps_),
-          parent_(*this) {}
+          parent_(*this)
+    {
+    }
 
-    VirtualThread(pid_t pid, pid_t tid, VirtualThread &thread,
-                  const std::vector<std::unique_ptr<SymbolsFile>> &symbolsFiles)
+    VirtualThread(pid_t pid,
+                  pid_t tid,
+                  VirtualThread& thread,
+                  const std::vector<std::unique_ptr<SymbolsFile>>& symbolsFiles)
         : pid_(pid),
           tid_(tid),
           symbolsFiles_(symbolsFiles),
@@ -66,38 +70,38 @@ public:
     pid_t tid_;
     std::string name_;
 
-    const std::vector<MemMapItem> &GetMaps() const
+    const std::vector<MemMapItem>& GetMaps() const
     {
         return memMaps_;
     }
 
     void ParseMap();
     void CreateMapItem(const std::string filename, uint64_t begin, uint64_t len, uint64_t offset);
-    const MemMapItem *FindMapByAddr(uint64_t addr) const;
-    const MemMapItem *FindMapByAddr2(uint64_t addr) const;
-    const MemMapItem *FindMapByFileInfo(const std::string name, uint64_t offset) const;
-    SymbolsFile *FindSymbolsFileByMap(const MemMapItem &inMap) const;
-    bool ReadRoMemory(uint64_t vaddr, uint8_t *data, size_t size) const;
-// #ifdef HIPERF_DEBUG
+    const MemMapItem* FindMapByAddr(uint64_t addr) const;
+    const MemMapItem* FindMapByAddr2(uint64_t addr) const;
+    const MemMapItem* FindMapByFileInfo(const std::string name, uint64_t offset) const;
+    SymbolsFile* FindSymbolsFileByMap(const MemMapItem& inMap) const;
+    bool ReadRoMemory(uint64_t vaddr, uint8_t* data, size_t size) const;
+    // #ifdef HIPERF_DEBUG
     void ReportVaddrMapMiss(uint64_t vaddr) const;
-// #endif
+    // #endif
     // caller want to check if new mmap is legal
-    static bool IsLegalFileName(const std::string &filename);
+    static bool IsLegalFileName(const std::string& filename);
 
 private:
     void SortMemMaps();
 #ifdef DEBUG_TIME
     bool IsSorted() const;
 #endif
-    const std::vector<std::unique_ptr<SymbolsFile>> &symbolsFiles_;
+    const std::vector<std::unique_ptr<SymbolsFile>>& symbolsFiles_;
 
     // proc/xx/map
     // use to put the parent thread's map
     // only process have memmap
     std::vector<MemMapItem> processMemMaps_;
     // thread must use ref from process
-    std::vector<MemMapItem> &memMaps_;
-    VirtualThread &parent_;
+    std::vector<MemMapItem>& memMaps_;
+    VirtualThread& parent_;
 #ifdef HIPERF_DEBUG
     mutable std::unordered_set<uint64_t> missedRuntimeVaddr_;
 #endif

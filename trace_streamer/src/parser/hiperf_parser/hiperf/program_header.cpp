@@ -19,9 +19,9 @@ using namespace OHOS::Developtools::HiPerf::ELF;
 namespace OHOS {
 namespace Developtools {
 namespace HiPerf {
-std::unique_ptr<ProgramHeader> ProgramHeader::MakeUnique(char * const phdrBuf, const size_t bufSize)
+std::unique_ptr<ProgramHeader> ProgramHeader::MakeUnique(char* const phdrBuf, const size_t bufSize)
 {
-    std::unique_ptr<ProgramHeader> phdr {new (std::nothrow) ProgramHeader()};
+    std::unique_ptr<ProgramHeader> phdr{new (std::nothrow) ProgramHeader()};
     if (phdr == nullptr) {
         HLOGE("ProgramHeader() failed");
         return nullptr;
@@ -34,10 +34,10 @@ std::unique_ptr<ProgramHeader> ProgramHeader::MakeUnique(char * const phdrBuf, c
     return phdr;
 }
 
-bool ProgramHeader::ParsePrgHeader32(char * const phdrBuf)
+bool ProgramHeader::ParsePrgHeader32(char* const phdrBuf)
 {
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(phdrBuf);
-    size_t index {0};
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(phdrBuf);
+    size_t index{0};
     type_ = u4Buf[index];
     ++index;
     offset_ = u4Buf[index];
@@ -56,15 +56,15 @@ bool ProgramHeader::ParsePrgHeader32(char * const phdrBuf)
     return true;
 }
 
-bool ProgramHeader::ParsePrgHeader64(char * const phdrBuf)
+bool ProgramHeader::ParsePrgHeader64(char* const phdrBuf)
 {
-    uint32_t *u4Buf = reinterpret_cast<uint32_t *>(phdrBuf);
-    size_t index {0};
+    uint32_t* u4Buf = reinterpret_cast<uint32_t*>(phdrBuf);
+    size_t index{0};
     type_ = u4Buf[index];
     ++index;
     flags_ = u4Buf[index];
 
-    uint64_t *u8Buf = reinterpret_cast<uint64_t *>(phdrBuf);
+    uint64_t* u8Buf = reinterpret_cast<uint64_t*>(phdrBuf);
     offset_ = u8Buf[index];
     ++index;
     vaddr_ = u8Buf[index];

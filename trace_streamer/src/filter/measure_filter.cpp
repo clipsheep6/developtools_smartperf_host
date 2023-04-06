@@ -21,9 +21,7 @@
 namespace SysTuning {
 namespace TraceStreamer {
 MeasureFilter::MeasureFilter(TraceDataCache* dataCache, const TraceStreamerFilters* filter, FilterType e)
-    : FilterBase(dataCache, filter),
-      tidStreamIdFilterIdMap_(INVALID_UINT64),
-      filterType_(e)
+    : FilterBase(dataCache, filter), tidStreamIdFilterIdMap_(INVALID_UINT64), filterType_(e)
 {
 }
 
@@ -36,7 +34,7 @@ bool MeasureFilter::AppendNewMeasureData(uint64_t internalTid, DataIndex nameInd
         traceDataCache_->GetProcessMeasureData()->AppendMeasureData(0, timeStamp, value, filterId);
     } else {
         auto row = traceDataCache_->GetMeasureData()->AppendMeasureData(0, timeStamp, value, filterId);
-         //if the filterId ever exists
+        // if the filterId ever exists
         if (filterIdToRow_.count(filterId)) {
             traceDataCache_->GetMeasureData()->SetDur(filterIdToRow_.at(filterId), timeStamp);
             filterIdToRow_.at(filterId) = row;
@@ -79,22 +77,22 @@ void MeasureFilter::AddCertainFilterId(uint64_t internalTid, DataIndex nameIndex
         traceDataCache_->GetCpuMeasuresData()->AppendNewFilter(filterId, static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLOCK_RATE_FILTER) {
         traceDataCache_->GetClockEventFilterData()->AppendNewFilter(filterId, clockSetRateDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                    static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLOCK_ENABLE_FILTER) {
         traceDataCache_->GetClockEventFilterData()->AppendNewFilter(filterId, clockEnableDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                    static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLOCK_DISABLE_FILTER) {
         traceDataCache_->GetClockEventFilterData()->AppendNewFilter(filterId, clockDisableDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                    static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLK_RATE_FILTER) {
         traceDataCache_->GetClkEventFilterData()->AppendNewFilter(filterId, clkSetRateDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                  static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLK_ENABLE_FILTER) {
         traceDataCache_->GetClkEventFilterData()->AppendNewFilter(filterId, clkEnableDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                  static_cast<uint32_t>(nameIndex), internalTid);
     } else if (filterType_ == E_CLK_DISABLE_FILTER) {
         traceDataCache_->GetClkEventFilterData()->AppendNewFilter(filterId, clkDisableDataIndex_,
-            static_cast<uint32_t>(nameIndex), internalTid);
+                                                                  static_cast<uint32_t>(nameIndex), internalTid);
     }
 }
 void MeasureFilter::Clear()

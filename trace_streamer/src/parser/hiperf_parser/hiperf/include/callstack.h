@@ -53,51 +53,60 @@ class CallStack {
 public:
     CallStack();
     ~CallStack();
-    bool UnwindCallStack(const VirtualThread &thread, bool abi32, u64 *regs, u64 regsNum,
-                         const u8 *stack, u64 stackSize, std::vector<CallFrame> &,
+    bool UnwindCallStack(const VirtualThread& thread,
+                         bool abi32,
+                         u64* regs,
+                         u64 regsNum,
+                         const u8* stack,
+                         u64 stackSize,
+                         std::vector<CallFrame>&,
                          size_t maxStackLevel = MAX_CALL_FRAME_UNWIND_SIZE);
-    size_t ExpandCallStack(pid_t tid, std::vector<CallFrame> &callFrames, size_t expandLimit = 1u);
+    size_t ExpandCallStack(pid_t tid, std::vector<CallFrame>& callFrames, size_t expandLimit = 1u);
 
 private:
     uint64_t stackPoint_ = 0;
     uint64_t stackEnd_ = 0;
-    u64 *regs_ = nullptr; // not const , be cause we will fix it for arm64 cpu in UpdateRegForABI
+    u64* regs_ = nullptr; // not const , be cause we will fix it for arm64 cpu in UpdateRegForABI
     u64 regsNum_ = 0;
-    const u8 *stack_ = nullptr;
+    const u8* stack_ = nullptr;
     u64 stackSize_ = 0;
 
-    void LogFrame(const std::string msg, const std::vector<CallFrame> &frames);
-    size_t DoExpandCallStack(std::vector<CallFrame> &newCallFrames,
-                           const std::vector<CallFrame> &cachedCallFrames, size_t expandLimit);
+    void LogFrame(const std::string msg, const std::vector<CallFrame>& frames);
+    size_t DoExpandCallStack(std::vector<CallFrame>& newCallFrames,
+                             const std::vector<CallFrame>& cachedCallFrames,
+                             size_t expandLimit);
 
     // we have a cache for all thread
     std::map<pid_t, HashList<uint64_t, std::vector<CallFrame>>> cachedCallFramesMap_;
-    bool GetIpSP(uint64_t &ip, uint64_t &sp, const u64 *regs, size_t regNum) const;
+    bool GetIpSP(uint64_t& ip, uint64_t& sp, const u64* regs, size_t regNum) const;
     ArchType arch_ = ArchType::UNSUPPORT;
 #if HAVE_LIBUNWIND
-    static bool ReadVirtualThreadMemory(UnwindInfo &unwindInfoPtr, unw_word_t addr,
-                                        unw_word_t *data);
+    static bool ReadVirtualThreadMemory(UnwindInfo& unwindInfoPtr, unw_word_t addr, unw_word_t* data);
     static const std::string GetUnwErrorName(int error);
-    static void dumpUDI(unw_dyn_info_t &di);
-    static bool fillUDI(unw_dyn_info_t &di, SymbolsFile &symbolsFile, const MemMapItem &mmap,
-                        const VirtualThread &thread);
-    static int FindProcInfo(unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
-                            int need_unwind_info, void *arg);
-    static int AccessMem(unw_addr_space_t as, unw_word_t addr, unw_word_t *valuePoint,
-                         int writeOperation, void *arg);
-    static int AccessReg(unw_addr_space_t as, unw_regnum_t regnum, unw_word_t *valuePoint,
-                         int writeOperation, void *arg);
-    static void PutUnwindInfo(unw_addr_space_t as, unw_proc_info_t *pi, void *arg);
-    static int AccessFpreg(unw_addr_space_t as, unw_regnum_t num, unw_fpreg_t *val,
-                           int writeOperation, void *arg);
-    static int GetDynInfoListAaddr(unw_addr_space_t as, unw_word_t *dil_vaddr, void *arg);
-    static int Resume(unw_addr_space_t as, unw_cursor_t *cu, void *arg);
-    static int getProcName(unw_addr_space_t as, unw_word_t addr, char *bufp, size_t buf_len,
-                           unw_word_t *offp, void *arg);
-    static int FindUnwindTable(SymbolsFile *symbolsFile, const MemMapItem &mmap,
-                               UnwindInfo *unwindInfoPtr, unw_addr_space_t as, unw_word_t ip,
-                               unw_proc_info_t *pi, int need_unwind_info, void *arg);
-    void UnwindStep(unw_cursor_t &c, std::vector<CallFrame> &callFrames, size_t maxStackLevel);
+    static void dumpUDI(unw_dyn_info_t& di);
+    static bool fillUDI(unw_dyn_info_t& di,
+                        SymbolsFile& symbolsFile,
+                        const MemMapItem& mmap,
+                        const VirtualThread& thread);
+    static int FindProcInfo(unw_addr_space_t as, unw_word_t ip, unw_proc_info_t* pi, int need_unwind_info, void* arg);
+    static int AccessMem(unw_addr_space_t as, unw_word_t addr, unw_word_t* valuePoint, int writeOperation, void* arg);
+    static int
+        AccessReg(unw_addr_space_t as, unw_regnum_t regnum, unw_word_t* valuePoint, int writeOperation, void* arg);
+    static void PutUnwindInfo(unw_addr_space_t as, unw_proc_info_t* pi, void* arg);
+    static int AccessFpreg(unw_addr_space_t as, unw_regnum_t num, unw_fpreg_t* val, int writeOperation, void* arg);
+    static int GetDynInfoListAaddr(unw_addr_space_t as, unw_word_t* dil_vaddr, void* arg);
+    static int Resume(unw_addr_space_t as, unw_cursor_t* cu, void* arg);
+    static int
+        getProcName(unw_addr_space_t as, unw_word_t addr, char* bufp, size_t buf_len, unw_word_t* offp, void* arg);
+    static int FindUnwindTable(SymbolsFile* symbolsFile,
+                               const MemMapItem& mmap,
+                               UnwindInfo* unwindInfoPtr,
+                               unw_addr_space_t as,
+                               unw_word_t ip,
+                               unw_proc_info_t* pi,
+                               int need_unwind_info,
+                               void* arg);
+    void UnwindStep(unw_cursor_t& c, std::vector<CallFrame>& callFrames, size_t maxStackLevel);
     std::unordered_map<pid_t, unw_addr_space_t> unwindAddrSpaceMap_;
 
     using dsoUnwDynInfoMap = std::unordered_map<std::string, std::optional<unw_dyn_info_t>>;
@@ -116,18 +125,17 @@ private:
         .resume = Resume,
         .get_proc_name = getProcName,
     };
-    bool DoUnwind(const VirtualThread &thread, std::vector<CallFrame> &callStack,
-                  size_t maxStackLevel);
+    bool DoUnwind(const VirtualThread& thread, std::vector<CallFrame>& callStack, size_t maxStackLevel);
 #endif
 };
 
 #if HAVE_LIBUNWIND
 struct UnwindInfo {
-    const VirtualThread &thread;
-    const u64 *regs;
+    const VirtualThread& thread;
+    const u64* regs;
     size_t regNumber;
     ArchType arch;
-    CallStack &callStack;
+    CallStack& callStack;
 };
 #endif
 } // namespace HiPerf

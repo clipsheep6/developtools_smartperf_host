@@ -72,7 +72,6 @@ const Measure& TraceDataCacheReader::GetConstProcessMeasureData() const
     return processMeasureData_;
 }
 
-
 const ThreadMeasureFilter& TraceDataCacheReader::GetConstThreadMeasureFilterData() const
 {
     return threadMeasureFilterData_;

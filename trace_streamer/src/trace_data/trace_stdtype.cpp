@@ -18,8 +18,8 @@
 #include <ctime>
 namespace SysTuning {
 namespace TraceStdtype {
-#define UNUSED(expr)  \
-    do {              \
+#define UNUSED(expr)             \
+    do {                         \
         static_cast<void>(expr); \
     } while (0)
 void CpuCacheBase::SetDur(uint64_t index, uint64_t dur)
@@ -499,7 +499,7 @@ size_t NativeHook::AppendNewNativeHookData(uint32_t callChainId,
     durations_.emplace_back(duration);
     addrs_.emplace_back(addr);
     memSizes_.emplace_back(memSize);
-    if (eventType == ALLOC_EVET ) {
+    if (eventType == ALLOC_EVET) {
         countHeapSizes_ += memSize;
         allMemSizes_.emplace_back(countHeapSizes_);
     } else if (eventType == FREE_EVENT) {
@@ -527,21 +527,18 @@ void NativeHook::UpdateCurrentSizeDur(size_t row, uint64_t timeStamp)
 }
 void NativeHook::UpdateMemMapSubType()
 {
-    if (addrToMmapTag_.Empty()) {
+    if (addrToMmapTag_.empty()) {
         return;
     }
     for (auto i = 0; i < Size(); ++i) {
-        if (eventTypes_[i].compare(MMAP_EVENT) == 0) {
-            auto tagId = addrToMmapTag_.Find(addrs_[i], memSizes_[i]);
-            if (tagId != INVALID_UINT64) {
-                subTypes_[i] = tagId;
-            }
+        if (addrToMmapTag_.count(addrs_[i])) {
+            subTypes_[i] = addrToMmapTag_.at(addrs_[i]);
         }
     }
 }
-void NativeHook::UpdateAddrToMemMapSubType(uint64_t addr, int64_t size, uint64_t tagId)
+void NativeHook::UpdateAddrToMemMapSubType(uint64_t addr, uint64_t tagId)
 {
-    addrToMmapTag_.Insert(addr, size, tagId);
+    addrToMmapTag_.emplace(addr, tagId);
 }
 void NativeHook::UpdateLastCallerPathIndexs(std::unordered_map<uint32_t, uint64_t>& callIdToLasLibId)
 {
@@ -1471,14 +1468,14 @@ const std::deque<DataIndex>& FileSystemSample::FourthArguments() const
 }
 
 size_t PagedMemorySampleData::AppendNewData(uint32_t callChainId,
-                                              uint16_t type,
-                                              uint32_t ipid,
-                                              uint64_t startTs,
-                                              uint64_t endTs,
-                                              uint64_t dur,
-                                              size_t size,
-                                              DataIndex addr,
-                                              uint32_t itid)
+                                            uint16_t type,
+                                            uint32_t ipid,
+                                            uint64_t startTs,
+                                            uint64_t endTs,
+                                            uint64_t dur,
+                                            size_t size,
+                                            DataIndex addr,
+                                            uint32_t itid)
 {
     callChainIds_.emplace_back(callChainId);
     types_.emplace_back(type);
@@ -1967,17 +1964,17 @@ const std::deque<DataIndex>& SmapsData::PathIds() const
     return pathIds_;
 }
 void BioLatencySampleData::AppendNewData(uint32_t callChainId,
-                                        uint64_t type,
-                                        uint32_t ipid,
-                                        uint32_t itid,
-                                        uint64_t startTs,
-                                        uint64_t endTs,
-                                        uint64_t latencyDur,
-                                        uint32_t tier,
-                                        uint64_t size,
-                                        uint64_t blockNumber,
-                                        uint64_t filePathId,
-                                        uint64_t durPer4k)
+                                         uint64_t type,
+                                         uint32_t ipid,
+                                         uint32_t itid,
+                                         uint64_t startTs,
+                                         uint64_t endTs,
+                                         uint64_t latencyDur,
+                                         uint32_t tier,
+                                         uint64_t size,
+                                         uint64_t blockNumber,
+                                         uint64_t filePathId,
+                                         uint64_t durPer4k)
 {
     callChainIds_.emplace_back(callChainId);
     types_.emplace_back(type);
@@ -2044,17 +2041,7 @@ const std::deque<uint64_t>& BioLatencySampleData::DurPer4k() const
 }
 #ifndef IS_PBDECODER
 DataSourceClockIdData::DataSourceClockIdData()
-    : dataSource2PluginNameMap_({{DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},
-                                 {DATA_SOURCE_TYPE_MEM, "memory-plugin"},
-                                 {DATA_SOURCE_TYPE_HILOG, "hilog-plugin"},
-                                 {DATA_SOURCE_TYPE_NATIVEHOOK, "nativehook"},
-                                 {DATA_SOURCE_TYPE_FPS, "hidump-plugin"},
-                                 {DATA_SOURCE_TYPE_NETWORK, "network-plugin"},
-                                 {DATA_SOURCE_TYPE_DISKIO, "diskio-plugin"},
-                                 {DATA_SOURCE_TYPE_CPU, "cpu-plugin"},
-                                 {DATA_SOURCE_TYPE_PROCESS, "process-plugin"},
-                                 {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}}),
-      dataSource2ClockIdMap_({{DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},
+    : dataSource2ClockIdMap_({{DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_MEM, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_HILOG, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_NATIVEHOOK, TS_CLOCK_UNKNOW},
@@ -2063,22 +2050,22 @@ DataSourceClockIdData::DataSourceClockIdData()
                               {DATA_SOURCE_TYPE_DISKIO, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_CPU, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_PROCESS, TS_CLOCK_UNKNOW},
-                              {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}})
-{
-}
-#else
-DataSourceClockIdData::DataSourceClockIdData()
-    : dataSource2PluginNameMap_({{DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},
+                              {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}}),
+      dataSource2PluginNameMap_({{DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},
                                  {DATA_SOURCE_TYPE_MEM, "memory-plugin"},
                                  {DATA_SOURCE_TYPE_HILOG, "hilog-plugin"},
-                                 {DATA_SOURCE_TYPE_ALLOCATION, "nativehook"},
+                                 {DATA_SOURCE_TYPE_NATIVEHOOK, "nativehook"},
                                  {DATA_SOURCE_TYPE_FPS, "hidump-plugin"},
                                  {DATA_SOURCE_TYPE_NETWORK, "network-plugin"},
                                  {DATA_SOURCE_TYPE_DISKIO, "diskio-plugin"},
                                  {DATA_SOURCE_TYPE_CPU, "cpu-plugin"},
                                  {DATA_SOURCE_TYPE_PROCESS, "process-plugin"},
-                                 {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}}),
-      dataSource2ClockIdMap_({{DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},
+                                 {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}})
+{
+}
+#else
+DataSourceClockIdData::DataSourceClockIdData()
+    : dataSource2ClockIdMap_({{DATA_SOURCE_TYPE_TRACE, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_MEM, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_HILOG, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_ALLOCATION, TS_CLOCK_UNKNOW},
@@ -2087,7 +2074,18 @@ DataSourceClockIdData::DataSourceClockIdData()
                               {DATA_SOURCE_TYPE_DISKIO, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_CPU, TS_CLOCK_UNKNOW},
                               {DATA_SOURCE_TYPE_PROCESS, TS_CLOCK_UNKNOW},
-                              {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}})
+                              {DATA_SOURCE_TYPE_HISYSEVENT, TS_CLOCK_UNKNOW}}),
+      dataSource2PluginNameMap_({{DATA_SOURCE_TYPE_TRACE, "ftrace-plugin"},
+                                 {DATA_SOURCE_TYPE_MEM, "memory-plugin"},
+                                 {DATA_SOURCE_TYPE_HILOG, "hilog-plugin"},
+                                 {DATA_SOURCE_TYPE_ALLOCATION, "nativehook"},
+                                 {DATA_SOURCE_TYPE_FPS, "hidump-plugin"},
+                                 {DATA_SOURCE_TYPE_NETWORK, "network-plugin"},
+                                 {DATA_SOURCE_TYPE_DISKIO, "diskio-plugin"},
+                                 {DATA_SOURCE_TYPE_CPU, "cpu-plugin"},
+                                 {DATA_SOURCE_TYPE_PROCESS, "process-plugin"},
+                                 {DATA_SOURCE_TYPE_HISYSEVENT, "hisysevent-plugin"}})
+
 {
 }
 #endif
@@ -2104,13 +2102,13 @@ void DataSourceClockIdData::SetDataSourceClockId(DataSourceType source, uint32_t
 {
     dataSource2ClockIdMap_.at(source) = id;
 }
-size_t FrameSlice::AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceRow)
+size_t FrameSlice::AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32_t vsyncId, uint64_t callStackSliceId)
 {
     timeStamps_.emplace_back(ts);
     ipids_.emplace_back(ipid);
     internalTids_.emplace_back(itid);
     vsyncIds_.emplace_back(vsyncId);
-    callStackRows_.emplace_back(callStackSliceRow);
+    callStackIds_.emplace_back(callStackSliceId);
     endTss_.emplace_back(INVALID_UINT64);
     dsts_.emplace_back(INVALID_UINT64);
     ids_.emplace_back(ids_.size());
@@ -2118,19 +2116,23 @@ size_t FrameSlice::AppendFrame(uint64_t ts, uint32_t ipid, uint32_t itid, uint32
     types_.emplace_back(0);
     flags_.emplace_back(INVALID_UINT8);
     srcs_.emplace_back("");
+    depths_.emplace_back(0);
+    frameNos_.emplace_back(0);
     return Size() - 1;
 }
 size_t FrameSlice::AppendFrame(uint64_t ts,
                                uint32_t ipid,
                                uint32_t itid,
                                uint32_t vsyncId,
-                               uint64_t callStackSliceRow,
+                               uint64_t callStackSliceId,
                                uint64_t end,
                                uint8_t type)
 {
-    auto row = AppendFrame(ts, ipid, itid, vsyncId, callStackSliceRow);
+    auto row = AppendFrame(ts, ipid, itid, vsyncId, callStackSliceId);
     SetEndTime(row, end);
     SetType(row, type);
+    depths_.emplace_back(0);
+    frameNos_.emplace_back(0);
     durs_[row] = end - ts;
     return row;
 }
@@ -2165,9 +2167,9 @@ const std::deque<uint32_t> FrameSlice::VsyncIds() const
 {
     return vsyncIds_;
 }
-const std::deque<uint64_t> FrameSlice::CallStackRows() const
+const std::deque<uint64_t> FrameSlice::CallStackIds() const
 {
-    return callStackRows_;
+    return callStackIds_;
 }
 const std::deque<uint64_t> FrameSlice::EndTss() const
 {
@@ -2190,13 +2192,21 @@ const std::deque<uint8_t> FrameSlice::Flags() const
     return flags_;
 }
 
+const std::deque<uint8_t> FrameSlice::Depths() const
+{
+    return depths_;
+}
+const std::deque<uint32_t> FrameSlice::FrameNos() const
+{
+    return frameNos_;
+}
 const std::deque<std::string>& FrameSlice::Srcs() const
 {
     return srcs_;
 }
-void FrameSlice::UpdateCallStackSliceRow(uint64_t row, uint64_t callStackSliceRow)
+void FrameSlice::UpdateCallStackSliceId(uint64_t row, uint64_t callStackSliceId)
 {
-    callStackRows_[row] = callStackSliceRow;
+    callStackIds_[row] = callStackSliceId;
 }
 void FrameSlice::SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur)
 {

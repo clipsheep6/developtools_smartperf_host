@@ -41,15 +41,17 @@ void HtraceProcessParser::Parse(ProtoReader::BytesView tracePacket, uint64_t ts)
         ProtoReader::PssInfo_Reader pssInfoParser(processInfoParser.pssinfo());
         ProtoReader::DiskioInfo_Reader diskioInfoParser(processInfoParser.diskinfo());
         auto liveProcess = std::make_unique<TsLiveProcessData>();
-        auto processInfo = std::make_unique<ProcessInfo>(
-            processInfoParser.pid(), processInfoParser.name().ToStdString(), processInfoParser.ppid(), processInfoParser.uid());
+        auto processInfo =
+            std::make_unique<ProcessInfo>(processInfoParser.pid(), processInfoParser.name().ToStdString(),
+                                          processInfoParser.ppid(), processInfoParser.uid());
         auto cpuInfo = std::make_unique<CpuInfo>(cpuInfoParser.cpu_usage(), cpuInfoParser.thread_sum(),
                                                  cpuInfoParser.cpu_time_ms());
         auto pssInfo = std::make_unique<PssInfo>(pssInfoParser.pss_info());
         auto diskioInfo = std::make_unique<DiskioInfo>(
             diskioInfoParser.rchar(), diskioInfoParser.wchar(), diskioInfoParser.syscr(), diskioInfoParser.syscw(),
             diskioInfoParser.rbytes(), diskioInfoParser.wbytes(), diskioInfoParser.cancelled_wbytes());
-        liveProcess->SetLiveProcess(ts, std::move(processInfo), std::move(cpuInfo), std::move(pssInfo), std::move(diskioInfo));
+        liveProcess->SetLiveProcess(ts, std::move(processInfo), std::move(cpuInfo), std::move(pssInfo),
+                                    std::move(diskioInfo));
         liveProcessData_.push_back(std::move(liveProcess));
     }
 }
@@ -62,7 +64,11 @@ void HtraceProcessParser::Finish()
     auto cmp = [](const std::unique_ptr<TsLiveProcessData>& a, const std::unique_ptr<TsLiveProcessData>& b) {
         return a->ts_ < b->ts_;
     };
+#ifdef IS_WASM
     std::sort(liveProcessData_.begin(), liveProcessData_.end(), cmp);
+#else
+    std::stable_sort(liveProcessData_.begin(), liveProcessData_.end(), cmp);
+#endif
     bool first = true;
     uint64_t lastTs = 0;
     for (auto itor = liveProcessData_.begin(); itor != liveProcessData_.end(); itor++) {
@@ -80,8 +86,8 @@ void HtraceProcessParser::Finish()
             continue;
         }
         traceDataCache_->GetLiveProcessData()->AppendNewData(
-            (*itor)->ts_, dur, (*itor)->processInfo_->pid_, (*itor)->processInfo_->name_,
-            (*itor)->processInfo_->ppid_, (*itor)->processInfo_->uid_, std::to_string((*itor)->processInfo_->uid_),
+            (*itor)->ts_, dur, (*itor)->processInfo_->pid_, (*itor)->processInfo_->name_, (*itor)->processInfo_->ppid_,
+            (*itor)->processInfo_->uid_, std::to_string((*itor)->processInfo_->uid_),
             (*itor)->cpuUsageData_->cpu_usage_, (*itor)->pssInfo_->pss_info_, (*itor)->cpuUsageData_->cpu_time_ms_,
             (*itor)->cpuUsageData_->thread_sum_, (*itor)->diskio_->wbytes_, (*itor)->diskio_->rbytes_);
     }

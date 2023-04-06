@@ -269,7 +269,11 @@ export class TimerShaftElement extends BaseElement {
 
     documentOnMouseMove = (ev: MouseEvent) => {
         this.rangeRuler?.mouseMove(ev);
-        this.sportRuler?.mouseMove(ev);
+        if(this.sportRuler?.edgeDetection(ev)){
+            this.sportRuler?.mouseMove(ev);
+        }else{
+            this.sportRuler?.mouseOut(ev);
+        }
     }
 
     documentOnMouseOut = (ev: MouseEvent) => {

@@ -48,20 +48,19 @@ namespace HiPerf {
 namespace ELF {
 using namespace std::string_literals;
 
-constexpr std::size_t ehdr32Size {52};
-constexpr std::size_t ehdr64Size {64};
-constexpr std::size_t shdr32Size {40};
-constexpr std::size_t shdr64Size {64};
-constexpr std::size_t phdr32Size {32};
-constexpr std::size_t phdr64Size {56};
-constexpr std::size_t symEnt32Size {16};
-constexpr std::size_t symEnt64Size {24};
+constexpr std::size_t ehdr32Size{52};
+constexpr std::size_t ehdr64Size{64};
+constexpr std::size_t shdr32Size{40};
+constexpr std::size_t shdr64Size{64};
+constexpr std::size_t phdr32Size{32};
+constexpr std::size_t phdr64Size{56};
+constexpr std::size_t symEnt32Size{16};
+constexpr std::size_t symEnt64Size{24};
 
 class ElfHeader {
 public:
-    static std::unique_ptr<ElfHeader> MakeUnique(unsigned char * const ehdrBuf,
-                                                 const std::size_t bufSize);
-    bool Init(unsigned char * const ehdrBuf, const std::size_t bufSize);
+    static std::unique_ptr<ElfHeader> MakeUnique(unsigned char* const ehdrBuf, const std::size_t bufSize);
+    bool Init(unsigned char* const ehdrBuf, const std::size_t bufSize);
 
     unsigned char ehdrIdent_[EI_NIDENT];
     uint16_t type_;
@@ -80,12 +79,12 @@ public:
 
 private:
     explicit ElfHeader() = default;
-    bool ParseElf32Header(unsigned char * const ehdrBuf, const std::size_t bufSize);
-    bool ParseElf64Header(unsigned char * const ehdrBuf, const std::size_t bufSize);
-    static inline void DumpEhdrBuf(const char * const ehdrBuf, const std::size_t bufSize)
+    bool ParseElf32Header(unsigned char* const ehdrBuf, const std::size_t bufSize);
+    bool ParseElf64Header(unsigned char* const ehdrBuf, const std::size_t bufSize);
+    static inline void DumpEhdrBuf(const char* const ehdrBuf, const std::size_t bufSize)
     {
-        const std::string fileName {"ehdr_buffer_dump"};
-        std::ofstream ofs {fileName, std::ios::binary};
+        const std::string fileName{"ehdr_buffer_dump"};
+        std::ofstream ofs{fileName, std::ios::binary};
         if (ofs.is_open()) {
             ofs.write(ehdrBuf, bufSize);
         }
@@ -94,8 +93,8 @@ private:
 
 class ProgramHeader {
 public:
-    static std::unique_ptr<ProgramHeader> MakeUnique(char * const phdrBuf, const size_t bufSize);
-    inline bool Init(char * const phdrBuf, const size_t bufSize)
+    static std::unique_ptr<ProgramHeader> MakeUnique(char* const phdrBuf, const size_t bufSize);
+    inline bool Init(char* const phdrBuf, const size_t bufSize)
     {
         if (bufSize == phdr32Size and ParsePrgHeader32(phdrBuf)) {
             return true;
@@ -118,12 +117,12 @@ public:
 
 private:
     explicit ProgramHeader() = default;
-    bool ParsePrgHeader32(char * const phdrBuf);
-    bool ParsePrgHeader64(char * const phdrBuf);
-    static inline void DumpPhdrBuf(const char * const phdrBuf, const std::size_t bufSize)
+    bool ParsePrgHeader32(char* const phdrBuf);
+    bool ParsePrgHeader64(char* const phdrBuf);
+    static inline void DumpPhdrBuf(const char* const phdrBuf, const std::size_t bufSize)
     {
-        const std::string fileName {"phdr_buffer_dump"};
-        std::ofstream ofs {fileName, std::ios::binary};
+        const std::string fileName{"phdr_buffer_dump"};
+        std::ofstream ofs{fileName, std::ios::binary};
         if (ofs.is_open()) {
             ofs.write(phdrBuf, bufSize);
         }
@@ -132,10 +131,9 @@ private:
 
 class SectionHeader {
 public:
-    static std::unique_ptr<SectionHeader> MakeUnique(char * const shdrBuf, const size_t bufSize,
-                                                     const size_t index);
+    static std::unique_ptr<SectionHeader> MakeUnique(char* const shdrBuf, const size_t bufSize, const size_t index);
 
-    inline bool Init(char * const shdrBuf, const size_t bufSize, const size_t index)
+    inline bool Init(char* const shdrBuf, const size_t bufSize, const size_t index)
     {
         secIndex_ = index;
         if (bufSize == shdr32Size and ParseSecHeader32(shdrBuf)) {
@@ -163,12 +161,12 @@ public:
 
 private:
     explicit SectionHeader() = default;
-    bool ParseSecHeader32(char * const shdrBuf);
-    bool ParseSecHeader64(char * const shdrBuf);
-    static inline void DumpShdrBuf(const char * const shdrBuf, const std::size_t bufSize)
+    bool ParseSecHeader32(char* const shdrBuf);
+    bool ParseSecHeader64(char* const shdrBuf);
+    static inline void DumpShdrBuf(const char* const shdrBuf, const std::size_t bufSize)
     {
-        const std::string fileName {"shdr_buffer_dump"};
-        std::ofstream ofs {fileName, std::ios::binary};
+        const std::string fileName{"shdr_buffer_dump"};
+        std::ofstream ofs{fileName, std::ios::binary};
         if (ofs.is_open()) {
             ofs.write(shdrBuf, bufSize);
         }
@@ -177,8 +175,8 @@ private:
 
 class ElfSymbol {
 public:
-    static std::unique_ptr<ElfSymbol> MakeUnique(char * const symBuf, const std::size_t bufSize);
-    inline bool Init(char * const symBuf, const std::size_t bufSize)
+    static std::unique_ptr<ElfSymbol> MakeUnique(char* const symBuf, const std::size_t bufSize);
+    inline bool Init(char* const symBuf, const std::size_t bufSize)
     {
         if (bufSize == symEnt32Size and ParseElf32Symbol(symBuf)) {
             return true;
@@ -199,12 +197,12 @@ public:
 
 private:
     explicit ElfSymbol() = default;
-    bool ParseElf32Symbol(char * const symBuf);
-    bool ParseElf64Symbol(char * const symBuf);
-    static inline void DumpSymBuf(const char * const symBuf, const std::size_t bufSize)
+    bool ParseElf32Symbol(char* const symBuf);
+    bool ParseElf64Symbol(char* const symBuf);
+    static inline void DumpSymBuf(const char* const symBuf, const std::size_t bufSize)
     {
-        const std::string fileName {"shdr_buffer_dump"};
-        std::ofstream ofs {fileName, std::ios::binary};
+        const std::string fileName{"shdr_buffer_dump"};
+        std::ofstream ofs{fileName, std::ios::binary};
         if (ofs.is_open()) {
             ofs.write(symBuf, bufSize);
         }
@@ -213,25 +211,25 @@ private:
 
 class SymbolTable {
 public:
-    static std::unique_ptr<SymbolTable> MakeUnique(const std::string &symNamesStr,
-                                                   const char * const secBuf,
+    static std::unique_ptr<SymbolTable> MakeUnique(const std::string& symNamesStr,
+                                                   const char* const secBuf,
                                                    const uint64_t secSize,
                                                    const uint64_t entrySize);
 
     std::vector<std::unique_ptr<ElfSymbol>> symbols_;
 
 private:
-    explicit SymbolTable(const std::string &symNamesStr) : symNamesStr_ {symNamesStr} {}
+    explicit SymbolTable(const std::string& symNamesStr) : symNamesStr_{symNamesStr} {}
 
-    const std::string symNamesStr_ {};
+    const std::string symNamesStr_{};
 };
 
 class ElfFile : public Noncopyable {
 public:
     virtual ~ElfFile();
-    static std::unique_ptr<ElfFile> MakeUnique(const std::string &filename);
+    static std::unique_ptr<ElfFile> MakeUnique(const std::string& filename);
     bool ParseFile();
-    bool ParseSymTable(const SectionHeader *shdr);
+    bool ParseSymTable(const SectionHeader* shdr);
     std::string GetSectionName(const uint32_t startIndex);
 
     inline bool IsOpened() const
@@ -239,12 +237,12 @@ public:
         return fd_ != -1;
     }
 
-    inline const char *GetStrPtr(uint32_t sh_link, uint32_t st_name)
+    inline const char* GetStrPtr(uint32_t sh_link, uint32_t st_name)
     {
-        for (const auto &shdrsItem : shdrs_) {
+        for (const auto& shdrsItem : shdrs_) {
             if (shdrsItem.second->secIndex_ == sh_link) {
                 if (mmap_ != MMAP_FAILED) {
-                    char *elfFileBegin = (char *)mmap_;
+                    char* elfFileBegin = (char*)mmap_;
                     return elfFileBegin + shdrsItem.second->fileOffset_ + st_name;
                 }
             }
@@ -253,12 +251,12 @@ public:
         return nullptr;
     }
 
-    inline const unsigned char *GetSectionData(uint32_t shIndex)
+    inline const unsigned char* GetSectionData(uint32_t shIndex)
     {
-        for (const auto &shdrsItem : shdrs_) {
+        for (const auto& shdrsItem : shdrs_) {
             if (shdrsItem.second->secIndex_ == shIndex) {
                 if (mmap_ != MMAP_FAILED) {
-                    const unsigned char *elfFileBegin = (const unsigned char *)mmap_;
+                    const unsigned char* elfFileBegin = (const unsigned char*)mmap_;
                     return elfFileBegin + shdrsItem.second->fileOffset_;
                 }
             }
@@ -269,22 +267,22 @@ public:
 
     using SecHeaderTableType = std::unordered_map<std::string, std::unique_ptr<SectionHeader>>;
     using PrgHeaderTableType = std::vector<std::unique_ptr<ProgramHeader>>;
-    int fd_ {-1};
-    std::unique_ptr<ElfHeader> ehdr_ {nullptr};
-    SecHeaderTableType shdrs_ {};
-    PrgHeaderTableType phdrs_ {};
-    std::string secNamesStr_ {};
-    std::string symNamesStr_ {};
-    std::unique_ptr<SymbolTable> symTable_ {nullptr};
-    std::unique_ptr<SymbolTable> dynSymTable_ {nullptr};
+    int fd_{-1};
+    std::unique_ptr<ElfHeader> ehdr_{nullptr};
+    SecHeaderTableType shdrs_{};
+    PrgHeaderTableType phdrs_{};
+    std::string secNamesStr_{};
+    std::string symNamesStr_{};
+    std::unique_ptr<SymbolTable> symTable_{nullptr};
+    std::unique_ptr<SymbolTable> dynSymTable_{nullptr};
 
 protected:
     // for fuzz test we make a virtual function
-    virtual ssize_t ReadFile(void *buf, size_t count)
+    virtual ssize_t ReadFile(void* buf, size_t count)
     {
         return read(fd_, buf, count);
     };
-    explicit ElfFile(const std::string &filename);
+    explicit ElfFile(const std::string& filename);
 
 private:
     bool ParseElfHeader();
@@ -295,7 +293,7 @@ private:
     bool ParseSymTable(const std::string = ".symtab");
     bool ParseDynSymTable();
 
-    void *mmap_ = MMAP_FAILED;
+    void* mmap_ = MMAP_FAILED;
     uint64_t mmapSize_ = 0;
 };
 } // namespace ELF

@@ -43,6 +43,7 @@ public:
     void FilterAllEventsTemp();
     void FilterAllEvents();
     void Clear();
+
 private:
     void DealEvent(const FtraceEvent& event);
     bool BinderTractionEvent(const MessageLite& event) const;

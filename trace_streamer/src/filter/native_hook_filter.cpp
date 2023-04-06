@@ -21,10 +21,7 @@
 namespace SysTuning {
 namespace TraceStreamer {
 NativeHookFilter::NativeHookFilter(TraceDataCache* dataCache, const TraceStreamerFilters* filter)
-    : FilterBase(dataCache, filter),
-      addrToMmapTagIndex_(INVALID_UINT64),
-      addrToAllocEventRow_(INVALID_UINT64),
-      addrToMmapEventRow_(INVALID_UINT64)
+    : FilterBase(dataCache, filter), addrToAllocEventRow_(INVALID_UINT64), addrToMmapEventRow_(INVALID_UINT64)
 {
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib/libc++.so"));
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib64/libc++.so"));
@@ -67,10 +64,6 @@ void NativeHookFilter::AppendFrameMaps(uint32_t id, const ProtoReader::BytesView
 {
     auto frames = std::make_shared<const ProtoReader::BytesView>(bytesView);
     frameIdToFrameBytes_.emplace(std::make_pair(id, frames));
-}
-void NativeHookFilter::AppendMmapTagMaps(uint64_t addr, uint32_t size, uint64_t tagIndex)
-{
-    addrToMmapTagIndex_.Insert(addr, size, tagIndex);
 }
 void NativeHookFilter::AppendFilePathMaps(uint32_t id, uint64_t fileIndex)
 {
@@ -281,8 +274,7 @@ void NativeHookFilter::ParseMmapEvent(uint64_t timeStamp, const ProtoReader::Byt
     if (mMapEventReader.has_type()) {
         subType = traceDataCache_->dataDict_.GetStringIndex(mMapEventReader.type().ToStdString());
         // Establish a mapping of addr and size to the mmap tag index.
-        traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(mMapEventReader.addr(), mMapEventReader.size(),
-                                                                        subType);
+        traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(mMapEventReader.addr(), subType);
     }
     auto row = traceDataCache_->GetNativeHookData()->AppendNewNativeHookData(
         callChainId, ipid, itid, "MmapEvent", subType, timeStamp, 0, 0, mMapEventReader.addr(), mMapEventReader.size());
@@ -530,7 +522,6 @@ void NativeHookFilter::FinishParseNativeHookData()
     invalidLibPathIndexs_.clear();
     addrToAllocEventRow_.Clear();
     addrToMmapEventRow_.Clear();
-    addrToMmapTagIndex_.Clear();
 }
 void NativeHookFilter::GetCallIdToLastLibId()
 {

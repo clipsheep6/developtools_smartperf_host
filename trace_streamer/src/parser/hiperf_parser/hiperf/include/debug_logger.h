@@ -67,14 +67,13 @@ const std::string DEFAULT_LOG_PATH = "hiperf_log.txt";
 
 #define HILOG_BASE_TAG "HILOG"
 #ifndef HILOG_TAG
-#define HILOG_TAG      ""
+#define HILOG_TAG ""
 #define HILOG_TAG_NAME HILOG_BASE_TAG
 #else
 #define HILOG_TAG_NAME HILOG_BASE_TAG "_" HILOG_TAG
 #endif
 
-#define SHORT_FILENAME                                                                             \
-    (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
+#define SHORT_FILENAME (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
 
 const std::map<DebugLevel, const std::string> DebugLevelMap = {
     {LEVEL_MUCH, "M"},    {LEVEL_VERBOSE, "V"}, {LEVEL_DEBUG, "D"}, {LEVEL_INFO, "I"},
@@ -87,13 +86,13 @@ public:
     DebugLogger();
     ~DebugLogger();
 
-    static DebugLogger *GetInstance();
+    static DebugLogger* GetInstance();
     DebugLevel SetLogLevel(DebugLevel debugLevel);
     bool SetMixLogOutput(bool enable);
-    bool SetLogPath(const std::string &logPath);
-    void SetLogTags(const std::string &tags);
+    bool SetLogPath(const std::string& logPath);
+    void SetLogTags(const std::string& tags);
 
-    int Log(DebugLevel level, const std::string &logTag, const char *fmt, ...) const
+    int Log(DebugLevel level, const std::string& logTag, const char* fmt, ...) const
         __attribute__((format(printf, 4, 5)));
     // for class, pointer need add 1 offset (first one is *this)
 
@@ -114,24 +113,24 @@ public:
 #endif
 
     // used in UT
-    bool OpenLog(const std::string & = "", const std::string & = "w");
+    bool OpenLog(const std::string& = "", const std::string& = "w");
     bool RestoreLog();
     void Reset();
 
 private:
-    bool ShouldLog(DebugLevel debugLevel, const std::string &logTag) const;
-    DebugLevel GetLogLevelByName(const std::string &) const;
-    DebugLevel GetLogLevelByTag(const std::string &) const;
+    bool ShouldLog(DebugLevel debugLevel, const std::string& logTag) const;
+    DebugLevel GetLogLevelByName(const std::string&) const;
+    DebugLevel GetLogLevelByTag(const std::string&) const;
     const std::string GetLogLevelName(DebugLevel) const;
 
-    int HiLog(std::string &buffer) const;
+    int HiLog(std::string& buffer) const;
 
     static std::unique_ptr<DebugLogger> logInstance_;
 
     mutable std::recursive_mutex logMutex_;
     static DebugLevel debugLevel_;
     const std::chrono::steady_clock::time_point timeStamp_;
-    FILE *file_ = nullptr;
+    FILE* file_ = nullptr;
     bool mixLogOutput_ = false; // log mix to std
     bool enableHilog_ = false;
     bool exitOnFatal_ = true;
@@ -146,19 +145,18 @@ private:
 
 #ifdef HIPERF_DEBUG_PRINTF
 #ifndef printf
-#define printf(format, ...)                                                                        \
-    do {                                                                                           \
-        std::printf(format, ##__VA_ARGS__);                                                        \
-        DebugLogger::GetInstance()->Log(LEVEL_STDOUT, HILOG_TAG, format, ##__VA_ARGS__);           \
+#define printf(format, ...)                                                              \
+    do {                                                                                 \
+        std::printf(format, ##__VA_ARGS__);                                              \
+        DebugLogger::GetInstance()->Log(LEVEL_STDOUT, HILOG_TAG, format, ##__VA_ARGS__); \
     } while (0)
 #endif
 
 #ifndef perror
-#define perror(format, ...)                                                                        \
-    do {                                                                                           \
-        std::perror(format);                                                                       \
-        DebugLogger::GetInstance()->Log(LEVEL_STDOUT, HILOG_TAG, format "<%d>\n",                  \
-                                        ##__VA_ARGS__, errno);                                     \
+#define perror(format, ...)                                                                              \
+    do {                                                                                                 \
+        std::perror(format);                                                                             \
+        DebugLogger::GetInstance()->Log(LEVEL_STDOUT, HILOG_TAG, format "<%d>\n", ##__VA_ARGS__, errno); \
     } while (0)
 #endif
 #endif
@@ -174,57 +172,56 @@ private:
 };
 #define TempMixLogLevel(level) ScopeDebugLevel tempLogLevel(level, true)
 
-#define LOG_LEVEL(LEVEL)  LOG_##LEVEL
-#define LOG_LEVEL_MUCH    "M:"
+#define LOG_LEVEL(LEVEL) LOG_##LEVEL
+#define LOG_LEVEL_MUCH "M:"
 #define LOG_LEVEL_VERBOSE "V:"
-#define LOG_LEVEL_DEBUG   "D:"
-#define LOG_LEVEL_INFO    "I:"
+#define LOG_LEVEL_DEBUG "D:"
+#define LOG_LEVEL_INFO "I:"
 #define LOG_LEVEL_WARNING "W:"
-#define LOG_LEVEL_ERROR   "E:"
-#define LOG_LEVEL_FATAL   "F:"
+#define LOG_LEVEL_ERROR "E:"
+#define LOG_LEVEL_FATAL "F:"
 
 #ifndef HLOG
-#define HLOG(level, format, ...)                                                                   \
-    do {                                                                                           \
-        if (__builtin_expect(!DebugLogger::logDisabled_, false)) {                                 \
-            DebugLogger::GetInstance()->Log(                                                       \
-                level, HILOG_TAG,                                                                  \
-                HILOG_TAG_NAME "/" LOG_LEVEL(level) "<%ld>[%s:%d]%s:" format "\n", gettid(),       \
-                SHORT_FILENAME, __LINE__, __FUNCTION__, ##__VA_ARGS__);                            \
-        }                                                                                          \
+#define HLOG(level, format, ...)                                                                               \
+    do {                                                                                                       \
+        if (__builtin_expect(!DebugLogger::logDisabled_, false)) {                                             \
+            DebugLogger::GetInstance()->Log(level, HILOG_TAG,                                                  \
+                                            HILOG_TAG_NAME "/" LOG_LEVEL(level) "<%ld>[%s:%d]%s:" format "\n", \
+                                            gettid(), SHORT_FILENAME, __LINE__, __FUNCTION__, ##__VA_ARGS__);  \
+        }                                                                                                      \
     } while (0)
 #endif
 
 // only log first n times
 #ifndef HLOGV_FIRST
-#define HLOGV_FIRST(first, format, ...)                                                            \
-    do {                                                                                           \
-        static int limit = first;                                                                  \
-        if (limit > 0) {                                                                           \
-            HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__);                                            \
-            if (--limit == 0) {                                                                    \
-                HLOG(LEVEL_VERBOSE, " nexttime log will be suppressed...");                        \
-            }                                                                                      \
-        }                                                                                          \
+#define HLOGV_FIRST(first, format, ...)                                     \
+    do {                                                                    \
+        static int limit = first;                                           \
+        if (limit > 0) {                                                    \
+            HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__);                     \
+            if (--limit == 0) {                                             \
+                HLOG(LEVEL_VERBOSE, " nexttime log will be suppressed..."); \
+            }                                                               \
+        }                                                                   \
     } while (0)
 #endif
 
 #ifndef HLOGV_FIRST_LOCAL
-#define HLOGV_FIRST_LOCAL(local_limit, format, ...)                                                \
-    {                                                                                              \
-        if (local_limit != 0) {                                                                    \
-            HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__);                                            \
-            if (local_limit > 0 && --local_limit == 0) {                                           \
-                HLOG(LEVEL_VERBOSE, " nexttime log will be suppressed...");                        \
-            }                                                                                      \
-        }                                                                                          \
+#define HLOGV_FIRST_LOCAL(local_limit, format, ...)                         \
+    {                                                                       \
+        if (local_limit != 0) {                                             \
+            HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__);                     \
+            if (local_limit > 0 && --local_limit == 0) {                    \
+                HLOG(LEVEL_VERBOSE, " nexttime log will be suppressed..."); \
+            }                                                               \
+        }                                                                   \
     }
 #endif
 
 #ifndef HLOGV
-#define HLOGV_IF(condition, format, ...)                                                           \
-    if (condition) {                                                                               \
-        HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__)                                                 \
+#define HLOGV_IF(condition, format, ...)           \
+    if (condition) {                               \
+        HLOG(LEVEL_VERBOSE, format, ##__VA_ARGS__) \
     }
 #define HLOGVVV HLOGV
 #endif
@@ -235,7 +232,7 @@ private:
 
 #ifndef HLOGM
 #define HLOGM(format, ...) HLOG(LEVEL_MUCH, format, ##__VA_ARGS__)
-#define HLOGMMM            HLOGM
+#define HLOGMMM HLOGM
 #endif
 
 #ifndef HLOGV
@@ -244,7 +241,7 @@ private:
 
 #ifndef HLOGD
 #define HLOGD(format, ...) HLOG(LEVEL_DEBUG, format, ##__VA_ARGS__)
-#define HLOGDDD            HLOGM
+#define HLOGDDD HLOGM
 #endif
 
 #ifndef HLOGI
@@ -260,19 +257,17 @@ private:
 #endif
 
 #ifndef HLOGEP
-#define HLOGEP(format, ...)                                                                        \
-    HLOG(LEVEL_ERROR, format "(errno %d)", ##__VA_ARGS__, errno)
+#define HLOGEP(format, ...) HLOG(LEVEL_ERROR, format "(errno %d)", ##__VA_ARGS__, errno)
 #endif
 
 #ifndef HLOGF
-#define HLOGF(format, ...)                                                                         \
-    HLOG(LEVEL_FATAL, "FATAL error at %s:%d " format, __FILE__, __LINE__, ##__VA_ARGS__)
+#define HLOGF(format, ...) HLOG(LEVEL_FATAL, "FATAL error at %s:%d " format, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
 #ifndef HLOG_ASSERT_MESSAGE
-#define HLOG_ASSERT_MESSAGE(condition, format, ...)                                                \
-    if (!(condition)) {                                                                            \
-        HLOG(LEVEL_FATAL, " assert failed: '%s' " format, #condition, ##__VA_ARGS__);              \
+#define HLOG_ASSERT_MESSAGE(condition, format, ...)                                   \
+    if (!(condition)) {                                                               \
+        HLOG(LEVEL_FATAL, " assert failed: '%s' " format, #condition, ##__VA_ARGS__); \
     }
 #endif
 
@@ -282,47 +277,47 @@ private:
 
 #undef assert
 #else
-#define HLOGDUMMY(...)                                                                             \
-    do {                                                                                           \
+#define HLOGDUMMY(...) \
+    do {               \
     } while (0)
-#define HLOGEP(...)                                                                                \
-    do {                                                                                           \
+#define HLOGEP(...) \
+    do {            \
     } while (0)
-#define HLOGM(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGM(...) \
+    do {           \
     } while (0)
-#define HLOGMMM(...)                                                                               \
-    do {                                                                                           \
+#define HLOGMMM(...) \
+    do {             \
     } while (0)
-#define HLOGV(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGV(...) \
+    do {           \
     } while (0)
-#define HLOGVVV(...)                                                                               \
-    do {                                                                                           \
+#define HLOGVVV(...) \
+    do {             \
     } while (0)
-#define HLOGD(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGD(...) \
+    do {           \
     } while (0)
-#define HLOGDDD(...)                                                                               \
-    do {                                                                                           \
+#define HLOGDDD(...) \
+    do {             \
     } while (0)
-#define HLOGI(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGI(...) \
+    do {           \
     } while (0)
-#define HLOGW(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGW(...) \
+    do {           \
     } while (0)
-#define HLOGE(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGE(...) \
+    do {           \
     } while (0)
-#define HLOGF(...)                                                                                 \
-    do {                                                                                           \
+#define HLOGF(...) \
+    do {           \
     } while (0)
-#define HLOG_ASSERT_MESSAGE(...)                                                                   \
-    do {                                                                                           \
+#define HLOG_ASSERT_MESSAGE(...) \
+    do {                         \
     } while (0)
-#define HLOG_ASSERT(...)                                                                           \
-    do {                                                                                           \
+#define HLOG_ASSERT(...) \
+    do {                 \
     } while (0)
 
 class ScopeDebugLevel {

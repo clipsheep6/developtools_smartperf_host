@@ -809,7 +809,7 @@ HWTEST_F(EventParserTest, ParseSchedWakingByAbnormalInitParam, TestSize.Level1)
     BytraceLine bytraceLine;
     bytraceLine.ts = 1616439852302;
     bytraceLine.pid = 1;
-    static std::unordered_map<std::string, std::string> args {
+    static std::unordered_map<std::string, std::string> args{
         {"prio", "120"}, {"comm", "thread1"}, {"pid", ""}, {"target_cpu", "1"}};
     BytraceEventParser eventParser(stream_.traceDataCache_.get(), stream_.streamFilters_.get());
     int result = eventParser.SchedWakingEvent(args, bytraceLine);

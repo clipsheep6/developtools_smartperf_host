@@ -126,7 +126,6 @@ void SliceFilter::IpiHandlerExit(uint64_t timeStamp, uint32_t cpu)
     slices->SetDurationWithFlag(ipiEventMap_.at(cpu).row, timeStamp);
     irqDataLinker_.emplace(cpu, ipiEventMap_.at(cpu).row);
     ipiEventMap_.erase(cpu);
-
 }
 void SliceFilter::SoftIrqEntry(uint64_t timeStamp, uint32_t cpu, DataIndex catalog, DataIndex nameIndex)
 {
@@ -291,7 +290,12 @@ int32_t SliceFilter::MatchingIncompleteSliceIndex(const SlicesStack& stack, Data
     }
     return -1;
 }
-size_t SliceFilter::StartSlice(uint64_t timeStamp, uint32_t pid, DataIndex cat, DataIndex nameIndex, ArgsSet& args, SliceData sliceData)
+size_t SliceFilter::StartSlice(uint64_t timeStamp,
+                               uint32_t pid,
+                               DataIndex cat,
+                               DataIndex nameIndex,
+                               ArgsSet& args,
+                               SliceData sliceData)
 {
     InternalTid internalTid = streamFilters_->processFilter_->UpdateOrCreateThread(timeStamp, pid);
     auto& sliceStack = binderStackMap_[internalTid];
@@ -396,7 +400,7 @@ size_t SliceFilter::CompleteSlice(uint64_t timeStamp, uint32_t pid, DataIndex ca
 }
 size_t SliceFilter::EndBinder(uint64_t timeStamp, uint32_t pid, DataIndex category, DataIndex name, ArgsSet args)
 {
-   return CompleteSlice(timeStamp, pid, category, name, args);
+    return CompleteSlice(timeStamp, pid, category, name, args);
 }
 std::tuple<uint64_t, uint32_t> SliceFilter::AddArgs(uint32_t tid, DataIndex key1, DataIndex key2, ArgsSet& args)
 {
@@ -476,7 +480,8 @@ ssize_t SliceFilter::FinishAsyncSlice(uint64_t timeStamp,
     return lastRow;
 }
 
-size_t SliceFilter::EndSlice(uint64_t timeStamp, uint32_t pid, uint32_t threadGroupId, DataIndex category, DataIndex name)
+size_t
+    SliceFilter::EndSlice(uint64_t timeStamp, uint32_t pid, uint32_t threadGroupId, DataIndex category, DataIndex name)
 {
     return CompleteSlice(timeStamp, pid, category, name);
 }
