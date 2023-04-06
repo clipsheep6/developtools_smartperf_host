@@ -13,7 +13,7 @@
 # limitations under the License.
 set -e
 ./build.sh sdkdemotest
-rm out/sdkdemotest/*.xml
+rm -rf out/sdkdemotest/*.xml
 find out/sdkdemotest -name "*.gcda" -print0 | xargs -0 rm
 mkdir -p out/sdkdemotest/data/resource
 cp sdkdemotest/resource/* out/sdkdemotest/data/resource/

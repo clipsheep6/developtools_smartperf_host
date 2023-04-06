@@ -2208,10 +2208,11 @@ void FrameSlice::UpdateCallStackSliceId(uint64_t row, uint64_t callStackSliceId)
 {
     callStackIds_[row] = callStackSliceId;
 }
-void FrameSlice::SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur)
+void FrameSlice::SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur, uint64_t expectEnd)
 {
+    UNUSED(expectDur);
     durs_[row] = ts - timeStamps_[row];
-    flags_[row] = durs_[row] > expectDur ? 1 : 0;
+    flags_[row] = expectEnd >= ts ? 0 : 1;
 }
 void FrameSlice::Erase(uint64_t row)
 {

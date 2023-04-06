@@ -100,7 +100,7 @@ bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint32_t itid)
     if (frame->second.size() > 1) {
         pos++;
     }
-    if (pos->second->frameNum_ == INVALID_UINT32) {
+    if (!pos->second->isRsMainThread_ && pos->second->frameNum_ == INVALID_UINT32) {
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameSliceRow_);
         traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameExpectedSliceRow_);
         frame->second.erase(pos);
@@ -110,7 +110,7 @@ bool FrameFilter::EndOnVsyncEvent(uint64_t ts, uint32_t itid)
     if (!newMode_) {
         pos->second->endTs_ = ts;
         traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
-                                                                pos->second->expectedDur_);
+                                                                pos->second->expectedDur_, pos->second->expectedEndTs_);
         pos->second->vsyncEnd_ = true;
         // from now on, maybe we do not known where renderSlice is
         if (pos->second->dstFrameSliceId_ == INVALID_UINT64) {
@@ -221,31 +221,34 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
     if (pos->second->isRsMainThread_) {
         pos->second->vsyncEnd_ = true;
     }
-    if (pos->second->frameQueueStartTs_ != INVALID_UINT64) {
-        // if recv frameQueue
-        // check if frmeQueue ended
-        if (pos->second->endTs_ != INVALID_UINT64) {
-            // frame already ended
-            // update durs
-            traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
-                                                                    pos->second->expectedDur_);
-            pos->second->endTs_ = ts;
-            // for Render serivce
+    if (pos->second->isRsMainThread_) {
+        if (pos->second->frameQueueStartTs_ != INVALID_UINT64) { // has frame
+            // if recv frameQueue
+            // check if frmeQueue ended
+            if (pos->second->endTs_ != INVALID_UINT64) {
+                // frame already ended
+                // update durs
+                traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(
+                    pos->second->frameSliceRow_, ts, pos->second->expectedDur_, pos->second->expectedEndTs_);
+                pos->second->endTs_ = ts;
+                // for Render serivce
+                frame->second.erase(pos);
+            }
+        } else { // no frame
+            traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(
+                pos->second->frameSliceRow_, ts, pos->second->expectedDur_, pos->second->expectedEndTs_);
+            if (checkFrameAlwasy_) {
+                traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameSliceRow_);
+                traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameExpectedSliceRow_);
+            }
             frame->second.erase(pos);
         }
-    } else if (pos->second->isRsMainThread_) {
-        traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
-                                                                pos->second->expectedDur_);
-        traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameSliceRow_);
-        traceDataCache_->GetFrameSliceData()->Erase(pos->second->frameExpectedSliceRow_);
-        frame->second.erase(pos);
     } else { // !pos->second->isRsMainThread_
         if (newMode_) {
             // new trace, onvsync in vsync event
-            traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->second->frameSliceRow_, ts,
-                                                                    pos->second->expectedDur_);
+            traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(
+                pos->second->frameSliceRow_, ts, pos->second->expectedDur_, pos->second->expectedEndTs_);
             pos->second->endTs_ = ts;
-            // for Render serivce
             frame->second.erase(pos);
         } else {
             TS_LOGD("nothing to do, it is a app, or invalid RenderService itid:%u", itid);
@@ -288,7 +291,8 @@ bool FrameFilter::EndFrameQueue(uint64_t ts, uint32_t itid)
                                                   ts - frame->second.begin()->second.get()->frameQueueStartTs_);
     if (frame->second.begin()->second.get()->endTs_ == INVALID_UINT64) {
         traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(frame->second.begin()->second.get()->frameSliceRow_, ts,
-                                                                frame->second.begin()->second.get()->expectedDur_);
+                                                                frame->second.begin()->second.get()->expectedDur_,
+                                                                frame->second.begin()->second.get()->expectedEndTs_);
         frame->second.begin()->second.get()->endTs_ = ts;
         if (frame->second.begin()->second.get()->vsyncEnd_) {
             // if vsync ended

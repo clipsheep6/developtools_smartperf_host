@@ -186,13 +186,13 @@ gpu_slice: 记录RS的帧对应的gpu渲染时长。
 frame_maps:记录应用到RS的帧的映射关系。  
 ![GitHub Logo](../figures/frames.jpg) 
 ### 查询示例
-- 已知进程，查询进程对应的实际渲染帧
+- 已知进程，查询进程对应的实际渲染帧  
 ```select * from frame_slice where ipid = 1```
 
-- 已知进程的实际渲染帧的dst为12，求其对应的RS进程的渲染帧
+- 已知进程的实际渲染帧的dst为12，求其对应的RS进程的渲染帧  
 ```select * from frame_slice where id = 12 ```
 
-- 已知RS的渲染帧在frame_slice中所在行是14，求其对应的GPU渲染时长
+- 已知RS的渲染帧在frame_slice中所在行是14，求其对应的GPU渲染时长  
 ```select * from gpu_slice where frame_row = 14```
 ## TraceStreamer输出数据库表格详细介绍
 ### app_name表
@@ -1174,21 +1174,25 @@ frame_maps:记录应用到RS的帧的映射关系。
 |vsync      |INT       |
 |ipid      |INT       |
 |itid      |INT       |
-|callstack_row      |INT       |
+|callstack_id      |INT       |
 |dur      |INT       |
 |src      |TEXT       |
 |dst      |INT       |
 |type      |INT       |
 |flag      |INT       |
+|depth      |INT       |
+|frame_no   |INT|
 #### 表描述
 应用的实际渲染帧和期望渲染帧的开始时间，持续时长，以及RenderService和App之间的关联关系。
 #### 关键字段描述
-- callstack_row：该帧数据对应着callstack表的调用栈所在的行数 
+- callstack_id：该帧数据对应着callstack表的调用栈所在的行数 
 - dur：该帧渲染时长（当数据不完整时，改行数据为空）  
 - src：该帧是被哪一帧（该表中对应的行数）触发的，有多个值时，用逗号分割  
 - dst：该帧对应的渲染帧是哪一行  
 - type: 0 说明该行数据是实际渲染帧， 1 说明该行数据是期望渲染帧  
-- flag: -1时，为不完整的数据或期望渲染帧，0 实际渲染帧不卡帧， 1 实际渲染帧卡帧， 2 数据不需要绘制（没有frameNum信息）
+- flag: 空时，为不完整的数据；0 表示实际渲染帧不卡帧， 1 表示实际渲染帧卡帧， 2 表示数据不需要绘制（没有frameNum信息）
+- depth：预留
+- frame_no：预留
 ### frame_maps表
 ### 表结构
 | Columns Name | SQL TYPE |

@@ -13,8 +13,8 @@
 # limitations under the License.
 set -e
 ./build.sh testpb
-rm out/test/*.xml
-rm out/test_debug/*.xml
+rm -rf out/test/*.xml
+rm -rf out/test_debug/*.xml
 find out/test -name "*.gcda" -print0 | xargs -0 rm
 find out/test_debug -name "*.gcda" -print0 | xargs -0 rm
 mkdir -p out/test/data/resource

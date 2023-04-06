@@ -53,8 +53,12 @@ private:
     public:
         FrameSlice() {}
         uint64_t startTs_ = INVALID_UINT64;
+        // @deprecated it will be deleted later
         uint64_t expectedStartTs_ = INVALID_UINT64;
+        // if a frame experience video lag, is depend on if the real end ts is later then the expected ts, rather then
+        // the dur. noted at 2023/4/6
         uint64_t expectedEndTs_ = INVALID_UINT64;
+        // @deprecated it will be deleted later
         uint64_t expectedDur_ = INVALID_UINT64;
         uint64_t endTs_ = INVALID_UINT64;
         FrameSliceType frameType_ = ACTURAL_SLICE;
@@ -74,6 +78,7 @@ private:
     std::map<uint32_t /* tid */, std::map<uint32_t /* vsyncId */, std::shared_ptr<FrameSlice>>> vsyncRenderSlice_ = {};
     std::map<uint32_t /* tid */, std::map<uint32_t /* frameNum */, std::shared_ptr<FrameSlice>>> dstRenderSlice_ = {};
     bool newMode_ = true;
+    bool checkFrameAlwasy_ = false;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

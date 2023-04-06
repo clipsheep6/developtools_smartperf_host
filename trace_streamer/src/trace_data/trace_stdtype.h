@@ -1886,7 +1886,7 @@ public:
     const std::deque<uint32_t> FrameNos() const;
     const std::deque<std::string>& Srcs() const;
     void UpdateCallStackSliceId(uint64_t row, uint64_t callStackSliceId);
-    void SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur);
+    void SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur, uint64_t expectEnd);
     void Erase(uint64_t row);
 
 private:

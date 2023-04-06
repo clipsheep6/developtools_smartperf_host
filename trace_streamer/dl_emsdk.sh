@@ -25,8 +25,8 @@ if [ ! -d "prebuilts/emsdk" ];then
         git clone https://gitee.com/su_ze1688/emsdk.git --depth=1
         cd emsdk
         git pull
-        ./emsdk install latest
-        ./emsdk activate latest
+        ./emsdk install 3.1.12
+        ./emsdk activate 3.1.12
         cd ../../
     fi
     if [ ! -d "prebuilts/emsdk" ];then
