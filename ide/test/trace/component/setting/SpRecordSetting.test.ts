@@ -14,27 +14,27 @@
  */
 
 // @ts-ignore
-import {SpRecordSetting} from "../../../../dist/trace/component/setting/SpRecordSetting.js";
+import { SpRecordSetting } from '../../../../dist/trace/component/setting/SpRecordSetting.js';
 
-describe('SpRecordSetting Test', ()=>{
+describe('SpRecordSetting Test', () => {
     beforeAll(() => {
-        document.body.innerHTML =  `
+        document.body.innerHTML = `
             <record-setting id = "setting"><sp-allocations>
-        `
-    })
+        `;
+    });
     it('new SpRecordSetting', function () {
         expect(new SpRecordSetting()).not.toBeNull();
     });
 
     it(' SpAllocations get Default attrValue', function () {
-        let spEle = document.querySelector("#setting") as SpRecordSetting
+        let spEle = document.querySelector('#setting') as SpRecordSetting;
         expect(spEle.recordMod).toBeTruthy();
-        expect(spEle.bufferSize).toEqual(64)
-        expect(spEle.maxDur).toEqual(30)
+        expect(spEle.bufferSize).toEqual(64);
+        expect(spEle.maxDur).toEqual(30);
     });
 
     it(' SpRecordSetting test', function () {
-        let spEle = document.querySelector("#setting") as SpRecordSetting
+        let spEle = document.querySelector('#setting') as SpRecordSetting;
         expect(spEle.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
@@ -227,8 +227,7 @@ describe('SpRecordSetting Test', ()=>{
 `);
     });
     it(' SpRecordSettingTest04', function () {
-        let spEle = document.querySelector("#setting") as SpRecordSetting
+        let spEle = document.querySelector('#setting') as SpRecordSetting;
         expect(spEle.resetValue()).toBeUndefined();
     });
-
-})
+});

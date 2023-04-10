@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-jest.mock("../../../dist/trace/component/trace/base/TraceRow.js", () => {
-    return {}
+jest.mock('../../../dist/trace/component/trace/base/TraceRow.js', () => {
+    return {};
 });
 
 // @ts-ignore
-import {ProcessStruct} from "../../../dist/trace/bean/ProcessStruct.js"
+import { ProcessStruct } from '../../../dist/trace/bean/ProcessStruct.js';
 
-describe('ProcessStruct Test', ()=>{
+describe('ProcessStruct Test', () => {
     const canvas = document.createElement('canvas');
     canvas.width = 1;
     canvas.height = 1;
@@ -31,12 +31,12 @@ describe('ProcessStruct Test', ()=>{
             x: 20,
             y: 20,
             width: 100,
-            height: 100
+            height: 100,
         },
         startNS: 200,
-        value: 50
-    }
+        value: 50,
+    };
     it('ProcessStructTest01', function () {
-        expect(ProcessStruct.draw(ctx, data)).toBeUndefined()
+        expect(ProcessStruct.draw(ctx, data)).toBeUndefined();
     });
-})
+});

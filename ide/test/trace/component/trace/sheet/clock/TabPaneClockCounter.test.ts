@@ -14,9 +14,10 @@
  */
 
 // @ts-ignore
-import {TabPaneClockCounter} from "../../../../../../dist/trace/component/trace/sheet/clock/TabPaneClockCounter.js"
+import { TabPaneClockCounter } from '../../../../../../dist/trace/component/trace/sheet/clock/TabPaneClockCounter.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
@@ -24,30 +25,33 @@ window.ResizeObserver = window.ResizeObserver ||
     }));
 
 describe('TabPaneClockCounter Test', () => {
-    let clockCounter = new TabPaneClockCounter()
+    let clockCounter = new TabPaneClockCounter();
     let map = new Map();
-    map.set("clock", [{
-        filterId: 255,
-        value: 1252,
-        startNS: 4515,
-        dur: 5255,
-        delta: 415
-    }])
+    map.set('clock', [
+        {
+            filterId: 255,
+            value: 1252,
+            startNS: 4515,
+            dur: 5255,
+            delta: 415,
+        },
+    ]);
     let clockCounterData = {
         leftNs: 253,
         rightNs: 1252,
-        clockMapData: map
-    }
+        clockMapData: map,
+    };
 
     it('TabPaneClockCounterTest01', function () {
-        clockCounter.data = clockCounterData
+        clockCounter.data = clockCounterData;
         expect(clockCounter.data).toBeUndefined();
     });
 
     it('TabPaneClockCounterTest02', function () {
-        expect(clockCounter.sortByColumn({
-            key: 'number'
-        })).toBeUndefined();
+        expect(
+            clockCounter.sortByColumn({
+                key: 'number',
+            })
+        ).toBeUndefined();
     });
-
-})
+});

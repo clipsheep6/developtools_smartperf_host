@@ -14,11 +14,13 @@
  */
 
 // @ts-ignore
-import {ClientContainer, SettingRegistry} from "../../../dist/trace/grpc/ProfilerController.js"
+import {
+    ClientContainer,
+    SettingRegistry,
+} from '../../../dist/trace/grpc/ProfilerController.js';
 
-describe('HiProfilerClient Test', ()=>{
-
-    let profilerController= new ClientContainer();
+describe('HiProfilerClient Test', () => {
+    let profilerController = new ClientContainer();
 
     it('ProfilerClientTest01', function () {
         expect(profilerController.port).toBeUndefined();
@@ -39,18 +41,18 @@ describe('HiProfilerClient Test', ()=>{
     });
 
     it('ProfilerClientTest06', function () {
-        profilerController.loadSettings = jest.fn(()=>true)
+        profilerController.loadSettings = jest.fn(() => true);
         expect(profilerController.start()).toBeUndefined();
     });
 
     it('ProfilerClientTest07', function () {
-        profilerController.loadSettings = jest.fn(()=>true)
+        profilerController.loadSettings = jest.fn(() => true);
         expect(profilerController.loadSettings()).toBeTruthy();
     });
     it('ProfilerClientTest08', function () {
-        expect(profilerController. registryClient()).toBeUndefined()
+        expect(profilerController.registryClient()).toBeUndefined();
     });
     it('ProfilerClientTest09', function () {
-        expect(SettingRegistry. registry()).toBeUndefined()
+        expect(SettingRegistry.registry()).toBeUndefined();
     });
-})
+});

@@ -14,9 +14,10 @@
  */
 
 // @ts-ignore
-import {LitModal} from "../../../dist/base-ui/modal/LitModal.js";
+import { LitModal } from '../../../dist/base-ui/modal/LitModal.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
@@ -24,81 +25,82 @@ window.ResizeObserver = window.ResizeObserver ||
     }));
 
 describe('LitModal Test', () => {
-
     it('LitModalTest01', function () {
-        let litModal = new LitModal()
-        expect(litModal).not.toBeUndefined()
+        let litModal = new LitModal();
+        expect(litModal).not.toBeUndefined();
     });
 
-
     it('LitModalTest02', function () {
-        let litModal = new LitModal()
-        litModal.resizeable =true
-        expect(litModal).not.toBeUndefined()
+        let litModal = new LitModal();
+        litModal.resizeable = true;
+        expect(litModal).not.toBeUndefined();
     });
 
     it('LitModalTest03', function () {
-        let litModal = new LitModal()
-        litModal.resizeable = false
-        expect(litModal).not.toBeUndefined()
+        let litModal = new LitModal();
+        litModal.resizeable = false;
+        expect(litModal).not.toBeUndefined();
     });
-
 
     it('LitModalTest04', function () {
-        let litModal = new LitModal()
-        litModal.moveable = false
-        expect(litModal).not.toBeUndefined()
+        let litModal = new LitModal();
+        litModal.moveable = false;
+        expect(litModal).not.toBeUndefined();
     });
-
 
     it('LitModalTest05', function () {
-        let litModal = new LitModal()
-        litModal.moveable = true
-        expect(litModal).not.toBeUndefined()
+        let litModal = new LitModal();
+        litModal.moveable = true;
+        expect(litModal).not.toBeUndefined();
     });
 
-
     it('LitModalTest06', function () {
-       document.body.innerHTML = `
+        document.body.innerHTML = `
         <div>
             <lit-modal resizeable="true" style='width:100px height:100px ' id='lit-modal'></lit-modal>
-        </div> `
-        let litmode = document.getElementById("lit-modal") as LitModal
-        let mouseOutEvent: MouseEvent = new MouseEvent("mousemove", <MouseEventInit>{movementX: 1, movementY: 2});
-        litmode.dispatchEvent(mouseOutEvent)
-        // expect(litModal).not.toBeUndefined()
+        </div> `;
+        let litmode = document.getElementById('lit-modal') as LitModal;
+        let mouseOutEvent: MouseEvent = new MouseEvent('mousemove', <
+            MouseEventInit
+        >{ movementX: 1, movementY: 2 });
+        litmode.dispatchEvent(mouseOutEvent);
     });
 
     it('LitModalTest06', function () {
         document.body.innerHTML = `
         <div>
             <lit-modal moveable="true" style='width:100px height:100px ' id='lit-modal'></lit-modal>
-        </div> `
-        let litmode = document.getElementById("lit-modal") as LitModal
+        </div> `;
+        let litmode = document.getElementById('lit-modal') as LitModal;
 
-        let mouseOutEvent: MouseEvent = new MouseEvent("mousedown", <MouseEventInit>{movementX: 1, movementY: 2});
-        litmode.dispatchEvent(mouseOutEvent)
-        // expect(litModal).not.toBeUndefined()
+        let mouseOutEvent: MouseEvent = new MouseEvent('mousedown', <
+            MouseEventInit
+        >{ movementX: 1, movementY: 2 });
+        litmode.dispatchEvent(mouseOutEvent);
     });
 
     it('LitModalTest07', function () {
         document.body.innerHTML = `
         <div>
             <lit-modal moveable="true" style='width:100px height:100px ' id='lit-modal'></lit-modal>
-        </div> `
-        let litmode = document.getElementById("lit-modal") as LitModal
+        </div> `;
+        let litmode = document.getElementById('lit-modal') as LitModal;
 
-        let mouseOutEvent: MouseEvent = new MouseEvent("mouseleave", <MouseEventInit>{movementX: 1, movementY: 2});
-        litmode.dispatchEvent(mouseOutEvent)
+        let mouseOutEvent: MouseEvent = new MouseEvent('mouseleave', <
+            MouseEventInit
+        >{ movementX: 1, movementY: 2 });
+        litmode.dispatchEvent(mouseOutEvent);
     });
 
     it('LitModalTest08', function () {
         document.body.innerHTML = `
         <div>
             <lit-modal moveable="true" style='width:100px height:100px ' id='lit-modal'></lit-modal>
-        </div> `
-        let litmode = document.getElementById("lit-modal") as LitModal
-        let mouseOutEvent: MouseEvent = new MouseEvent("mousemove", <MouseEventInit>{clientX : 1, clientY : 2});
-        litmode.dispatchEvent(mouseOutEvent)
+        </div> `;
+        let litmode = document.getElementById('lit-modal') as LitModal;
+        let mouseOutEvent: MouseEvent = new MouseEvent('mousemove', <
+            MouseEventInit
+        >{ clientX: 1, clientY: 2 });
+        litmode.dispatchEvent(mouseOutEvent);
     });
-})
+});

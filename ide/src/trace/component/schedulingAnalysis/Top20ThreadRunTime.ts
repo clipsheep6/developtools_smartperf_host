@@ -13,30 +13,31 @@
  * limitations under the License.
  */
 
-
-import {BaseElement, element} from "../../../base-ui/BaseElement.js";
-import {LitTable} from "../../../base-ui/table/lit-table.js";
-import {SpSchedulingAnalysis} from "./SpSchedulingAnalysis.js";
-import {procedurePool} from "../../database/Procedure.js";
-import {info} from "../../../log/Log.js";
-import "../../../base-ui/progress-bar/LitProgressBar.js"
-import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
-import "./TableNoData.js"
-import {TableNoData} from "./TableNoData.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
+import { LitTable } from '../../../base-ui/table/lit-table.js';
+import { SpSchedulingAnalysis } from './SpSchedulingAnalysis.js';
+import { procedurePool } from '../../database/Procedure.js';
+import { info } from '../../../log/Log.js';
+import '../../../base-ui/progress-bar/LitProgressBar.js';
+import { LitProgressBar } from '../../../base-ui/progress-bar/LitProgressBar.js';
+import './TableNoData.js';
+import { TableNoData } from './TableNoData.js';
 
 @element('top20-thread-run-time')
 export class Top20ThreadRunTime extends BaseElement {
-
-    traceChange:boolean = false;
-    private table:LitTable | null | undefined;
-    private progress:LitProgressBar | null | undefined;
-    private nodata:TableNoData | null | undefined;
-    private data:Array<any> = [];
+    traceChange: boolean = false;
+    private table: LitTable | null | undefined;
+    private progress: LitProgressBar | null | undefined;
+    private nodata: TableNoData | null | undefined;
+    private data: Array<any> = [];
 
     initElements(): void {
-        this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
-        this.table = this.shadowRoot!.querySelector<LitTable>("#tb-thread-run-time")
-        this.nodata = this.shadowRoot!.querySelector<TableNoData>("#nodata")
+        this.progress =
+            this.shadowRoot!.querySelector<LitProgressBar>('#loading');
+        this.table = this.shadowRoot!.querySelector<LitTable>(
+            '#tb-thread-run-time'
+        );
+        this.nodata = this.shadowRoot!.querySelector<TableNoData>('#nodata');
 
         this.table!.addEventListener('row-click', (evt: any) => {
             let data = evt.detail.data;
@@ -44,45 +45,54 @@ export class Top20ThreadRunTime extends BaseElement {
             // @ts-ignore
             if ((evt.detail as any).callBack) {
                 // @ts-ignore
-                (evt.detail as any).callBack(true)
+                (evt.detail as any).callBack(true);
             }
-        })
+        });
 
         this.table!.addEventListener('column-click', (evt) => {
             // @ts-ignore
-            this.sortByColumn(evt.detail)
+            this.sortByColumn(evt.detail);
         });
     }
 
-    init(){
-        if(!this.traceChange){
-            if(this.table!.recycleDataSource.length > 0){
+    init() {
+        if (!this.traceChange) {
+            if (this.table!.recycleDataSource.length > 0) {
                 this.table?.reMeauseHeight();
             }
             return;
         }
-        this.progress!.loading = true
+        this.progress!.loading = true;
         this.traceChange = false;
-        this.queryLogicWorker(`scheduling-Thread RunTime`,`query Thread Cpu Run Time Analysis Time:`,(res)=>{
-            this.nodata!.noData = res === undefined || res.length === 0;
-            this.table!.recycleDataSource = res;
-            this.table?.reMeauseHeight();
-            this.progress!.loading = false;
-            this.data = res;
-        })
+        this.queryLogicWorker(
+            `scheduling-Thread RunTime`,
+            `query Thread Cpu Run Time Analysis Time:`,
+            (res) => {
+                this.nodata!.noData = res === undefined || res.length === 0;
+                this.table!.recycleDataSource = res;
+                this.table?.reMeauseHeight();
+                this.progress!.loading = false;
+                this.data = res;
+            }
+        );
     }
 
-    clearData(){
+    clearData() {
         this.traceChange = true;
-        this.table!.recycleDataSource = []
+        this.table!.recycleDataSource = [];
     }
 
-    queryLogicWorker(option:string,log:string,handler:(res:any) => void){
+    queryLogicWorker(option: string, log: string, handler: (res: any) => void) {
         let time = new Date().getTime();
-        procedurePool.submitWithName("logic1", option,
-            { cpuMax:SpSchedulingAnalysis.cpuCount - 1 }, undefined, handler)
+        procedurePool.submitWithName(
+            'logic1',
+            option,
+            { cpuMax: SpSchedulingAnalysis.cpuCount - 1 },
+            undefined,
+            handler
+        );
         let durTime = new Date().getTime() - time;
-        info(log, durTime)
+        info(log, durTime);
     }
 
     sortByColumn(detail: any) {
@@ -91,24 +101,36 @@ export class Top20ThreadRunTime extends BaseElement {
             return function (a: any, b: any) {
                 if (type === 'number') {
                     // @ts-ignore
-                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                    return sort === 2
+                        ? parseFloat(b[property]) - parseFloat(a[property])
+                        : parseFloat(a[property]) - parseFloat(b[property]);
                 } else {
                     if (sort === 2) {
-                        return b[property].toString().localeCompare(a[property].toString());
-                    }else {
-                        return a[property].toString().localeCompare(b[property].toString());
+                        return b[property]
+                            .toString()
+                            .localeCompare(a[property].toString());
+                    } else {
+                        return a[property]
+                            .toString()
+                            .localeCompare(b[property].toString());
                     }
                 }
-            }
+            };
         }
 
         if (detail.key === 'maxDurationStr') {
-            detail.key = "maxDuration";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'cpu' || detail.key === 'no' || detail.key === 'pid'|| detail.key === 'tid'|| detail.key === 'timestamp') {
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
+            detail.key = 'maxDuration';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (
+            detail.key === 'cpu' ||
+            detail.key === 'no' ||
+            detail.key === 'pid' ||
+            detail.key === 'tid' ||
+            detail.key === 'timestamp'
+        ) {
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
         } else {
-            this.data.sort(compare(detail.key, detail.sort, 'string'))
+            this.data.sort(compare(detail.key, detail.sort, 'string'));
         }
         this.table!.recycleDataSource = this.data;
     }
@@ -155,4 +177,3 @@ export class Top20ThreadRunTime extends BaseElement {
         `;
     }
 }
-

@@ -13,50 +13,52 @@
  * limitations under the License.
  */
 
-import {BaseElement, element} from "../../../base-ui/BaseElement.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
 
 @element('table-no-data')
 export class TableNoData extends BaseElement {
-
     static get observedAttributes() {
-        return ['noData',"contentWidth","height"]
+        return ['noData', 'contentWidth', 'height'];
     }
 
-    private dataSlot:HTMLDivElement | null | undefined;
-    private noDataIcon:HTMLDivElement | null | undefined;
+    private dataSlot: HTMLDivElement | null | undefined;
+    private noDataIcon: HTMLDivElement | null | undefined;
 
     initElements(): void {
-        this.dataSlot = this.shadowRoot!.querySelector<HTMLDivElement>(".no-data")
-        this.noDataIcon = this.shadowRoot!.querySelector<HTMLDivElement>(".d-box")
+        this.dataSlot =
+            this.shadowRoot!.querySelector<HTMLDivElement>('.no-data');
+        this.noDataIcon =
+            this.shadowRoot!.querySelector<HTMLDivElement>('.d-box');
     }
 
-    get noData(){
-        return this.hasAttribute("noData");
+    get noData() {
+        return this.hasAttribute('noData');
     }
 
-    set noData(value:boolean){
+    set noData(value: boolean) {
         if (value) {
-            this.setAttribute('noData','');
+            this.setAttribute('noData', '');
         } else {
-            this.removeAttribute("noData");
+            this.removeAttribute('noData');
         }
     }
 
-    get contentWidth(){
-        return this.getAttribute('contentWidth')||'100%';
+    get contentWidth() {
+        return this.getAttribute('contentWidth') || '100%';
     }
-    set contentWidth(value){
-        this.shadowRoot!.querySelector<HTMLDivElement>(".d-box")!.style.width = value;
+    set contentWidth(value) {
+        this.shadowRoot!.querySelector<HTMLDivElement>('.d-box')!.style.width =
+            value;
         this.setAttribute('contentWidth', value);
     }
-    get contentHeight(){
-        return this.getAttribute('contentHeight')||'80%';
+    get contentHeight() {
+        return this.getAttribute('contentHeight') || '80%';
     }
-    set contentHeight(value){
-        this.shadowRoot!.querySelector<HTMLDivElement>(".d-box")!.style.height = value;
+    set contentHeight(value) {
+        this.shadowRoot!.querySelector<HTMLDivElement>('.d-box')!.style.height =
+            value;
         this.setAttribute('contentHeight', value);
     }
-
 
     initHtml(): string {
         return `

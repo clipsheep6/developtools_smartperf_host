@@ -14,36 +14,42 @@
  */
 
 // @ts-ignore
-import {SpChartManager} from "../../../../dist/trace/component/chart/SpChartManager.js";
+import { SpChartManager } from '../../../../dist/trace/component/chart/SpChartManager.js';
 // @ts-ignore
-import {SpClockChart} from "../../../../dist/trace/component/chart/SpClockChart.js";
+import { SpClockChart } from '../../../../dist/trace/component/chart/SpClockChart.js';
 
-const sqlite = require("../../../../dist/trace/database/SqlLite.js")
-jest.mock("../../../../dist/trace/database/SqlLite.js");
+const sqlite = require('../../../../dist/trace/database/SqlLite.js');
+jest.mock('../../../../dist/trace/database/SqlLite.js');
 
-window.ResizeObserver = window.ResizeObserver || jest.fn().mockImplementation(() => ({
-    disconnect: jest.fn(),
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-}));
+window.ResizeObserver =
+    window.ResizeObserver ||
+    jest.fn().mockImplementation(() => ({
+        disconnect: jest.fn(),
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+    }));
 
 describe('SpClockChart Test', () => {
-    let clockChart = new SpClockChart(new SpChartManager())
+    let clockChart = new SpClockChart(new SpChartManager());
 
     let queryClock = sqlite.queryClockData;
-    let queryClockData = [{
-        name: 'Frequency',
-        num: 20
-    }, {
-        name: 'State',
-        num: 10
-    }, {
-        name: 'ScreenState',
-        num: 10
-    }]
-    queryClock.mockResolvedValue(queryClockData)
+    let queryClockData = [
+        {
+            name: 'Frequency',
+            num: 20,
+        },
+        {
+            name: 'State',
+            num: 10,
+        },
+        {
+            name: 'ScreenState',
+            num: 10,
+        },
+    ];
+    queryClock.mockResolvedValue(queryClockData);
 
     it('SpClockChart01', function () {
         expect(clockChart.init()).toBeDefined();
     });
-})
+});

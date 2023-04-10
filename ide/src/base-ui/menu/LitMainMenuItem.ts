@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-
-import {BaseElement, element} from "../BaseElement.js";
+import { BaseElement, element } from '../BaseElement.js';
 
 @element('lit-main-menu-item')
 export class LitMainMenuItem extends BaseElement {
@@ -24,40 +23,40 @@ export class LitMainMenuItem extends BaseElement {
     private fileEL: HTMLInputElement | undefined | null;
 
     static get observedAttributes() {
-        return ['title', 'icon', 'file', 'disabled']
+        return ['title', 'icon', 'file', 'disabled'];
     }
 
     get title(): string {
-        return this.getAttribute("title") || ""
+        return this.getAttribute('title') || '';
     }
 
     set title(val: string) {
-        this.setAttribute("title", val);
+        this.setAttribute('title', val);
     }
 
     get disabled(): boolean {
-        return this.hasAttribute("disabled")
+        return this.hasAttribute('disabled');
     }
 
     set disabled(val: boolean) {
         if (val) {
-            this.setAttribute("disabled", val.toString());
-            this.fileEL?.setAttribute("disabled", val.toString());
+            this.setAttribute('disabled', val.toString());
+            this.fileEL?.setAttribute('disabled', val.toString());
         } else {
-            this.removeAttribute("disabled");
-            this.fileEL?.removeAttribute("disabled");
+            this.removeAttribute('disabled');
+            this.fileEL?.removeAttribute('disabled');
         }
     }
 
     get back(): boolean {
-        return this.hasAttribute("back")
+        return this.hasAttribute('back');
     }
 
     set back(isShowBack: boolean) {
         if (isShowBack) {
-            this.setAttribute("back", '');
+            this.setAttribute('back', '');
         } else {
-            this.removeAttribute("back");
+            this.removeAttribute('back');
         }
     }
 
@@ -69,30 +68,35 @@ export class LitMainMenuItem extends BaseElement {
     }
 
     isFile(): boolean {
-        if (this.hasAttribute("file")) {
+        if (this.hasAttribute('file')) {
             if (this.fileEL) {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 
     connectedCallback() {
-        if (this.hasAttribute("file")) {
+        if (this.hasAttribute('file')) {
             if (this.fileEL) {
                 this.fileEL.addEventListener('change', () => {
                     let files = this.fileEL!.files;
-                    if (files && files.length > 0) {
-                        // @ts-ignore
-                        this.dispatchEvent(new CustomEvent('file-change', {target: this, detail: files[0]}))
-                        if (this.fileEL) this.fileEL.value = ''
+                    if (files && files.length > 0) {           
+                        this.dispatchEvent(
+                            new CustomEvent('file-change', {
+								// @ts-ignore
+                                target: this,
+                                detail: files[0],
+                            })
+                        );
+                        if (this.fileEL) this.fileEL.value = '';
                     }
                 });
             }
         }
-        this.addEventListener('click', e => {
+        this.addEventListener('click', (e) => {
             e.stopPropagation();
-        })
+        });
     }
 
     initHtml(): string {
@@ -171,11 +175,11 @@ export class LitMainMenuItem extends BaseElement {
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         switch (name) {
-            case "title":
+            case 'title':
                 if (this.titleEl) this.titleEl.textContent = newValue;
                 break;
-            case "icon":
-                if (this.iconEl) this.iconEl.setAttribute("name", newValue)
+            case 'icon':
+                if (this.iconEl) this.iconEl.setAttribute('name', newValue);
                 break;
         }
     }

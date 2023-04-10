@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import {BaseElement, element} from "../../../../base-ui/BaseElement.js";
+import { BaseElement, element } from '../../../../base-ui/BaseElement.js';
 
-@element("lit-search")
+@element('lit-search')
 export class LitSearch extends BaseElement {
     valueChangeHandler: ((str: string) => void) | undefined | null;
     private search: HTMLInputElement | undefined | null;
@@ -43,8 +43,8 @@ export class LitSearch extends BaseElement {
         this.indexEL!.textContent = `${value + 1}`;
     }
 
-    get searchValue(){
-        return this.search?.value
+    get searchValue() {
+        return this.search?.value;
     }
 
     get total(): number {
@@ -52,71 +52,77 @@ export class LitSearch extends BaseElement {
     }
 
     set total(value: number) {
-        value > 0 ? this.setAttribute("show-search-info", '') : this.removeAttribute("show-search-info");
+        value > 0
+            ? this.setAttribute('show-search-info', '')
+            : this.removeAttribute('show-search-info');
         this._total = value;
         this.indexEL!.textContent = '0';
         this.totalEL!.textContent = value.toString();
     }
 
-    get isLoading(): boolean{
-        return this.hasAttribute('isLoading')
+    get isLoading(): boolean {
+        return this.hasAttribute('isLoading');
     }
 
-    set isLoading(va){
+    set isLoading(va) {
         if (va) {
-            this.setAttribute('isLoading','');
+            this.setAttribute('isLoading', '');
         } else {
-            this.removeAttribute('isLoading')
+            this.removeAttribute('isLoading');
         }
     }
 
-    setPercent(name: string = "", value: number) {
-        let searchHide = this.shadowRoot!.querySelector<HTMLElement>(".root")
-        let searchIcon = this.shadowRoot!.querySelector<HTMLElement>("#search-icon")
-        if(this.hasAttribute('textRoll')){
-            this.removeAttribute("textRoll");
+    setPercent(name: string = '', value: number) {
+        let searchHide = this.shadowRoot!.querySelector<HTMLElement>('.root');
+        let searchIcon =
+            this.shadowRoot!.querySelector<HTMLElement>('#search-icon');
+        if (this.hasAttribute('textRoll')) {
+            this.removeAttribute('textRoll');
         }
-        this.isLoading = false
+        this.isLoading = false;
         if (value > 0 && value <= 100) {
-            searchHide!.style.display = "flex"
-            searchHide!.style.backgroundColor = "var(--dark-background5,#e3e3e3)"
-            searchIcon?.setAttribute('name', "cloud-sync");
+            searchHide!.style.display = 'flex';
+            searchHide!.style.backgroundColor =
+                'var(--dark-background5,#e3e3e3)';
+            searchIcon?.setAttribute('name', 'cloud-sync');
             this.search!.setAttribute('placeholder', `${name}${value}%`);
-            this.search!.setAttribute('readonly', "");
-            this.search!.className = "readonly"
-            this.isLoading = true
+            this.search!.setAttribute('readonly', '');
+            this.search!.className = 'readonly';
+            this.isLoading = true;
         } else if (value > 100) {
-            searchHide!.style.display = "flex"
-            searchHide!.style.backgroundColor = "var(--dark-background5,#fff)"
-            searchIcon?.setAttribute('name', "search");
+            searchHide!.style.display = 'flex';
+            searchHide!.style.backgroundColor = 'var(--dark-background5,#fff)';
+            searchIcon?.setAttribute('name', 'search');
             this.search?.setAttribute('placeholder', `search`);
             this.search?.removeAttribute('readonly');
-            this.search!.className = "write"
+            this.search!.className = 'write';
         } else if (value == -1) {
-            searchHide!.style.display = "flex"
-            searchHide!.style.backgroundColor = "var(--dark-background5,#e3e3e3)"
-            searchIcon?.setAttribute('name', "cloud-sync");
+            searchHide!.style.display = 'flex';
+            searchHide!.style.backgroundColor =
+                'var(--dark-background5,#e3e3e3)';
+            searchIcon?.setAttribute('name', 'cloud-sync');
             this.search!.setAttribute('placeholder', `${name}`);
-            this.search!.setAttribute('readonly', "");
-            this.search!.className = "readonly"
+            this.search!.setAttribute('readonly', '');
+            this.search!.className = 'readonly';
         } else if (value == -2) {
-            searchHide!.style.display = "flex"
-            searchHide!.style.backgroundColor = "var(--dark-background5,#e3e3e3)"
-            searchIcon?.setAttribute('name', "cloud-sync");
+            searchHide!.style.display = 'flex';
+            searchHide!.style.backgroundColor =
+                'var(--dark-background5,#e3e3e3)';
+            searchIcon?.setAttribute('name', 'cloud-sync');
             this.search!.setAttribute('placeholder', `${name}`);
-            this.search!.setAttribute('readonly', "");
-            this.search!.className = "text-Roll"
-            setTimeout(()=>{
-                this.setAttribute("textRoll", '');
+            this.search!.setAttribute('readonly', '');
+            this.search!.className = 'text-Roll';
+            setTimeout(() => {
+                this.setAttribute('textRoll', '');
             }, 200);
         } else {
-            searchHide!.style.display = "none"
+            searchHide!.style.display = 'none';
         }
     }
 
     clear() {
-        this.search = this.shadowRoot!.querySelector<HTMLInputElement>("input");
-        this.search!.value = "";
+        this.search = this.shadowRoot!.querySelector<HTMLInputElement>('input');
+        this.search!.value = '';
         this.list = [];
     }
 
@@ -125,63 +131,81 @@ export class LitSearch extends BaseElement {
     }
 
     initElements(): void {
-        this.search = this.shadowRoot!.querySelector<HTMLInputElement>("input");
-        this.totalEL = this.shadowRoot!.querySelector<HTMLSpanElement>("#total");
-        this.indexEL = this.shadowRoot!.querySelector<HTMLSpanElement>("#index");
-        this.search!.addEventListener("focus", (e) => {
-            this.dispatchEvent(new CustomEvent("focus", {
-                detail: {
-                    value: this.search!.value
-                }
-            }));
+        this.search = this.shadowRoot!.querySelector<HTMLInputElement>('input');
+        this.totalEL =
+            this.shadowRoot!.querySelector<HTMLSpanElement>('#total');
+        this.indexEL =
+            this.shadowRoot!.querySelector<HTMLSpanElement>('#index');
+        this.search!.addEventListener('focus', (e) => {
+            this.dispatchEvent(
+                new CustomEvent('focus', {
+                    detail: {
+                        value: this.search!.value,
+                    },
+                })
+            );
         });
-        this.search!.addEventListener("blur", (e) => {
-            this.dispatchEvent(new CustomEvent("blur", {
-                detail: {
-                    value: this.search!.value
-                }
-            }));
+        this.search!.addEventListener('blur', (e) => {
+            this.dispatchEvent(
+                new CustomEvent('blur', {
+                    detail: {
+                        value: this.search!.value,
+                    },
+                })
+            );
         });
         this.search!.addEventListener('change', (event) => {
             this.index = -1;
         });
 
-        this.search!.addEventListener("keyup", (e: KeyboardEvent) => {
-            if (e.code == "Enter") {
+        this.search!.addEventListener('keyup', (e: KeyboardEvent) => {
+            if (e.code == 'Enter') {
                 if (e.shiftKey) {
-                    this.dispatchEvent(new CustomEvent("previous-data", {
-                        detail: {
-                            value: this.search!.value
-                        },
-                        composed:false
-                    }));
+                    this.dispatchEvent(
+                        new CustomEvent('previous-data', {
+                            detail: {
+                                value: this.search!.value,
+                            },
+                            composed: false,
+                        })
+                    );
                 } else {
-                    this.dispatchEvent(new CustomEvent("next-data", {
-                        detail: {
-                            value: this.search!.value
-                        },
-                        composed:false
-                    }));
+                    this.dispatchEvent(
+                        new CustomEvent('next-data', {
+                            detail: {
+                                value: this.search!.value,
+                            },
+                            composed: false,
+                        })
+                    );
                 }
             } else {
                 this.valueChangeHandler?.(this.search!.value);
             }
             e.stopPropagation();
         });
-        this.shadowRoot?.querySelector("#arrow-left")?.addEventListener("click", (e) => {
-            this.dispatchEvent(new CustomEvent("previous-data", {
-                detail: {
-                    value: this.search!.value
-                }
-            }));
-        });
-        this.shadowRoot?.querySelector("#arrow-right")?.addEventListener("click", (e) => {
-            this.dispatchEvent(new CustomEvent("next-data", {
-                detail: {
-                    value: this.search!.value
-                }
-            }));
-        });
+        this.shadowRoot
+            ?.querySelector('#arrow-left')
+            ?.addEventListener('click', (e) => {
+                this.dispatchEvent(
+                    new CustomEvent('previous-data', {
+                        detail: {
+                            value: this.search!.value,
+                        },
+                    })
+                );
+            });
+        this.shadowRoot
+            ?.querySelector('#arrow-right')
+            ?.addEventListener('click', (e) => {
+                this.dispatchEvent(
+                    new CustomEvent('next-data', {
+                        detail: {
+                            value: this.search!.value,
+                        },
+                    })
+                );
+            });
     }
 
     initHtml(): string {

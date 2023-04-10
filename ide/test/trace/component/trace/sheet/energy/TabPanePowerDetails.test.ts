@@ -14,62 +14,73 @@
  */
 
 // @ts-ignore
-import {TabPanePowerDetails} from "../../../../../../dist/trace/component/trace/sheet/energy/TabPanePowerDetails.js"
-import "../../../../../../dist/trace/component/trace/sheet/energy/TabPanePowerDetails.js"
+import { TabPanePowerDetails } from '../../../../../../dist/trace/component/trace/sheet/energy/TabPanePowerDetails.js';
+import '../../../../../../dist/trace/component/trace/sheet/energy/TabPanePowerDetails.js';
 
 // @ts-ignore
-import {LitTable} from "../../../../../../dist/base-ui/table/lit-table.js";
+import { LitTable } from '../../../../../../dist/base-ui/table/lit-table.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
         unobserve: jest.fn(),
     }));
-const sqlit = require("../../../../../../dist/trace/database/SqlLite.js");
-jest.mock("../../../../../../dist/trace/database/SqlLite.js");
+const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
+jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 
 describe('TabPanePowerDetails Test', () => {
-    document.body.innerHTML= `<lit-table id="tb-power-details-energy"></lit-table>`
-    let litTable = document.querySelector("#tb-power-details-energy") as LitTable
+    document.body.innerHTML = `<lit-table id="tb-power-details-energy"></lit-table>`;
+    let litTable = document.querySelector(
+        '#tb-power-details-energy'
+    ) as LitTable;
     it('TabPanePowerDetailsTest01', function () {
         let tabPanePowerDetails = new TabPanePowerDetails();
-        tabPanePowerDetails.tbl = jest.fn(() => litTable)
-        let MockPowerDetailsData = sqlit.getTabPowerDetailsData
+        tabPanePowerDetails.tbl = jest.fn(() => litTable);
+        let MockPowerDetailsData = sqlit.getTabPowerDetailsData;
         let detail = [
             {
                 ts: 5999127353,
-                eventName: "POWER_IDE_AUDIO",
-                appKey: "APPNAME",
-                eventValue: "com.example.himusicdemo,com.example.himusicdemo_js,com.example.himusicdemo_app"
-            }, {
+                eventName: 'POWER_IDE_AUDIO',
+                appKey: 'APPNAME',
+                eventValue:
+                    'com.example.himusicdemo,com.example.himusicdemo_js,com.example.himusicdemo_app',
+            },
+            {
                 ts: 5999127353,
-                eventName: "POWER_IDE_AUDIO",
-                appKey: "BACKGROUND_DURATION",
-                eventValue: "524,854,612",
-            }, {
+                eventName: 'POWER_IDE_AUDIO',
+                appKey: 'BACKGROUND_DURATION',
+                eventValue: '524,854,612',
+            },
+            {
                 ts: 5999127353,
-                eventName: "POWER_IDE_BLUETOOTH",
-                appKey: "APPNAME",
-                eventValue: "com.ohos.settings,bt_switch,bt_switch_js,bt_switch_app"
-            }, {
+                eventName: 'POWER_IDE_BLUETOOTH',
+                appKey: 'APPNAME',
+                eventValue:
+                    'com.ohos.settings,bt_switch,bt_switch_js,bt_switch_app',
+            },
+            {
                 ts: 5999127353,
-                eventName: "POWER_IDE_BLUETOOTH",
-                appKey: "BACKGROUND_DURATION",
-                eventValue: "325,124,51,52"
-            }, {
+                eventName: 'POWER_IDE_BLUETOOTH',
+                appKey: 'BACKGROUND_DURATION',
+                eventValue: '325,124,51,52',
+            },
+            {
                 ts: 5999127353,
-                eventName: "POWER_IDE_CAMERA",
-                appKey: "APPNAME",
-                eventValue: "com.ohos.camera,com.ohos.camera_app,com.ohos.camera_js,com.ohos.camera_ts"
-            }, {
+                eventName: 'POWER_IDE_CAMERA',
+                appKey: 'APPNAME',
+                eventValue:
+                    'com.ohos.camera,com.ohos.camera_app,com.ohos.camera_js,com.ohos.camera_ts',
+            },
+            {
                 ts: 5999127353,
-                eventName: "POWER_IDE_CAMERA",
-                appKey: "BACKGROUND_DURATION",
-                eventValue: "356,325,854,365"
-            }
-        ]
-        MockPowerDetailsData.mockResolvedValue(detail)
+                eventName: 'POWER_IDE_CAMERA',
+                appKey: 'BACKGROUND_DURATION',
+                eventValue: '356,325,854,365',
+            },
+        ];
+        MockPowerDetailsData.mockResolvedValue(detail);
         let list = {
             cpus: [],
             threadIds: [],
@@ -92,12 +103,12 @@ describe('TabPanePowerDetails Test', () => {
             perfAll: false,
             systemEnergy: [0, 1, 2],
             powerEnergy: [0, 1, 2],
-            anomalyEnergy: [0, 1, 2]
-        }
-        tabPanePowerDetails.tbl.recycleDataSource = jest.fn(() => list)
-        tabPanePowerDetails.data = list
-        expect(tabPanePowerDetails.data).toBeUndefined()
-    })
+            anomalyEnergy: [0, 1, 2],
+        };
+        tabPanePowerDetails.tbl.recycleDataSource = jest.fn(() => list);
+        tabPanePowerDetails.data = list;
+        expect(tabPanePowerDetails.data).toBeUndefined();
+    });
 
     it('TabPanePowerDetailsTest02', function () {
         let tabPanePowerDetails = new TabPanePowerDetails();
@@ -166,4 +177,4 @@ describe('TabPanePowerDetails Test', () => {
         "
 `);
     });
-})
+});

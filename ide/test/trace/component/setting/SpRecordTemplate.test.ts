@@ -14,13 +14,13 @@
  */
 
 // @ts-ignore
-import {SpRecordTemplate} from "../../../../dist/trace/component/setting/SpRecordTemplate.js";
+import { SpRecordTemplate } from '../../../../dist/trace/component/setting/SpRecordTemplate.js';
 
 describe('SpRecordTemplate', () => {
-    let recordTemplate = new SpRecordTemplate()
-    recordTemplate.initElements()
+    let recordTemplate = new SpRecordTemplate();
+    recordTemplate.initElements();
 
     it('SpRecordTemplate01', function () {
         expect(recordTemplate.getTemplateConfig()).toBeTruthy();
     });
-})
+});

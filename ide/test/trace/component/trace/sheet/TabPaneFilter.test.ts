@@ -14,55 +14,55 @@
  */
 
 // @ts-ignore
-import {TabPaneFilter} from "../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js"
+import { TabPaneFilter } from '../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js';
 
 describe('TabPaneFilter Test', () => {
     let tabPaneFilter = new TabPaneFilter();
 
     it('TabPaneFilterTest01', function () {
-        expect(tabPaneFilter.firstSelect).toBe("");
+        expect(tabPaneFilter.firstSelect).toBe('');
     });
 
     it('TabPaneFilterTest02', function () {
-        expect(tabPaneFilter.secondSelect).toBe("");
+        expect(tabPaneFilter.secondSelect).toBe('');
     });
 
     it('TabPaneFilterTest03', function () {
-        expect(tabPaneFilter.filterValue).toBe("");
+        expect(tabPaneFilter.filterValue).toBe('');
     });
 
     it('TabPaneFilterTest04', function () {
-        tabPaneFilter.filterValue = true
+        tabPaneFilter.filterValue = true;
         expect(tabPaneFilter.filterValue).toBeTruthy();
     });
 
     it('TabPaneFilterTest05', function () {
-        expect(tabPaneFilter.icon).toBe("tree");
+        expect(tabPaneFilter.icon).toBe('tree');
     });
 
     it('TabPaneFilterTest08', function () {
-        tabPaneFilter.iconEL.name = "menu"
-        expect(tabPaneFilter.icon).toBe("block");
+        tabPaneFilter.iconEL.name = 'menu';
+        expect(tabPaneFilter.icon).toBe('block');
     });
 
     it('TabPaneFilterTest09', function () {
-        tabPaneFilter.iconEL.name = ""
-        expect(tabPaneFilter.icon).toBe("");
+        tabPaneFilter.iconEL.name = '';
+        expect(tabPaneFilter.icon).toBe('');
     });
 
     it('TabPaneFilterTest06', function () {
-        tabPaneFilter.icon = true
-        expect(tabPaneFilter.icon).toBe("");
+        tabPaneFilter.icon = true;
+        expect(tabPaneFilter.icon).toBe('');
     });
 
     it('TabPaneFilterTest010', function () {
-        tabPaneFilter.icon = "block"
-        expect(tabPaneFilter.icon).toBe("block");
+        tabPaneFilter.icon = 'block';
+        expect(tabPaneFilter.icon).toBe('block');
     });
 
     it('TabPaneFilterTest011', function () {
-        tabPaneFilter.icon = "tree"
-        expect(tabPaneFilter.icon).toBe("tree");
+        tabPaneFilter.icon = 'tree';
+        expect(tabPaneFilter.icon).toBe('tree');
     });
 
     it('TabPaneFilterTest07', function () {
@@ -332,7 +332,7 @@ describe('TabPaneFilter Test', () => {
     });
 
     it('TabPaneFilterTest10', function () {
-        expect(tabPaneFilter.addDataMining({name:""},"")).toBe(-1);
+        expect(tabPaneFilter.addDataMining({ name: '' }, '')).toBe(-1);
     });
 
     it('TabPaneFilterTest11', function () {
@@ -340,7 +340,9 @@ describe('TabPaneFilter Test', () => {
     });
 
     it('TabPaneFilterTest12', function () {
-        expect(tabPaneFilter.initializeFilterTree(true,true,true)).toBeUndefined();
+        expect(
+            tabPaneFilter.initializeFilterTree(true, true, true)
+        ).toBeUndefined();
     });
 
     it('TabPaneFilterTest13', function () {
@@ -348,7 +350,7 @@ describe('TabPaneFilter Test', () => {
     });
 
     it('TabPaneFilterTest14', function () {
-        tabPaneFilter.disabledMining = true
+        tabPaneFilter.disabledMining = true;
         expect(tabPaneFilter.disabledMining).toBeTruthy();
     });
-})
+});

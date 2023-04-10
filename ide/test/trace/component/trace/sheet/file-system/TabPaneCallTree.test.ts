@@ -13,26 +13,17 @@
  * limitations under the License.
  */
 
-
 // @ts-ignore
-import {TabPaneCallTree} from "../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneCallTree.js";
+import { TabPaneCallTree } from '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneCallTree.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
         unobserve: jest.fn(),
     }));
 describe('TabPaneCallTree Test', () => {
-
     it('TabPaneCallTreeTest01', function () {
-        // let tabPaneCallTree =  new TabPaneCallTree()
-        //  tabPaneCallTree.data = {
-        //      "recordStartNs": 780423789228,
-        //      "leftNs": 1093326314,
-        //      "rightNs": 18865238365,
-        //      "diskIOLatency": true,
-        //  }
     });
-    
-})
+});

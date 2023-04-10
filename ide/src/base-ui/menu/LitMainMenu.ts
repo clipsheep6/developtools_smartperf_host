@@ -13,20 +13,19 @@
  * limitations under the License.
  */
 
-
-import {BaseElement, element} from "../BaseElement.js";
-import './LitMainMenuItem.js'
-import './LitMainMenuGroup.js'
-import {LitMainMenuGroup} from "./LitMainMenuGroup.js";
-import {LitMainMenuItem} from "./LitMainMenuItem.js";
+import { BaseElement, element } from '../BaseElement.js';
+import './LitMainMenuItem.js';
+import './LitMainMenuGroup.js';
+import { LitMainMenuGroup } from './LitMainMenuGroup.js';
+import { LitMainMenuItem } from './LitMainMenuItem.js';
 
 @element('lit-main-menu')
 export class LitMainMenu extends BaseElement {
     private slotElements: Element[] | undefined;
-    private _menus: Array<MenuGroup> | undefined
+    private _menus: Array<MenuGroup> | undefined;
 
     static get observedAttributes() {
-        return []
+        return [];
     }
 
     get menus(): Array<MenuGroup> | undefined {
@@ -35,12 +34,14 @@ export class LitMainMenu extends BaseElement {
 
     set menus(value: Array<MenuGroup> | undefined) {
         this._menus = value;
-        this.shadowRoot?.querySelectorAll('lit-main-menu-group').forEach(a => a.remove());
+        this.shadowRoot
+            ?.querySelectorAll('lit-main-menu-group')
+            .forEach((a) => a.remove());
         let menuBody = this.shadowRoot?.querySelector('.menu-body');
-        value?.forEach(it => {
+        value?.forEach((it) => {
             let group = new LitMainMenuGroup();
-            group.setAttribute('title', it.title || "");
-            group.setAttribute('describe', it.describe || "");
+            group.setAttribute('title', it.title || '');
+            group.setAttribute('describe', it.describe || '');
             if (it.collapsed) {
                 group.setAttribute('collapsed', '');
             } else {
@@ -49,42 +50,43 @@ export class LitMainMenu extends BaseElement {
             menuBody?.appendChild(group);
             it.children?.forEach((item: any) => {
                 let th = new LitMainMenuItem();
-                th.setAttribute('icon', item.icon || "");
-                th.setAttribute('title', item.title || "");
+                th.setAttribute('icon', item.icon || '');
+                th.setAttribute('title', item.title || '');
                 if (item.fileChoose) {
-                    th.setAttribute('file', "");
-                    th.addEventListener('file-change', e => {
+                    th.setAttribute('file', '');
+                    th.addEventListener('file-change', (e) => {
                         if (item.fileHandler && !th.disabled) {
-                            item.fileHandler(e)
+                            item.fileHandler(e);
                         }
-                    })
+                    });
                 } else {
                     th.removeAttribute('file');
-                    th.addEventListener('click', e => {
+                    th.addEventListener('click', (e) => {
                         if (item.clickHandler && !th.disabled) {
-                            item.clickHandler(item)
+                            item.clickHandler(item);
                         }
-                    })
+                    });
                 }
                 if (item.disabled != undefined) {
-                    th.disabled = item.disabled
+                    th.disabled = item.disabled;
                 }
                 group?.appendChild(th);
-            })
-        })
+            });
+        });
     }
 
     initElements(): void {
-        let st: HTMLSlotElement | null | undefined = this.shadowRoot?.querySelector('#st');
-        st?.addEventListener('slotchange', e => {
+        let st: HTMLSlotElement | null | undefined =
+            this.shadowRoot?.querySelector('#st');
+        st?.addEventListener('slotchange', (e) => {
             this.slotElements = st?.assignedElements();
-            this.slotElements?.forEach(it => {
-                it.querySelectorAll("lit-main-menu-item").forEach(cell => {
-                })
-            })
-        })
-        let versionDiv: HTMLElement | null | undefined = this.shadowRoot?.querySelector<HTMLElement>('.version');
-        versionDiv!.innerText = (window as any).version || ""
+            this.slotElements?.forEach((it) => {
+                it.querySelectorAll('lit-main-menu-item').forEach((cell) => {});
+            });
+        });
+        let versionDiv: HTMLElement | null | undefined =
+            this.shadowRoot?.querySelector<HTMLElement>('.version');
+        versionDiv!.innerText = (window as any).version || '';
     }
 
     initHtml(): string {
@@ -162,16 +164,16 @@ export class LitMainMenu extends BaseElement {
 }
 
 export interface MenuGroup {
-    title: string
-    describe: string
-    collapsed: boolean
-    children: Array<MenuItem>
+    title: string;
+    describe: string;
+    collapsed: boolean;
+    children: Array<MenuItem>;
 }
 
 export interface MenuItem {
-    icon: string
-    title: string
-    fileChoose?: boolean
-    clickHandler?: Function
-    fileHandler?: Function
+    icon: string;
+    title: string;
+    fileChoose?: boolean;
+    clickHandler?: Function;
+    fileHandler?: Function;
 }

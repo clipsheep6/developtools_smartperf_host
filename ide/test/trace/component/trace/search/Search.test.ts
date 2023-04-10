@@ -14,20 +14,19 @@
  */
 
 // @ts-ignore
-import {LitSearch} from "../../../../../dist/trace/component/trace/search/Search.js";
+import { LitSearch } from '../../../../../dist/trace/component/trace/search/Search.js';
 
-describe(" SearchTest", () => {
-    beforeAll(() => {
-    })
+describe(' SearchTest', () => {
+    beforeAll(() => {});
     it('Search Test01', () => {
         let search = new LitSearch();
-        expect(search).not.toBeUndefined()
+        expect(search).not.toBeUndefined();
     });
 
     it('Search Test02', () => {
         let search = new LitSearch();
-        search.list = ["1"];
-        expect(search.list[0]).toBe("1");
+        search.list = ['1'];
+        expect(search.list[0]).toBe('1');
     });
 
     it('Search Test03', () => {
@@ -45,25 +44,25 @@ describe(" SearchTest", () => {
     it('Search Test05', () => {
         let search = new LitSearch();
         search.index = 1;
-        expect(search.setPercent("1",2)).toBeUndefined();
+        expect(search.setPercent('1', 2)).toBeUndefined();
     });
 
     it('Search Test06', () => {
         let search = new LitSearch();
         search.index = 1;
-        expect(search.setPercent("1",101)).toBeUndefined();
+        expect(search.setPercent('1', 101)).toBeUndefined();
     });
 
     it('Search Test07', () => {
         let search = new LitSearch();
         search.index = 1;
-        expect(search.setPercent("1",-1)).toBeUndefined();
+        expect(search.setPercent('1', -1)).toBeUndefined();
     });
 
     it('Search Test08', () => {
         let search = new LitSearch();
         search.index = 1;
-        expect(search.setPercent("1",-2)).toBeUndefined();
+        expect(search.setPercent('1', -2)).toBeUndefined();
     });
 
     it('Search Test09', () => {
@@ -73,8 +72,8 @@ describe(" SearchTest", () => {
 
     it('Search Test11', function () {
         let search = new LitSearch();
-        search.search = jest.fn(()=>undefined)
-        search.search.blur = jest.fn(()=>true)
+        search.search = jest.fn(() => undefined);
+        search.search.blur = jest.fn(() => true);
         expect(search.blur()).toBeUndefined();
     });
 
@@ -186,5 +185,4 @@ describe(" SearchTest", () => {
         let search = new LitSearch();
         expect(search.isLoading).toBeFalsy();
     });
-
 });

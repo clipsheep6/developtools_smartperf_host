@@ -14,57 +14,54 @@
  */
 
 // @ts-ignore
-import {TabPaneCpuByThread} from "../../../../../../dist/trace/component/trace/sheet/cpu/TabPaneCpuByThread.js"
+import { TabPaneCpuByThread } from '../../../../../../dist/trace/component/trace/sheet/cpu/TabPaneCpuByThread.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
         unobserve: jest.fn(),
     }));
 
-const sqlit = require("../../../../../../dist/trace/database/SqlLite.js")
-jest.mock("../../../../../../dist/trace/database/SqlLite.js");
+const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
+jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 
 describe('TabPaneCpuByThread Test', () => {
     let tabPaneCpuByThread = new TabPaneCpuByThread();
 
     it('TabPaneCpuByThreadTest01', function () {
-        expect(tabPaneCpuByThread.sortByColumn({
-            key: 'number',
-            sort: () => {
-            }
-        })).toBeUndefined();
+        expect(
+            tabPaneCpuByThread.sortByColumn({
+                key: 'number',
+                sort: () => {},
+            })
+        ).toBeUndefined();
     });
 
     it('TabPaneCpuByThreadTest02', function () {
-        expect(tabPaneCpuByThread.sortByColumn({
-            key: 'pid'||'wallDuration'||'avgDuration'||'occurrences',
-        })).toBeUndefined();
+        expect(
+            tabPaneCpuByThread.sortByColumn({
+                key: 'pid' || 'wallDuration' || 'avgDuration' || 'occurrences',
+            })
+        ).toBeUndefined();
     });
 
     it('TabPaneCpuByThreadTest03', function () {
-        let mockgetTabCpuByThread = sqlit.getTabCpuByThread
-        mockgetTabCpuByThread.mockResolvedValue([{process  : "test",
-                wallDuration: 10,
-                occurrences: 10,
-                thread:""
-            },
-                {process  : "test2",
-                    wallDuration: 11,
-                    occurrences: 11,
-                    thread:""
-                }]
-        )
-        let a = {rightNs: 1, cpus: [11, 12, 13]}
-        expect(tabPaneCpuByThread.data = a).toBeTruthy();
+        let mockgetTabCpuByThread = sqlit.getTabCpuByThread;
+        mockgetTabCpuByThread.mockResolvedValue([
+            { process: 'test', wallDuration: 10, occurrences: 10, thread: '' },
+            { process: 'test2', wallDuration: 11, occurrences: 11, thread: '' },
+        ]);
+        let a = { rightNs: 1, cpus: [11, 12, 13] };
+        expect((tabPaneCpuByThread.data = a)).toBeTruthy();
     });
 
     it('TabPaneCpuByThreadTest04', function () {
-        let mockgetTabCpuByThread = sqlit.getTabCpuByThread
-        mockgetTabCpuByThread.mockResolvedValue([])
-        let a = {rightNs: 1, cpus: [11, 12, 13]}
-        expect(tabPaneCpuByThread.data = a).toBeTruthy();
+        let mockgetTabCpuByThread = sqlit.getTabCpuByThread;
+        mockgetTabCpuByThread.mockResolvedValue([]);
+        let a = { rightNs: 1, cpus: [11, 12, 13] };
+        expect((tabPaneCpuByThread.data = a)).toBeTruthy();
     });
 
     it('TabPaneCpuByThreadTest05', function () {
@@ -97,4 +94,4 @@ describe('TabPaneCpuByThread Test', () => {
         "
 `);
     });
-})
+});

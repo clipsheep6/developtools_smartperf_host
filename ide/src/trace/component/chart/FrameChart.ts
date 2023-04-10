@@ -13,13 +13,18 @@
  * limitations under the License.
  */
 
-import { BaseElement, element } from "../../../base-ui/BaseElement.js";
-import { Rect } from "../trace/timer-shaft/Rect.js";
-import { ChartMode, ChartStruct, draw, setFuncFrame } from "../../bean/FrameChartStruct.js";
-import { SpApplication } from "../../SpApplication.js";
-import { Utils } from "../trace/base/Utils.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
+import { Rect } from '../trace/timer-shaft/Rect.js';
+import {
+    ChartMode,
+    ChartStruct,
+    draw,
+    setFuncFrame,
+} from '../../bean/FrameChartStruct.js';
+import { SpApplication } from '../../SpApplication.js';
+import { Utils } from '../trace/base/Utils.js';
 
-const TAG: string = "FrameChart";
+const TAG: string = 'FrameChart';
 const scaleHeight = 30;
 const depthHeight = 20;
 const filterPixel = 2;
@@ -37,7 +42,7 @@ export class FrameChart extends BaseElement {
     private startY = 0; // canvas start y coord
     private canvasX = -1; // canvas current x
     private canvasY = -1; // canvas current y
-    private hintContent = ""; // float hint inner html content
+    private hintContent = ''; // float hint inner html content
 
     private historyList: Array<Array<ChartStruct>> = [];
     private currentSize = 0;
@@ -52,7 +57,7 @@ export class FrameChart extends BaseElement {
     private isUpdateCanvas = false;
 
     static get observedAttributes() {
-        return []
+        return [];
     }
 
     /**
@@ -72,7 +77,6 @@ export class FrameChart extends BaseElement {
         for (let callback of this.chartClickListenerList) {
             callback(true);
         }
-
     }
 
     set tabPaneScrollTop(scrollTop: number) {
@@ -117,12 +121,11 @@ export class FrameChart extends BaseElement {
             this.currentSize += rootNode.size;
             this.currentDuration += rootNode.dur;
         }
-        this.rect.width = this.canvas!.width
+        this.rect.width = this.canvas!.width;
         this.rect.height = (this._maxDepth + 1) * 20 + scaleHeight; // 20px/depth and 30 is scale height
-        this.canvas!.style.height = this.rect!.height + "px";
+        this.canvas!.style.height = this.rect!.height + 'px';
         this.canvas!.height = Math.ceil(this.rect!.height);
     }
-
 
     /**
      * cal max Depth
@@ -130,7 +133,11 @@ export class FrameChart extends BaseElement {
      * @param depth current depth
      * @param isCalRoot use depth 1 node to cal depth 0 node size/count/dur
      */
-    private calMaxDepth(node: ChartStruct, depth: number, isCalRoot: boolean): void {
+    private calMaxDepth(
+        node: ChartStruct,
+        depth: number,
+        isCalRoot: boolean
+    ): void {
         node.depth = depth;
         depth++;
         if (node.children && node.children.length > 0) {
@@ -165,11 +172,13 @@ export class FrameChart extends BaseElement {
         switch (this._mode) {
             case ChartMode.Byte:
                 for (let node of this.currentData!) {
-                    let width = Math.round(node.size / this.currentSize * this.rect!.width);
+                    let width = Math.round(
+                        (node.size / this.currentSize) * this.rect!.width
+                    );
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
-                        node.frame = new Rect(x, scaleHeight, width, height)
+                        node.frame = new Rect(x, scaleHeight, width, height);
                     } else {
                         node.frame!.x = x;
                         node.frame!.y = scaleHeight;
@@ -184,16 +193,17 @@ export class FrameChart extends BaseElement {
                     this.setStructFuncFrame(node);
                     this.drawFrameChart(node);
                     x += width;
-
                 }
                 break;
             case ChartMode.Count:
                 for (let node of this.currentData!) {
-                    let width = Math.round(node.count / this.currentCount * this.rect!.width);
+                    let width = Math.round(
+                        (node.count / this.currentCount) * this.rect!.width
+                    );
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
-                        node.frame = new Rect(x, scaleHeight, width, height)
+                        node.frame = new Rect(x, scaleHeight, width, height);
                     } else {
                         node.frame!.x = x;
                         node.frame!.y = scaleHeight;
@@ -212,11 +222,13 @@ export class FrameChart extends BaseElement {
                 break;
             case ChartMode.Duration:
                 for (let node of this.currentData!) {
-                    let width = Math.round(node.dur / this.currentDuration * this.rect!.width);
+                    let width = Math.round(
+                        (node.dur / this.currentDuration) * this.rect!.width
+                    );
                     let height = depthHeight; // 20px / depth
                     // ensure the data for first depth frame
                     if (!node.frame) {
-                        node.frame = new Rect(x, scaleHeight, width, height)
+                        node.frame = new Rect(x, scaleHeight, width, height);
                     } else {
                         node.frame!.x = x;
                         node.frame!.y = scaleHeight;
@@ -244,14 +256,25 @@ export class FrameChart extends BaseElement {
     private drawTriangleOnScale(): void {
         if (ChartStruct.lastSelectFuncStruct) {
             this.canvasContext!.fillStyle = `rgba(${82}, ${145}, ${255})`;
-            let x = Math.ceil(ChartStruct.lastSelectFuncStruct.frame!.x +
-                ChartStruct.lastSelectFuncStruct.frame!.width / 2)
+            let x = Math.ceil(
+                ChartStruct.lastSelectFuncStruct.frame!.x +
+                    ChartStruct.lastSelectFuncStruct.frame!.width / 2
+            );
             if (x < 0) x = sideLength / 2;
             if (x > this.canvas!.width) x = this.canvas!.width - sideLength;
-            this.canvasContext!.moveTo(x - sideLength / 2, scaleHeight - sideLength);
-            this.canvasContext!.lineTo(x + sideLength / 2, scaleHeight - sideLength);
+            this.canvasContext!.moveTo(
+                x - sideLength / 2,
+                scaleHeight - sideLength
+            );
+            this.canvasContext!.lineTo(
+                x + sideLength / 2,
+                scaleHeight - sideLength
+            );
             this.canvasContext!.lineTo(x, scaleHeight);
-            this.canvasContext!.lineTo(x - sideLength / 2, scaleHeight - sideLength);
+            this.canvasContext!.lineTo(
+                x - sideLength / 2,
+                scaleHeight - sideLength
+            );
             this.canvasContext?.fill();
         }
     }
@@ -260,7 +283,12 @@ export class FrameChart extends BaseElement {
      * clear canvas all data
      */
     public clearCanvas(): void {
-        this.canvasContext?.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
+        this.canvasContext?.clearRect(
+            0,
+            0,
+            this.canvas!.width,
+            this.canvas!.height
+        );
     }
 
     /**
@@ -268,8 +296,8 @@ export class FrameChart extends BaseElement {
      */
     public updateCanvas(updateWidth: boolean, newWidth?: number): void {
         if (this.canvas instanceof HTMLCanvasElement) {
-            this.canvas.style.width = 100 + "%";
-            this.canvas.style.height = this.rect!.height + "px";
+            this.canvas.style.width = 100 + '%';
+            this.canvas.style.height = this.rect!.height + 'px';
             if (this.canvas.clientWidth == 0 && newWidth) {
                 this.canvas.width = newWidth - 40;
             } else {
@@ -278,9 +306,13 @@ export class FrameChart extends BaseElement {
             this.canvas.height = Math.ceil(this.rect!.height);
             this.updateCanvasCoord();
         }
-        if (this.rect.width == 0 || updateWidth ||
-            Math.round(newWidth!) != this.canvas!.width + 40 || newWidth! > this.rect.width) {
-            this.rect.width = this.canvas!.width
+        if (
+            this.rect.width == 0 ||
+            updateWidth ||
+            Math.round(newWidth!) != this.canvas!.width + 40 ||
+            newWidth! > this.rect.width
+        ) {
+            this.rect.width = this.canvas!.width;
         }
     }
 
@@ -293,8 +325,15 @@ export class FrameChart extends BaseElement {
             if (this.canvas.getBoundingClientRect()) {
                 let box = this.canvas.getBoundingClientRect();
                 let D = document.documentElement;
-                this.startX = box.left + Math.max(D.scrollLeft, document.body.scrollLeft) - D.clientLeft;
-                this.startY = box.top + Math.max(D.scrollTop, document.body.scrollTop) - D.clientTop + this.canvasScrollTop;
+                this.startX =
+                    box.left +
+                    Math.max(D.scrollLeft, document.body.scrollLeft) -
+                    D.clientLeft;
+                this.startY =
+                    box.top +
+                    Math.max(D.scrollTop, document.body.scrollTop) -
+                    D.clientTop +
+                    this.canvasScrollTop;
             }
         }
     }
@@ -303,18 +342,21 @@ export class FrameChart extends BaseElement {
      * draw top Scale Into 100 piece
      */
     private drawScale(): void {
-        let spApplication = <SpApplication>document.getElementsByTagName("sp-application")[0];
+        let spApplication = <SpApplication>(
+            document.getElementsByTagName('sp-application')[0]
+        );
         // line
         this.canvasContext!.lineWidth = 0.5;
         this.canvasContext?.moveTo(0, 0);
         this.canvasContext?.lineTo(this.canvas!.width, 0);
 
         for (let i = 0; i <= 10; i++) {
-            let startX = Math.floor(this.canvas!.width / 10 * i);
+            let startX = Math.floor((this.canvas!.width / 10) * i);
             for (let j = 0; j < 10; j++) {
                 // children scale
                 this.canvasContext!.lineWidth = 0.5;
-                let startItemX = startX + Math.floor(this.canvas!.width / 100 * j);
+                let startItemX =
+                    startX + Math.floor((this.canvas!.width / 100) * j);
                 this.canvasContext?.moveTo(startItemX, 0);
                 this.canvasContext?.lineTo(startItemX, 10);
             }
@@ -323,35 +365,46 @@ export class FrameChart extends BaseElement {
             this.canvasContext!.lineWidth = 1;
             let sizeRatio = this.canvas!.width / this.rect.width; // scale ratio
             if (spApplication.dark) {
-                this.canvasContext!.strokeStyle = "#888";
+                this.canvasContext!.strokeStyle = '#888';
             } else {
-                this.canvasContext!.strokeStyle = "#ddd";
+                this.canvasContext!.strokeStyle = '#ddd';
             }
             this.canvasContext?.moveTo(startX, 0);
             this.canvasContext?.lineTo(startX, this.canvas!.height);
             if (spApplication.dark) {
-                this.canvasContext!.fillStyle = "#fff";
+                this.canvasContext!.fillStyle = '#fff';
             } else {
-                this.canvasContext!.fillStyle = "#000";
+                this.canvasContext!.fillStyle = '#000';
             }
             let scale = '';
             switch (this._mode) {
                 case ChartMode.Byte:
-                    scale = Utils.getByteWithUnit(this.currentSize * sizeRatio / 10 * i);
+                    scale = Utils.getByteWithUnit(
+                        ((this.currentSize * sizeRatio) / 10) * i
+                    );
                     break;
                 case ChartMode.Count:
-                    scale = (this.currentCount * sizeRatio / 10 * i).toFixed(0) + '';
+                    scale =
+                        (((this.currentCount * sizeRatio) / 10) * i).toFixed(
+                            0
+                        ) + '';
                     break;
                 case ChartMode.Duration:
-                    scale = Utils.getProbablyTime(this.currentDuration * sizeRatio / 10 * i);
+                    scale = Utils.getProbablyTime(
+                        ((this.currentDuration * sizeRatio) / 10) * i
+                    );
                     break;
             }
             let size = this.canvasContext!.measureText(scale).width;
-            this.canvasContext?.fillText(scale, startX - size - 5, depthHeight, 50); // 50 is Text max Length
+            this.canvasContext?.fillText(
+                scale,
+                startX - size - 5,
+                depthHeight,
+                50
+            ); // 50 is Text max Length
             this.canvasContext?.stroke();
         }
     }
-
 
     private setStructFuncFrame(node: ChartStruct) {
         if (node.children && node.children.length > 0) {
@@ -360,15 +413,30 @@ export class FrameChart extends BaseElement {
                 children.parent = node;
                 switch (this._mode) {
                     case ChartMode.Byte:
-                        setFuncFrame(children, this.rect, this.currentSize, this._mode);
+                        setFuncFrame(
+                            children,
+                            this.rect,
+                            this.currentSize,
+                            this._mode
+                        );
                         children.percent = children.size / this.currentSize;
                         break;
                     case ChartMode.Count:
-                        setFuncFrame(children, this.rect, this.currentCount, this._mode);
+                        setFuncFrame(
+                            children,
+                            this.rect,
+                            this.currentCount,
+                            this._mode
+                        );
                         children.percent = children.count / this.currentCount;
                         break;
                     case ChartMode.Duration:
-                        setFuncFrame(children, this.rect, this.currentDuration, this._mode);
+                        setFuncFrame(
+                            children,
+                            this.rect,
+                            this.currentDuration,
+                            this._mode
+                        );
                         children.percent = children.dur / this.currentDuration;
                         break;
                 }
@@ -389,10 +457,13 @@ export class FrameChart extends BaseElement {
         if (node.children && node.children.length > 0) {
             for (let children of node.children) {
                 // not draw when rect not in canvas
-                if ((children.frame!.x + children.frame!.width >= 0 && //less than canvas left 
-                    children.frame!.x < this.canvas!.width && // more than canvas right
-                    children.frame!.width > filterPixel) || // filter px
-                    children.needShow) { // click and back
+                if (
+                    (children.frame!.x + children.frame!.width >= 0 && //less than canvas left
+                        children.frame!.x < this.canvas!.width && // more than canvas right
+                        children.frame!.width > filterPixel) || // filter px
+                    children.needShow
+                ) {
+                    // click and back
                     effectChildList.push(children);
                 } else {
                     ignoreSize += children.size;
@@ -406,13 +477,19 @@ export class FrameChart extends BaseElement {
                     children.frame!.x = x;
                     switch (this._mode) {
                         case ChartMode.Byte:
-                            children.frame!.width = children.size / (node.size - ignoreSize) * node.frame!.width;
+                            children.frame!.width =
+                                (children.size / (node.size - ignoreSize)) *
+                                node.frame!.width;
                             break;
                         case ChartMode.Count:
-                            children.frame!.width = children.count / (node.count - ignoreCount) * node.frame!.width;
+                            children.frame!.width =
+                                (children.count / (node.count - ignoreCount)) *
+                                node.frame!.width;
                             break;
                         case ChartMode.Duration:
-                            children.frame!.width = children.dur / (node.dur - ignoreDur) * node.frame!.width;
+                            children.frame!.width =
+                                (children.dur / (node.dur - ignoreDur)) *
+                                node.frame!.width;
                             break;
                     }
                     x += children.frame!.width;
@@ -421,12 +498,11 @@ export class FrameChart extends BaseElement {
                 }
             } else {
                 let firstChildren = node.children[0];
-                firstChildren.frame!.x = node.frame!.x
+                firstChildren.frame!.x = node.frame!.x;
                 firstChildren.frame!.width = node.frame!.width;
                 draw(this.canvasContext!, firstChildren);
                 this.drawFrameChart(firstChildren);
             }
-
         }
     }
 
@@ -438,7 +514,11 @@ export class FrameChart extends BaseElement {
      * @param canvasY y coord of canvas
      * @returns target node
      */
-    private searchData(nodes: Array<ChartStruct>, canvasX: number, canvasY: number): any {
+    private searchData(
+        nodes: Array<ChartStruct>,
+        canvasX: number,
+        canvasY: number
+    ): any {
         for (let node of nodes) {
             if (node.frame?.contains(canvasX, canvasY)) {
                 return node;
@@ -460,7 +540,10 @@ export class FrameChart extends BaseElement {
         let x = this.canvasX;
         let y = this.canvasY - this.canvasScrollTop;
         //right rect hint show left
-        if (this.canvasX + this.floatHint!.clientWidth > (this.canvas?.clientWidth || 0)) {
+        if (
+            this.canvasX + this.floatHint!.clientWidth >
+            (this.canvas?.clientWidth || 0)
+        ) {
             x -= this.floatHint!.clientWidth - 1;
         } else {
             x += scaleHeight;
@@ -497,7 +580,9 @@ export class FrameChart extends BaseElement {
             switch (this._mode) {
                 case ChartMode.Byte:
                     //limit 10 byte
-                    if (Math.round(this.currentSize * sizeRatio / 1.2) <= 10) {
+                    if (
+                        Math.round((this.currentSize * sizeRatio) / 1.2) <= 10
+                    ) {
                         if (this.xPoint == 0) {
                             return;
                         }
@@ -506,25 +591,34 @@ export class FrameChart extends BaseElement {
                     break;
                 case ChartMode.Count:
                     //limit 10 counts
-                    if (Math.round(this.currentCount * sizeRatio / 1.2) <= 10) {
+                    if (
+                        Math.round((this.currentCount * sizeRatio) / 1.2) <= 10
+                    ) {
                         if (this.xPoint == 0) {
                             return;
                         }
-                        newWidth = this.canvas!.width / (10 / this.currentCount);
+                        newWidth =
+                            this.canvas!.width / (10 / this.currentCount);
                     }
                     break;
                 case ChartMode.Duration:
                     //limit 10ms
-                    if (Math.round(this.currentDuration * sizeRatio / 1.2) <= 10_000_000) {
+                    if (
+                        Math.round((this.currentDuration * sizeRatio) / 1.2) <=
+                        10_000_000
+                    ) {
                         if (this.xPoint == 0) {
                             return;
                         }
-                        newWidth = this.canvas!.width / (10_000_000 / this.currentDuration);
+                        newWidth =
+                            this.canvas!.width /
+                            (10_000_000 / this.currentDuration);
                     }
                     break;
             }
             deltaWidth = newWidth - this.rect!.width;
-        } else { // zoom out
+        } else {
+            // zoom out
             newWidth = this.rect!.width - deltaWidth;
             // min scale
             if (newWidth < this.canvas!.width) {
@@ -548,8 +642,13 @@ export class FrameChart extends BaseElement {
      * @param deltaWidth scale delta width
      * @param newWidth rect width after scale
      */
-    private translationByScale(index: number, deltaWidth: number, newWidth: number): void {
-        let translationValue = deltaWidth * (this.canvasX - this.xPoint) / this.rect.width;
+    private translationByScale(
+        index: number,
+        deltaWidth: number,
+        newWidth: number
+    ): void {
+        let translationValue =
+            (deltaWidth * (this.canvasX - this.xPoint)) / this.rect.width;
         if (index > 0) {
             this.xPoint -= translationValue;
         } else {
@@ -593,8 +692,12 @@ export class FrameChart extends BaseElement {
      * @param e MouseEvent
      */
     private onMouseClick(e: MouseEvent): void {
-        if (e.button == 0) { // mouse left button
-            if (ChartStruct.hoverFuncStruct && ChartStruct.hoverFuncStruct != ChartStruct.selectFuncStruct) {
+        if (e.button == 0) {
+            // mouse left button
+            if (
+                ChartStruct.hoverFuncStruct &&
+                ChartStruct.hoverFuncStruct != ChartStruct.selectFuncStruct
+            ) {
                 this.drawDataSet(ChartStruct.lastSelectFuncStruct!, false);
                 ChartStruct.lastSelectFuncStruct = undefined;
                 ChartStruct.selectFuncStruct = ChartStruct.hoverFuncStruct;
@@ -609,7 +712,8 @@ export class FrameChart extends BaseElement {
                     callback(false);
                 }
             }
-        } else if (e.button == 2) { // mouse right button
+        } else if (e.button == 2) {
+            // mouse right button
             ChartStruct.selectFuncStruct = undefined;
             ChartStruct.hoverFuncStruct = undefined;
             if (this.currentData.length == 1 && this.historyList.length > 0) {
@@ -656,16 +760,26 @@ export class FrameChart extends BaseElement {
      */
     private onMouseMove(): void {
         let lastNode = ChartStruct.hoverFuncStruct;
-        let searchResult = this.searchData(this.currentData!, this.canvasX, this.canvasY);
-        if (searchResult && (searchResult.isDraw ||
-            searchResult.needShow || searchResult.depth == 0)) {
+        let searchResult = this.searchData(
+            this.currentData!,
+            this.canvasX,
+            this.canvasY
+        );
+        if (
+            searchResult &&
+            (searchResult.isDraw ||
+                searchResult.needShow ||
+                searchResult.depth == 0)
+        ) {
             ChartStruct.hoverFuncStruct = searchResult;
             // judge current node is hover redraw chart
             if (searchResult != lastNode) {
                 let name = ChartStruct.hoverFuncStruct?.symbol;
                 switch (this._mode) {
                     case ChartMode.Byte:
-                        let size = Utils.getByteWithUnit(ChartStruct.hoverFuncStruct!.size);
+                        let size = Utils.getByteWithUnit(
+                            ChartStruct.hoverFuncStruct!.size
+                        );
                         this.hintContent = `
                         <span class="bold">Symbol: </span> <span class="text">${name} </span> <br>
                         <span class="bold">Lib: </span> <span class="text">${ChartStruct.hoverFuncStruct?.lib}</span> <br>
@@ -680,7 +794,9 @@ export class FrameChart extends BaseElement {
                         <span class="bold">Count: </span> <span> ${count}</span>`;
                         break;
                     case ChartMode.Duration:
-                        let duration = Utils.getProbablyTime(ChartStruct.hoverFuncStruct!.dur);
+                        let duration = Utils.getProbablyTime(
+                            ChartStruct.hoverFuncStruct!.dur
+                        );
                         this.hintContent = `
                         <span class="bold">Name: </span> <span class="text">${name} </span> <br>
                         <span class="bold">Duration: </span> <span>${duration}</span>`;
@@ -697,8 +813,8 @@ export class FrameChart extends BaseElement {
     }
 
     initElements(): void {
-        this.canvas = this.shadowRoot?.querySelector("#canvas");
-        this.canvasContext = this.canvas?.getContext("2d");
+        this.canvas = this.shadowRoot?.querySelector('#canvas');
+        this.canvasContext = this.canvas?.getContext('2d');
         this.floatHint = this.shadowRoot?.querySelector('#float_hint');
 
         this.canvas!.oncontextmenu = () => {
@@ -706,7 +822,7 @@ export class FrameChart extends BaseElement {
         };
         this.canvas!.onmouseup = (e) => {
             this.onMouseClick(e);
-        }
+        };
 
         this.canvas!.onmousemove = (e) => {
             if (!this.isUpdateCanvas) {
@@ -745,12 +861,18 @@ export class FrameChart extends BaseElement {
             if (this.canvas!.getBoundingClientRect()) {
                 let box = this.canvas!.getBoundingClientRect();
                 let D = document.documentElement;
-                this.startX = box.left + Math.max(D.scrollLeft, document.body.scrollLeft) - D.clientLeft;
-                this.startY = box.top + Math.max(D.scrollTop, document.body.scrollTop) - D.clientTop + this.canvasScrollTop;
+                this.startX =
+                    box.left +
+                    Math.max(D.scrollLeft, document.body.scrollLeft) -
+                    D.clientLeft;
+                this.startY =
+                    box.top +
+                    Math.max(D.scrollTop, document.body.scrollTop) -
+                    D.clientTop +
+                    this.canvasScrollTop;
             }
         }).observe(document.documentElement);
     }
-
 
     initHtml(): string {
         return `

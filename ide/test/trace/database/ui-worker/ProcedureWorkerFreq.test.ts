@@ -13,17 +13,20 @@
  * limitations under the License.
  */
 
-jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
-    return {}
+jest.mock('../../../../dist/trace/component/trace/base/TraceRow.js', () => {
+    return {};
 });
 
 // @ts-ignore
-import {CpuFreqStruct,FreqRender, freq} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerFreq.js";
+import {
+    CpuFreqStruct,
+    FreqRender,
+    freq,
+} from '../../../../dist/trace/database/ui-worker/ProcedureWorkerFreq.js';
 // @ts-ignore
-import {Rect} from "../../../../dist/trace/component/trace/timer-shaft/Rect.js";
+import { Rect } from '../../../../dist/trace/component/trace/timer-shaft/Rect.js';
 
 describe('freqTest', () => {
-
     it('freqTest01', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
@@ -35,15 +38,14 @@ describe('freqTest', () => {
                 x: 20,
                 y: 20,
                 width: 100,
-                height: 100
+                height: 100,
             },
             startNS: 200,
-            value: 50
-        }
+            value: 50,
+        };
 
-        expect(CpuFreqStruct.draw(ctx, data)).toBeUndefined()
-
-    })
+        expect(CpuFreqStruct.draw(ctx, data)).toBeUndefined();
+    });
     it('freqTest02', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
@@ -54,11 +56,11 @@ describe('freqTest', () => {
                 x: 20,
                 y: 20,
                 width: 100,
-                height: 100
+                height: 100,
             },
             maxFreq: 200,
-            value: 50
-        }
-        expect(CpuFreqStruct.draw(ctx,Sourcedata)).toBeUndefined()})
-
+            value: 50,
+        };
+        expect(CpuFreqStruct.draw(ctx, Sourcedata)).toBeUndefined();
+    });
 });

@@ -13,36 +13,37 @@
  * limitations under the License.
  */
 
-import {BaseElement, element} from "../../../base-ui/BaseElement.js";
-import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
-import {procedurePool} from "../../database/Procedure.js";
-import {SpSchedulingAnalysis} from "./SpSchedulingAnalysis.js";
-import {info} from "../../../log/Log.js";
-import {LitTable} from "../../../base-ui/table/lit-table.js";
-import "../../../base-ui/progress-bar/LitProgressBar.js"
-import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
-import {getDataNo} from "./utils/Utils.js";
-import "./TableNoData.js"
-import {TableNoData} from "./TableNoData.js";
-import {pieChartColors} from "../../../base-ui/chart/pie/LitChartPieData.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
+import { LitChartPie } from '../../../base-ui/chart/pie/LitChartPie.js';
+import { procedurePool } from '../../database/Procedure.js';
+import { SpSchedulingAnalysis } from './SpSchedulingAnalysis.js';
+import { info } from '../../../log/Log.js';
+import { LitTable } from '../../../base-ui/table/lit-table.js';
+import '../../../base-ui/progress-bar/LitProgressBar.js';
+import { LitProgressBar } from '../../../base-ui/progress-bar/LitProgressBar.js';
+import { getDataNo } from './utils/Utils.js';
+import './TableNoData.js';
+import { TableNoData } from './TableNoData.js';
+import { pieChartColors } from '../../../base-ui/chart/pie/LitChartPieData.js';
 
 @element('tab-cpu-details-idle')
 export class TabCpuDetailsIdle extends BaseElement {
-
-    private tableNoData:TableNoData | null | undefined;
-    private table:LitTable | null | undefined;
-    private progress:LitProgressBar | null | undefined;
-    traceChange:boolean = false;
-    private pie:LitChartPie | null | undefined;
-    private data:Array<any> = [];
+    private tableNoData: TableNoData | null | undefined;
+    private table: LitTable | null | undefined;
+    private progress: LitProgressBar | null | undefined;
+    traceChange: boolean = false;
+    private pie: LitChartPie | null | undefined;
+    private data: Array<any> = [];
     private sortColumn: string = '';
     private sortType: number = 0;
 
     initElements(): void {
-        this.tableNoData = this.shadowRoot!.querySelector<TableNoData>("#table-no-data")
-        this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
-        this.pie = this.shadowRoot!.querySelector<LitChartPie>("#chart-pie")
-        this.table = this.shadowRoot!.querySelector<LitTable>("#tb-cpu-usage")
+        this.tableNoData =
+            this.shadowRoot!.querySelector<TableNoData>('#table-no-data');
+        this.progress =
+            this.shadowRoot!.querySelector<LitProgressBar>('#loading');
+        this.pie = this.shadowRoot!.querySelector<LitChartPie>('#chart-pie');
+        this.table = this.shadowRoot!.querySelector<LitTable>('#tb-cpu-usage');
 
         this.table!.addEventListener('row-click', (evt: any) => {
             // @ts-ignore
@@ -51,46 +52,54 @@ export class TabCpuDetailsIdle extends BaseElement {
             // @ts-ignore
             if ((evt.detail as any).callBack) {
                 // @ts-ignore
-                (evt.detail as any).callBack(true)
+                (evt.detail as any).callBack(true);
             }
-        })
+        });
 
-        this.table!.addEventListener('column-click', (evt:any) => {
+        this.table!.addEventListener('column-click', (evt: any) => {
             this.sortColumn = evt.detail.key;
             this.sortType = evt.detail.sort;
             // @ts-ignore
-            this.sortByColumn(evt.detail)
+            this.sortByColumn(evt.detail);
         });
     }
 
-    init(cpu:number){
-        this.queryPieChartDataByType("CPU Idle",cpu)
+    init(cpu: number) {
+        this.queryPieChartDataByType('CPU Idle', cpu);
     }
 
-    queryPieChartDataByType(type: string,cpu:number) {
-        if(this.traceChange){return;}
+    queryPieChartDataByType(type: string, cpu: number) {
+        if (this.traceChange) {
+            return;
+        }
         this.progress!.loading = true;
-        this.queryLoginWorker(`scheduling-${type}`, "query Cpu Frequency Analysis Time:", (res) => {
-            this.traceChange = true;
-            this.progress!.loading = false;
-            this.data = res.get(cpu) || [];
-            this.data = getDataNo(this.data);
-            this.tableNoData!.noData = (this.data.length == 0);
-            this.noData(this.data.length == 0);
-            this.pie!.config = {
-                appendPadding: 0,
-                data: res.get(cpu) || [],
-                angleField: 'sum',
-                colorField: 'value',
-                radius: 1,
-                label: {
-                    type: 'outer',
-                    color:type !== "CPU Idle" ? undefined : (it )=>{
-                        return pieChartColors[(it as any).value]
-                    }
-                },
-                tip:(obj)=>{
-                    return `<div>
+        this.queryLoginWorker(
+            `scheduling-${type}`,
+            'query Cpu Frequency Analysis Time:',
+            (res) => {
+                this.traceChange = true;
+                this.progress!.loading = false;
+                this.data = res.get(cpu) || [];
+                this.data = getDataNo(this.data);
+                this.tableNoData!.noData = this.data.length == 0;
+                this.noData(this.data.length == 0);
+                this.pie!.config = {
+                    appendPadding: 0,
+                    data: res.get(cpu) || [],
+                    angleField: 'sum',
+                    colorField: 'value',
+                    radius: 1,
+                    label: {
+                        type: 'outer',
+                        color:
+                            type !== 'CPU Idle'
+                                ? undefined
+                                : (it) => {
+                                      return pieChartColors[(it as any).value];
+                                  },
+                    },
+                    tip: (obj) => {
+                        return `<div>
                                 <div>idle:${obj.obj.value}</div> 
                                 <div>min:${obj.obj.min}</div>
                                 <div>max:${obj.obj.max}</div>
@@ -98,40 +107,57 @@ export class TabCpuDetailsIdle extends BaseElement {
                                 <div>duration:${obj.obj.sumTimeStr}</div>
                                 <div>ratio:${obj.obj.ratio}%</div>
                             </div>
-                                `
-                },
-                interactions: [
-                    {
-                        type: 'element-active',
+                                `;
                     },
-                ],
+                    interactions: [
+                        {
+                            type: 'element-active',
+                        },
+                    ],
+                };
+                if (this.sortColumn != '') {
+                    this.sortByColumn({
+                        key: this.sortColumn,
+                        sort: this.sortType,
+                    });
+                } else {
+                    this.table!.recycleDataSource = this.data;
+                }
+                this.table?.reMeauseHeight();
             }
-            if (this.sortColumn != ""){
-                this.sortByColumn({key:this.sortColumn,sort:this.sortType});
-            }else {
-                this.table!.recycleDataSource = this.data;
-            }
-            this.table?.reMeauseHeight()
-        })
+        );
     }
 
-    noData(value:boolean){
-        this.shadowRoot!.querySelector<HTMLDivElement>(".chart-box")!.style.display = value?"none":"block"
-        this.shadowRoot!.querySelector<HTMLDivElement>(".table-box")!.style.width = value?"100%":"60%"
+    noData(value: boolean) {
+        this.shadowRoot!.querySelector<HTMLDivElement>(
+            '.chart-box'
+        )!.style.display = value ? 'none' : 'block';
+        this.shadowRoot!.querySelector<HTMLDivElement>(
+            '.table-box'
+        )!.style.width = value ? '100%' : '60%';
     }
 
-    clearData(){
+    clearData() {
         this.traceChange = false;
-        this.pie!.dataSource = []
-        this.table!.recycleDataSource = []
-        this.noData(false)
+        this.pie!.dataSource = [];
+        this.table!.recycleDataSource = [];
+        this.noData(false);
     }
 
-    queryLoginWorker(option:string,log:string,handler:(res:any) => void){
+    queryLoginWorker(option: string, log: string, handler: (res: any) => void) {
         let time = new Date().getTime();
-        procedurePool.submitWithName("logic1", option, { endTs:SpSchedulingAnalysis.endTs,total:SpSchedulingAnalysis.totalDur }, undefined, handler)
+        procedurePool.submitWithName(
+            'logic1',
+            option,
+            {
+                endTs: SpSchedulingAnalysis.endTs,
+                total: SpSchedulingAnalysis.totalDur,
+            },
+            undefined,
+            handler
+        );
         let durTime = new Date().getTime() - time;
-        info(log, durTime)
+        info(log, durTime);
     }
 
     sortByColumn(detail: any) {
@@ -140,33 +166,43 @@ export class TabCpuDetailsIdle extends BaseElement {
             return function (a: any, b: any) {
                 if (type === 'number') {
                     // @ts-ignore
-                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                    return sort === 2
+                        ? parseFloat(b[property]) - parseFloat(a[property])
+                        : parseFloat(a[property]) - parseFloat(b[property]);
                 } else {
                     if (sort === 2) {
-                        return b[property].toString().localeCompare(a[property].toString());
-                    }else {
-                        return a[property].toString().localeCompare(b[property].toString());
+                        return b[property]
+                            .toString()
+                            .localeCompare(a[property].toString());
+                    } else {
+                        return a[property]
+                            .toString()
+                            .localeCompare(b[property].toString());
                     }
                 }
-            }
+            };
         }
 
         if (detail.key === 'min') {
-            detail.key = "minValue";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'max') {
-            detail.key = "maxValue";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'avg') {
-            detail.key = "avgValue";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'sumTimeStr') {
-            detail.key = "sum";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'value' || detail.key === 'ratio' || detail.key === 'index') {
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
+            detail.key = 'minValue';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (detail.key === 'max') {
+            detail.key = 'maxValue';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (detail.key === 'avg') {
+            detail.key = 'avgValue';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (detail.key === 'sumTimeStr') {
+            detail.key = 'sum';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (
+            detail.key === 'value' ||
+            detail.key === 'ratio' ||
+            detail.key === 'index'
+        ) {
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
         } else {
-            this.data.sort(compare(detail.key, detail.sort, 'string'))
+            this.data.sort(compare(detail.key, detail.sort, 'string'));
         }
         this.table!.recycleDataSource = this.data;
     }

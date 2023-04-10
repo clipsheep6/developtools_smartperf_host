@@ -13,39 +13,44 @@
  * limitations under the License.
  */
 
-import {BaseElement, element} from "../../../base-ui/BaseElement.js";
-import {LitChartPie} from "../../../base-ui/chart/pie/LitChartPie.js";
-import {procedurePool} from "../../database/Procedure.js";
-import {LitTable} from "../../../base-ui/table/lit-table.js";
-import {LitProgressBar} from "../../../base-ui/progress-bar/LitProgressBar.js";
-import "../../../base-ui/progress-bar/LitProgressBar.js"
-import {getDataNo} from "./utils/Utils.js";
-import "./TableNoData.js"
-import {TableNoData} from "./TableNoData.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
+import { LitChartPie } from '../../../base-ui/chart/pie/LitChartPie.js';
+import { procedurePool } from '../../database/Procedure.js';
+import { LitTable } from '../../../base-ui/table/lit-table.js';
+import { LitProgressBar } from '../../../base-ui/progress-bar/LitProgressBar.js';
+import '../../../base-ui/progress-bar/LitProgressBar.js';
+import { getDataNo } from './utils/Utils.js';
+import './TableNoData.js';
+import { TableNoData } from './TableNoData.js';
 
 @element('tab-cpu-details-threads')
 export class TabCpuDetailsThreads extends BaseElement {
-
-    private tableNoData:TableNoData | null | undefined;
-    private table:LitTable | null | undefined;
-    private progress:LitProgressBar | null | undefined;
-    private pie:LitChartPie | null | undefined
-    private data:Array<any> = [];
+    private tableNoData: TableNoData | null | undefined;
+    private table: LitTable | null | undefined;
+    private progress: LitProgressBar | null | undefined;
+    private pie: LitChartPie | null | undefined;
+    private data: Array<any> = [];
     private sortColumn: string = '';
     private sortType: number = 0;
 
     initElements(): void {
-        this.tableNoData = this.shadowRoot!.querySelector<TableNoData>("#table-no-data")
-        this.progress = this.shadowRoot!.querySelector<LitProgressBar>("#loading")
-        this.pie = this.shadowRoot!.querySelector<LitChartPie>("#chart-pie")
-        this.table = this.shadowRoot!.querySelector<LitTable>("#tb-cpu-usage")
+        this.tableNoData =
+            this.shadowRoot!.querySelector<TableNoData>('#table-no-data');
+        this.progress =
+            this.shadowRoot!.querySelector<LitProgressBar>('#loading');
+        this.pie = this.shadowRoot!.querySelector<LitChartPie>('#chart-pie');
+        this.table = this.shadowRoot!.querySelector<LitTable>('#tb-cpu-usage');
 
-        this.shadowRoot!.querySelector<HTMLDivElement>(".go-back")!.onclick = (e)=>{
+        this.shadowRoot!.querySelector<HTMLDivElement>('.go-back')!.onclick = (
+            e
+        ) => {
             if (!this.progress!.loading) {
-                this.parentNode!.querySelector<HTMLDivElement>(".d-box")!.style.display = "flex";
+                this.parentNode!.querySelector<HTMLDivElement>(
+                    '.d-box'
+                )!.style.display = 'flex';
                 this.setShow = false;
             }
-        }
+        };
 
         this.table!.addEventListener('row-click', (evt: any) => {
             // @ts-ignore
@@ -54,40 +59,48 @@ export class TabCpuDetailsThreads extends BaseElement {
             // @ts-ignore
             if ((evt.detail as any).callBack) {
                 // @ts-ignore
-                (evt.detail as any).callBack(true)
+                (evt.detail as any).callBack(true);
             }
-        })
+        });
 
-        this.table!.addEventListener('column-click', (evt:any) => {
+        this.table!.addEventListener('column-click', (evt: any) => {
             this.sortColumn = evt.detail.key;
             this.sortType = evt.detail.sort;
             // @ts-ignore
-            this.sortByColumn(evt.detail)
+            this.sortByColumn(evt.detail);
         });
     }
 
-    init(cpu:number,it:any){
-        this.shadowRoot!.querySelector<HTMLDivElement>(".subheading")!.textContent = ("Threads in Freq " + it.value);
+    init(cpu: number, it: any) {
+        this.shadowRoot!.querySelector<HTMLDivElement>(
+            '.subheading'
+        )!.textContent = 'Threads in Freq ' + it.value;
         this.progress!.loading = true;
-        procedurePool.submitWithName("logic1", "scheduling-CPU Frequency Thread", { cpu:cpu,freq:(it as any).value }, undefined, (res:any)=>{
-            this.progress!.loading = false;
-            this.queryPieChartDataByType(res)
-        })
+        procedurePool.submitWithName(
+            'logic1',
+            'scheduling-CPU Frequency Thread',
+            { cpu: cpu, freq: (it as any).value },
+            undefined,
+            (res: any) => {
+                this.progress!.loading = false;
+                this.queryPieChartDataByType(res);
+            }
+        );
     }
 
-    set setShow(v:boolean){
+    set setShow(v: boolean) {
         if (v) {
-            this.style.display = "flex";
-        }else {
+            this.style.display = 'flex';
+        } else {
             this.clearData();
-            this.style.display = "none";
+            this.style.display = 'none';
         }
     }
 
-    queryPieChartDataByType(res:any) {
+    queryPieChartDataByType(res: any) {
         this.data = res || [];
         this.data = getDataNo(this.data);
-        this.tableNoData!.noData = (this.data.length == 0);
+        this.tableNoData!.noData = this.data.length == 0;
         this.noData(this.data.length == 0);
         this.pie!.config = {
             appendPadding: 0,
@@ -98,7 +111,7 @@ export class TabCpuDetailsThreads extends BaseElement {
             label: {
                 type: 'outer',
             },
-            tip:(obj)=>{
+            tip: (obj) => {
                 return `<div>
                                 <div>t_name:${obj.obj.tName}</div> 
                                 <div>tid:${obj.obj.tid}</div>
@@ -107,31 +120,35 @@ export class TabCpuDetailsThreads extends BaseElement {
                                 <div>duration:${obj.obj.durStr}</div>
                                 <div>ratio:${obj.obj.ratio}%</div>
                             </div>
-                                `
+                                `;
             },
             interactions: [
                 {
                     type: 'element-active',
                 },
             ],
-        }
-        if (this.sortColumn != ""){
-            this.sortByColumn({key:this.sortColumn,sort:this.sortType});
-        }else {
+        };
+        if (this.sortColumn != '') {
+            this.sortByColumn({ key: this.sortColumn, sort: this.sortType });
+        } else {
             this.table!.recycleDataSource = this.data;
         }
-        this.table?.reMeauseHeight()
+        this.table?.reMeauseHeight();
     }
 
-    noData(value:boolean){
-        this.shadowRoot!.querySelector<HTMLDivElement>(".chart-box")!.style.display = value?"none":"block"
-        this.shadowRoot!.querySelector<HTMLDivElement>(".table-box")!.style.width = value?"100%":"60%"
+    noData(value: boolean) {
+        this.shadowRoot!.querySelector<HTMLDivElement>(
+            '.chart-box'
+        )!.style.display = value ? 'none' : 'block';
+        this.shadowRoot!.querySelector<HTMLDivElement>(
+            '.table-box'
+        )!.style.width = value ? '100%' : '60%';
     }
 
-    clearData(){
-        this.pie!.dataSource = []
-        this.table!.recycleDataSource = []
-        this.noData(false)
+    clearData() {
+        this.pie!.dataSource = [];
+        this.table!.recycleDataSource = [];
+        this.noData(false);
     }
 
     sortByColumn(detail: any) {
@@ -140,24 +157,36 @@ export class TabCpuDetailsThreads extends BaseElement {
             return function (a: any, b: any) {
                 if (type === 'number') {
                     // @ts-ignore
-                    return sort === 2 ? parseFloat(b[property]) - parseFloat(a[property]) : parseFloat(a[property]) - parseFloat(b[property]);
+                    return sort === 2
+                        ? parseFloat(b[property]) - parseFloat(a[property])
+                        : parseFloat(a[property]) - parseFloat(b[property]);
                 } else {
                     if (sort === 2) {
-                        return b[property].toString().localeCompare(a[property].toString());
-                    }else {
-                        return a[property].toString().localeCompare(b[property].toString());
+                        return b[property]
+                            .toString()
+                            .localeCompare(a[property].toString());
+                    } else {
+                        return a[property]
+                            .toString()
+                            .localeCompare(b[property].toString());
                     }
                 }
-            }
+            };
         }
 
         if (detail.key === 'durStr') {
-            detail.key = "dur";
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
-        }else if (detail.key === 'value' || detail.key === 'ratio' || detail.key === 'index' || detail.key === 'tid' || detail.key === 'pid') {
-            this.data.sort(compare(detail.key, detail.sort, 'number'))
+            detail.key = 'dur';
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
+        } else if (
+            detail.key === 'value' ||
+            detail.key === 'ratio' ||
+            detail.key === 'index' ||
+            detail.key === 'tid' ||
+            detail.key === 'pid'
+        ) {
+            this.data.sort(compare(detail.key, detail.sort, 'number'));
         } else {
-            this.data.sort(compare(detail.key, detail.sort, 'string'))
+            this.data.sort(compare(detail.key, detail.sort, 'string'));
         }
         this.table!.recycleDataSource = this.data;
     }

@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import {BaseElement, element} from "../../../base-ui/BaseElement.js";
-import {log} from "../../../log/Log.js";
-import {HdcDeviceManager} from "../../../hdc/HdcDeviceManager.js";
-import {LitAllocationSelect} from "../../../base-ui/select/LitAllocationSelect.js";
-import "../../../base-ui/select/LitAllocationSelect.js";
-import {SpApplication} from "../../SpApplication.js";
-import {LitSearch} from "../trace/search/Search.js";
-import {SpRecordTrace} from "../SpRecordTrace.js";
-import {Cmd} from "../../../command/Cmd.js";
-import {CmdConstant} from "../../../command/CmdConstant.js";
-import LitSwitch from "../../../base-ui/switch/lit-switch.js";
+import { BaseElement, element } from '../../../base-ui/BaseElement.js';
+import { log } from '../../../log/Log.js';
+import { HdcDeviceManager } from '../../../hdc/HdcDeviceManager.js';
+import { LitAllocationSelect } from '../../../base-ui/select/LitAllocationSelect.js';
+import '../../../base-ui/select/LitAllocationSelect.js';
+import { SpApplication } from '../../SpApplication.js';
+import { LitSearch } from '../trace/search/Search.js';
+import { SpRecordTrace } from '../SpRecordTrace.js';
+import { Cmd } from '../../../command/Cmd.js';
+import { CmdConstant } from '../../../command/CmdConstant.js';
+import LitSwitch from '../../../base-ui/switch/lit-switch.js';
 
 @element('sp-allocations')
 export class SpAllocations extends BaseElement {
@@ -41,18 +41,18 @@ export class SpAllocations extends BaseElement {
     private statisticsInterval: HTMLDivElement | null | undefined;
     private statisticsIntervalInput: HTMLInputElement | null | undefined;
     get appProcess(): string {
-        return this.processId!.value || "";
+        return this.processId!.value || '';
     }
 
     get unwind(): number {
-        log("unwind value is :" + this.unwindEL!.value)
+        log('unwind value is :' + this.unwindEL!.value);
         return Number(this.unwindEL!.value);
     }
 
     get shared(): number {
-        let value = this.shareMemory?.value || "";
-        log("shareMemory value is :" + value)
-        if (value != "") {
+        let value = this.shareMemory?.value || '';
+        log('shareMemory value is :' + value);
+        if (value != '') {
             let unit = Number(this.shareMemory?.value) || 16384;
             return unit;
         }
@@ -60,141 +60,202 @@ export class SpAllocations extends BaseElement {
     }
 
     get filter(): number {
-        let value = this.filterMemory?.value || "";
-        log("filter value is :" + value)
-        if (value != "") {
+        let value = this.filterMemory?.value || '';
+        log('filter value is :' + value);
+        if (value != '') {
             return Number(value);
         }
         return 4096;
     }
 
     get fp_unwind(): boolean {
-        let value = this.fpUnWind?.checked
+        let value = this.fpUnWind?.checked;
         if (value != undefined) {
             return value;
         }
-        return true
+        return true;
     }
 
     get record_accurately(): boolean {
-        let value = this.recordAccurately?.checked
+        let value = this.recordAccurately?.checked;
         if (value != undefined) {
             return value;
         }
-        return true
+        return true;
     }
 
     get offline_symbolization(): boolean {
-        let value = this.offlineSymbol?.checked
+        let value = this.offlineSymbol?.checked;
         if (value != undefined) {
             return value;
         }
-        return true
+        return true;
     }
 
     get record_statistics(): boolean {
-        let value = this.recordStatistics?.checked
+        let value = this.recordStatistics?.checked;
         if (value != undefined) {
             return value;
         }
-        return true
+        return true;
     }
 
     get statistics_interval(): number {
-        let value = this.statisticsIntervalInput?.value || "";
-        if (value != "") {
+        let value = this.statisticsIntervalInput?.value || '';
+        if (value != '') {
             return Number(value);
         }
         return 5;
     }
 
     initElements(): void {
-        this.processId = this.shadowRoot?.getElementById("pid") as LitAllocationSelect
-        let input = this.processId.shadowRoot?.querySelector('.multipleSelect') as HTMLDivElement
-        let sp = document.querySelector("sp-application") as SpApplication;
-        let litSearch = sp?.shadowRoot?.querySelector('#lit-search') as LitSearch;
-        let processData: Array<string> = []
-        input.addEventListener('mousedown', ev => {
+        this.processId = this.shadowRoot?.getElementById(
+            'pid'
+        ) as LitAllocationSelect;
+        let input = this.processId.shadowRoot?.querySelector(
+            '.multipleSelect'
+        ) as HTMLDivElement;
+        let sp = document.querySelector('sp-application') as SpApplication;
+        let litSearch = sp?.shadowRoot?.querySelector(
+            '#lit-search'
+        ) as LitSearch;
+        let processData: Array<string> = [];
+        input.addEventListener('mousedown', (ev) => {
             if (SpRecordTrace.serialNumber == '') {
-                this.processId!.processData = []
+                this.processId!.processData = [];
             }
-        })
-        input.addEventListener('valuable', ev => {
+        });
+        input.addEventListener('valuable', (ev) => {
             this.dispatchEvent(new CustomEvent('addProbe', {}));
-        })
+        });
         input.addEventListener('inputClick', () => {
-            processData = []
+            processData = [];
             if (SpRecordTrace.serialNumber != '') {
                 if (SpRecordTrace.isVscode) {
-                    let cmd = Cmd.formatString(CmdConstant.CMD_GET_PROCESS_DEVICES, [SpRecordTrace.serialNumber])
+                    let cmd = Cmd.formatString(
+                        CmdConstant.CMD_GET_PROCESS_DEVICES,
+                        [SpRecordTrace.serialNumber]
+                    );
                     Cmd.execHdcCmd(cmd, (res: string) => {
-                        let lineValues: string[] = res.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+                        let lineValues: string[] = res
+                            .replace(/\r\n/g, '\r')
+                            .replace(/\n/g, '\r')
+                            .split(/\r/);
                         for (let lineVal of lineValues) {
-                            if (lineVal.indexOf("__progname") != -1 || lineVal.indexOf("PID CMD") != -1) {
+                            if (
+                                lineVal.indexOf('__progname') != -1 ||
+                                lineVal.indexOf('PID CMD') != -1
+                            ) {
                                 continue;
                             }
-                            let process: string[] = lineVal.trim().split(" ");
+                            let process: string[] = lineVal.trim().split(' ');
                             if (process.length == 2) {
-                                let processId = process[0]
-                                let processName = process[1]
-                                processData.push(processName + "(" + processId + ")")
+                                let processId = process[0];
+                                let processName = process[1];
+                                processData.push(
+                                    processName + '(' + processId + ')'
+                                );
                             }
                         }
-                        this.processId!.processData = processData
-                        this.processId!.initData()
-                    })
+                        this.processId!.processData = processData;
+                        this.processId!.initData();
+                    });
                 } else {
-                    HdcDeviceManager.connect(SpRecordTrace.serialNumber).then(rr => {
-                        if (sp.search) {
-                            sp.search = false;
-                            litSearch.clear();
-                        }
-                        if (rr) {
-                            HdcDeviceManager.shellResultAsString(CmdConstant.CMD_GET_PROCESS, false).then(res => {
-                                if (res) {
-                                    let lineValues: string[] = res.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
-                                    for (let lineVal of lineValues) {
-                                        if (lineVal.indexOf("__progname") != -1 || lineVal.indexOf("PID CMD") != -1) {
-                                            continue;
-                                        }
-                                        let process: string[] = lineVal.trim().split(" ");
-                                        if (process.length == 2) {
-                                            let processId = process[0]
-                                            let processName = process[1]
-                                            processData.push(processName + "(" + processId + ")")
+                    HdcDeviceManager.connect(SpRecordTrace.serialNumber).then(
+                        (rr) => {
+                            if (sp.search) {
+                                sp.search = false;
+                                litSearch.clear();
+                            }
+                            if (rr) {
+                                HdcDeviceManager.shellResultAsString(
+                                    CmdConstant.CMD_GET_PROCESS,
+                                    false
+                                ).then((res) => {
+                                    if (res) {
+                                        let lineValues: string[] = res
+                                            .replace(/\r\n/g, '\r')
+                                            .replace(/\n/g, '\r')
+                                            .split(/\r/);
+                                        for (let lineVal of lineValues) {
+                                            if (
+                                                lineVal.indexOf('__progname') !=
+                                                    -1 ||
+                                                lineVal.indexOf('PID CMD') != -1
+                                            ) {
+                                                continue;
+                                            }
+                                            let process: string[] = lineVal
+                                                .trim()
+                                                .split(' ');
+                                            if (process.length == 2) {
+                                                let processId = process[0];
+                                                let processName = process[1];
+                                                processData.push(
+                                                    processName +
+                                                        '(' +
+                                                        processId +
+                                                        ')'
+                                                );
+                                            }
                                         }
                                     }
-                                }
-                                this.processId!.processData = processData
-                                this.processId!.initData()
-                            })
-                        } else {
-                            sp.search = true;
-                            litSearch.clear();
-                            litSearch.setPercent("please kill other hdc-server! ", -2);
+                                    this.processId!.processData = processData;
+                                    this.processId!.initData();
+                                });
+                            } else {
+                                sp.search = true;
+                                litSearch.clear();
+                                litSearch.setPercent(
+                                    'please kill other hdc-server! ',
+                                    -2
+                                );
+                            }
                         }
-                    })
+                    );
                 }
             }
-        })
-        this.unwindEL = this.shadowRoot?.getElementById("unwind") as HTMLInputElement
-        this.shareMemory = this.shadowRoot?.getElementById("shareMemory") as HTMLInputElement
-        this.shareMemoryUnit = this.shadowRoot?.getElementById("shareMemoryUnit") as HTMLSelectElement
-        this.filterMemory = this.shadowRoot?.getElementById("filterSized") as HTMLInputElement
-        this.filterMemoryUnit = this.shadowRoot?.getElementById("filterSizedUnit") as HTMLSelectElement
-        this.fpUnWind = this.shadowRoot?.getElementById("use_fp_unwind") as LitSwitch
-        this.recordAccurately = this.shadowRoot?.getElementById("use_record_accurately") as LitSwitch
-        this.offlineSymbol = this.shadowRoot?.getElementById("use_offline_symbolization") as LitSwitch
-        this.recordStatistics = this.shadowRoot?.getElementById("use_record_statistics") as LitSwitch
-        this.statisticsInterval = this.shadowRoot?.getElementById("interval_id") as HTMLDivElement
+        });
+        this.unwindEL = this.shadowRoot?.getElementById(
+            'unwind'
+        ) as HTMLInputElement;
+        this.shareMemory = this.shadowRoot?.getElementById(
+            'shareMemory'
+        ) as HTMLInputElement;
+        this.shareMemoryUnit = this.shadowRoot?.getElementById(
+            'shareMemoryUnit'
+        ) as HTMLSelectElement;
+        this.filterMemory = this.shadowRoot?.getElementById(
+            'filterSized'
+        ) as HTMLInputElement;
+        this.filterMemoryUnit = this.shadowRoot?.getElementById(
+            'filterSizedUnit'
+        ) as HTMLSelectElement;
+        this.fpUnWind = this.shadowRoot?.getElementById(
+            'use_fp_unwind'
+        ) as LitSwitch;
+        this.recordAccurately = this.shadowRoot?.getElementById(
+            'use_record_accurately'
+        ) as LitSwitch;
+        this.offlineSymbol = this.shadowRoot?.getElementById(
+            'use_offline_symbolization'
+        ) as LitSwitch;
+        this.recordStatistics = this.shadowRoot?.getElementById(
+            'use_record_statistics'
+        ) as LitSwitch;
+        this.statisticsInterval = this.shadowRoot?.getElementById(
+            'interval_id'
+        ) as HTMLDivElement;
         this.recordStatistics.addEventListener('change', (ev) => {
             if (this.recordStatistics!.checked) {
-                this.statisticsInterval!.style.display = 'flex'
+                this.statisticsInterval!.style.display = 'flex';
             } else {
-                this.statisticsInterval!.style.display = 'none'
+                this.statisticsInterval!.style.display = 'none';
             }
-        })
-        this.statisticsIntervalInput = this.shadowRoot?.getElementById("statistics_interval") as HTMLInputElement
+        });
+        this.statisticsIntervalInput = this.shadowRoot?.getElementById(
+            'statistics_interval'
+        ) as HTMLInputElement;
     }
 
     initHtml(): string {
@@ -347,26 +408,26 @@ export class SpAllocations extends BaseElement {
             </div>
           </div>
           <div class="switchstyle">
-              <span class="inner-font-style" id="fp-unwind">Use Fp Unwind :</span>               
+              <span class="inner-font-style" id="fp-unwind">Use Fp Unwind</span>               
               <lit-switch class="lts" id="use_fp_unwind" title="fp unwind" checked="true"></lit-switch>
           </div>
           <div class="switchstyle">
-              <span class="inner-font-style" id="record_accurately ">Use Record Accurately  :</span> 
+              <span class="inner-font-style" id="record_accurately ">Use Record Accurately (Available on recent OpenHarmony 4.0)</span> 
               <lit-switch   class="lts" id="use_record_accurately" title="record_accurately" checked="true"></lit-switch>
           </div>
           <div class="switchstyle">
-              <span class="inner-font-style" id="offline_symbolization">Use Offline Symbolization  :</span> 
+              <span class="inner-font-style" id="offline_symbolization">Use Offline Symbolization (Available on recent OpenHarmony 4.0)</span> 
               <lit-switch   class="lts" id="use_offline_symbolization" title="offline_symbolization" checked="true"></lit-switch>
           </div>
           <div class="switchstyle">
-              <span class="inner-font-style" id="record_statistics">Use Record Statistics   :</span> 
+              <span class="inner-font-style" id="record_statistics">Use Record Statistics (Available on recent OpenHarmony 4.0)</span> 
               <lit-switch  class="lts" id="use_record_statistics" title="record_statistics " checked="true"></lit-switch>
           </div>
           <div class="application" id="interval_id">
-            <span class="inner-font-style">statistics interval</span>
-            <span class="value-range">Use Record Statistics, statistics interval(unit is seconds)  </span> 
+            <span class="inner-font-style">statistics interval (Available on recent OpenHarmony 4.0)</span>
+            <span class="value-range">Use Record Statistics, statistics interval(unit is seconds)</span> 
             <div>
-                <input id="statistics_interval" class="inputstyle" type="text" placeholder="Enter the statistics interval" oninput="if(this.value > 2147483647) this.value = '5'" onkeyup="this.value=this.value.replace(/\\\\D/g,'')" value="5">
+                <input id="statistics_interval" class="inputstyle" type="text" placeholder="Enter the statistics interval" oninput="if(this.value > 2147483647) this.value = '5'" onkeyup="this.value=this.value.replace(/\\D/g,'')" value="5">
             </div>
           </div>
         </div>
@@ -376,10 +437,10 @@ export class SpAllocations extends BaseElement {
     private convertToValue(input: string, unit: string): number {
         let value: number;
         switch (unit) {
-            case "MB":
+            case 'MB':
                 value = Number(input) * 1024 * 1024;
                 break;
-            case "KB":
+            case 'KB':
                 value = Number(input) * 1024;
                 break;
             default:

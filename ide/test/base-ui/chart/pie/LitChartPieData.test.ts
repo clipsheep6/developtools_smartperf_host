@@ -14,9 +14,13 @@
  */
 
 // @ts-ignore
-import {isPointIsCircle, randomRgbColor} from "../../../../dist/base-ui/chart/pie/LitChartPieData.js";
+import {
+    isPointIsCircle,
+    randomRgbColor,
+} from '../../../../dist/base-ui/chart/pie/LitChartPieData.js';
 
-window.ResizeObserver = window.ResizeObserver ||
+window.ResizeObserver =
+    window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
         disconnect: jest.fn(),
         observe: jest.fn(),
@@ -24,16 +28,14 @@ window.ResizeObserver = window.ResizeObserver ||
     }));
 
 describe('LitChartPieData Test', () => {
-
     it('LitChartPieDataTest01', function () {
-        expect(randomRgbColor()).not.toBeUndefined()
+        expect(randomRgbColor()).not.toBeUndefined();
     });
-
 
     it('LitChartPieDataTest02', function () {
-        expect(isPointIsCircle(1,2,1,2,3)).toBe(true)
+        expect(isPointIsCircle(1, 2, 1, 2, 3)).toBe(true);
     });
     it('LitChartPieDataTest03', function () {
-        expect(isPointIsCircle(1,2,7,5,3)).toBe(false)
+        expect(isPointIsCircle(1, 2, 7, 5, 3)).toBe(false);
     });
-})
+});

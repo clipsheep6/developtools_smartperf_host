@@ -14,11 +14,11 @@
  */
 
 // @ts-ignore
-import {TraceRowConfig} from "../../../../../dist/trace/component/trace/base/TraceRowConfig.js";
+import { TraceRowConfig } from '../../../../../dist/trace/component/trace/base/TraceRowConfig.js';
 // @ts-ignore
-import {TraceRow} from "../../../../../dist/trace/component/trace/base/TraceRow.js";
+import { TraceRow } from '../../../../../dist/trace/component/trace/base/TraceRow.js';
 // @ts-ignore
-import {SpApplication} from "../../../../../dist/trace/SpApplication.js";
+import { SpApplication } from '../../../../../dist/trace/SpApplication.js';
 
 describe('TraceRowConfig Test', () => {
     document.body.innerHTML = `<div><trace-row-config id="config"></trace-row-config>
@@ -26,10 +26,10 @@ describe('TraceRowConfig Test', () => {
                                        <div class=""rows-pane>
                                             <trace-row></trace-row>
                                        </div>     
-                                    </sp-system-trace></div>`
-    let traceRowConfig = document.querySelector("#config") as TraceRowConfig;
+                                    </sp-system-trace></div>`;
+    let traceRowConfig = document.querySelector('#config') as TraceRowConfig;
 
     it('TraceRowConfig Test01', () => {
-        expect(traceRowConfig.init).toBeUndefined()
+        expect(traceRowConfig.init).toBeUndefined();
     });
-})
+});

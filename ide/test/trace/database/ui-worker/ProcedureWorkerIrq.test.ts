@@ -13,12 +13,15 @@
  * limitations under the License.
  */
 
-jest.mock("../../../../dist/trace/component/trace/base/TraceRow.js", () => {
-    return {}
+jest.mock('../../../../dist/trace/component/trace/base/TraceRow.js', () => {
+    return {};
 });
 
 // @ts-ignore
-import {IrqRender, IrqStruct} from "../../../../dist/trace/database/ui-worker/ProcedureWorkerIrq.js";
+import {
+    IrqRender,
+    IrqStruct,
+} from '../../../../dist/trace/database/ui-worker/ProcedureWorkerIrq.js';
 
 describe('ProcedureWorkerIrq Test', () => {
     it('ProcedureWorkerIrq01', () => {
@@ -32,28 +35,29 @@ describe('ProcedureWorkerIrq Test', () => {
                 x: 20,
                 y: 20,
                 width: 100,
-                height: 100
+                height: 100,
             },
             id: 155,
             startNS: 1745,
             name: '4515',
             dur: 4555,
-            argSetId: 10
-        }
-        expect(IrqStruct.draw(ctx!, data, true)).toBeUndefined()
-    })
+            argSetId: 10,
+        };
+        expect(IrqStruct.draw(ctx!, data, true)).toBeUndefined();
+    });
 
     it('ProcedureWorkerIrq02', () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
         const ctx = canvas.getContext('2d');
-        expect(IrqStruct.drawString(ctx, '253', 2, {
-            x: 20,
-            y: 20,
-            width: 100,
-            height: 100
-        })).toBeUndefined()
-    })
-
-})
+        expect(
+            IrqStruct.drawString(ctx, '253', 2, {
+                x: 20,
+                y: 20,
+                width: 100,
+                height: 100,
+            })
+        ).toBeUndefined();
+    });
+});

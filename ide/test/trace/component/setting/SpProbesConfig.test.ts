@@ -14,52 +14,57 @@
  */
 
 // @ts-ignore
-import {SpProbesConfig} from "../../../../dist/trace/component/setting/SpProbesConfig.js";
-import {LitCheckBox} from "../../../../src/base-ui/checkbox/LitCheckBox";
+import { SpProbesConfig } from '../../../../dist/trace/component/setting/SpProbesConfig.js';
+import { LitCheckBox } from '../../../../src/base-ui/checkbox/LitCheckBox';
 
-describe('SpProbesConfig Test', ()=>{
+describe('SpProbesConfig Test', () => {
     beforeAll(() => {
-        document.body.innerHTML =  `
+        document.body.innerHTML = `
             <probes-config id = "spconfig"><probes-config>
-        `
-    })
+        `;
+    });
     it('new SpProbesConfig', function () {
         expect(new SpProbesConfig()).not.toBeNull();
     });
 
     it(' SpProbesConfig get Default attrValue', function () {
-        let spEle = document.querySelector("#spconfig") as SpProbesConfig
-        expect(spEle.traceConfig).toEqual(["Scheduling details","CPU Frequency and idle states","Hitrace categories"])
-        expect(spEle.traceEvents).toEqual( ["ability",
-                   "ace",
-                   "app",
-                   "ark",
-                   "binder",
-                   "disk",
-                   "freq",
-                   "graphic",
-                   "idle",
-                   "irq",
-                   "memreclaim",
-                   "mmc",
-                   "multimodalinput",
-                  "ohos",
-                   "pagecache",
-                   "rpc",
-                   "sched",
-                   "sync",
-                   "window",
-                   "workq",
-                   "zaudio",
-                   "zcamera",
-                   "zimage",
-                   "zmedia",
-                 ])
-        expect(spEle.memoryConfig).toEqual([])
+        let spEle = document.querySelector('#spconfig') as SpProbesConfig;
+        expect(spEle.traceConfig).toEqual([
+            'Scheduling details',
+            'CPU Frequency and idle states',
+            'Hitrace categories',
+        ]);
+        expect(spEle.traceEvents).toEqual([
+            'ability',
+            'ace',
+            'app',
+            'ark',
+            'binder',
+            'disk',
+            'freq',
+            'graphic',
+            'idle',
+            'irq',
+            'memreclaim',
+            'mmc',
+            'multimodalinput',
+            'ohos',
+            'pagecache',
+            'rpc',
+            'sched',
+            'sync',
+            'window',
+            'workq',
+            'zaudio',
+            'zcamera',
+            'zimage',
+            'zmedia',
+        ]);
+        expect(spEle.memoryConfig).toEqual([]);
     });
 
     it(' SpProbesConfig test', function () {
-        let spEle = document.querySelector("#spconfig") as SpProbesConfig
+        let spEle = document.querySelector('#spconfig') as SpProbesConfig;
         expect(spEle.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
@@ -173,4 +178,4 @@ describe('SpProbesConfig Test', ()=>{
         "
 `);
     });
-})
+});
