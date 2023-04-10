@@ -1,16 +1,17 @@
 # web端加载trace说明
+从web端查看trace文件，进行性能检测的分析。
 ## 文件加载入口
 将抓取的trace导入查看。
 ![GitHub Logo](../figures/Web/opentrace.jpg)
 
 说明：
-+ Open trace file：导入离线trace文件入口
-+ Record new trace：抓取新的trace文件入口
++ Open trace file：导入离线trace文件入口。
++ Record new trace：抓取新的trace文件入口。
 
 ## 导入trace文件后显示页面
 ![GitHub Logo](../figures/Web/trace.jpg)
 说明：
-+ 操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w为放大，s为缩小，a为左移，d为右移
++ 操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w为放大，s为缩小，a为左移，d为右移。
 ## trace功能介绍
 trace模块从上往下主要展示时间轴、cpu使用率、cpu使用情况、进程间通讯数据的方法调用情况、进程、线程和方法调用情况。
 ### 时间轴和cpu使用率

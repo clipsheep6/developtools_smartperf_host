@@ -1,4 +1,5 @@
 # Sql分析和Metrics说明
+Sql功能是方便使用者查询sql语句查看相关业务，Metrics是更高级别的查询接口，无需手动键入任何SQL语句，只需要选择定制好的查询接口，就能获得想要跟踪的结果。
 ## Sql分析功能介绍
 点击Query(SQL)，输入需要查询的sql语句，如select * from process，可以看到进程表数据。
 ![GitHub Logo](../figures/Metrics/Sql.jpg)
