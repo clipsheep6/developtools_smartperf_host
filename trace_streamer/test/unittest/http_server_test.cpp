@@ -150,9 +150,8 @@ HWTEST_F(HttpServerTest, HttpCorrectRequest, TestSize.Level1)
     }
     char targetStr[MAX_TESET_BUF_SIZE] = {
         "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nTransfer-Encoding: "
-        "chunked\r\n\r\n62\r\nok\r\n{\"columns\":[\"type\",\"ts\",\"value\",\"filter_id\"],\"values\":[[\"measure\","
-        "28462257501000,816000,0]]}"
-        "\r\n\r\n0\r\n\r\n"};
+        "chunked\r\n\r\n6d\r\nok\r\n{\"columns\":[\"type\",\"ts\",\"dur\",\"value\",\"filter_id\"],\"values\":[["
+        "\"measure\",28462257501000,null,816000,0]]}\r\n\r\n0\r\n\r\n"};
 
     EXPECT_STREQ(targetStr, g_clientRecvBuf);
 }

@@ -836,10 +836,9 @@ HWTEST_F(TableTest, NativeHookTableTest, TestSize.Level1)
     int64_t curMemSize1 = 2;
 
     stream_.traceDataCache_->GetNativeHookData()->AppendNewNativeHookData(
-        callChainId, ipid, itid, eventType, subType, timeStamp, endTimestamp, duration, addr, memSize, curMemSize);
-    stream_.traceDataCache_->GetNativeHookData()->AppendNewNativeHookData(callChainId1, ipid1, itid1, eventType1,
-                                                                          subType1, timestamp1, endTimestamp1,
-                                                                          duration1, addr1, memSize1, curMemSize1);
+        callChainId, ipid, itid, eventType, subType, timeStamp, endTimestamp, duration, addr, memSize);
+    stream_.traceDataCache_->GetNativeHookData()->AppendNewNativeHookData(
+        callChainId1, ipid1, itid1, eventType1, subType1, timestamp1, endTimestamp1, duration1, addr1, memSize1);
     auto row = stream_.traceDataCache_->SearchDatabase(sqlSelect.c_str(), false);
     EXPECT_EQ(row, 2);
     row = stream_.traceDataCache_->SearchDatabase(sqlSelect1.c_str(), false);
@@ -872,6 +871,7 @@ HWTEST_F(TableTest, NativeHookFrameTableTest, TestSize.Level1)
     DataIndex filePath = stream_.traceDataCache_->GetDataIndex("filePath");
     uint64_t offset = 1;
     uint64_t symbolOffset = 1;
+    const std::string vaddr = "addr";
 
     uint64_t callChainId1 = 2;
     uint64_t depth1 = 2;
@@ -881,11 +881,13 @@ HWTEST_F(TableTest, NativeHookFrameTableTest, TestSize.Level1)
     DataIndex filePath1 = stream_.traceDataCache_->GetDataIndex("filePath1");
     uint64_t offset1 = 2;
     uint64_t symbolOffset1 = 2;
+    const std::string vaddr1 = "addr1";
 
     stream_.traceDataCache_->GetNativeHookFrameData()->AppendNewNativeHookFrame(callChainId, depth, ip, sp, symbolName,
-                                                                                filePath, offset, symbolOffset);
+                                                                                filePath, offset, symbolOffset, vaddr);
     stream_.traceDataCache_->GetNativeHookFrameData()->AppendNewNativeHookFrame(
-        callChainId1, depth1, ip1, sp1, symbolName1, filePath1, offset1, symbolOffset1);
+        callChainId1, depth1, ip1, sp1, symbolName1, filePath1, offset1, symbolOffset1, vaddr1);
+
     auto row = stream_.traceDataCache_->SearchDatabase(sqlSelect.c_str(), false);
     EXPECT_EQ(row, 2);
     row = stream_.traceDataCache_->SearchDatabase(sqlSelect1.c_str(), false);
@@ -1293,7 +1295,7 @@ HWTEST_F(TableTest, StatTableTest, TestSize.Level1)
     std::string sqlSelect = "select * from stat";
     stream_.traceDataCache_->GetStatAndInfo();
     auto row = stream_.traceDataCache_->SearchDatabase(sqlSelect.c_str(), false);
-    EXPECT_EQ(row, 415);
+    EXPECT_EQ(row, 420);
 }
 /**
  * @tc.name: SymbolsTableTest

@@ -125,6 +125,7 @@ public:
     TableRowId UpdateDuration(TableRowId index, InternalTime ts);
     bool End(TableRowId index, InternalTime ts);
     void UpdateState(TableRowId index, TableRowId idState);
+    void SetArgSetId(TableRowId index, uint32_t setId);
     void UpdateDuration(TableRowId index, InternalTime ts, TableRowId idState);
     void UpdateTidAndPid(TableRowId index, InternalTid tid, InternalTid pid);
     TableRowId UpdateDuration(TableRowId index, InternalTime ts, InternalCpu cpu, TableRowId idState);
@@ -171,6 +172,10 @@ public:
     {
         return cpus_;
     }
+    const std::deque<uint32_t>& ArgSetsData() const
+    {
+        return argSetIds_;
+    }
 
 private:
     std::deque<InternalTime> timeStamps_;
@@ -180,6 +185,7 @@ private:
     std::deque<InternalPid> pids_;
     std::deque<DataIndex> states_;
     std::deque<InternalCpu> cpus_;
+    std::deque<uint32_t> argSetIds_;
 };
 
 class SchedSlice : public CacheBase, public CpuCacheBase {
@@ -191,7 +197,7 @@ public:
                             uint64_t endState,
                             uint64_t priority);
     void SetDuration(size_t index, uint64_t duration);
-    void Update(uint64_t index, uint64_t ts, uint64_t state, uint64_t pior);
+    void Update(uint64_t index, uint64_t ts, uint64_t state);
     void UpdateArg(uint64_t index, uint32_t argsetId);
 
     const std::deque<uint64_t>& EndStatesData() const

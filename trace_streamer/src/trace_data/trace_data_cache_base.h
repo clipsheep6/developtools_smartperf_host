@@ -65,6 +65,7 @@ public:
                                                      {TASK_INTERRUPTIBLE, "S"},
                                                      {TASK_UNINTERRUPTIBLE, "D"},
                                                      {TASK_UNINTERRUPTIBLE_IO, "D-IO"},
+                                                     {TASK_UNINTERRUPTIBLE_NIO, "D-NIO"},
                                                      {TASK_RUNNING, "Running"},
                                                      {TASK_INTERRUPTED, "I"},
                                                      {TASK_TRACED, "T"},
@@ -77,6 +78,7 @@ public:
                                                      {TASK_CLONE, "I"},
                                                      {TASK_DK, "DK"},
                                                      {TASK_DK_IO, "DK-IO"},
+                                                     {TASK_DK_NIO, "DK-NIO"},
                                                      {TASK_TRACED_KILL, "TK"},
                                                      {TASK_FOREGROUND, "R+"},
                                                      {TASK_MAX, "S"}};

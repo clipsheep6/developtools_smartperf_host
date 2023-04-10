@@ -69,6 +69,7 @@ enum EndState {
     // Typical scenario: process acquisition semaphore blocking.
     TASK_UNINTERRUPTIBLE = 2,
     TASK_UNINTERRUPTIBLE_IO = 21,
+    TASK_UNINTERRUPTIBLE_NIO = 22,
     // (Running) Indicates that the thread is running
     TASK_RUNNING = 3,
     // (I) Thread in interrupt state
@@ -86,6 +87,7 @@ enum EndState {
     // (DK)
     TASK_DK = 130,
     TASK_DK_IO = 131,
+    TASK_DK_NIO = 132,
     // the process is being debug now
     TASK_TRACED_KILL = 136,
     // (W) The process is in a deep sleep state and will be killed directly after waking up

@@ -215,7 +215,7 @@ void HtraceNativeHookParser::ParseMmapEvent(uint64_t newTimeStamp, const NativeH
     DataIndex subType = INVALID_UINT64;
     if (!mMapEvent.type().empty()) {
         subType = traceDataCache_->dataDict_.GetStringIndex(mMapEvent.type());
-        traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(mMapEvent.addr(), mMapEvent.size(), subType);
+        traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(mMapEvent.addr(), subType);
     }
     auto callChainId = ParseNativeHookFrame(mMapEvent.frame_info());
     auto row = traceDataCache_->GetNativeHookData()->AppendNewNativeHookData(
@@ -257,7 +257,7 @@ void HtraceNativeHookParser::ParseTagEvent(const NativeHookData* nativeHookData)
     auto addr = memMapTagEvent.addr();
     auto size = memMapTagEvent.size();
     auto tagIndex = traceDataCache_->dataDict_.GetStringIndex(memMapTagEvent.tag());
-    traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(addr, static_cast<int64_t>(size), tagIndex);
+    traceDataCache_->GetNativeHookData()->UpdateAddrToMemMapSubType(addr, tagIndex);
 }
 void HtraceNativeHookParser::ParseFileEvent(const NativeHookData* nativeHookData)
 {

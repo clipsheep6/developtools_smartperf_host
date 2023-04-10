@@ -39,6 +39,7 @@ TableRowId ThreadState::AppendThreadState(InternalTime ts,
     pids_.emplace_back(INVALID_UINT32);
     states_.emplace_back(idState);
     cpus_.emplace_back(cpu);
+    argSetIds_.emplace_back(INVALID_UINT32);
     return itids_.size() - 1;
 }
 
@@ -81,6 +82,10 @@ bool ThreadState::End(TableRowId index, InternalTime ts)
 void ThreadState::UpdateState(TableRowId index, TableRowId idState)
 {
     states_[index] = idState;
+}
+void ThreadState::SetArgSetId(TableRowId index, uint32_t setId)
+{
+    argSetIds_[index] = setId;
 }
 
 void ThreadState::UpdateDuration(TableRowId index, InternalTime ts, TableRowId idState)
@@ -127,9 +132,8 @@ void SchedSlice::SetDuration(size_t index, uint64_t duration)
     tsEnds_[index] = timeStamps_[index] + duration;
 }
 
-void SchedSlice::Update(uint64_t index, uint64_t ts, uint64_t state, uint64_t pior)
+void SchedSlice::Update(uint64_t index, uint64_t ts, uint64_t state)
 {
-    UNUSED(pior);
     durs_[index] = ts - timeStamps_[index];
     endStates_[index] = state;
 }
@@ -531,8 +535,10 @@ void NativeHook::UpdateMemMapSubType()
         return;
     }
     for (auto i = 0; i < Size(); ++i) {
-        if (addrToMmapTag_.count(addrs_[i])) {
-            subTypes_[i] = addrToMmapTag_.at(addrs_[i]);
+        if ((eventTypes_[i] == MMAP_EVENT || eventTypes_[i] == MUNMAP_EVENT) && subTypes_[i] == INVALID_UINT64) {
+            if (addrToMmapTag_.count(addrs_[i])) {
+                subTypes_[i] = addrToMmapTag_.at(addrs_[i]);
+            }
         }
     }
 }

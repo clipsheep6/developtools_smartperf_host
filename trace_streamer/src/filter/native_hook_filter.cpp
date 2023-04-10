@@ -498,6 +498,7 @@ void NativeHookFilter::UpdateThreadNameWithNativeHookData() const
 void NativeHookFilter::FinishParseNativeHookData()
 {
     ParseNativeHookFrame();
+    traceDataCache_->GetNativeHookData()->UpdateMemMapSubType();
     // update last lib id
     GetCallIdToLastLibId();
     if (callIdToLastCallerPathIndex_.size()) {

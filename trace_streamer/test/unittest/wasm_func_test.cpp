@@ -17,7 +17,7 @@
 #include <hwext/gtest-tag.h>
 
 #include "rpc/rpc_server.h"
-#include "wasm_func.h"
+#include "wasm_func.cpp"
 
 using namespace testing::ext;
 namespace SysTuning {

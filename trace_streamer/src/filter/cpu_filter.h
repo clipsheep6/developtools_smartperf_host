@@ -71,7 +71,6 @@ private:
     std::map<uint64_t, RowPos> cpuToRowSched_ = {};
 
     std::map<uint64_t, uint64_t> lastWakeUpMsg_ = {};
-    std::map<uint32_t, uint64_t> pidToSchedSliceRow = {};
     std::map<uint32_t, uint64_t> pidToThreadSliceRow = {};
     struct TPthread {
         uint64_t row_;
