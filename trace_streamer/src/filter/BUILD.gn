@@ -85,7 +85,7 @@ ohos_source_set("filter") {
       "offline_symbolization_filter.h",
     ]
     include_dirs += [
-      "//src/proto_reader/include",
+      "../proto_reader/include",
       "${OHOS_PROTO_GEN}/types/plugins/native_hook",
       "//third_party/perf_include/musl",
     ]

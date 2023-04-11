@@ -24,8 +24,6 @@ PrintEventParser::PrintEventParser(TraceDataCache* dataCache, const TraceStreame
     eventToFrameFunctionMap_ = {
         {recvievVsync_, bind(&PrintEventParser::ReciveVsync, this, std::placeholders::_1, std::placeholders::_2,
                              std::placeholders::_3)},
-        {onVsyncEvent_, bind(&PrintEventParser::ReciveOnVsync, this, std::placeholders::_1, std::placeholders::_2,
-                             std::placeholders::_3)},
         {rsOnVsyncEvent_, bind(&PrintEventParser::RSReciveOnVsync, this, std::placeholders::_1, std::placeholders::_2,
                                std::placeholders::_3)},
         {marshRwTransactionData_, bind(&PrintEventParser::OnRwTransaction, this, std::placeholders::_1,
@@ -76,7 +74,7 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm,
             auto cookie = static_cast<uint64_t>(point.value_);
             auto index = streamFilters_->sliceFilter_->StartAsyncSlice(ts, pid, point.tgid_, cookie,
                                                                        traceDataCache_->GetDataIndex(point.name_));
-            if (point.name_ == onFrameQueeuStartEvent_) {
+            if (point.name_ == onFrameQueeuStartEvent_ && index != INVALID_UINT64) {
                 OnFrameQueueStart(ts, index, point.tgid_);
             }
             break;
@@ -111,7 +109,6 @@ void PrintEventParser::Finish()
     eventToFrameFunctionMap_.clear();
     frameCallIds_.clear();
     vsyncSliceIds_.clear();
-    onVsyncCallIds_.clear();
     streamFilters_->frameFilter_->Finish();
 }
 ParseResult PrintEventParser::CheckTracePoint(std::string_view pointStr) const
@@ -235,28 +232,6 @@ bool PrintEventParser::ReciveVsync(size_t callStackRow, std::string& args, const
     vsyncSliceIds_.push_back(callStackRow);
     return true;
 }
-bool PrintEventParser::ReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line)
-{
-    streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_RECEIVED);
-    TS_LOGD("ts:%lu tid:%d, %s callStackRow:%lu", line.ts, line.pid, args.c_str(), callStackRow);
-    std::sregex_iterator it(args.begin(), args.end(), recvVsyncPattern_);
-    std::sregex_iterator end;
-    uint64_t now = INVALID_UINT64;
-    while (it != end) {
-        std::smatch match = *it;
-        std::string key = match.str(1);
-        std::string value = match.str(2);
-        if (key == "now") {
-            now = base::StrToUInt64(value).value();
-        }
-        ++it;
-    }
-    auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
-    if (streamFilters_->frameFilter_->BeginOnvsyncEvent(line.ts, iTid, now)) {
-        onVsyncCallIds_.push_back(callStackRow);
-    }
-    return true;
-}
 bool PrintEventParser::RSReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line)
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_RECEIVED);
@@ -316,16 +291,6 @@ void PrintEventParser::HandleFrameSliceEndEvent(uint64_t ts, uint64_t pid, uint6
             TS_LOGW("ts:%llu, RenderSliceEnd:%llu, callStackRow:%zu failed", ts, tid, callStackRow);
         }
         vsyncSliceIds_.erase(pos);
-    } else {
-        auto pos = std::find(onVsyncCallIds_.begin(), onVsyncCallIds_.end(), callStackRow);
-        if (pos != onVsyncCallIds_.end()) {
-            TS_LOGD("ts:%lu, VsyncSliceEnd:%d, callStackRow:%lu", ts, tid, callStackRow);
-            if (!streamFilters_->frameFilter_->EndOnVsyncEvent(ts, iTid)) {
-                streamFilters_->statFilter_->IncreaseStat(TRACE_ONVSYNC, STAT_EVENT_NOTMATCH);
-                TS_LOGW("ts:%llu, VsyncSliceEnd:%llu, callStackRow:%zu failed", ts, tid, callStackRow);
-            }
-            onVsyncCallIds_.erase(pos);
-        }
     }
     return;
 }

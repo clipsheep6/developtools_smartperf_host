@@ -23,7 +23,7 @@ ohos_source_set("proto_reader") {
   deps = [ "../../gn:default_deps" ]
   sources = [ "proto_reader.cpp" ]
   include_dirs += [
-    "//src/include",
-    "//src/base",
+    "../include",
+    "../base",
   ]
 }

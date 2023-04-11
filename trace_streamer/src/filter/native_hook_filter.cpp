@@ -150,33 +150,31 @@ std::unique_ptr<NativeHookFrameInfo> NativeHookFilter::ParseFrame(const ProtoRea
                                                            reader.offset(), reader.symbol_offset());
     return std::move(frameInfo);
 }
+
 void NativeHookFilter::CompressStackAndFrames(ProtoReader::RepeatedDataAreaIterator<ProtoReader::BytesView> frames)
 {
-    std::vector<uint64_t> ipVector;
-    std::string ipsStr = "";
-    uint64_t ip = INVALID_UINT64;
+    std::vector<uint64_t> framesHash;
+    uint64_t frameHash = INVALID_UINT64;
+    std::string framesHashStr = "";
     for (auto itor = frames; itor; itor++) {
-        auto nextAddr = ProtoReader::VarIntDecode(itor->Data() + 1, itor->Data() + itor->Size(), &ip);
-        if (nextAddr == itor->Data() + 1) {
-            TS_LOGE("Parse ip failed!!!");
-            continue;
-        }
-        if (!ipToFrameInfoMap_.count(ip)) {
+        std::string_view frameStr(reinterpret_cast<const char*>(itor->Data()), itor->Size());
+        auto frameHash = hashFun_(frameStr);
+        if (!frameHashToFrameInfoMap_.count(frameHash)) {
             // the frame compression is completed and the frame is parsed.
             auto frameInfo = ParseFrame(itor.GetDataArea());
-            ipToFrameInfoMap_.emplace(std::make_pair(ip, std::move(frameInfo)));
+            frameHashToFrameInfoMap_.emplace(std::make_pair(frameHash, std::move(frameInfo)));
         }
-        ipVector.emplace_back(ip);
-        ipsStr.append("+");
-        ipsStr.append(std::to_string(ip));
+        framesHash.emplace_back(frameHash);
+        framesHashStr.append("+");
+        framesHashStr.append(std::to_string(frameHash));
     }
-    auto stackHashValue = hashFun_(ipsStr);
+    auto stackHashValue = hashFun_(framesHashStr);
     uint32_t callChainId = INVALID_UINT32;
     if (!stackHashValueToCallChainIdMap_.count(stackHashValue)) {
         callChainId = callChainIdToStackHashValueMap_.size() + 1;
         callChainIdToStackHashValueMap_.emplace(std::make_pair(callChainId, stackHashValue));
         stackHashValueToCallChainIdMap_.emplace(std::make_pair(stackHashValue, callChainId));
-        stackHashValueToIpsMap_.emplace(std::make_pair(stackHashValue, std::move(ipVector)));
+        stackHashValueToFramesHashMap_.emplace(std::make_pair(stackHashValue, std::move(framesHash)));
     } else {
         callChainId = stackHashValueToCallChainIdMap_[stackHashValue];
     }
@@ -444,18 +442,18 @@ void NativeHookFilter::ParseFramesWithOutCallStackCompressedMode()
 {
     for (auto itor = callChainIdToStackHashValueMap_.begin(); itor != callChainIdToStackHashValueMap_.end(); itor++) {
         auto callChainId = itor->first;
-        if (!stackHashValueToIpsMap_.count(itor->second)) {
+        if (!stackHashValueToFramesHashMap_.count(itor->second)) {
             continue;
         }
-        auto& ips = stackHashValueToIpsMap_.at(itor->second);
+        auto& framesHash = stackHashValueToFramesHashMap_.at(itor->second);
         uint64_t depth = 0;
-        for (auto frameHashValueVectorItor = ips.crbegin(); frameHashValueVectorItor != ips.crend();
+        for (auto frameHashValueVectorItor = framesHash.crbegin(); frameHashValueVectorItor != framesHash.crend();
              frameHashValueVectorItor++) {
-            if (!ipToFrameInfoMap_.count(*frameHashValueVectorItor)) {
+            if (!frameHashToFrameInfoMap_.count(*frameHashValueVectorItor)) {
                 TS_LOGE("find matching frameInfo failed!!!!");
                 return;
             }
-            auto& frameInfo = ipToFrameInfoMap_.at(*frameHashValueVectorItor);
+            auto& frameInfo = frameHashToFrameInfoMap_.at(*frameHashValueVectorItor);
             traceDataCache_->GetNativeHookFrameData()->AppendNewNativeHookFrame(
                 callChainId, depth, frameInfo->ip_, frameInfo->sp_, frameInfo->symbolIndex_, frameInfo->filePathIndex_,
                 frameInfo->offset_, frameInfo->symbolOffset_);
@@ -512,8 +510,8 @@ void NativeHookFilter::FinishParseNativeHookData()
     vaddrs_.clear();
     rowToFrames_.clear();
     frameIdToFrameBytes_.clear();
-    stackHashValueToIpsMap_.clear();
-    ipToFrameInfoMap_.clear();
+    stackHashValueToFramesHashMap_.clear();
+    frameHashToFrameInfoMap_.clear();
     stackIdToFrames_.clear();
     symbolIdToSymbolIndex_.clear();
     callChainIdToStackHashValueMap_.clear();

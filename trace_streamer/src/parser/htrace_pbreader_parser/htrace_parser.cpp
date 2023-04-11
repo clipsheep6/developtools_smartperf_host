@@ -230,7 +230,6 @@ void HtraceParser::ParserData(HtraceDataSegment& dataSeg)
         dataSeg.protoData = pluginDataZero.data();
     } else if (pluginDataZero.name().ToStdString() == "ftrace-plugin" ||
                pluginDataZero.name().ToStdString() == "/data/local/tmp/libftrace_plugin.z.so") { // ok
-        dataSourceTypeTraceClockid_ = TS_CLOCK_REALTIME;
         dataSeg.dataType = DATA_SOURCE_TYPE_TRACE;
         dataSeg.protoData = pluginDataZero.data();
         ParseFtrace(dataSeg);

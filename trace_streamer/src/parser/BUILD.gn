@@ -63,10 +63,10 @@ ohos_source_set("parser") {
     "//third_party/json-master/include/nlohmann",
   ]
   if (is_pbdecoder) {
-    include_dirs += [ "//src/parser/htrace_parser" ]
+    include_dirs += [ "htrace_parser" ]
   } else {
-    include_dirs += [ "//src/parser/htrace_pbreader_parser" ]
-    include_dirs += [ "//src/proto_reader/include" ]
+    include_dirs += [ "htrace_pbreader_parser" ]
+    include_dirs += [ "../proto_reader/include" ]
   }
 
   if (enable_ts_utest && !use_wasm) {

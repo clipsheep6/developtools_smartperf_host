@@ -53,7 +53,6 @@ private:
     static size_t GetNameLength(std::string_view pointStr, size_t nameIndex);
     size_t GetValueLength(std::string_view pointStr, size_t valueIndex) const;
     bool ReciveVsync(size_t callStackRow, std::string& args, const BytraceLine& line);
-    bool ReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line);
     bool RSReciveOnVsync(size_t callStackRow, std::string& args, const BytraceLine& line);
     bool OnRwTransaction(size_t callStackRow, std::string& args, const BytraceLine& line);
     bool OnMainThreadProcessCmd(size_t callStackRow, std::string& args, const BytraceLine& line);
@@ -65,7 +64,6 @@ private:
     const uint32_t maxPointLength_;
     TraceStreamerConfig config_{};
     const DataIndex recvievVsync_ = traceDataCache_->GetDataIndex("H:ReceiveVsync");
-    const DataIndex onVsyncEvent_ = traceDataCache_->GetDataIndex("H:OnVsyncEvent");
     const DataIndex rsOnVsyncEvent_ = traceDataCache_->GetDataIndex("H:RSMainThread::OnVsync");
     const std::string onFrameQueeuStartEvent_ = "H:M: Frame queued";
     const DataIndex marshRwTransactionData_ = traceDataCache_->GetDataIndex("H:MarshRSTransactionData");
@@ -75,7 +73,6 @@ private:
     const std::regex mainProcessCmdPattern = std::regex("\\[(\\d+),(\\d+)\\]");
     std::vector<uint64_t> frameCallIds_ = {};
     std::vector<uint64_t> vsyncSliceIds_ = {};
-    std::vector<uint64_t> onVsyncCallIds_ = {};
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

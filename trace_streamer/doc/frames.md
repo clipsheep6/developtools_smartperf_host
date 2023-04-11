@@ -5,7 +5,8 @@
 应用帧会有下面一些调用栈：  
 H:ReceiveVsync  
 H:OnVsyncEvent  
-H:MarshRSTransactionData    
+H:MarshRSTransactionData  
+后面两个调用栈嵌套在H:ReceiveVsync内。  
 特别地，当一个栈没有H:MarshRSTransactionData事件时，是无效的帧。  
 H:MarshRSTransactionData内会包含应用的帧标号，和线程号。  
 ## 渲染帧

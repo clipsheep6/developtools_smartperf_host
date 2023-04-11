@@ -46,6 +46,8 @@ export class SpTraceCommand extends BaseElement {
     //当 custom element首次被插入文档DOM时，被调用。
     public connectedCallback() {
         this.codeHl!.textContent = '';
+        this.copyEl?.addEventListener('click', this.codeCopyEvent)
+        this.codeHl?.addEventListener('selectionchange', this.textSelectEvent)
     }
 
     public disconnectedCallback() {
@@ -68,8 +70,6 @@ export class SpTraceCommand extends BaseElement {
         this.copyEl = this.shadowRoot?.querySelector(
             '#copy-image'
         ) as HTMLElement;
-        this.copyEl?.addEventListener('click', this.codeCopyEvent);
-        this.codeHl.addEventListener('selectionchange', this.textSelectEvent);
     }
 
     initHtml(): string {

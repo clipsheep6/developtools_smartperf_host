@@ -112,8 +112,8 @@ private:
     std::map<uint64_t, std::shared_ptr<ProtoReader::RepeatedDataAreaIterator<ProtoReader::BytesView>>> rowToFrames_ =
         {};
     std::unordered_map<uint32_t, std::shared_ptr<const ProtoReader::BytesView>> frameIdToFrameBytes_ = {};
-    std::unordered_map<uint64_t, std::vector<uint64_t>> stackHashValueToIpsMap_ = {};
-    std::unordered_map<uint64_t, std::unique_ptr<NativeHookFrameInfo>> ipToFrameInfoMap_ = {};
+    std::unordered_map<uint64_t, std::vector<uint64_t>> stackHashValueToFramesHashMap_ = {};
+    std::unordered_map<uint64_t, std::unique_ptr<NativeHookFrameInfo>> frameHashToFrameInfoMap_ = {};
     std::unordered_map<uint32_t, uint64_t> threadNameIdToThreadNameIndex_ = {};
     std::map<uint32_t, std::vector<uint64_t>> stackIdToFrames_ = {};
     std::unordered_map<uint32_t, uint64_t> callIdToLastCallerPathIndex_ = {};

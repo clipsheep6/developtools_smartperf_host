@@ -33,7 +33,6 @@ public:
                          uint64_t expectEnd,
                          uint32_t vsyncId,
                          uint32_t callStackSliceId);
-    bool BeginOnvsyncEvent(uint64_t ts, uint32_t itid, uint64_t expectStart);
     bool MarkRSOnvsyncEvent(uint64_t ts, uint32_t itid);
     bool EndOnVsyncEvent(uint64_t ts, uint32_t itid);
     bool BeginRSTransactionData(uint64_t ts, uint32_t itid, uint32_t franeNum);
@@ -61,6 +60,7 @@ private:
         // @deprecated it will be deleted later
         uint64_t expectedDur_ = INVALID_UINT64;
         uint64_t endTs_ = INVALID_UINT64;
+        bool gpuEnd_ = true;
         FrameSliceType frameType_ = ACTURAL_SLICE;
         uint32_t vsyncId_ = INVALID_UINT32;
         uint64_t frameQueueStartTs_ = INVALID_UINT64;
@@ -75,9 +75,9 @@ private:
         uint64_t dstFrameSliceId_ = INVALID_UINT64;
         uint64_t dstExpectedFrameSliceId_ = INVALID_UINT64;
     };
-    std::map<uint32_t /* tid */, std::map<uint32_t /* vsyncId */, std::shared_ptr<FrameSlice>>> vsyncRenderSlice_ = {};
-    std::map<uint32_t /* tid */, std::map<uint32_t /* frameNum */, std::shared_ptr<FrameSlice>>> dstRenderSlice_ = {};
-    bool newMode_ = true;
+    std::unordered_map<uint32_t /* tid */, std::vector<std::shared_ptr<FrameSlice>>> vsyncRenderSlice_ = {};
+    std::unordered_map<uint32_t /* tid */, std::unordered_map<uint32_t /* frameNum */, std::shared_ptr<FrameSlice>>>
+        dstRenderSlice_ = {};
     bool checkFrameAlwasy_ = false;
 };
 } // namespace TraceStreamer
