@@ -18,6 +18,7 @@ import './LitMainMenuItem.js';
 import './LitMainMenuGroup.js';
 import { LitMainMenuGroup } from './LitMainMenuGroup.js';
 import { LitMainMenuItem } from './LitMainMenuItem.js';
+let backgroundColor=sessionStorage.getItem('backgroundColor');
 
 @element('lit-main-menu')
 export class LitMainMenu extends BaseElement {
@@ -96,7 +97,7 @@ export class LitMainMenu extends BaseElement {
             display: flex;
             flex-direction: column;
             width: 248px;
-            background-color: var(--dark-background,#FFFFFF);
+            background-color:${backgroundColor};
             height: 100vh;
         }
         .menu-body ::-webkit-scrollbar-track
@@ -112,7 +113,7 @@ export class LitMainMenu extends BaseElement {
         }
         .header{
             display: grid;
-            background-color: var(--dark-background1,#FFFFFF);
+            background-color: var(--dark-background1,);
             border-bottom: 1px solid var(--dark-background1,#EFEFEF);
             color: #47A7E0;
             font-size: 1.4rem;
@@ -129,12 +130,22 @@ export class LitMainMenu extends BaseElement {
             align-self: center;
             user-select: none;
         }
+        .bottom{
+            width:100%;
+            display:flex;
+            justify-content:space-between;
+        }
+        .color{
+            padding: 20px;
+            font-size: 0.6rem;
+            cursor:pointer;
+        }
+        
         .version{
             color: #94979d;
             padding: 20px;
             font-size: 0.6rem;
-            width: 100%;
-            text-align: right;
+            width: 8rem;
         }
         *{
             box-sizing: border-box;
@@ -151,13 +162,18 @@ export class LitMainMenu extends BaseElement {
         <div name="header" class="header">
             <img src="img/logo.png"/>
                 <div class="menu-button">
-                    <lit-icon name="menu" size="20" color="var(--dark-color1,#4D4D4D)"></lit-icon>
+                    <lit-icon name="menu" size="20" color="var(blue,#4D4D4D)"></lit-icon>
                 </div>
             </div>
             <div class="menu-body" style="overflow: auto;overflow-x:hidden;height: 100%">
                 <slot id="st" ></slot>
-            </div>
+                </div>
+        <div class='bottom'>        
+        <div class="color" style="">
+        <lit-icon name="bg-colors" size="20" color="gray"></lit-icon>
+        </div>
         <div class="version" style="">
+        </div>
         </div>
         `;
     }

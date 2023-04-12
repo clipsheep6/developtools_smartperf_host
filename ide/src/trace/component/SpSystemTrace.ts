@@ -80,6 +80,9 @@ function dpr() {
 
 @element('sp-system-trace')
 export class SpSystemTrace extends BaseElement {
+    static mouseCurrentPosition = 0;
+    static offsetMouse = 0;
+    static moveable = true;
     static scrollViewWidth = 0;
     static isCanvasOffScreen = true;
     static SPT_DATA: Array<SPT> = [];
@@ -2049,10 +2052,100 @@ export class SpSystemTrace extends BaseElement {
         document.addEventListener('keypress', this.documentOnKeyPress);
         document.addEventListener('keyup', this.documentOnKeyUp);
         document.addEventListener('contextmenu', this.onContextMenuHandler);
+
+        /**        
+         *  获取并保存鼠标当前的x轴坐标位置，配合ctrl+鼠标左键拖动完成泳道图的左移或右移
+         */
+        this.addEventListener('mousedown',(e)=>{ 
+            if(e.ctrlKey){
+                e.preventDefault();                     
+                this.removeEventListener('mousemove',this.documentOnMouseMove);
+                this.removeEventListener('click', this.documentOnClick);
+                this.removeEventListener('mousedown',this.documentOnMouseDown);
+                this.removeEventListener('mouseup',this.documentOnMouseUp);          
+                this.style.cursor = 'move';
+                SpSystemTrace.moveable = true;
+                SpSystemTrace.mouseCurrentPosition = e.clientX;
+            }
+        },{passive:false});
+
+        /**
+         * ctrl+鼠标移动，实现泳道图左移或者右移。         
+         */
+        this.addEventListener('mousemove',(e)=>{
+            if(e.ctrlKey){
+                e.preventDefault();
+                SpSystemTrace.offsetMouse = e.clientX - SpSystemTrace.mouseCurrentPosition;
+                let eventA = new KeyboardEvent('keypress',{'key':'a','code':'65','keyCode':65});
+                let eventD = new KeyboardEvent('keypress',{'key':'d','code':'68','keyCode':68});
+                if(e.button == 0){
+                    if(SpSystemTrace.offsetMouse < 0 && SpSystemTrace.moveable){
+                        // 向右拖动，则泳道图右移
+                        this.timerShaftEL!.documentOnKeyPress(eventD);
+                        setTimeout(()=>{
+                            this.timerShaftEL!.documentOnKeyUp(eventD);
+                        },350);
+                    }
+                    if(SpSystemTrace.offsetMouse > 0 && SpSystemTrace.moveable){
+                        // 向左拖动，则泳道图左移
+                        this.timerShaftEL!.documentOnKeyPress(eventA);
+                        setTimeout(()=>{
+                            this.timerShaftEL!.documentOnKeyUp(eventA);
+                        },350);
+                    } 
+                }
+                SpSystemTrace.moveable = false;
+            }
+        },{passive:false});
+
+        this.addEventListener('mouseup',(e)=>{
+            if(e.ctrlKey){
+                e.preventDefault();
+                SpSystemTrace.offsetMouse = 0;
+                SpSystemTrace.mouseCurrentPosition = 0;
+                SpSystemTrace.moveable = false;
+                this.style.cursor = 'default';
+                this.addEventListener('mousemove', this.documentOnMouseMove); 
+                this.addEventListener('click', this.documentOnClick);
+                this.addEventListener('mousedown', this.documentOnMouseDown);
+                this.addEventListener('mouseup', this.documentOnMouseUp);
+            } 
+        },{passive:false});
+
+        /**
+         * 泳道图中添加ctrl+鼠标滚轮事件，对泳道图进行放大缩小。
+         * 鼠标滚轮事件转化为键盘事件，keyPress和keyUp两个事件需要配合使用，
+         * 否则泳道图会一直放大或一直缩小。
+         * setTimeout()函数中的时间参数可以控制鼠标滚轮的频率。
+         */
+        document.addEventListener('wheel',(e)=>{
+            if(e.ctrlKey){
+                if(e.deltaY > 0){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let eventS = new KeyboardEvent('keypress',{'key':'s','code':'83','keyCode':83});
+                    this.timerShaftEL!.documentOnKeyPress(eventS);
+                    setTimeout(()=>{
+                        this.timerShaftEL!.documentOnKeyUp(eventS);
+                    },200);
+                }
+                if(e.deltaY < 0){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let eventW = new KeyboardEvent('keypress',{'key':'w','code':'87','keyCode':87});
+                    this.timerShaftEL!.documentOnKeyPress(eventW);
+                    setTimeout(()=>{
+                        this.timerShaftEL!.documentOnKeyUp(eventW);
+                    },200);
+                }                
+            }
+        },{passive:false});
+
         SpApplication.skinChange2 = (val: boolean) => {
             this.timerShaftEL?.render();
         };
     }
+    
 
     scrollToProcess(
         rowId: string,

@@ -202,6 +202,14 @@ export class FuncStruct extends BaseStruct {
                             ColorUtils.FUNC_COLOR.length
                         )
                     ]; 
+                let textColor =
+                    ColorUtils.FUNC_COLOR[
+                        ColorUtils.hashFunc(
+                            data.funName || '',
+                            0,
+                            ColorUtils.FUNC_COLOR.length
+                        )
+                    ]; 
                 let miniHeight = 20;
                 if (
                     FuncStruct.hoverFuncStruct &&
@@ -216,7 +224,7 @@ export class FuncStruct extends BaseStruct {
                     miniHeight - padding * 2
                 );
                 if (data.frame.width > 10) {
-                    ctx.fillStyle = '#fff';
+                    ctx.fillStyle = ColorUtils.funcTextColor(textColor);
                     FuncStruct.drawString(
                         ctx,
                         `${data.funName || ''}`,
