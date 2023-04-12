@@ -18,7 +18,7 @@ import './LitMainMenuItem.js';
 import './LitMainMenuGroup.js';
 import { LitMainMenuGroup } from './LitMainMenuGroup.js';
 import { LitMainMenuItem } from './LitMainMenuItem.js';
-let backgroundColor=sessionStorage.getItem('backgroundColor');
+let backgroundColor = sessionStorage.getItem('backgroundColor');
 
 @element('lit-main-menu')
 export class LitMainMenu extends BaseElement {
@@ -97,7 +97,7 @@ export class LitMainMenu extends BaseElement {
             display: flex;
             flex-direction: column;
             width: 248px;
-            background-color:${backgroundColor};
+            background-color: ${backgroundColor};
             height: 100vh;
         }
         .menu-body ::-webkit-scrollbar-track
@@ -113,7 +113,7 @@ export class LitMainMenu extends BaseElement {
         }
         .header{
             display: grid;
-            background-color: var(--dark-background1,);
+            background-color: var(--dark-background1);
             border-bottom: 1px solid var(--dark-background1,#EFEFEF);
             color: #47A7E0;
             font-size: 1.4rem;
@@ -131,16 +131,15 @@ export class LitMainMenu extends BaseElement {
             user-select: none;
         }
         .bottom{
-            width:100%;
-            display:flex;
-            justify-content:space-between;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
         }
         .color{
             padding: 20px;
             font-size: 0.6rem;
-            cursor:pointer;
+            cursor: pointer;
         }
-        
         .version{
             color: #94979d;
             padding: 20px;
@@ -168,7 +167,7 @@ export class LitMainMenu extends BaseElement {
             <div class="menu-body" style="overflow: auto;overflow-x:hidden;height: 100%">
                 <slot id="st" ></slot>
                 </div>
-        <div class='bottom'>        
+        <div class="bottom">        
         <div class="color" style="">
         <lit-icon name="bg-colors" size="20" color="gray"></lit-icon>
         </div>

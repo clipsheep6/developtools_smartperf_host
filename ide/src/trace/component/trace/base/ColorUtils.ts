@@ -20,20 +20,20 @@ export class ColorUtils {
 
     
     public static MD_PALETTE_A: Array<string> = [
-        "#40b3e7",
-        "#606e75",
-        "#8d9171",
-        "#8f8f8f",
-        "#7a9160",
-        "#9fafc4",
-        "#8a8a8b",
-        "#9e8e00",
-        "#696e35",
-        "#5c4d21",
-        "#18a8a1",
-        "#a16a40",
-        "#a94eb9",
-        "#886EB4",
+        '#40b3e7',
+        '#606e75',
+        '#8d9171',
+        '#8f8f8f',
+        '#7a9160',
+        '#9fafc4',
+        '#8a8a8b',
+        '#9e8e00',
+        '#696e35',
+        '#5c4d21',
+        '#18a8a1',
+        '#a16a40',
+        '#a94eb9',
+        '#886EB4',
     ];
     public static MD_PALETTE_B: Array<string> = [
         '#9785D3',
@@ -52,20 +52,20 @@ export class ColorUtils {
         '#C6D9F2',
     ];
     public static FUNC_COLOR_A: Array<string> = [
-        "#40b3e7",
-        "#606e75",
-        "#8d9171",
-        "#8f8f8f",
-        "#7a9160",
-        "#9fafc4",
-        "#8a8a8b",
-        "#9e8e00",
-        "#696e35",
-        "#5c4d21",
-        "#18a8a1",
-        "#a16a40",
-        "#a94eb9",
-        "#886EB4",
+        '#40b3e7',
+        '#606e75',
+        '#8d9171',
+        '#8f8f8f',
+        '#7a9160',
+        '#9fafc4',
+        '#8a8a8b',
+        '#9e8e00',
+        '#696e35',
+        '#5c4d21',
+        '#18a8a1',
+        '#a16a40',
+        '#a94eb9',
+        '#886EB4',
     ];
     public static FUNC_COLOR_B: Array<string> = [
         '#9785D3',
@@ -92,8 +92,8 @@ export class ColorUtils {
         '#009DFA',
         '#E97978',
     ];
-    public static MD_PALETTE:  Array<string> = ColorUtils.MD_PALETTE_B; 
-    public static FUNC_COLOR:  Array<string> = ColorUtils.FUNC_COLOR_B;
+    public static MD_PALETTE: Array<string> = ColorUtils.MD_PALETTE_B; 
+    public static FUNC_COLOR: Array<string> = ColorUtils.FUNC_COLOR_B;
 
     public static hash(str: string, max: number): number {
         let colorA: number = 0x811c9dc5;

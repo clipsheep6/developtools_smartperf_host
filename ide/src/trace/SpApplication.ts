@@ -227,7 +227,7 @@ export class SpApplication extends BaseElement {
             /*transition: all 0.2s;*/
             box-shadow: 4px 0px 20px rgba(0,0,0,0.05);
             z-index: 2000;
-            transition-duration:2s;
+            transition-duration: 2s;
         }
         .search-container{
             z-index: 10;
@@ -470,17 +470,21 @@ export class SpApplication extends BaseElement {
             let menuItem =
                     menu!.shadowRoot?.querySelectorAll<LitMainMenuItem>(
                         'lit-main-menu-item'
-                    );
+                );
             if (backgroundColor == 'white' || !backgroundColor) {
                 menu!.style.backgroundColor = '#262f3c';
-                menuGroup!.forEach(item => {
-                    let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
-                    let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
+                menuGroup!.forEach((item) => {
+                    let groupName = item!.shadowRoot!.querySelector(
+                        '.group-name'
+                    ) as LitMainMenuGroup;
+                    let groupDescribe = item!.shadowRoot!.querySelector(
+                        '.group-describe'
+                    ) as LitMainMenuGroup;
                     groupName.style.color = 'white';
                     groupDescribe.style.color = 'white';
 
                 })
-                menuItem!.forEach(item => {
+                menuItem!.forEach((item) => {
                     item.style.color = 'white';
                 })
                 ColorUtils.MD_PALETTE = ColorUtils.MD_PALETTE_A;
@@ -488,14 +492,18 @@ export class SpApplication extends BaseElement {
             }
             else {
                 menu!.style.backgroundColor = 'white';
-                menuGroup!.forEach(item => {
-                    let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
-                    let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
+                menuGroup!.forEach((item) => {
+                    let groupName = item!.shadowRoot!.querySelector(
+                        '.group-name'
+                    ) as LitMainMenuGroup;
+                    let groupDescribe = item!.shadowRoot!.querySelector(
+                        '.group-describe'
+                    ) as LitMainMenuGroup;
                     groupName.style.color = 'black';
                     groupDescribe.style.color = '#92959b';
 
                 })
-                menuItem!.forEach(item => {
+                menuItem!.forEach((item) => {
                     item.style.color = 'var(--dark-color,rgba(0,0,0,0.6))';
                 })
                 ColorUtils.MD_PALETTE = ColorUtils.MD_PALETTE_B; 
@@ -671,8 +679,8 @@ export class SpApplication extends BaseElement {
                 }),
             })
                 .then((response) => response.json())
-                .then((data) => { })
-                .catch((error) => { });
+                .then((data) => {})
+                .catch((error) => {});
         }
 
         function getTraceOptionMenus(
@@ -776,9 +784,9 @@ export class SpApplication extends BaseElement {
             }
             info(
                 'setPercent ：' +
-                command +
-                'percent :' +
-                SpApplication.loadingProgress
+                    command +
+                    'percent :' +
+                    SpApplication.loadingProgress
             );
             litSearch.setPercent(command + '  ', SpApplication.loadingProgress);
         }
@@ -801,11 +809,13 @@ export class SpApplication extends BaseElement {
                 } else {
                     fd.append('file', ev as any);
                 }
-                let uploadPath = `https://${window.location.host.split(':')[0]
-                    }:9000/upload`;
+                let uploadPath = `https://${
+                    window.location.host.split(':')[0]
+                }:9000/upload`;
                 if (that.vs) {
-                    uploadPath = `http://${window.location.host.split(':')[0]
-                        }:${window.location.port}/upload`;
+                    uploadPath = `http://${
+                        window.location.host.split(':')[0]
+                    }:${window.location.port}/upload`;
                 }
                 info('upload trace');
                 let dbName = '';
@@ -835,11 +845,13 @@ export class SpApplication extends BaseElement {
                         if (res != undefined) {
                             dbName = res;
                             info('get trace db');
-                            let loadPath = `https://${window.location.host.split(':')[0]
-                                }:9000`;
+                            let loadPath = `https://${
+                                window.location.host.split(':')[0]
+                            }:9000`;
                             if (that.vs) {
-                                loadPath = `http://${window.location.host.split(':')[0]
-                                    }:${window.location.port}`;
+                                loadPath = `http://${
+                                    window.location.host.split(':')[0]
+                                }:${window.location.port}`;
                             }
                             SpApplication.loadingProgress = 0;
                             SpApplication.progressStep = 3;
@@ -895,11 +907,13 @@ export class SpApplication extends BaseElement {
                 reader.onloadend = function (ev) {
                     info('read file onloadend');
                     litSearch.setPercent('ArrayBuffer loaded  ', 2);
-                    let wasmUrl = `https://${window.location.host.split(':')[0]
-                        }:${window.location.port}/application/wasm.json`;
+                    let wasmUrl = `https://${
+                        window.location.host.split(':')[0]
+                    }:${window.location.port}/application/wasm.json`;
                     if (that.vs) {
-                        wasmUrl = `http://${window.location.host.split(':')[0]
-                            }:${window.location.port}/wasm.json`;
+                        wasmUrl = `http://${
+                            window.location.host.split(':')[0]
+                        }:${window.location.port}/wasm.json`;
                     }
                     SpApplication.loadingProgress = 0;
                     SpApplication.progressStep = 3;
@@ -976,9 +990,9 @@ export class SpApplication extends BaseElement {
                             fileName.lastIndexOf('.') == -1
                                 ? fileName
                                 : fileName.substring(
-                                    0,
-                                    fileName.lastIndexOf('.')
-                                );
+                                      0,
+                                      fileName.lastIndexOf('.')
+                                  );
                         document.title = `${showFileName} (${fileSize}M)`;
                         TraceRow.rangeSelectObject = undefined;
                         if (that.server) {
@@ -1004,9 +1018,10 @@ export class SpApplication extends BaseElement {
                                 if (response.ok) {
                                     response.text().then((traceFile) => {
                                         let traceFilePath =
-                                            `http://${window.location.host.split(
+                                            `http://${
+                                                window.location.host.split(
                                                 ':'
-                                            )[0]
+                                                )[0]
                                             }:${window.location.port}` +
                                             traceFile;
                                         fetch(traceFilePath).then((res) => {
@@ -1280,10 +1295,10 @@ export class SpApplication extends BaseElement {
         const _urlParams = _url.match(/([?&])(.+?=[^&]+)/gim);
         return _urlParams
             ? _urlParams.reduce((a: any, b) => {
-                const value = b.slice(1).split('=');
-                a[`${value[0]}`] = decodeURIComponent(value[1]);
-                return a;
-            }, {})
+                  const value = b.slice(1).split('=');
+                  a[`${value[0]}`] = decodeURIComponent(value[1]);
+                  return a;
+              }, {})
             : {};
     }
 

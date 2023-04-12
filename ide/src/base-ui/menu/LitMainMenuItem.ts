@@ -67,9 +67,9 @@ export class LitMainMenuItem extends BaseElement {
         this.iconEl = this.shadowRoot?.querySelector('.icon');
         this.fileEL = this.shadowRoot?.querySelector('.file');
         let backgroundColor = sessionStorage.getItem('backgroundColor');
-        if(backgroundColor == 'rgb(38, 47, 60)'){
+        if (backgroundColor == 'rgb(38, 47, 60)') {
             textColor = 'white';
-        } else{
+        } else {
             textColor = 'black';
         }
     }

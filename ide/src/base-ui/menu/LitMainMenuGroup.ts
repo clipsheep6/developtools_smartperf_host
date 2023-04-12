@@ -14,7 +14,7 @@
  */
 
 import { BaseElement, element } from '../BaseElement.js';
-let textColor='';
+let textColor = '';
 
 @element('lit-main-menu-group')
 export class LitMainMenuGroup extends BaseElement {
@@ -64,9 +64,9 @@ export class LitMainMenuGroup extends BaseElement {
             this.collapsed = !this.collapsed;
         });
         let backgroundColor = sessionStorage.getItem('backgroundColor');
-        if(backgroundColor =='rgb(38, 47, 60)'){
+        if (backgroundColor == 'rgb(38, 47, 60)') {
             textColor = 'white';
-        } else{
+        } else {
             textColor = 'black';
         }
 
@@ -83,7 +83,7 @@ export class LitMainMenuGroup extends BaseElement {
             display: flex;
             flex-direction: column;
             width: 248px;
-            background-color: var(--dark-background,);
+            background-color: var(--dark-background);
             cursor: pointer;
         }
         :host(:not([collapsed])) ::slotted(lit-main-menu-item){
@@ -97,7 +97,7 @@ export class LitMainMenuGroup extends BaseElement {
             display: flex;
             flex-direction: column;
             width: 248px;
-            background-color: var(--dark-background,);
+            background-color: var(--dark-background);
             cursor: pointer;
         }
         :host([collapsed]):hover){
@@ -123,7 +123,7 @@ export class LitMainMenuGroup extends BaseElement {
             padding: 20px 24px 0px 24px;
         }
         .group-describe{
-            color:${textColor};
+            color: ${textColor};
             padding: 4px 24px 20px 24px;
             font-size: .6rem;
         }
