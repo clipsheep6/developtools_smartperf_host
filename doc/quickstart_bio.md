@@ -1,5 +1,5 @@
 # Bio的抓取和展示说明
-抓取和展示IO延迟的数据
+抓取和展示IO延迟的数据。
 ## Bio的抓取
 ### Bio抓取配置参数
 ![GitHub Logo](../figures/Bio/Biosetting.jpg)
