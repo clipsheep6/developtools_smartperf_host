@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>quickstart_schedulinganalysis</title>
+    <title>quickstart_systemtrace</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -761,321 +761,120 @@
 </head>
 <body for="html-export" id="body">
 <div class="smartperf smartperf-preview  ">
-    <h1 class="mume-header fontColor">Scheduling analysis抓取和展示说明</h1>
+    <h1 class="mume-header fontColor">web端加载trace说明</h1>
 
-    <p class="fontColor">抓取和展示CPU调度分析，线程调度分析相关数据。</p>
-    <h2 class="mume-header fontColor">Scheduling analysis的抓取</h2>
+    <p class="fontColor">从web端查看trace文件，进行性能检测的分析。</p>
+    <h2 class="mume-header fontColor">文件加载入口</h2>
 
-    <h3 class="mume-header fontColor">Scheduling analysis抓取界面配置说明</h3>
-
-    <p class="fontColor">打开Scheduling analysis开关抓取调度分析数据。<br>
-        <img src="../figures/Schedulinganalysis/scheduset.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Scheduling analysis文件的抓取</h3>
-
-    <p class="fontColor">点击Record setting，在output file path输入文件名hiprofiler_dataScheduling.htrace，拖动滚动条设置buffer
-        size大小是64M，抓取时长是50s。<br>
-        <img src="../figures/Schedulinganalysis/schedusetting.jpg" alt="GitHub Logo"><br>
-        点击Trace command，就会根据上面的配置生成抓取命令，点击Record抓取，抓取过程中会显示抓取时长。<br>
-        <img src="../figures/Schedulinganalysis/scheduexcuting.jpg" alt="GitHub Logo"></p>
-    <h2 class="mume-header fontColor">Scheduling analysis功能介绍</h2>
-
-    <p class="fontColor">将抓取的文件导入到smartperf工具查看。</p>
-    <h3 class="mume-header fontColor">CPU频点分析</h3>
-
-    <p class="fontColor">点击下拉列表框选择CPU Frequency，可以看到各核CPU的各频点持续时长的占比图，以颜色区分各频点。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencychart.jpg" alt="GitHub Logo"><br>
-        点击CPU Frequency饼图，可以跳转到详细信息界面，用饼图和表格来展示某个CPU下各频点持续时长的的相关数据。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencydetailinfo.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">将抓取的trace导入查看。<br>
+        <img src="../figures/Web/opentrace.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">说明：</p>
     <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">frequency：频率。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
+        <li>Open trace file：导入离线trace文件入口。</li>
+        <li>Record new trace：抓取新的trace文件入口。</li>
+    </ul>
+    <h2 class="mume-header fontColor">导入trace文件后显示页面</h2>
+
+    <p class="fontColor"><img src="../figures/Web/trace.jpg" alt="GitHub Logo"><br>
+        说明：</p>
+    <ul class="fontColor">
+        <li>操作说明：在当前页面可以通过键盘上的wasd四个键位操纵当前的时间轴进行缩放，w为放大，s为缩小，a为左移，d为右移。
         </li>
     </ul>
-    <p class="fontColor">点击详细页的CPU Frequency饼图，可以跳转某个CPU下某个频点的运行的线程信息。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencythreaddetail.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_pid：进程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU Idle分析</h3>
+    <h2 class="mume-header fontColor">trace功能介绍</h2>
 
-    <p class="fontColor">点击下拉列表框选择CPU Idle，可以看到各CPU的Idle的时长占比饼图，以颜色区分各Idle。<br>
-        <img src="../figures/Schedulinganalysis/CPUidlechart.jpg" alt="GitHub Logo"><br>
-        点击CPU Idle饼图，可以跳转到某CPU的idle分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUidledetailinfo.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">idle：idle值。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU Irq分析</h3>
+    <p class="fontColor">
+        trace模块从上往下主要展示时间轴、cpu使用率、cpu使用情况、进程间通讯数据的方法调用情况、进程、线程和方法调用情况。</p>
+    <h3 class="mume-header fontColor">时间轴和cpu使用率</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Irq，可以看到各CPU的Irq的时长占比饼图，以颜色区分。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqchart.jpg" alt="GitHub Logo"><br>
-        点击CPU Irq饼图，可以跳转到某CPU的Irq分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqdetailinfo.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">block：irq的类型。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">name：irp名称。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU占用率显示</h3>
+    <p class="fontColor"><img src="../figures/Web/time.jpg" alt="GitHub Logo"><br>
+        最上方带刻度的为时间轴，主要展示当前抓取数据的总时长和时间刻度的分布情况，如上图所示，左下角展示总时长。<br>
+        中间区域展示的是抓取数据时间段内的cpu使用率，颜色越深代表cpu使用率越高，颜色越浅代表cpu使用率越低。<br>
+        <img src="../figures/Web/highlit.jpg" alt="GitHub Logo"><br>
+        在白色背景时间轴区域内可以点击后拖拽鼠标，可以对从鼠标按下到拖拽完成鼠标松开的区域内的数据进行筛选，高亮显示的部分为当前所选区域，如上图所示。
+    </p>
+    <h3 class="mume-header fontColor">cpu使用情况</h3>
 
-    <p class="fontColor">以表格显示各CPU的占用率。<br>
-        <img src="../figures/Schedulinganalysis/CPUusagechart.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Top20线程大中小核占用率</h3>
+    <p class="fontColor"><img src="../figures/Web/cpu.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">
+        如上图所示，当前抓取数据有4个cpu工作，前四组数据对应的是当前调用cpu的线程和对应的进程情况，以颜色作为区分。后四组数据则为cpu的使用频率信息。鼠标移动到相应的线程上还会将当前选中的进程信息全部置为高亮，其他的进程会置灰，如下图所示。<br>
+        <img src="../figures/Web/gray.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">cpu使用情况的框选功能</h4>
 
-    <p class="fontColor">选择Thread Analysis标签页，各个CPU通过勾选big或者middle或者small来设置CPU的分类。<br>
-        <img src="../figures/Schedulinganalysis/CPUsetting.jpg" alt="GitHub Logo"><br>
-        各CPU勾选好大中小核，点击Upload可以跳转到各个线程CPU占用率情况的展示页面。<br>
-        <img src="../figures/Schedulinganalysis/CPUdetailsetting.jpg" alt="GitHub Logo"><br>
-        如上图所示：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">三色柱状图：各个线程CPU的占用率情况，其中以颜色区分占用的大中小核的占用率情况，并以表格的形式展示各个线程的基本信息和大中小核占用率。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">单色柱状图：分别统计线程在某一个类别（大、中、小）的CPU的占用率，并显示出线程的基本信息和占用率。
-</pre>
-        </li>
-    </ul>
-    <p class="fontColor">表格的字段说明：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">big core：大核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">middle core：中核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">small core：小核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu..(us)：运行总时长(..代表cpu号)。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">单个线程频点分布</h3>
+    <p class="fontColor">可以对cpu的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格,总共有七个tab页。<br>
+        CPU by thread的Tab页，主要显示了在框选时间区间内的进程名、进程号、线程名、线程号、总运行时长、平均运行时长和调度次数信息。<br>
+        <img src="../figures/Web/cpubythread.jpg" alt="GitHub Logo"><br>
+        CPU by process的Tab页，主要显示了在框选时间区间内的进程名、进程号、总运行时长、平均运行时长和调度次数信息。<br>
+        <img src="../figures/Web/cpubyprocess.jpg" alt="GitHub Logo"><br>
+        CPU Usage的Tab页，主要显示了在框选时间区间内，该频率时间占比前三的信息。<br>
+        <img src="../figures/Web/cpusage.jpg" alt="GitHub Logo"><br>
+        States List的Tab页，按状态&gt;进程&gt;线程的维度去统计，需要呈现该状态的线程名、该状态次数、该状态下时长、最大最小时长、平均时长、最大时长。<br>
+        <img src="../figures/Web/StatesList.jpg" alt="GitHub Logo"><br>
+        Switches List的Tab页，按照进程&gt;线程&gt;状态，统计对应状态下的次数。<br>
+        <img src="../figures/Web/Switchlist.jpg" alt="GitHub Logo"><br>
+        Thread States的Tab页，按进程&gt;线程&gt;状态的维度去统计，需要呈现该状态的线程名、进入该状态次数、该状态下时长、最小时长、平均时长、最大时长。<br>
+        <img src="../figures/Web/threadstates.jpg" alt="GitHub Logo"><br>
+        Thread Switches的Tab页，按照状态&gt;进程&gt;线程，统计对应状态下的次数。<br>
+        <img src="../figures/Web/threadswitches.jpg" alt="GitHub Logo"><br>
+        States List、Switches List、Thread States、Thread
+        Switches的4个Tab页，点击移动到某一行，鼠标会变成一个小手的标志，点击一下，就会进入辅助信息界面，会将选中行的辅助信息展示出来，包括开始时间、进程、线程、线程状态、对应的CPU、优先级等信息如下图。<br>
+        <img src="../figures/Web/details.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">cpu使用情况的单选功能</h4>
 
-    <p class="fontColor">点击单个线程频点分布的标签，通过在Thread Search选择线程，来展示单个线程的频点分布情况。<br>
-        <img src="../figures/Schedulinganalysis/CPUfrequencybythread.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu：cpu编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">frequency：频点。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">%：频点占用率。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20单次运行超长线程</h3>
+    <p class="fontColor">单选CPU使用情况数据会在选中的色块外层加上深色边框，能够突出当前选中色块，弹出层中会展示当前CPU上的进程名，线程名，开始时间和运行时长，线程运行状态等信息。<br>
+        <img src="../figures/Web/cpuclick.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">进程、线程和方法数据</h3>
 
-    <p class="fontColor">通过点击Top20单次运行超长线程标签，显示线程的单次运行时长来统计出单次运行时长最大的20个线程。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadduration.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max duration：最大运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">timestamp：时间戳信息。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20进程线程数</h3>
+    <p class="fontColor">
+        下图是进程数据，左边部分展示进程名称和id，右边显示线程切换关系，线程的调用方法，进程间内存信息等。<br>
+        <img src="../figures/Web/process.jpg" alt="GitHub Logo"><br>
+        点击进程名前面向下箭头可以展开对应的线程进行查看，展开后的线程如下图，如果存在堆内存占用情况，就会显示在第一行，如果出现两个名字和id一样的线程，则第一个为线程的使用情况，第二为线程内的方法栈调用情况。<br>
+        <img src="../figures/Web/threadinfo.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">进程、线程和方法数据的框选功能</h4>
 
-    <p class="fontColor">通过点击Top20进程线程数标签，显示线程数量最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadnum.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">thread count：线程数量。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20切换次数线程</h3>
+    <p class="fontColor">
+        可以对线程的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，包含线程运行状态，线程调用栈的统计情况。当框选的数据中同时存在线程运行状态和线程调用栈数据，下方的弹出层中就会出现多个tab选项，可以进行切换。</p>
+    <p class="fontColor">下图是线程运行状态框选统计信息,包括进程名、进程号、线程名、线程号、线程状态、状态持续时间、平均持续时间、该线程状态发生的次数。<br>
+        <img src="../figures/Web/threadselect.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">下图是线程调用栈框选统计信息,包括方法名、持续时间、平均持续时间、调用的次数。<br>
+        <img src="../figures/Web/callstackselect.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">进程、线程和方法数据的单选功能</h4>
 
-    <p class="fontColor">通过点击Top20切换次数线程标签，显示切换次数最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20swtichcount.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">sched_switch count：切换次数。
-</pre>
-        </li>
-    </ul>
+    <p class="fontColor">
+        单选线程的state数据时，会展示当前选中线程的状态数据，开始时间和持续时长，线程状态，所在进程名称。<br>
+        <img src="../figures/Web/threadclick.jpg" alt="GitHub Logo"><br>
+        单选调用栈数据，单击方法会在选中的方法外层加上黑色边框，能够突出当前选中的方法，弹出层中会展示当前方法的名称、开始时间和运行时长信息。<br>
+        <img src="../figures/Web/callstackclick.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">线程的跳转功能</h4>
+
+    <p class="fontColor">点击画红框处的带箭头的标志，会从CPU的线程概览视图跳转到线程的详情视图，同时从线程的详情视图也能跳转到CPU的线程概览视图。<br>
+        <img src="../figures/Web/jumpthread.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">trace的其他功能</h3>
+
+    <h4 class="mume-header fontColor">小旗标志的功能</h4>
+
+    <p class="fontColor">将选中数据的时间点通过小旗的方式在时间轴上展示，直观的展示选中数据的时间。<br>
+        <img src="../figures/Web/flag.jpg" alt="GitHub Logo"><br>
+        在下方输入空输入文字:我是trace,可以给小旗打备注。<br>
+        <img src="../figures/Web/flaginput.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">收藏置顶功能</h4>
+
+    <p class="fontColor">鼠标移动到某个页签，会出现星形的标志，点击该星形，可以将该行收藏置顶。<br>
+        <img src="../figures/Web/stars.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">勾选功能</h4>
+
+    <p class="fontColor">框选某一区域，该区域左边会出现CheckBox的复选框，选中的区域的复选框会出现打勾的状态，可以取消勾选，也可以重新勾选。<br>
+        <img src="../figures/Web/checkbox.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">搜索功能</h4>
+
+    <p class="fontColor">在搜索框中，可以输入线程，线程号等搜索自己想要的信息，搜索完成会高亮显示。<br>
+        <img src="../figures/Web/search.jpg" alt="GitHub Logo"><br>
+        在搜索框中输入调用栈的方法名，会跳转到对应的调用栈。<br>
+        <img src="../figures/Web/searchcallstack.jpg" alt="GitHub Logo"></p>
+    <h4 class="mume-header fontColor">M键测量功能</h4>
+
+    <p class="fontColor">放大trace中的色块，选中色块，键盘按下M，会出现像尺子一样的形状。<br>
+        <img src="../figures/Web/M.jpg" alt="GitHub Logo"></p>
 
 </div>
 

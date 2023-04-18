@@ -177,7 +177,7 @@ export class LitButton extends BaseElement {
         <div id='custom-div'>
                 <button id="custom-button" type="button">
                     <slot id="sl" tyle= "padding: 10px"></slot>
-                    <lit-icon id="button-icon" name="" size="20" style= "margin-left: 10px" color="var(--dark-color1,#4D4D4D)"></lit-icon>
+                    <lit-icon id="button-icon" name="" size="18" style= "margin-left: 10px" color="var(--dark-color1,#4D4D4D)"></lit-icon>
                  </button>
             </div>
             `;

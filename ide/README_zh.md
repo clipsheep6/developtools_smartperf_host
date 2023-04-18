@@ -13,7 +13,7 @@
         apt-get update 
         apt-get install nodejs npm
 ```
-![](../figures/deploy/install_node.png)
+![](./src/figures/deploy/install_node.png)
 
 
 - centos 系统中使用yum安装，先切换到root用户下，命令如下：
@@ -21,7 +21,7 @@
         sudo su 
         sudo yum -y install nodejs npm 
 ```
-![](../figures/deploy/yum_install_node.png)
+![](./src/figures/deploy/yum_install_node.png)
 
 - windows系统中， 用安装包一路next即可
 
@@ -31,7 +31,7 @@
         node -v 
         npm -v
 ```
-![](../figures/deploy/check_version.png)
+![](./src/figures/deploy/check_version.png)
 
   出现版本号就代表安装成功了。
 
@@ -48,14 +48,14 @@
 ```
  
  验证安装完成:
-![](../figures/deploy/install_tsc.png)
+![](./src/figures/deploy/install_tsc.png)
 
 ### go 编译环境安装
 - ubuntu 环境下直接使用apt安装，以root用户执行(go 版本 >= 1.13.8 )
 ```
         apt-get install golang-go
 ```
-![](../figures/deploy/install_golang.png)
+![](./src/figures/deploy/install_golang.png)
 
 - centos系统中使用yum安装，先切换到root用户下，命令如下：
 
@@ -63,7 +63,7 @@
         sudo su
         sudo yum -y install go 
 ```
-![](../figures/deploy/yum_install_go.png)
+![](./src/figures/deploy/yum_install_go.png)
 
 - windows 系统下 从 https://golang.google.cn/dl/ 下载安装包， 一路next 完成 安装即可
            
@@ -78,15 +78,15 @@
 将压缩包解压后， 将文件放置到项目third-party 目录下。
 
         
-![](../figures/deploy/third_party.png)
+![](./src/figures/deploy/third_party.png)
 
 #### 先编译获取trace_streamer 的二进制包
 参照:smartperf/trace_streamer/compile_trace_streamer.md 编译出wasm、linux、Windows版本的二进制文件。
 将获取到二进制文件放入到项目bin目录下，如果项目目录中无bin目录 先创建bin目录。
 然后将trace_streamer的二进制文件放入bin目录中。
 	   
-![](../figures/deploy/put_bin.png)
-![](../figures/deploy/bin_files.png)
+![](./src/figures/deploy/put_bin.png)
+![](./src/figures/deploy/bin_files.png)
 
 
 #### 代码编译(依赖于上面node环境 和 go环境)
@@ -98,7 +98,7 @@
 ```
         npm run compile 
 ```                
-![](../figures/deploy/compile.png)
+![](./src/figures/deploy/compile.png)
     编译成功后会有main 可执行文件生成。
     
 ## 项目部署
@@ -106,15 +106,15 @@ linux版本部署需要给trace_stream程序赋予执行权限，cd dist/bin 目
 ```
         chmod +x trace_streamer_*
 ```
-![](../figures/deploy/chomd+x.png)          
+![](./src/figures/deploy/chomd+x.png)          
 
 直接运行 ./main 可执行程序，完成项目的部署。
-![](../figures/deploy/run_main.png)
+![](./src/figures/deploy/run_main.png)
  ## 访问项目     
 在浏览器上打开 https://[部署机器ip地址]:9000/application/ 
 !!! 注意一定是https。
 
-![](../figures/deploy/visit_website.png)
+![](./src/figures/deploy/visit_website.png)
 
  备注：如果未出现如图所示网页.而是显示 无法访问此网站。
 可以在window cmd 里执行telnet [部署机器ip地址] 9000。

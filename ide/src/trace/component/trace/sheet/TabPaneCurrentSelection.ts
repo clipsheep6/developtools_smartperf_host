@@ -130,7 +130,7 @@ export class TabPaneCurrentSelection extends BaseElement {
                 name: 'Thread',
                 value: `<div style="margin-left: 5px;white-space: nowrap;display: flex;align-items: center">
 <div style="white-space:pre-wrap">${name || 'Process'} [${data.tid}]</div>
-<lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="thread-id" name="select" color="#7fa1e7" size="20"></lit-icon>
+<lit-icon style="cursor:pointer;margin-left: 5px" id="thread-id" name="select" color="#7fa1e7" size="20"></lit-icon>
 </div>`,
             });
         } else {

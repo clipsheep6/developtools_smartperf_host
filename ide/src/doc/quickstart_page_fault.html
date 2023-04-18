@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>quickstart_schedulinganalysis</title>
+    <title>quickstart_page_fault</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -761,321 +761,184 @@
 </head>
 <body for="html-export" id="body">
 <div class="smartperf smartperf-preview  ">
-    <h1 class="mume-header fontColor">Scheduling analysis抓取和展示说明</h1>
+    <h1 class="mume-header fontColor">页内存的抓取和展示说明</h1>
 
-    <p class="fontColor">抓取和展示CPU调度分析，线程调度分析相关数据。</p>
-    <h2 class="mume-header fontColor">Scheduling analysis的抓取</h2>
+    <p class="fontColor">页内存从page层面更深层次剖析应用程序的虚拟内存操作。</p>
+    <h2 class="mume-header fontColor">页内存的抓取</h2>
 
-    <h3 class="mume-header fontColor">Scheduling analysis抓取界面配置说明</h3>
+    <h3 class="mume-header fontColor">页内存抓取配置参数</h3>
 
-    <p class="fontColor">打开Scheduling analysis开关抓取调度分析数据。<br>
-        <img src="../figures/Schedulinganalysis/scheduset.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Scheduling analysis文件的抓取</h3>
-
-    <p class="fontColor">点击Record setting，在output file path输入文件名hiprofiler_dataScheduling.htrace，拖动滚动条设置buffer
+    <p class="fontColor"><img src="../figures/EBPF/ebpfsetting.jpg" alt="GitHub Logo"><br>
+        配置项说明：</p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Start Page Fault Record：配置项的总开关。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Process：默认配置的是整个系统的，也可选择单进程抓取。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Max Unwind Level：配置抓取调用栈的最大深度。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">再点击Record setting，在output file path输入文件名hiprofiler_data_ebpf.htrace，拖动滚动条设置buffer
         size大小是64M，抓取时长是50s。<br>
-        <img src="../figures/Schedulinganalysis/schedusetting.jpg" alt="GitHub Logo"><br>
+        <img src="../figures/EBPF/ebpfrecord.jpg" alt="GitHub Logo"><br>
         点击Trace command，就会根据上面的配置生成抓取命令，点击Record抓取，抓取过程中会显示抓取时长。<br>
-        <img src="../figures/Schedulinganalysis/scheduexcuting.jpg" alt="GitHub Logo"></p>
-    <h2 class="mume-header fontColor">Scheduling analysis功能介绍</h2>
+        <img src="../figures/EBPF/ebpfexcuting.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存展示说明</h3>
 
-    <p class="fontColor">将抓取的文件导入到smartperf工具查看。</p>
-    <h3 class="mume-header fontColor">CPU频点分析</h3>
-
-    <p class="fontColor">点击下拉列表框选择CPU Frequency，可以看到各核CPU的各频点持续时长的占比图，以颜色区分各频点。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencychart.jpg" alt="GitHub Logo"><br>
-        点击CPU Frequency饼图，可以跳转到详细信息界面，用饼图和表格来展示某个CPU下各频点持续时长的的相关数据。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencydetailinfo.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">抓取结束后页内存的trace会自动加载展示。<br>
+        <img src="../figures/EBPF/ebpfsummary.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">界面布局介绍：页内存整体界面布局分为3个部分：</p>
     <ul class="fontColor">
         <li>
-<pre class="smartperf-text fontColor light">No：编号。
+<pre class="smartperf-text fontColor light">红色区域：泳道图。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">frequency：频率。
+<pre class="smartperf-text fontColor light">绿色区域：详细信息。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
+<pre class="smartperf-text fontColor light">黄色区域：辅助信息(Callstack)。
 </pre>
         </li>
     </ul>
-    <p class="fontColor">点击详细页的CPU Frequency饼图，可以跳转某个CPU下某个频点的运行的线程信息。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencythreaddetail.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_pid：进程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU Idle分析</h3>
+    <h3 class="mume-header fontColor">页内存泳道图展示</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Idle，可以看到各CPU的Idle的时长占比饼图，以颜色区分各Idle。<br>
-        <img src="../figures/Schedulinganalysis/CPUidlechart.jpg" alt="GitHub Logo"><br>
-        点击CPU Idle饼图，可以跳转到某CPU的idle分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUidledetailinfo.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">idle：idle值。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU Irq分析</h3>
+    <p class="fontColor">页内存泳道图展示事件(Operation)发生的次数，每个事件都有持续时间，鼠标悬浮以10ms为区间进行次数统计。<br>
+        <img src="../figures/EBPF/EBPFchart.jpg" alt="GitHub Logo"><br>
+        按住w键放大界面，悬浮框会显示当前时刻的事件发生次数。<br>
+        <img src="../figures/EBPF/EBPFcount.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存泳道图的框选功能</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Irq，可以看到各CPU的Irq的时长占比饼图，以颜色区分。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqchart.jpg" alt="GitHub Logo"><br>
-        点击CPU Irq饼图，可以跳转到某CPU的Irq分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqdetailinfo.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">可以对泳道图进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，总共有三个tab页。<br>
+        Page Fault Statistics的Tab页如图：<br>
+        <img src="../figures/EBPF/vmstatistics.jpg" alt="GitHub Logo"></p>
     <ul class="fontColor">
         <li>
-<pre class="smartperf-text fontColor light">No：编号。
+<pre class="smartperf-text fontColor light">Operation/Process/Thread： 按照Operation为基点显示。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">block：irq的类型。
+<pre class="smartperf-text fontColor light">Count： 事件数量。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">name：irp名称。
+<pre class="smartperf-text fontColor light">Duration：总时长。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
+<pre class="smartperf-text fontColor light">Min Duration：最小时长。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
+<pre class="smartperf-text fontColor light">Avg Duration： 平均时长。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
+<pre class="smartperf-text fontColor light">Max Duration：最大时长。
 </pre>
         </li>
     </ul>
-    <h3 class="mume-header fontColor">CPU占用率显示</h3>
+    <p class="fontColor">点击下方的Statistics by Thread，可以切换到按照Thread为基点显示数据。<br>
+        <img src="../figures/EBPF/ebpf_bythread.jpg" alt="GitHub Logo"><br>
+        Page Fault Calltree的Tab页如图：<br>
+        <img src="../figures/EBPF/VMCalltree.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Call Stack：为经过符号解析后的Callstack，并且给出动态链接库或者进程名的信息。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Local：为该调用方法自身占用的CPU时间。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Weight：调用方法的执行占比。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">Page Fault Events的Tab页如图：<br>
+        <img src="../figures/EBPF/VMEvents.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Start Time：起始时间。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Duration：时长。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Thread：线程名。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Operation：事件类型。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Address：内存地址。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Size：内存大小。
+</pre>
+        </li>
+    </ul>
+    <h3 class="mume-header fontColor">页内存支持多种Options展示风格</h3>
 
-    <p class="fontColor">以表格显示各CPU的占用率。<br>
-        <img src="../figures/Schedulinganalysis/CPUusagechart.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Top20线程大中小核占用率</h3>
+    <p class="fontColor">点击Page Fault Calltree的Tab页底部的Options，会有两个CheckBox复选框。<br>
+        <img src="../figures/EBPF/vmOptions.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Invert：反向输出调用树。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Hide System so：隐藏系统库文件。
+</pre>
+        </li>
+    </ul>
+    <h3 class="mume-header fontColor">页内存支持过滤调用栈调用次数的展示风格</h3>
 
-    <p class="fontColor">选择Thread Analysis标签页，各个CPU通过勾选big或者middle或者small来设置CPU的分类。<br>
-        <img src="../figures/Schedulinganalysis/CPUsetting.jpg" alt="GitHub Logo"><br>
-        各CPU勾选好大中小核，点击Upload可以跳转到各个线程CPU占用率情况的展示页面。<br>
-        <img src="../figures/Schedulinganalysis/CPUdetailsetting.jpg" alt="GitHub Logo"><br>
-        如上图所示：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">三色柱状图：各个线程CPU的占用率情况，其中以颜色区分占用的大中小核的占用率情况，并以表格的形式展示各个线程的基本信息和大中小核占用率。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">单色柱状图：分别统计线程在某一个类别（大、中、小）的CPU的占用率，并显示出线程的基本信息和占用率。
-</pre>
-        </li>
-    </ul>
-    <p class="fontColor">表格的字段说明：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">big core：大核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">middle core：中核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">small core：小核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu..(us)：运行总时长(..代表cpu号)。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">单个线程频点分布</h3>
+    <p class="fontColor">点击Page Fault Calltree的Tab页底部的Sample Counter Filter，可以填上区间值。过滤出符合该区间值调用次数的调用栈信息。<br>
+        <img src="../figures/EBPF/vmcounter.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存功能的调用栈Group展示-数据分析支持剪裁功能</h3>
 
-    <p class="fontColor">点击单个线程频点分布的标签，通过在Thread Search选择线程，来展示单个线程的频点分布情况。<br>
-        <img src="../figures/Schedulinganalysis/CPUfrequencybythread.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor"><img src="../figures/EBPF/vmdatamining.jpg" alt="GitHub Logo"></p>
     <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
+        <li>裁剪Callstack，点击Callstack上一个节点符号，再点击底部Symbol
+            Filter按钮，则该符号自动被裁剪掉，同时将该节点往下所有的Callstack内容裁剪掉。
         </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu：cpu编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">frequency：频点。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">%：频点占用率。
-</pre>
-        </li>
+        <li>裁剪Library，点击Library Filter按钮，则该库文件符号下所有的子节点也被裁剪。</li>
+        <li>点击Reset按钮，将恢复选中的裁剪内容。</li>
     </ul>
-    <h3 class="mume-header fontColor">Top20单次运行超长线程</h3>
+    <h3 class="mume-header fontColor">页内存功能的调用栈Group展示支持按条件过滤</h3>
 
-    <p class="fontColor">通过点击Top20单次运行超长线程标签，显示线程的单次运行时长来统计出单次运行时长最大的20个线程。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadduration.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max duration：最大运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">timestamp：时间戳信息。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20进程线程数</h3>
+    <p class="fontColor">在Input Filter输入关键字，会显示出带有该关键字的展示信息。<br>
+        <img src="../figures/EBPF/vminputfilter.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存辅助信息区展示调用栈</h3>
 
-    <p class="fontColor">通过点击Top20进程线程数标签，显示线程数量最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadnum.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">thread count：线程数量。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20切换次数线程</h3>
+    <p class="fontColor">当在详细信息区选择一个符号时，将展示与该符号相关的完整的调用栈。如下图的Heaviest Stack Trace：<br>
+        <img src="../figures/EBPF/vmheaviesttrace.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存的事件类型的过滤</h3>
 
-    <p class="fontColor">通过点击Top20切换次数线程标签，显示切换次数最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20swtichcount.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">sched_switch count：切换次数。
-</pre>
-        </li>
-    </ul>
+    <p class="fontColor">通过选择可以过滤是File Backed In类型，还是Copy On Write类型事件。<br>
+        <img src="../figures/EBPF/VMfilter.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">页内存的火焰图功能</h3>
+
+    <p class="fontColor">点击Page Fault Calltree左下角的柱状图的图标，会切换到火焰图页面。<br>
+        <img src="../figures/EBPF/vmflame.jpg" alt="GitHub Logo"><br>
+        进入到火焰图页面，火焰图的展示跟Callinfo的tab页的调用栈显示一致，鼠标放到色块上，悬浮框可以显示调用栈名称和Duration时长。<br>
+        <img src="../figures/EBPF/vmflameshow.jpg" alt="GitHub Logo"><br>
+        鼠标左键火焰图，会进入下一级界面，右键回到上一级。<br>
+        <img src="../figures/EBPF/vmflamelevel.jpg" alt="GitHub Logo"></p>
 
 </div>
 

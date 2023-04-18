@@ -67,7 +67,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                             data.visible = data.visible === 1 ? 0 : 1
                             this.name = data.visible === 1 ? 'eye':'eye-close'
                             data.hideHandler()
-                        }"></lit-icon>
+                        }" size="20"></lit-icon>
                     </template>
                 </lit-table-column>
                 <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
@@ -512,7 +512,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                 <div id="setting" style="height: 45px;display: flex;flex-direction: row;align-items: center;cursor: pointer">
                     CPU Setting
                     <span style="width: 10px"></span>
-                    <lit-icon name="setting"></lit-icon>
+                    <lit-icon name="setting" size="20"></lit-icon>
                 </div>
             </div>
             <check-cpu-setting id="cpu_setting" style="display: none"></check-cpu-setting>

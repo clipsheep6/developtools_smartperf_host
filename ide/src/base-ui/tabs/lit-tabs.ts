@@ -605,7 +605,7 @@ export class LitTabs extends HTMLElement {
                         }> 
                     ${a.icon ? `<lit-icon name='${a.icon}'></lit-icon>` : ``} 
                     <span>${a.tab}</span>
-                    <lit-icon class="close-icon" name='close' size="12"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
+                    <lit-icon class="close-icon" name='close' size="16"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
                     </div>`;
                     } else if (a.hidden) {
                         navHtml += `<div class="nav-item" data-key="${
@@ -613,7 +613,7 @@ export class LitTabs extends HTMLElement {
                         }" data-hidden ${a.closeable ? 'data-closeable' : ''}> 
                     ${a.icon ? `<lit-icon name='${a.icon}'></lit-icon>` : ``} 
                     <span>${a.tab}</span>
-                    <lit-icon class="close-icon" name='close' size="12"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
+                    <lit-icon class="close-icon" name='close' size="16"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
                     </div>`;
                     } else {
                         if (a.key === this.activekey) {
@@ -628,7 +628,7 @@ export class LitTabs extends HTMLElement {
                                 : ``
                         }
                         <span>${a.tab}</span>
-                        <lit-icon class="close-icon" name='close' size="12"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
+                        <lit-icon class="close-icon" name='close' size="16"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
                         </div>`;
                         } else {
                             navHtml += `<div class="nav-item" data-key="${
@@ -640,7 +640,7 @@ export class LitTabs extends HTMLElement {
                                     : ``
                             }
                             <span>${a.tab}</span>
-                            <lit-icon class="close-icon" name='close' size="12"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
+                            <lit-icon class="close-icon" name='close' size="16"></lit-icon><div class="no-close-icon" style="margin-right: 12px"></div>
                             </div>`;
                         }
                     }

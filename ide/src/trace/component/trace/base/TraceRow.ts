@@ -1264,9 +1264,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         </style>
         <div class="root">
             <div class="describe flash" style="position: inherit">
-                <lit-icon class="icon" name="caret-down" size="13"></lit-icon>
+                <lit-icon class="icon" name="caret-down" size="19"></lit-icon>
                 <label class="name"></label>
-                <lit-icon class="collect" name="star-fill" size="17"></lit-icon>
+                <lit-icon class="collect" name="star-fill" size="20"></lit-icon>
                 <lit-popover placement="bottomLeft" trigger="click" id = "nativeRadioList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 230px">
                     <div style="display: block" slot="content">
                         <div id="first-radio" style="margin-bottom: 5px">
@@ -1274,12 +1274,12 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                         <div id="second-radio" style="margin-bottom: 5px">
                         <input class="radio" name="status" type="radio" value="1" />Native Memory Density</div>
                     </div>
-                    <lit-icon name="setting" size="17" id="setting"></lit-icon>
+                    <lit-icon name="setting" size="19" id="setting"></lit-icon>
                 </lit-popover>
                 <lit-popover placement="bottomLeft" trigger="click" id="appNameList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 230px">
                     <div slot="content" id="listprocess" style="height:200px;overflow-y:auto">
                     </div>
-                    <lit-icon name="setting" size="17" id="setting"></lit-icon>
+                    <lit-icon name="setting" size="19" id="setting"></lit-icon>
                 </lit-popover>
                 <lit-check-box class="lit-check-box" style="margin-right: 7px;"></lit-check-box>
             </div>

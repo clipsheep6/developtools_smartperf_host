@@ -480,7 +480,7 @@ export class TimerShaftElement extends BaseElement {
                     <span class="time-total">10</span>
                     <span class="time-offset">0</span>
                     <div class="time-collect">
-                        <lit-icon class="time-collect-arrow" name="caret-down" size="17"></lit-icon>
+                        <lit-icon class="time-collect-arrow" name="caret-down" size="23"></lit-icon>
                     </div>
                 </div>
             </div>

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>quickstart_schedulinganalysis</title>
+    <title>quickstart_native_memory</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -761,321 +761,246 @@
 </head>
 <body for="html-export" id="body">
 <div class="smartperf smartperf-preview  ">
-    <h1 class="mume-header fontColor">Scheduling analysis抓取和展示说明</h1>
+    <h1 class="mume-header fontColor">Native Memory抓取和展示说明</h1>
 
-    <p class="fontColor">抓取和展示CPU调度分析，线程调度分析相关数据。</p>
-    <h2 class="mume-header fontColor">Scheduling analysis的抓取</h2>
+    <p class="fontColor">Native Memory是查看内存的分配和释放等情况。</p>
+    <h2 class="mume-header fontColor">Native Memory的抓取</h2>
 
-    <h3 class="mume-header fontColor">Scheduling analysis抓取界面配置说明</h3>
+    <h3 class="mume-header fontColor">Native Memory抓取配置参数</h3>
 
-    <p class="fontColor">打开Scheduling analysis开关抓取调度分析数据。<br>
-        <img src="../figures/Schedulinganalysis/scheduset.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Scheduling analysis文件的抓取</h3>
-
-    <p class="fontColor">点击Record setting，在output file path输入文件名hiprofiler_dataScheduling.htrace，拖动滚动条设置buffer
+    <p class="fontColor"><img src="../figures/NativeMemory/nativememorysetting.jpg" alt="GitHub Logo"><br>
+        配置参数说明：</p>
+    <ul class="fontColor">
+        <li>ProcessId or ProcessName：设置抓取的进程ID或者进程名，此处以输入com.ohos.mms进程名为例。</li>
+        <li>Max unwind level：抓取的栈的最大深度。</li>
+        <li>Shared Memory Size：native_daemon和native_hook进程之间存储数据的共享内存大小。</li>
+        <li>Filter Memory Size：只抓取大于该size的malloc数据（free不受影响）。</li>
+        <li>Use Fp Unwind：Fp回栈。</li>
+        <li>Use Record Accurately：不过滤数据，上报全量的。</li>
+        <li>Use Offline Symbolization：离线符号化。</li>
+        <li>Use Record Statistics：统计数据上报。</li>
+        <li>statistics interval：统计数据上报周期。</li>
+    </ul>
+    <p class="fontColor">再点击Record setting，在output file path输入文件名hiprofiler_data_nativememory.htrace，拖动滚动条设置buffer
         size大小是64M，抓取时长是50s。<br>
-        <img src="../figures/Schedulinganalysis/schedusetting.jpg" alt="GitHub Logo"><br>
-        点击Trace command，就会根据上面的配置生成抓取命令，点击Record抓取，抓取过程中会显示抓取时长。<br>
-        <img src="../figures/Schedulinganalysis/scheduexcuting.jpg" alt="GitHub Logo"></p>
-    <h2 class="mume-header fontColor">Scheduling analysis功能介绍</h2>
+        <img src="../figures/NativeMemory/nativememoryset.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">点击Trace command，就会根据上面的配置生成抓取命令，点击复制按钮，会将命令行复制。<br>
+        <img src="../figures/NativeMemory/nativememorycommand.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">命令行参数说明：</p>
+    <ul class="fontColor">
+        <li>save_file：是否将hook数据保存成文件，不上报protobuf形式数据给hiprofilerd。</li>
+        <li>filter_size：过滤malloc的大小，最小值是0，默认值是4096Byte。</li>
+        <li>smb_pages：nativedeamon与libnativehook间的共享内存大小。</li>
+        <li>max_stack_depth：最多回栈的层数，也就是抓取的栈的最大深度。</li>
+        <li>fp_unwind：是否进行fp回栈。</li>
+        <li>malloc_free_matching_interval：native_daemon从nativehook so的共享内存里取数据的间隔时间。</li>
+        <li>string_compressed：是否进行字符串压缩。</li>
+        <li>fp_unwind：fp回栈。</li>
+    </ul>
+    <p class="fontColor">输入hdc_std shell，进入设备，执行命令。<br>
+        <img src="../figures/NativeMemory/nativeexcutecommand.jpg" alt="GitHub Logo"><br>
+        执行完成后，进入指定目录查看，在/data/local/tmp下就会生成trace文件。<br>
+        <img src="../figures/NativeMemory/naitvememoryfile.jpg" alt="GitHub Logo"></p>
+    <h2 class="mume-header fontColor">Native Memory展示说明</h2>
 
-    <p class="fontColor">将抓取的文件导入到smartperf工具查看。</p>
-    <h3 class="mume-header fontColor">CPU频点分析</h3>
+    <p class="fontColor">将抓取的nativememory文件导入到smartperf工具中查看，查看内存的分配和释放等情况。</p>
+    <h3 class="mume-header fontColor">Native Memory泳道图展示类型</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Frequency，可以看到各核CPU的各频点持续时长的占比图，以颜色区分各频点。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencychart.jpg" alt="GitHub Logo"><br>
-        点击CPU Frequency饼图，可以跳转到详细信息界面，用饼图和表格来展示某个CPU下各频点持续时长的的相关数据。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencydetailinfo.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">点击齿轮状的图标可以设置内存的展示单位。<br>
+        <img src="../figures/NativeMemory/NativeChart.jpg" alt="GitHub Logo"></p>
     <ul class="fontColor">
         <li>
-<pre class="smartperf-text fontColor light">No：编号。
+<pre class="smartperf-text fontColor light">Current Bytes：以申请内存的size绘制泳道图。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">frequency：频率。
+<pre class="smartperf-text fontColor light">Native Memory Density：以申请内存的数量绘制泳道图。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
+<pre class="smartperf-text fontColor light">All Heap&amp;AnonuymousVM：malloc分配和mmap分配的总量。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
+<pre class="smartperf-text fontColor light">All Heap：malloc分配的内存。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
+<pre class="smartperf-text fontColor light">All Anonymous VM：mmap分配的内存。
 </pre>
         </li>
     </ul>
-    <p class="fontColor">点击详细页的CPU Frequency饼图，可以跳转某个CPU下某个频点的运行的线程信息。<br>
-        <img src="../figures/Schedulinganalysis/CPUFrequencythreaddetail.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_pid：进程id。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU Idle分析</h3>
+    <h3 class="mume-header fontColor">Native Memory泳道图的框选功能</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Idle，可以看到各CPU的Idle的时长占比饼图，以颜色区分各Idle。<br>
-        <img src="../figures/Schedulinganalysis/CPUidlechart.jpg" alt="GitHub Logo"><br>
-        点击CPU Idle饼图，可以跳转到某CPU的idle分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUidledetailinfo.jpg" alt="GitHub Logo"></p>
+    <p class="fontColor">可以对内存的数据进行框选，框选后在最下方的弹出层中会展示框选数据的统计表格，总共有四个tab页。<br>
+        Statistics的Tab页，主要显示了统计明细类型。<br>
+        <img src="../figures/NativeMemory/Statistics.jpg" alt="GitHub Logo"></p>
     <ul class="fontColor">
         <li>
-<pre class="smartperf-text fontColor light">No：编号。
+<pre class="smartperf-text fontColor light">Memory Type：内存的类型。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">idle：idle值。
+<pre class="smartperf-text fontColor light">Exsiting：框选区域内申请没有释放的大小。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
+<pre class="smartperf-text fontColor light">#Exsiting：框选区域内申请没有释放的次数。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
+<pre class="smartperf-text fontColor light">Transient：框选区域内释放的大小。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
+<pre class="smartperf-text fontColor light">#Transient：框选区域内释放的次数。
 </pre>
         </li>
         <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
+<pre class="smartperf-text fontColor light">Total Bytes：框选区间内申请的大小。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">#Total： 框选区间内申请的次数。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Peak Value： 框选区间内内存申请的峰值。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Exsiting/Total：框选区间内剩余的内存比上申请的内存，其中浅紫色是框选区间内申请的大小/整个时间轴（申请+释放的总大小)，深紫色是框选区间内(申请+释放)的大小/整个时间轴（申请+释放的总大小）。
 </pre>
         </li>
     </ul>
-    <h3 class="mume-header fontColor">CPU Irq分析</h3>
+    <p class="fontColor">Call Info的Tab页，主要显示了调用树详细类型。<br>
+        <img src="../figures/NativeMemory/CallInfo.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Symble Name：每个内存分配的调用栈。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Size：分配的总大小。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Count：相同调用栈出现的次数。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">Native Memory的Tab页，主要显示了单次分配信息列表。<br>
+        <img src="../figures/NativeMemory/NativeMemory.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Address：内存块的地址。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Memory Type：内存分配的类型。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Timestamp：时间戳信息。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">State：内存地址当前状态Existed 表示框选范围内未释放，Freed表示已释放。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Size：该次申请分配内存的大小。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Responsible Library ：调用该函数的库。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Responsible Caller  ：调用该函数的方法。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">Snapshot List的Tab页，主要显示了各时刻内存的增长的差值。<br>
+        <img src="../figures/NativeMemory/Snapshotlist.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">Snapshot：标记的打点说明。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Timestamp ：时间戳信息。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Net Growth ：自从上次Snapshot的增长量，是计算的分配和释放的。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">Total Growth ：自从上次Snapshot的增长量，是计算的每一次分配的。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">#Exsiting  ：仍然存在的内存数。
+</pre>
+        </li>
+    </ul>
+    <h3 class="mume-header fontColor">Native Memory的辅助信息功能</h3>
 
-    <p class="fontColor">点击下拉列表框选择CPU Irq，可以看到各CPU的Irq的时长占比饼图，以颜色区分。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqchart.jpg" alt="GitHub Logo"><br>
-        点击CPU Irq饼图，可以跳转到某CPU的Irq分析的详细数据，以饼图和表格的形式展示。<br>
-        <img src="../figures/Schedulinganalysis/CPUirqdetailinfo.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">No：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">block：irq的类型。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">name：irp名称。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">min：最小时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max：最大时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">average：平均时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行总时长。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">CPU占用率显示</h3>
+    <p class="fontColor">在Call Info和Native
+        Memory的Tab页，点击选中某一行，右边画红线处会显示出该行调用栈的树结构信息。<br>
+        <img src="../figures/NativeMemory/nativecallstack.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">Native Memory详细显示的过滤功能</h3>
 
-    <p class="fontColor">以表格显示各CPU的占用率。<br>
-        <img src="../figures/Schedulinganalysis/CPUusagechart.jpg" alt="GitHub Logo"></p>
-    <h3 class="mume-header fontColor">Top20线程大中小核占用率</h3>
+    <p class="fontColor">点击下方的All Allocations可以对Allocation的lifeSpan进行过滤，有三个选择：All Allocatios，Create
+        &amp; Exsiting，Create &amp; Destroyed。<br>
+        <img src="../figures/NativeMemory/lifespan.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light"> All Allocations：所有的内存。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light"> Created &amp; Exsiting：创建且被存活的内存。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light"> Created &amp; Destroyed： 创建且被销毁的内存。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">点击下方的All Heap&amp;Anonymous可以对内存类型进行过滤。<br>
+        <img src="../figures/NativeMemory/AllocationType.jpg" alt="GitHub Logo"></p>
+    <ul class="fontColor">
+        <li>
+<pre class="smartperf-text fontColor light">All Heap&amp;AnonuymousVM：Heap和AnonuymousVM的总量。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">All Heap：malloc分配的内存。
+</pre>
+        </li>
+        <li>
+<pre class="smartperf-text fontColor light">All Anonymous VM：mmap的匿名页。
+</pre>
+        </li>
+    </ul>
+    <p class="fontColor">点击下方的Mark Snapshot可以在时间轴上打标签。出现小旗的标志，通过标注多个时间点。点击到Snapshot
+        List标签页可以看到各个时间点的内存的增长值。<br>
+        <img src="../figures/NativeMemory/Generation.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">Native Memory的火焰图功能</h3>
 
-    <p class="fontColor">选择Thread Analysis标签页，各个CPU通过勾选big或者middle或者small来设置CPU的分类。<br>
-        <img src="../figures/Schedulinganalysis/CPUsetting.jpg" alt="GitHub Logo"><br>
-        各CPU勾选好大中小核，点击Upload可以跳转到各个线程CPU占用率情况的展示页面。<br>
-        <img src="../figures/Schedulinganalysis/CPUdetailsetting.jpg" alt="GitHub Logo"><br>
-        如上图所示：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">三色柱状图：各个线程CPU的占用率情况，其中以颜色区分占用的大中小核的占用率情况，并以表格的形式展示各个线程的基本信息和大中小核占用率。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">单色柱状图：分别统计线程在某一个类别（大、中、小）的CPU的占用率，并显示出线程的基本信息和占用率。
-</pre>
-        </li>
-    </ul>
-    <p class="fontColor">表格的字段说明：</p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">big core：大核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">middle core：中核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">small core：小核占用时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu..(us)：运行总时长(..代表cpu号)。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">单个线程频点分布</h3>
+    <p class="fontColor">点击callinfo左下角的柱状图的图标，会切换到火焰图页面。<br>
+        <img src="../figures/NativeMemory/nativeflame.jpg" alt="GitHub Logo"><br>
+        进入到火焰图页面，火焰图的展示跟Callinfo的tab页的调用栈显示一致，鼠标放到色块上，悬浮框可以显示调用栈名称和size大小。<br>
+        <img src="../figures/NativeMemory/nativeflameshow.jpg" alt="GitHub Logo"><br>
+        鼠标左键火焰图，会进入下一级界面，右键回到上一级。<br>
+        <img src="../figures/NativeMemory/nativeflamelevel2.jpg" alt="GitHub Logo"></p>
+    <h3 class="mume-header fontColor">Native Memory数据统计功能</h3>
 
-    <p class="fontColor">点击单个线程频点分布的标签，通过在Thread Search选择线程，来展示单个线程的频点分布情况。<br>
-        <img src="../figures/Schedulinganalysis/CPUfrequencybythread.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">cpu：cpu编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">frequency：频点。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">duration：运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">%：频点占用率。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20单次运行超长线程</h3>
-
-    <p class="fontColor">通过点击Top20单次运行超长线程标签，显示线程的单次运行时长来统计出单次运行时长最大的20个线程。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadduration.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">max duration：最大运行时长。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">timestamp：时间戳信息。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20进程线程数</h3>
-
-    <p class="fontColor">通过点击Top20进程线程数标签，显示线程数量最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20Threadnum.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">thread count：线程数量。
-</pre>
-        </li>
-    </ul>
-    <h3 class="mume-header fontColor">Top20切换次数线程</h3>
-
-    <p class="fontColor">通过点击Top20切换次数线程标签，显示切换次数最多的20个进程，以饼图和表格方式显示。<br>
-        <img src="../figures/Schedulinganalysis/Top20swtichcount.jpg" alt="GitHub Logo"></p>
-    <ul class="fontColor">
-        <li>
-<pre class="smartperf-text fontColor light">NO：编号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">tid：线程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">t_name：线程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">pid：进程号。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">p_name：进程名。
-</pre>
-        </li>
-        <li>
-<pre class="smartperf-text fontColor light">sched_switch count：切换次数。
-</pre>
-        </li>
-    </ul>
+    <p class="fontColor">选择Use Record Statistics和statistics interval配置项抓取的数据，只会显示Call Info的Tab页，Call
+        Info相关功能同上。<br>
+        <img src="../figures/NativeMemory/statiscsCallInfo.jpg" alt="GitHub Logo"></p>
 
 </div>
 

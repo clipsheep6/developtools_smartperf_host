@@ -34,7 +34,7 @@ export class SpHelp extends BaseElement {
         }
         this.appContent!.innerHTML =
             '<object type="text/html" data=' +
-            '/application/doc/quickstart_hiprofiler_cmd.html?' +
+            '/application/doc/quickstart_device_record.html?' +
             dark +
             ' width="100%" height="100%"></object>';
     }
@@ -73,7 +73,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/quickstart_hiprofiler_cmd.html?' +
+                                '/application/doc/quickstart_device_record.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -84,7 +84,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/capture_online.html?' +
+                                '/application/doc/quickstart_web_record.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -95,7 +95,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/quickstart_smartperf.html?' +
+                                '/application/doc/quickstart_systemtrace.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -106,7 +106,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/native_memory.html?' +
+                                '/application/doc/quickstart_native_memory.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -117,7 +117,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/ability_monitor.html?' +
+                                '/application/doc/quickstart_ability_monitor.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -128,7 +128,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/perf.html?' +
+                                '/application/doc/quickstart_hiperf.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -139,7 +139,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/des_metris_support.html?' +
+                                '/application/doc/quickstart_sql_metrics.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -150,7 +150,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/file_system.html?' +
+                                '/application/doc/quickstart_filesystem.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -161,7 +161,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/memory_fetching.html?' +
+                                '/application/doc/quickstart_page_fault.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -172,7 +172,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/bio_record.html?' +
+                                '/application/doc/quickstart_bio.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -183,7 +183,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/smaps.html?' +
+                                '/application/doc/quickstart_smaps.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -194,7 +194,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/hiSystemEvent.html?' +
+                                '/application/doc/quickstart_hisystemevent.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -205,7 +205,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/sdk_capture_display.html?' +
+                                '/application/doc/quickstart_sdk.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
@@ -329,7 +329,7 @@ export class SpHelp extends BaseElement {
                         clickHandler: function (item: MenuItem) {
                             that.appContent!.innerHTML =
                                 '<object type="text/html" data=' +
-                                '/application/doc/compile_smartperf.html?' +
+                                '/application/doc/quickstart_smartperflinux_compile_guide.html?' +
                                 that.dark +
                                 ' width="100%" height="100%"></object>';
                         },
