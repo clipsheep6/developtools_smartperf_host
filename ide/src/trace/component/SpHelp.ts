@@ -52,11 +52,15 @@ export class SpHelp extends BaseElement {
         let header = mainMenu.shadowRoot?.querySelector(
             '.header'
         ) as HTMLDivElement;
+        let color = mainMenu.shadowRoot?.querySelector(
+            '.color'
+        ) as HTMLDivElement;
         let version = mainMenu.shadowRoot?.querySelector(
             '.version'
         ) as HTMLDivElement;
         header.style.display = 'none';
         version.style.display = 'none';
+        color.style.display = 'none';
         mainMenu.menus = [
             {
                 collapsed: false,

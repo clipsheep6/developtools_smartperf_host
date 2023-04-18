@@ -559,8 +559,8 @@ where cpu not null
         let filterArr = [];
         for (let it of arr) {
             if (
-                (it.ts >= m.ts && it.ts < m.ts + m.dur) ||
-                (it.ts + it.dur > m.ts && it.ts + it.dur <= m.ts + m.dur)
+                Math.min(m.ts + m.dur, it.ts + it.dur) -
+                Math.max(m.ts, it.ts) > 0
             ) {
                 filterArr.push(it);
             }
@@ -729,9 +729,8 @@ where cpu not null
             let freqEndTs = it.ts + it.dur;
             let threads = arr.filter(
                 (f) =>
-                    (it.ts >= f.ts && it.ts <= f.ts + f.dur) ||
-                    (it.ts <= f.ts && freqEndTs >= f.ts + f.dur) ||
-                    (freqEndTs > f.ts && freqEndTs <= f.ts + f.dur)
+                    Math.min(f.ts + f.dur, freqEndTs) -
+                    Math.max(f.ts, it.ts) > 0
             );
             for (let tf of threads) {
                 let tfEndTs = tf.ts + tf.dur;

@@ -344,32 +344,6 @@ export class JankStruct extends BaseStruct {
             JankStruct.selectJankStruct.frame_type == data.frame_type
         );
     }
-
-    static getStyleColor(jankTag: string | undefined) {
-        switch (jankTag) {
-            case 'No Jank':
-                return ColorUtils.JANK_COLOR[0];
-                break;
-            case 'Self Jank':
-                return ColorUtils.JANK_COLOR[1];
-                break;
-            case 'Other Jank':
-                return ColorUtils.JANK_COLOR[2];
-                break;
-            case 'Dropped Frame':
-                return ColorUtils.JANK_COLOR[3];
-                break;
-            case 'Buffer Stuffing':
-                return ColorUtils.JANK_COLOR[4];
-                break;
-            case 'SurfaceFlinger Stuffing':
-                return ColorUtils.JANK_COLOR[4];
-                break;
-            default:
-                return ColorUtils.JANK_COLOR[5];
-                break;
-        }
-    }
 }
 
 const padding = 1;

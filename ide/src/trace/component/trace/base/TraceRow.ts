@@ -1107,7 +1107,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             margin-left: 10px;
             font-size: .9rem;
             font-weight: normal;
-            width: 100%;
+            width: 80%;
             max-height: 100%;
             text-align: left;
             overflow: hidden;
@@ -1267,7 +1267,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                 <lit-icon class="icon" name="caret-down" size="13"></lit-icon>
                 <label class="name"></label>
                 <lit-icon class="collect" name="star-fill" size="17"></lit-icon>
-                <lit-popover placement="bottomLeft" trigger="click" id = "nativeRadioList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 220px">
+                <lit-popover placement="bottomLeft" trigger="click" id = "nativeRadioList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 230px">
                     <div style="display: block" slot="content">
                         <div id="first-radio" style="margin-bottom: 5px">
                         <input class="radio" name="status" type="radio" value="0" />Current Bytes</div>
@@ -1276,12 +1276,12 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                     </div>
                     <lit-icon name="setting" size="17" id="setting"></lit-icon>
                 </lit-popover>
-                <lit-popover placement="bottomLeft" trigger="click" id="appNameList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 220px">
+                <lit-popover placement="bottomLeft" trigger="click" id="appNameList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 230px">
                     <div slot="content" id="listprocess" style="height:200px;overflow-y:auto">
                     </div>
                     <lit-icon name="setting" size="17" id="setting"></lit-icon>
                 </lit-popover>
-                <lit-check-box class="lit-check-box"></lit-check-box>
+                <lit-check-box class="lit-check-box" style="margin-right: 7px;"></lit-check-box>
             </div>
         </div>
         `;

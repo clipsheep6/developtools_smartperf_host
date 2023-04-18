@@ -53,10 +53,10 @@ export class RequestMessage {
     totalNS: any;
     slicesTime:
         | {
-              startTime: number | null;
-              endTime: number | null;
-              color: string | null;
-          }
+        startTime: number | null;
+        endTime: number | null;
+        color: string | null;
+    }
         | undefined;
     range: any;
     scale: any;
@@ -69,13 +69,13 @@ export class RequestMessage {
     id: any;
     postMessage:
         | {
-              (
-                  message: any,
-                  targetOrigin: string,
-                  transfer?: Transferable[]
-              ): void;
-              (message: any, options?: WindowPostMessageOptions): void;
-          }
+        (
+            message: any,
+            targetOrigin: string,
+            transfer?: Transferable[]
+        ): void;
+        (message: any, options?: WindowPostMessageOptions): void;
+    }
         | undefined;
 }
 
@@ -135,7 +135,7 @@ export function fillCacheData(
             let it = filterData[i];
             if (
                 (it[condition.startKey] || 0) + (it[condition.durKey] || 0) >
-                    condition.startNS &&
+                condition.startNS &&
                 (it[condition.startKey] || 0) < condition.endNS
             ) {
                 if (!filterData[i].frame) {
@@ -178,7 +178,7 @@ export function findRange(
         }
         if (
             fullData[i][condition.startKey] + fullData[i][condition.durKey] >=
-                condition.startNS &&
+            condition.startNS &&
             ib
         ) {
             left = i;
@@ -289,7 +289,7 @@ function setNodeFrame(
     } else {
         node.frame.width = Math.ceil(
             ((node[startKey] || 0) + (node[durKey] || 0) - startNS) / pns -
-                node.frame.x
+            node.frame.x
         );
     }
     if (node.frame.width < 1) {
@@ -546,10 +546,10 @@ export function drawFlagLine(
     frame: any,
     slicesTime:
         | {
-              startTime: number | null | undefined;
-              endTime: number | null | undefined;
-              color: string | null | undefined;
-          }
+        startTime: number | null | undefined;
+        endTime: number | null | undefined;
+        color: string | null | undefined;
+    }
         | undefined
 ) {
     if (ctx) {
@@ -685,7 +685,7 @@ export function drawSelection(context: any, params: any) {
                 params.rangeSelectObject!.startX!,
                 params.frame.y,
                 params.rangeSelectObject!.endX! -
-                    params.rangeSelectObject!.startX!,
+                params.rangeSelectObject!.startX!,
                 params.frame.height
             );
             context.globalAlpha = 1;
@@ -721,7 +721,7 @@ export function drawSelectionRange(context: any, params: TraceRow<any>) {
                 TraceRow.rangeSelectObject!.startX!,
                 params.frame.y,
                 TraceRow.rangeSelectObject!.endX! -
-                    TraceRow.rangeSelectObject!.startX!,
+                TraceRow.rangeSelectObject!.startX!,
                 params.frame.height
             );
             context.globalAlpha = 1;
@@ -824,7 +824,7 @@ export function drawLinkLines(
         (tm.getRange()!.totalNS -
             Math.abs(tm.getRange()!.endNS - tm.getRange()!.startNS)) /
         tm.getRange()!.totalNS;
-    let maxWidth = tm.getBoundingClientRect().width - 248;
+    let maxWidth = tm.getBoundingClientRect().width - 268;
     for (let i = 0; i < nodes.length; i++) {
         let it = nodes[i];
         if (isFavorite) {
@@ -835,11 +835,19 @@ export function drawLinkLines(
         let start = it[0].x > it[1].x ? it[1] : it[0];
         let end = it[0].x > it[1].x ? it[0] : it[1];
         if (start && end) {
-            if (start.x <= 0 && end.x <= 0) {
-                return;
+            //左移到边界，不画线
+            if (start.x <= 0) {
+                start.x = -100;
             }
-            if (start.x >= maxWidth && end.x >= maxWidth) {
-                return;
+            if (end.x <= 0) {
+                end.x = -100;
+            }
+            //右移到边界，不画线
+            if (start.x >= maxWidth) {
+                start.x = maxWidth + 100;
+            }
+            if (end.x >= maxWidth) {
+                end.x = maxWidth + 100;
             }
             context.beginPath();
             context.lineWidth = 2;

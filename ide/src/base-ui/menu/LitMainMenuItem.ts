@@ -14,7 +14,7 @@
  */
 
 import { BaseElement, element } from '../BaseElement.js';
-let textColor='';
+let textColor = '';
 
 @element('lit-main-menu-item')
 export class LitMainMenuItem extends BaseElement {
@@ -88,10 +88,10 @@ export class LitMainMenuItem extends BaseElement {
             if (this.fileEL) {
                 this.fileEL.addEventListener('change', () => {
                     let files = this.fileEL!.files;
-                    if (files && files.length > 0) {           
+                    if (files && files.length > 0) {
                         this.dispatchEvent(
                             new CustomEvent('file-change', {
-								// @ts-ignore
+                                // @ts-ignore
                                 target: this,
                                 detail: files[0],
                             })

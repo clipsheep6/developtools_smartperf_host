@@ -140,11 +140,13 @@ export class LitMainMenu extends BaseElement {
             font-size: 0.6rem;
             cursor: pointer;
         }
+        
         .version{
             color: #94979d;
-            padding: 20px;
+            padding: 20px 0;
             font-size: 0.6rem;
-            width: 8rem;
+            width: 15rem;
+            text-align: center;
         }
         *{
             box-sizing: border-box;
@@ -168,13 +170,12 @@ export class LitMainMenu extends BaseElement {
                 <slot id="st" ></slot>
                 </div>
         <div class="bottom">        
-        <div class="color" style="">
-        <lit-icon name="bg-colors" size="20" color="gray"></lit-icon>
-        </div>
-        <div class="version" style="">
-        </div>
-        </div>
-        `;
+             <div class="color" style="">
+                <lit-icon name="bg-colors" size="20" color="gray"></lit-icon>
+             </div>
+             <div class="version" style="">
+             </div>
+        </div>`;
     }
 }
 

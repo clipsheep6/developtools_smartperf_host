@@ -319,6 +319,10 @@ export class CpuStruct extends BaseStruct {
     processCmdLine: string | undefined;
     processId: number | undefined;
     processName: string | undefined;
+    displayProcess:string|undefined;
+    displayThread:string|undefined;
+    measurePWidth:number = 0;
+    measureTWidth:number = 0;
     schedId: number | undefined;
     startTime: number | undefined;
     tid: number | undefined;
@@ -355,67 +359,93 @@ export class CpuStruct extends BaseStruct {
             }
             ctx.fillRect(data.frame.x, data.frame.y, width, data.frame.height);
             ctx.globalAlpha = 1;
-            if (width > textPadding * 2) {
-                let process = `${data.processName || 'Process'} [${
-                    data.processId
-                }]`;
-                let thread = `${data.name || 'Thread'} [${data.tid}] [Prio:${
-                    data.priority || 0
-                }]`;
-                let processMeasure = ctx.measureText(process);
-                let threadMeasure = ctx.measureText(thread);
+            let textFillWidth = width - textPadding * 2;
+            if (textFillWidth > 3) {
+                if(data.displayProcess === undefined){
+                    data.displayProcess = `${(data.processName || 'Process')} [${
+                        data.processId
+                    }]`;
+                    data.measurePWidth = ctx.measureText(data.displayProcess).width;
+                }
+                if(data.displayThread === undefined){
+                    data.displayThread = `${data.name || 'Thread'} [${data.tid}] [Prio:${
+                        data.priority || 0
+                    }]`;
+                    data.measureTWidth = ctx.measureText(data.displayThread).width;
+                }
                 let processCharWidth = Math.round(
-                    processMeasure.width / process.length
+                    data.measurePWidth / data.displayProcess.length
                 );
                 let threadCharWidth = Math.round(
-                    threadMeasure.width / thread.length
+                    data.measureTWidth / data.displayThread.length
                 );
                 ctx.fillStyle = '#ffffff';
                 let y = data.frame.height / 2 + data.frame.y;
-                if (processMeasure.width < width - textPadding * 2) {
+                if (data.measurePWidth < textFillWidth) {
                     let x1 = Math.floor(
                         width / 2 -
-                            processMeasure.width / 2 +
-                            data.frame.x +
-                            textPadding
-                    );
+                        data.measurePWidth / 2 +
+                        data.frame.x +
+                        textPadding);
                     ctx.textBaseline = 'bottom';
-                    ctx.fillText(process, x1, y, width - textPadding * 2);
-                } else if (width - textPadding * 2 > processCharWidth * 4) {
-                    let chatNum = (width - textPadding * 2) / processCharWidth;
-                    let x1 = data.frame.x + textPadding;
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillText(
-                        process.substring(0, chatNum - 4) + '...',
-                        x1,
-                        y,
-                        width - textPadding * 2
-                    );
+                    ctx.fillText(data.displayProcess, x1, y, textFillWidth);
+                } else {
+                    if (textFillWidth >= processCharWidth) {
+                        let chatNum = textFillWidth / processCharWidth;
+                        let x1 = data.frame.x + textPadding;
+                        ctx.textBaseline = 'bottom';
+                        if (chatNum < 2) {
+                            ctx.fillText(
+                                data.displayProcess.substring(0, 1),
+                                x1,
+                                y,
+                                textFillWidth
+                            );
+                        } else {
+                            ctx.fillText(
+                                data.displayProcess.substring(0, chatNum - 1) + '...',
+                                x1,
+                                y,
+                                textFillWidth
+                            );
+                        }
+                    }
                 }
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '9px sans-serif';
-                if (threadMeasure.width < width - textPadding * 2) {
+                if (data.measureTWidth < textFillWidth) {
                     ctx.textBaseline = 'top';
                     let x2 = Math.floor(
                         width / 2 -
-                            threadMeasure.width / 2 +
-                            data.frame.x +
-                            textPadding
+                        data.measureTWidth / 2 +
+                        data.frame.x +
+                        textPadding
                     );
-                    ctx.fillText(thread, x2, y + 2, width - textPadding * 2);
-                } else if (width - textPadding * 2 > threadCharWidth * 4) {
-                    let chatNum = (width - textPadding * 2) / threadCharWidth;
-                    let x1 = data.frame.x + textPadding;
-                    ctx.textBaseline = 'top';
-                    ctx.fillText(
-                        thread.substring(0, chatNum - 4) + '...',
-                        x1,
-                        y + 2,
-                        width - textPadding * 2
-                    );
+                    ctx.fillText(data.displayThread, x2, y + 2, textFillWidth);
+                } else {
+                    if (textFillWidth >= threadCharWidth) {
+                        let chatNum = textFillWidth / threadCharWidth;
+                        let x1 = data.frame.x + textPadding;
+                        ctx.textBaseline = 'top';
+                        if (chatNum < 2) {
+                            ctx.fillText(
+                                data.displayThread.substring(0, 1),
+                                x1,
+                                y + 2,
+                                textFillWidth
+                            );
+                        } else {
+                            ctx.fillText(
+                                data.displayThread.substring(0, chatNum - 1) + '...',
+                                x1,
+                                y + 2,
+                                textFillWidth
+                            );
+                        }
+                    }
                 }
             }
-            if (data.nofinish) {
+            if (data.nofinish && width > 4) {
                 ctx.fillStyle = '#FFFFFF';
                 let ruptureWidth = 4;
                 let ruptureNode = 8;

@@ -1806,7 +1806,7 @@ export class LitTable extends HTMLElement {
 
     formatName(name: any) {
         if (name != undefined && name !== null) {
-            return name.toString().replace('<', '&lt;').replace('>', '&gt;');
+            return name.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
         return '';
     }

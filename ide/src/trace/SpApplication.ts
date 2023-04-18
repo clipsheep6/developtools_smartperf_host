@@ -67,6 +67,7 @@ export class SpApplication extends BaseElement {
         187: true,
         189: true,
     };
+    colorTransiton: any;
 
     static get observedAttributes() {
         return [
@@ -227,7 +228,6 @@ export class SpApplication extends BaseElement {
             /*transition: all 0.2s;*/
             box-shadow: 4px 0px 20px rgba(0,0,0,0.05);
             z-index: 2000;
-            transition-duration: 2s;
         }
         .search-container{
             z-index: 10;
@@ -460,7 +460,7 @@ export class SpApplication extends BaseElement {
         ) as HTMLDivElement;
         //修改侧边导航栏配色
         sideColor!.onclick = (e) => {
-            let backgroundColor = sessionStorage.getItem('backgroundColor')
+            let backgroundColor = sessionStorage.getItem('backgroundColor');
             let menu: HTMLDivElement | undefined | null =
                 this.shadowRoot?.querySelector('#main-menu');
             let menuGroup =
@@ -468,11 +468,12 @@ export class SpApplication extends BaseElement {
                     'lit-main-menu-group'
                 );
             let menuItem =
-                    menu!.shadowRoot?.querySelectorAll<LitMainMenuItem>(
-                        'lit-main-menu-item'
+                menu!.shadowRoot?.querySelectorAll<LitMainMenuItem>(
+                    'lit-main-menu-item'
                 );
             if (backgroundColor == 'white' || !backgroundColor) {
                 menu!.style.backgroundColor = '#262f3c';
+                menu!.style.transition = '1s';
                 menuGroup!.forEach((item) => {
                     let groupName = item!.shadowRoot!.querySelector(
                         '.group-name'
@@ -482,16 +483,15 @@ export class SpApplication extends BaseElement {
                     ) as LitMainMenuGroup;
                     groupName.style.color = 'white';
                     groupDescribe.style.color = 'white';
-
-                })
+                });
                 menuItem!.forEach((item) => {
                     item.style.color = 'white';
-                })
+                });
                 ColorUtils.MD_PALETTE = ColorUtils.MD_PALETTE_A;
                 ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_A;
-            }
-            else {
+            } else {
                 menu!.style.backgroundColor = 'white';
+                menu!.style.transition = '1s';
                 menuGroup!.forEach((item) => {
                     let groupName = item!.shadowRoot!.querySelector(
                         '.group-name'
@@ -501,18 +501,25 @@ export class SpApplication extends BaseElement {
                     ) as LitMainMenuGroup;
                     groupName.style.color = 'black';
                     groupDescribe.style.color = '#92959b';
-
-                })
+                });
                 menuItem!.forEach((item) => {
                     item.style.color = 'var(--dark-color,rgba(0,0,0,0.6))';
-                })
-                ColorUtils.MD_PALETTE = ColorUtils.MD_PALETTE_B; 
+                });
+                ColorUtils.MD_PALETTE = ColorUtils.MD_PALETTE_B;
                 ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_B;
             }
 
-            sessionStorage.setItem('backgroundColor', menu!.style.backgroundColor);
-
-        }
+            sessionStorage.setItem(
+                'backgroundColor',
+                menu!.style.backgroundColor
+            );
+            if (this.colorTransiton) {
+                clearTimeout(this.colorTransiton);
+            }
+            this.colorTransiton = setTimeout(() => {
+                menu!.style.transition = '0s';
+            }, 1000);
+        };
 
         window.subscribe(window.SmartEvent.UI.MenuTrace, () =>
             showContent(spSystemTrace!)
@@ -645,6 +652,7 @@ export class SpApplication extends BaseElement {
                 window.publish(window.SmartEvent.UI.KeyboardEnable, {
                     enable: true,
                 });
+                filterConfig.style.visibility = 'visible';
             } else {
                 menu!.style.pointerEvents = 'none';
                 sidebarButton!.style.pointerEvents = 'none';
@@ -652,6 +660,7 @@ export class SpApplication extends BaseElement {
                 window.publish(window.SmartEvent.UI.KeyboardEnable, {
                     enable: false,
                 });
+                filterConfig.style.visibility = 'hidden';
             }
             log('show pages' + showNode.id);
             childNodes.forEach((node) => {
@@ -1020,7 +1029,7 @@ export class SpApplication extends BaseElement {
                                         let traceFilePath =
                                             `http://${
                                                 window.location.host.split(
-                                                ':'
+                                                    ':'
                                                 )[0]
                                             }:${window.location.port}` +
                                             traceFile;

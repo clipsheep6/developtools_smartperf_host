@@ -80,6 +80,7 @@ export class IrqStruct extends BaseStruct {
     startNS: number | undefined;
     name: string | undefined;
     dur: number | undefined; //自补充，数据库没有返回
+    textMetricsWidth: number | undefined; //自补充
     argSetId: number | undefined;
 
     static draw(
@@ -123,8 +124,8 @@ export class IrqStruct extends BaseStruct {
             ctx.globalAlpha = 1.0;
             ctx.lineWidth = 1;
             ctx.fillStyle = '#fff';
-            data.frame.width > 4 &&
-                IrqStruct.drawString(ctx, data.name || '', 2, data.frame);
+            data.frame.width > 7 &&
+                IrqStruct.drawString(ctx, data.name || '', 2, data.frame, data);
         }
     }
 
@@ -132,13 +133,17 @@ export class IrqStruct extends BaseStruct {
         ctx: CanvasRenderingContext2D,
         str: string,
         textPadding: number,
-        frame: Rect
+        frame: Rect,
+        data:IrqStruct
     ) {
-        let textMetrics = ctx.measureText(str);
-        let charWidth = Math.round(textMetrics.width / str.length);
-        if (textMetrics.width < frame.width - textPadding * 2) {
+        if (data.textMetricsWidth === undefined) {
+            data.textMetricsWidth = ctx.measureText(str).width;
+        }
+        let charWidth = Math.round(data.textMetricsWidth / str.length);
+        let fillTextWidth = frame.width - textPadding * 2;
+        if (data.textMetricsWidth < fillTextWidth) {
             let x2 = Math.floor(
-                frame.width / 2 - textMetrics.width / 2 + frame.x + textPadding
+                frame.width / 2 - data.textMetricsWidth / 2 + frame.x + textPadding
             );
             ctx.textBaseline = 'middle';
             ctx.font = '8px sans-serif';
@@ -146,22 +151,30 @@ export class IrqStruct extends BaseStruct {
                 str,
                 x2,
                 Math.floor(frame.y + frame.height / 2),
-                frame.width - textPadding * 2
+                fillTextWidth
             );
-            return;
-        }
-        if (frame.width - textPadding * 2 > charWidth * 4) {
-            let chatNum = (frame.width - textPadding * 2) / charWidth;
-            let x1 = frame.x + textPadding;
-            ctx.textBaseline = 'middle';
-            ctx.font = '8px sans-serif';
-            ctx.fillText(
-                str.substring(0, chatNum - 4) + '...',
-                x1,
-                Math.floor(frame.y + frame.height / 2),
-                frame.width - textPadding * 2
-            );
-            return;
+        } else {
+            if (fillTextWidth >= charWidth) {
+                let chatNum = fillTextWidth / charWidth;
+                let x1 = frame.x + textPadding;
+                ctx.textBaseline = 'middle';
+                ctx.font = '8px sans-serif';
+                if (chatNum < 2) {
+                    ctx.fillText(
+                        str.substring(0, 1),
+                        x1,
+                        Math.floor(frame.y + frame.height / 2),
+                        fillTextWidth
+                    );
+                } else {
+                    ctx.fillText(
+                        str.substring(0, chatNum - 1) + '...',
+                        x1,
+                        Math.floor(frame.y + frame.height / 2),
+                        fillTextWidth
+                    );
+                }
+            }
         }
     }
 }

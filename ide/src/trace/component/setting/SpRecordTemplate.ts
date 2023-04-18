@@ -25,6 +25,7 @@ import { SpRecordTrace } from '../SpRecordTrace.js';
 export class SpRecordTemplate extends BaseElement {
     static SCHEDULING_ANALYSIS_EVENT = [
         'sched/sched_wakeup',
+        'sched/sched_switch',
         'sched/sched_wakeup_new',
         'sched/sched_waking',
         'sched/sched_process_exit',

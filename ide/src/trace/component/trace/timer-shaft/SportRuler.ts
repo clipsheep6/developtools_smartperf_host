@@ -415,7 +415,12 @@ export class SportRuler extends Graph {
             this.c.lineTo(endX, this.frame.y + 22 + 5);
             let txtWidth = this.c.measureText(txt).width;
             this.c.fillStyle = '#FFF'; //为了解决文字重叠问题。在时间刻度的文字下面绘制一个小方块
-            this.c.fillRect( startX + (lineWidth - txtWidth) / 2, this.frame.y + 10,txtWidth+2,10);
+            this.c.fillRect(
+                startX + (lineWidth - txtWidth) / 2,
+                this.frame.y + 10,
+                txtWidth + 2,
+                10
+            );
             this.c.fillStyle = 'black';
             if (lineWidth > txtWidth) {
                 this.c.fillText(

@@ -221,10 +221,16 @@ export class TabpaneNMCalltree extends BaseElement {
             this.filter.setAttribute('tree', '');
             this.filter.setAttribute('input', '');
             this.filter.setAttribute('inputLeftText', '');
+            this.filter.setAttribute('first', '');
+            this.filter.setAttribute('second', '');
+            this.filter.showThird(true)
         } else {
             this.filter.removeAttribute('tree');
             this.filter.removeAttribute('input');
             this.filter.removeAttribute('inputLeftText');
+            this.filter.removeAttribute('first');
+            this.filter.removeAttribute('second');
+            this.filter.showThird(false)
         }
     }
 

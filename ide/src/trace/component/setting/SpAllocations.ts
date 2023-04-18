@@ -24,6 +24,7 @@ import { SpRecordTrace } from '../SpRecordTrace.js';
 import { Cmd } from '../../../command/Cmd.js';
 import { CmdConstant } from '../../../command/CmdConstant.js';
 import LitSwitch from '../../../base-ui/switch/lit-switch.js';
+import { LitSlider } from '../../../base-ui/slider/LitSlider';
 
 @element('sp-allocations')
 export class SpAllocations extends BaseElement {
@@ -37,9 +38,8 @@ export class SpAllocations extends BaseElement {
 
     private recordAccurately: LitSwitch | null | undefined;
     private offlineSymbol: LitSwitch | null | undefined;
-    private recordStatistics: LitSwitch | null | undefined;
-    private statisticsInterval: HTMLDivElement | null | undefined;
-    private statisticsIntervalInput: HTMLInputElement | null | undefined;
+    private recordStatisticsResult: HTMLDivElement | null | undefined;
+
     get appProcess(): string {
         return this.processId!.value || '';
     }
@@ -93,19 +93,18 @@ export class SpAllocations extends BaseElement {
     }
 
     get record_statistics(): boolean {
-        let value = this.recordStatistics?.checked;
-        if (value != undefined) {
-            return value;
+        if (this.recordStatisticsResult?.hasAttribute('percent')) {
+            let value = Number(this.recordStatisticsResult?.getAttribute('percent'));
+            return value > 0;
         }
         return true;
     }
 
     get statistics_interval(): number {
-        let value = this.statisticsIntervalInput?.value || '';
-        if (value != '') {
-            return Number(value);
+        if (this.recordStatisticsResult?.hasAttribute('percentValue')) {
+            return Number(this.recordStatisticsResult?.getAttribute('percentValue'));
         }
-        return 5;
+        return 3600;
     }
 
     initElements(): void {
@@ -180,7 +179,7 @@ export class SpAllocations extends BaseElement {
                                         for (let lineVal of lineValues) {
                                             if (
                                                 lineVal.indexOf('__progname') !=
-                                                    -1 ||
+                                                -1 ||
                                                 lineVal.indexOf('PID CMD') != -1
                                             ) {
                                                 continue;
@@ -193,9 +192,9 @@ export class SpAllocations extends BaseElement {
                                                 let processName = process[1];
                                                 processData.push(
                                                     processName +
-                                                        '(' +
-                                                        processId +
-                                                        ')'
+                                                    '(' +
+                                                    processId +
+                                                    ')'
                                                 );
                                             }
                                         }
@@ -240,22 +239,88 @@ export class SpAllocations extends BaseElement {
         this.offlineSymbol = this.shadowRoot?.getElementById(
             'use_offline_symbolization'
         ) as LitSwitch;
-        this.recordStatistics = this.shadowRoot?.getElementById(
-            'use_record_statistics'
-        ) as LitSwitch;
-        this.statisticsInterval = this.shadowRoot?.getElementById(
-            'interval_id'
+        let stepValue = [0, 1, 10, 30, 60, 300, 600, 1800, 3600];
+        let statisticsSlider = this.shadowRoot?.querySelector<LitSlider>(
+            '#interval-slider'
+        ) as LitSlider;
+
+        this.recordStatisticsResult = this.shadowRoot?.querySelector<HTMLDivElement>(
+            '.record-statistics-result'
         ) as HTMLDivElement;
-        this.recordStatistics.addEventListener('change', (ev) => {
-            if (this.recordStatistics!.checked) {
-                this.statisticsInterval!.style.display = 'flex';
-            } else {
-                this.statisticsInterval!.style.display = 'none';
+        statisticsSlider.sliderStyle = {
+            minRange: 0,
+            maxRange: 3600,
+            defaultValue: '3600',
+            resultUnit: 'S',
+            stepSize: 450,
+            lineColor: 'var(--dark-color3,#46B1E3)',
+            buttonColor: '#999999',
+        };
+        let parentElement = statisticsSlider!.parentNode as Element;
+        let intervalResultInput = this.shadowRoot?.querySelector(
+            '.interval-result'
+        ) as HTMLInputElement;
+        intervalResultInput.value = statisticsSlider.sliderStyle.defaultValue;
+        statisticsSlider.addEventListener('input', (evt) => {
+            statisticsSlider!.sliderStyle = {
+                minRange: 0,
+                maxRange: 3600,
+                defaultValue: this.recordStatisticsResult!.getAttribute('percent') + '',
+                resultUnit: 'S',
+                stepSize: 450,
+                lineColor: 'var(--dark-color3,#46B1E3)',
+                buttonColor: '#999999',
+            };
+            if (this.recordStatisticsResult!.hasAttribute('percent')) {
+                let step = Number(this.recordStatisticsResult!.getAttribute('percent')) / 450;
+                this.recordStatisticsResult!.setAttribute('percentValue', stepValue[step] + '');
+                intervalResultInput.value = stepValue[step] + '';
             }
         });
-        this.statisticsIntervalInput = this.shadowRoot?.getElementById(
-            'statistics_interval'
-        ) as HTMLInputElement;
+        parentElement.setAttribute('percent', '3600');
+        intervalResultInput.style.color = 'var(--dark-color1,#000000)';
+        intervalResultInput.addEventListener('input', (ev) => {
+            if (this.recordStatisticsResult!.hasAttribute('percent')) {
+                this.recordStatisticsResult!.removeAttribute('percent');
+            }
+            intervalResultInput.style.color = 'var(--dark-color1,#000000)';
+            intervalResultInput.parentElement!.style.backgroundColor =
+                'var(--dark-background5,#F2F2F2)';
+            intervalResultInput.style.backgroundColor =
+                'var(--dark-background5,#F2F2F2)';
+            if (intervalResultInput.value.trim() == '') {
+                intervalResultInput.style.color = 'red';
+                parentElement.setAttribute('percent', '3600');
+                return;
+            }
+            let memorySize = Number(intervalResultInput.value);
+            if (
+                !memorySize ||
+                memorySize < statisticsSlider!.sliderStyle.minRange ||
+                memorySize > statisticsSlider!.sliderStyle.maxRange
+            ) {
+                intervalResultInput.style.color = 'red';
+                parentElement.setAttribute('percent', '3600');
+            } else {
+                statisticsSlider!.percent = intervalResultInput.value;
+                let htmlInputElement =
+                    statisticsSlider!.shadowRoot?.querySelector(
+                        '#slider'
+                    ) as HTMLInputElement;
+                htmlInputElement.value = intervalResultInput.value;
+                statisticsSlider!.sliderStyle = {
+                    minRange: 0,
+                    maxRange: 3600,
+                    defaultValue: intervalResultInput.value,
+                    resultUnit: 'S',
+                    stepSize: 1,
+                    lineColor: 'var(--dark-color3,#46B1E3)',
+                    buttonColor: '#999999',
+                };
+                parentElement.setAttribute('percent', intervalResultInput.value);
+                parentElement.setAttribute('percentValue', intervalResultInput.value);
+            }
+        });
     }
 
     initHtml(): string {
@@ -374,6 +439,56 @@ export class SpAllocations extends BaseElement {
           line-height: 20px;
           font-weight: 400;
         }
+        .record-title{
+            margin-bottom: 16px;
+            grid-column: span 3;
+        }
+        #interval-slider {
+            margin: 0 8px;
+            grid-column: span 2;
+        }
+        .resultSize{
+            margin: 0 30px 0 0;
+            height: 40px;
+            background-color: var(--dark-background5,#F2F2F2);
+            -webkit-appearance:none;
+            outline:0;
+            border:1px solid var(--dark-border,#c8cccf);
+            color:var(--dark-color,#6a6f77);
+            border-radius:20px;
+            display: grid;
+            grid-template-rows: 1fr;
+            grid-template-columns:  min-content min-content;
+            width: 150px;
+        }
+        .record-mode{
+            font-family: Helvetica-Bold;
+            font-size: 1em;
+            color: var(--dark-color1,#000000);
+            line-height: 28px;
+            font-weight: 400;
+            margin-bottom: 16px;
+            grid-column: span 1;
+        }
+        .record-prompt{
+              opacity: 0.6;
+              font-family: Helvetica;
+              font-size: 14px;
+              text-align: center;
+              line-height: 35px;
+              font-weight: 400;
+        }
+        .interval-result{
+            margin: 5px 0 5px 5px;
+            background-color: var(--dark-background5,#F2F2F2);
+            -webkit-appearance:none;
+            outline:0;
+            font-size:14px;
+            color:var(--dark-color,#6a6f77);
+            border: none;
+            text-align: center;
+            width: 90px;
+        }
         
         </style>
         <div class="root">
@@ -419,15 +534,17 @@ export class SpAllocations extends BaseElement {
               <span class="inner-font-style" id="offline_symbolization">Use Offline Symbolization (Available on recent OpenHarmony 4.0)</span> 
               <lit-switch   class="lts" id="use_offline_symbolization" title="offline_symbolization" checked="true"></lit-switch>
           </div>
-          <div class="switchstyle">
-              <span class="inner-font-style" id="record_statistics">Use Record Statistics (Available on recent OpenHarmony 4.0)</span> 
-              <lit-switch  class="lts" id="use_record_statistics" title="record_statistics " checked="true"></lit-switch>
-          </div>
-          <div class="application" id="interval_id">
-            <span class="inner-font-style">statistics interval (Available on recent OpenHarmony 4.0)</span>
-            <span class="value-range">Use Record Statistics, statistics interval(unit is seconds)</span> 
-            <div>
-                <input id="statistics_interval" class="inputstyle" type="text" placeholder="Enter the statistics interval" oninput="if(this.value > 2147483647) this.value = '5'" onkeyup="this.value=this.value.replace(/\\D/g,'')" value="5">
+            
+          <div class="switchstyle record-statistics-result" style="grid-row: 6; grid-column: 1 / 3;height: min-content;display: grid;grid-template-rows: 1fr;grid-template-columns: 1fr min-content;">
+            <div class="record-title">
+                <span class="record-mode">Use Record Statistics (Available on recent OpenHarmony 4.0)</span> 
+                <span class="record-prompt"> Time between following interval (0 = disabled) </span>
+            </div>
+            <lit-slider id="interval-slider" defaultColor="var(--dark-color3,#46B1E3)" open dir="right">
+            </lit-slider>
+            <div class='resultSize'>
+                <input class="interval-result" type="text" value='0' onkeyup="this.value=this.value.replace(/\\D/g,'')">
+                <span style="text-align: center; margin: 8px"> S </span>
             </div>
           </div>
         </div>

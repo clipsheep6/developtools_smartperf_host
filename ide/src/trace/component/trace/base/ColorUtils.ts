@@ -18,7 +18,6 @@ import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU.js';
 export class ColorUtils {
     public static GREY_COLOR: string = '#f0f0f0';
 
-    
     public static MD_PALETTE_A: Array<string> = [
         '#40b3e7',
         '#606e75',
@@ -92,7 +91,7 @@ export class ColorUtils {
         '#009DFA',
         '#E97978',
     ];
-    public static MD_PALETTE: Array<string> = ColorUtils.MD_PALETTE_B; 
+    public static MD_PALETTE: Array<string> = ColorUtils.MD_PALETTE_B;
     public static FUNC_COLOR: Array<string> = ColorUtils.FUNC_COLOR_B;
 
     public static hash(str: string, max: number): number {
@@ -159,25 +158,31 @@ export class ColorUtils {
         return (Math.abs(hash) + depth) % max;
     }
 
-    public static funcTextColor(val :string) {
+    public static funcTextColor(val: string) {
         var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
         // 把颜色值变成小写
         var color = val.toLowerCase();
         var result = '';
         if (reg.test(color)) {
             if (color.length === 4) {
-                var colorNew = "#";
+                var colorNew = '#';
                 for (var i = 1; i < 4; i += 1) {
-                    colorNew += color.slice(i, i + 1).concat(color.slice(i, i + 1));
+                    colorNew += color
+                        .slice(i, i + 1)
+                        .concat(color.slice(i, i + 1));
                 }
                 color = colorNew;
             }
             var colorChange = [];
             for (var i = 1; i < 7; i += 2) {
-                colorChange.push(parseInt("0x" + color.slice(i, i + 2)));
+                colorChange.push(parseInt('0x' + color.slice(i, i + 2)));
             }
-            var grayLevel = colorChange[0] * 0.299 + colorChange[1] * 0.587 + colorChange[2] * 0.114;
-            if (grayLevel >= 150) {//浅色模式
+            var grayLevel =
+                colorChange[0] * 0.299 +
+                colorChange[1] * 0.587 +
+                colorChange[2] * 0.114;
+            if (grayLevel >= 150) {
+                //浅色模式
                 return '#000';
             } else {
                 return '#fff';

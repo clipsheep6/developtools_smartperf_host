@@ -1062,6 +1062,12 @@ export class SpSystemTrace extends BaseElement {
 
     documentOnMouseDown = (ev: MouseEvent) => {
         if (!this.loadTraceCompleted) return;
+        if (this.isWASDKeyPress()) {
+            ev.preventDefault()
+            ev.stopPropagation()
+            return;
+        }
+        ;
         TraceRow.isUserInteraction = true;
         if (this.isMouseInSheet(ev)) return;
         this.observerScrollHeightEnable = false;
@@ -1091,12 +1097,10 @@ export class SpSystemTrace extends BaseElement {
 
     onContextMenuHandler = (e: Event) => {
         setTimeout(() => {
-            this.keyPressWASD = false;
             for (let key of this.keyPressMap.keys()) {
                 if (this.keyPressMap.get(key)) {
-                    this.timerShaftEL?.documentOnKeyUp({
-                        key: key,
-                    } as KeyboardEvent);
+                    this.timerShaftEL?.stopWASD({ key: key });
+                    this.keyPressMap.set(key, false);
                 }
             }
         }, 100);
@@ -1104,6 +1108,11 @@ export class SpSystemTrace extends BaseElement {
 
     documentOnMouseUp = (ev: MouseEvent) => {
         if (!this.loadTraceCompleted) return;
+        if (this.isWASDKeyPress()) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            return;
+        }
         TraceRow.isUserInteraction = false;
         this.rangeSelect.isMouseDown = false;
         if (this.isMouseInSheet(ev)) return;
@@ -1119,6 +1128,7 @@ export class SpSystemTrace extends BaseElement {
             this.timerShaftEL?.documentOnMouseUp(ev);
         }
         ev.preventDefault();
+        ev.stopPropagation();
     };
 
     documentOnMouseOut = (ev: MouseEvent) => {
@@ -1131,7 +1141,6 @@ export class SpSystemTrace extends BaseElement {
         }
     };
 
-    private keyPressWASD = false;
     private keyPressMap: Map<string, boolean> = new Map([
         ['w', false],
         ['s', false],
@@ -1147,52 +1156,15 @@ export class SpSystemTrace extends BaseElement {
         }
         this.observerScrollHeightEnable = false;
         if (this.keyboardEnable) {
-            if (keyPress == 'm') {
-                if (CpuStruct.selectCpuStruct) {
-                    this.timerShaftEL?.setSlicesMark(
-                        CpuStruct.selectCpuStruct.startTime || 0,
-                        (CpuStruct.selectCpuStruct.startTime || 0) +
-                            (CpuStruct.selectCpuStruct.dur || 0)
-                    );
-                } else if (ThreadStruct.selectThreadStruct) {
-                    this.timerShaftEL?.setSlicesMark(
-                        ThreadStruct.selectThreadStruct.startTime || 0,
-                        (ThreadStruct.selectThreadStruct.startTime || 0) +
-                            (ThreadStruct.selectThreadStruct.dur || 0)
-                    );
-                } else if (FuncStruct.selectFuncStruct) {
-                    this.timerShaftEL?.setSlicesMark(
-                        FuncStruct.selectFuncStruct.startTs || 0,
-                        (FuncStruct.selectFuncStruct.startTs || 0) +
-                            (FuncStruct.selectFuncStruct.dur || 0)
-                    );
-                } else if (IrqStruct.selectIrqStruct) {
-                    this.timerShaftEL?.setSlicesMark(
-                        IrqStruct.selectIrqStruct.startNS || 0,
-                        (IrqStruct.selectIrqStruct.startNS || 0) +
-                            (IrqStruct.selectIrqStruct.dur || 0)
-                    );
-                } else if (TraceRow.rangeSelectObject) {
-                    this.timerShaftEL?.setSlicesMark(
-                        TraceRow.rangeSelectObject.startNS || 0,
-                        TraceRow.rangeSelectObject.endNS || 0
-                    );
-                } else if (JankStruct.selectJankStruct) {
-                    this.timerShaftEL?.setSlicesMark(
-                        JankStruct.selectJankStruct.ts || 0,
-                        (JankStruct.selectJankStruct.ts || 0) +
-                            (JankStruct.selectJankStruct.dur || 0)
-                    );
-                } else {
-                    this.timerShaftEL?.setSlicesMark();
-                }
+            if (keyPress == "m") {
+                this.setSLiceMark();
             }
-            this.keyPressWASD =
+            let keyPressWASD =
                 keyPress === 'w' ||
                 keyPress === 'a' ||
                 keyPress === 's' ||
                 keyPress === 'd';
-            if (this.keyPressWASD) {
+            if (keyPressWASD) {
                 this.keyPressMap.set(keyPress, true);
                 this.hoverFlag = null;
             }
@@ -1202,12 +1174,53 @@ export class SpSystemTrace extends BaseElement {
         }
     };
 
+    setSLiceMark() {
+        if (CpuStruct.selectCpuStruct) {
+            this.timerShaftEL?.setSlicesMark(
+                CpuStruct.selectCpuStruct.startTime || 0,
+                (CpuStruct.selectCpuStruct.startTime || 0) +
+                (CpuStruct.selectCpuStruct.dur || 0)
+            );
+        } else if (ThreadStruct.selectThreadStruct) {
+            this.timerShaftEL?.setSlicesMark(
+                ThreadStruct.selectThreadStruct.startTime || 0,
+                (ThreadStruct.selectThreadStruct.startTime || 0) +
+                (ThreadStruct.selectThreadStruct.dur || 0)
+            );
+        } else if (FuncStruct.selectFuncStruct) {
+            this.timerShaftEL?.setSlicesMark(
+                FuncStruct.selectFuncStruct.startTs || 0,
+                (FuncStruct.selectFuncStruct.startTs || 0) +
+                (FuncStruct.selectFuncStruct.dur || 0)
+            );
+        } else if (IrqStruct.selectIrqStruct) {
+            this.timerShaftEL?.setSlicesMark(
+                IrqStruct.selectIrqStruct.startNS || 0,
+                (IrqStruct.selectIrqStruct.startNS || 0) +
+                (IrqStruct.selectIrqStruct.dur || 0)
+            );
+        } else if (TraceRow.rangeSelectObject) {
+            this.timerShaftEL?.setSlicesMark(
+                TraceRow.rangeSelectObject.startNS || 0,
+                TraceRow.rangeSelectObject.endNS || 0
+            );
+        } else if (JankStruct.selectJankStruct) {
+            this.timerShaftEL?.setSlicesMark(
+                JankStruct.selectJankStruct.ts || 0,
+                (JankStruct.selectJankStruct.ts || 0) +
+                (JankStruct.selectJankStruct.dur || 0)
+            );
+        } else {
+            this.timerShaftEL?.setSlicesMark();
+        }
+    }
+
     stopWASD = () => {
         setTimeout(() => {
-            this.keyPressWASD = false;
             for (let key of this.keyPressMap.keys()) {
                 if (this.keyPressMap.get(key)) {
                     this.timerShaftEL?.stopWASD({ key: key });
+                    this.keyPressMap.set(key, false)
                 }
             }
         }, 100);
@@ -1222,7 +1235,6 @@ export class SpSystemTrace extends BaseElement {
             keyPress === 's' ||
             keyPress === 'd'
         ) {
-            this.keyPressWASD = false;
             this.keyPressMap.set(keyPress, false);
         }
         TraceRow.isUserInteraction = false;
@@ -1271,7 +1283,7 @@ export class SpSystemTrace extends BaseElement {
     inFavoriteArea: boolean | undefined;
     documentOnMouseMove = (ev: MouseEvent) => {
         if (!this.loadTraceCompleted || (window as any).flagInputFocus) return;
-        if (this.keyPressWASD) {
+        if (this.isWASDKeyPress()) {
             this.hoverFlag = null;
             ev.preventDefault();
             return;
@@ -1384,11 +1396,19 @@ export class SpSystemTrace extends BaseElement {
         JankStruct.selectJankStruct = undefined;
     }
 
+    isWASDKeyPress() {
+        return this.keyPressMap.get('w') ||
+            this.keyPressMap.get('a') ||
+            this.keyPressMap.get('d') ||
+            this.keyPressMap.get('s');
+    }
+
     documentOnClick = (ev: MouseEvent) => {
         if (!this.loadTraceCompleted) return;
-        if (this.keyPressWASD) {
+        if (this.isWASDKeyPress()) {
             this.hoverFlag = null;
             ev.preventDefault();
+            ev.stopPropagation();
             return;
         }
         if (this.isMouseInSheet(ev)) return;
@@ -1422,6 +1442,7 @@ export class SpSystemTrace extends BaseElement {
                 this.clickEmptyArea();
             }
         }
+        ev.preventDefault();
     };
 
     clickEmptyArea() {
@@ -1570,7 +1591,6 @@ export class SpSystemTrace extends BaseElement {
                     this.selectStructNull();
                     ThreadStruct.hoverThreadStruct = findEntry;
                     ThreadStruct.selectThreadStruct = findEntry;
-                    this.closeAllExpandRows(d.processId + '');
                     this.timerShaftEL?.drawTriangle(
                         findEntry!.startTime || 0,
                         'inverted'
@@ -1856,7 +1876,6 @@ export class SpSystemTrace extends BaseElement {
                 }'][row-type='janks']`
             );
         }
-        let startPointNS: number;
         if (endParentRow) {
             endParentRow.expansion = true;
             let endRowStruct: any;
@@ -2053,64 +2072,103 @@ export class SpSystemTrace extends BaseElement {
         document.addEventListener('keyup', this.documentOnKeyUp);
         document.addEventListener('contextmenu', this.onContextMenuHandler);
 
-        /**        
+        /**
          *  获取并保存鼠标当前的x轴坐标位置，配合ctrl+鼠标左键拖动完成泳道图的左移或右移
          */
-        this.addEventListener('mousedown',(e)=>{ 
-            if(e.ctrlKey){
-                e.preventDefault();                     
-                this.removeEventListener('mousemove',this.documentOnMouseMove);
-                this.removeEventListener('click', this.documentOnClick);
-                this.removeEventListener('mousedown',this.documentOnMouseDown);
-                this.removeEventListener('mouseup',this.documentOnMouseUp);          
-                this.style.cursor = 'move';
-                SpSystemTrace.moveable = true;
-                SpSystemTrace.mouseCurrentPosition = e.clientX;
-            }
-        },{passive:false});
+        this.addEventListener(
+            'mousedown',
+            (e) => {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.removeEventListener(
+                        'mousemove',
+                        this.documentOnMouseMove
+                    );
+                    this.removeEventListener('click', this.documentOnClick);
+                    this.removeEventListener(
+                        'mousedown',
+                        this.documentOnMouseDown
+                    );
+                    this.removeEventListener('mouseup', this.documentOnMouseUp);
+                    this.style.cursor = 'move';
+                    SpSystemTrace.moveable = true;
+                    SpSystemTrace.mouseCurrentPosition = e.clientX;
+                }
+            },
+            { passive: false }
+        );
 
         /**
-         * ctrl+鼠标移动，实现泳道图左移或者右移。         
+         * ctrl+鼠标移动，实现泳道图左移或者右移。
          */
-        this.addEventListener('mousemove',(e)=>{
-            if(e.ctrlKey){
-                e.preventDefault();
-                SpSystemTrace.offsetMouse = e.clientX - SpSystemTrace.mouseCurrentPosition;
-                let eventA = new KeyboardEvent('keypress',{'key':'a','code':'65','keyCode':65});
-                let eventD = new KeyboardEvent('keypress',{'key':'d','code':'68','keyCode':68});
-                if(e.button == 0){
-                    if(SpSystemTrace.offsetMouse < 0 && SpSystemTrace.moveable){
-                        // 向右拖动，则泳道图右移
-                        this.timerShaftEL!.documentOnKeyPress(eventD);
-                        setTimeout(()=>{
-                            this.timerShaftEL!.documentOnKeyUp(eventD);
-                        },350);
+        this.addEventListener(
+            'mousemove',
+            (e) => {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    SpSystemTrace.offsetMouse =
+                        e.clientX - SpSystemTrace.mouseCurrentPosition;
+                    let eventA = new KeyboardEvent('keypress', {
+                        key: 'a',
+                        code: '65',
+                        keyCode: 65,
+                    });
+                    let eventD = new KeyboardEvent('keypress', {
+                        key: 'd',
+                        code: '68',
+                        keyCode: 68,
+                    });
+                    if (e.button == 0) {
+                        if (
+                            SpSystemTrace.offsetMouse < 0 &&
+                            SpSystemTrace.moveable
+                        ) {
+                            // 向右拖动，则泳道图右移
+                            this.timerShaftEL!.documentOnKeyPress(eventD);
+                            setTimeout(() => {
+                                this.timerShaftEL!.documentOnKeyUp(eventD);
+                            }, 350);
+                        }
+                        if (
+                            SpSystemTrace.offsetMouse > 0 &&
+                            SpSystemTrace.moveable
+                        ) {
+                            // 向左拖动，则泳道图左移
+                            this.timerShaftEL!.documentOnKeyPress(eventA);
+                            setTimeout(() => {
+                                this.timerShaftEL!.documentOnKeyUp(eventA);
+                            }, 350);
+                        }
                     }
-                    if(SpSystemTrace.offsetMouse > 0 && SpSystemTrace.moveable){
-                        // 向左拖动，则泳道图左移
-                        this.timerShaftEL!.documentOnKeyPress(eventA);
-                        setTimeout(()=>{
-                            this.timerShaftEL!.documentOnKeyUp(eventA);
-                        },350);
-                    } 
+                    SpSystemTrace.moveable = false;
                 }
-                SpSystemTrace.moveable = false;
-            }
-        },{passive:false});
+            },
+            { passive: false }
+        );
 
-        this.addEventListener('mouseup',(e)=>{
-            if(e.ctrlKey){
-                e.preventDefault();
-                SpSystemTrace.offsetMouse = 0;
-                SpSystemTrace.mouseCurrentPosition = 0;
-                SpSystemTrace.moveable = false;
-                this.style.cursor = 'default';
-                this.addEventListener('mousemove', this.documentOnMouseMove); 
-                this.addEventListener('click', this.documentOnClick);
-                this.addEventListener('mousedown', this.documentOnMouseDown);
-                this.addEventListener('mouseup', this.documentOnMouseUp);
-            } 
-        },{passive:false});
+        this.addEventListener(
+            'mouseup',
+            (e) => {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    SpSystemTrace.offsetMouse = 0;
+                    SpSystemTrace.mouseCurrentPosition = 0;
+                    SpSystemTrace.moveable = false;
+                    this.style.cursor = 'default';
+                    this.addEventListener(
+                        'mousemove',
+                        this.documentOnMouseMove
+                    );
+                    this.addEventListener('click', this.documentOnClick);
+                    this.addEventListener(
+                        'mousedown',
+                        this.documentOnMouseDown
+                    );
+                    this.addEventListener('mouseup', this.documentOnMouseUp);
+                }
+            },
+            { passive: false }
+        );
 
         /**
          * 泳道图中添加ctrl+鼠标滚轮事件，对泳道图进行放大缩小。
@@ -2118,34 +2176,45 @@ export class SpSystemTrace extends BaseElement {
          * 否则泳道图会一直放大或一直缩小。
          * setTimeout()函数中的时间参数可以控制鼠标滚轮的频率。
          */
-        document.addEventListener('wheel',(e)=>{
-            if(e.ctrlKey){
-                if(e.deltaY > 0){
-                    e.preventDefault();
-                    e.stopPropagation();
-                    let eventS = new KeyboardEvent('keypress',{'key':'s','code':'83','keyCode':83});
-                    this.timerShaftEL!.documentOnKeyPress(eventS);
-                    setTimeout(()=>{
-                        this.timerShaftEL!.documentOnKeyUp(eventS);
-                    },200);
+        document.addEventListener(
+            'wheel',
+            (e) => {
+                if (e.ctrlKey) {
+                    if (e.deltaY > 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let eventS = new KeyboardEvent('keypress', {
+                            key: 's',
+                            code: '83',
+                            keyCode: 83,
+                        });
+                        this.timerShaftEL!.documentOnKeyPress(eventS);
+                        setTimeout(() => {
+                            this.timerShaftEL!.documentOnKeyUp(eventS);
+                        }, 200);
+                    }
+                    if (e.deltaY < 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        let eventW = new KeyboardEvent('keypress', {
+                            key: 'w',
+                            code: '87',
+                            keyCode: 87,
+                        });
+                        this.timerShaftEL!.documentOnKeyPress(eventW);
+                        setTimeout(() => {
+                            this.timerShaftEL!.documentOnKeyUp(eventW);
+                        }, 200);
+                    }
                 }
-                if(e.deltaY < 0){
-                    e.preventDefault();
-                    e.stopPropagation();
-                    let eventW = new KeyboardEvent('keypress',{'key':'w','code':'87','keyCode':87});
-                    this.timerShaftEL!.documentOnKeyPress(eventW);
-                    setTimeout(()=>{
-                        this.timerShaftEL!.documentOnKeyUp(eventW);
-                    },200);
-                }                
-            }
-        },{passive:false});
+            },
+            { passive: false }
+        );
 
         SpApplication.skinChange2 = (val: boolean) => {
             this.timerShaftEL?.render();
         };
     }
-    
 
     scrollToProcess(
         rowId: string,

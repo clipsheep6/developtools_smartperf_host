@@ -69,7 +69,6 @@ export class LitMainMenuGroup extends BaseElement {
         } else {
             textColor = 'black';
         }
-
     }
 
     initHtml(): string {

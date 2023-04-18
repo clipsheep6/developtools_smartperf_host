@@ -524,6 +524,8 @@ export class RangeRuler extends Graph {
         if (this.upFrameIdS != -1) cancelAnimationFrame(this.upFrameIdS);
     }
 
+    cancelTimeOut:any = undefined;
+
     keyPress(ev: KeyboardEvent) {
         if (
             this.animaStartTime == undefined ||
@@ -575,6 +577,12 @@ export class RangeRuler extends Graph {
             ]?.bind(this)();
         }
         this.isPress = true;
+        if(this.cancelTimeOut){
+            clearTimeout(this.cancelTimeOut);
+        }
+        this.cancelTimeOut = setTimeout(()=>{
+            this.keyUp({ key:ev.key } as KeyboardEvent)
+        },1000);
     }
 
     keyPressW() {

@@ -429,8 +429,6 @@ export class SpProcessChart {
                         actualRow = TraceRow.skeleton<JankStruct>();
                         let timeLineType = actualData[0].type;
                         actualRow.rowId = `${timeLineType}-${it.pid}`;
-                        actualRow.asyncFuncName = it.processName;
-                        actualRow.asyncFuncNamePID = it.pid;
                         actualRow.rowType = TraceRow.ROW_TYPE_JANK;
                         actualRow.rowParentId = `${it.pid}`;
                         actualRow.rowHidden = !processRow.expansion;
@@ -677,7 +675,7 @@ export class SpProcessChart {
                         row,
                         ProcessMemStruct.hoverProcessMemStruct,
                         `<span>${
-                            ProcessMemStruct.hoverProcessMemStruct?.value || ''
+                            ProcessMemStruct.hoverProcessMemStruct?.value || '0'
                         }</span>`
                     );
                 };

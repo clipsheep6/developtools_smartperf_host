@@ -277,8 +277,9 @@ export class ProcessMemStruct extends BaseStruct {
                 ctx.globalAlpha = 0.6;
                 let drawHeight: number = Math.floor(
                     ((data.value || 0) * (data.frame.height || 0) * 1.0) /
-                        (data.maxValue || 0)
+                        (data.maxValue || 1)
                 );
+                drawHeight = drawHeight > 0 ? drawHeight : 1;
                 ctx.fillRect(
                     data.frame.x,
                     data.frame.y + data.frame.height - drawHeight,
@@ -314,6 +315,7 @@ export class ProcessMemStruct extends BaseStruct {
                 let drawHeight: number =
                     ((data.value || 0) * (data.frame.height || 0) * 1.0) /
                     (data.maxValue || 1);
+                drawHeight = drawHeight > 0 ? drawHeight : 1;
                 ctx.fillRect(
                     data.frame.x,
                     data.frame.y + data.frame.height - drawHeight,

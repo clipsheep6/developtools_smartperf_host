@@ -822,6 +822,7 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
       (case when type = 0 then 'AllocEvent' else 'MmapEvent' end) as eventType,
       apply_size as heapSize,
       release_size as freeSize,
+      apply_count as count,
       (max(A.ts) - B.start_ts) as startTs
     from
       native_hook_statistic A,

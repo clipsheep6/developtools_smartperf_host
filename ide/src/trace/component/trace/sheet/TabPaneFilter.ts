@@ -70,6 +70,18 @@ export class TabPaneFilter extends BaseElement {
         };
     }
 
+    showThird(b:boolean){
+        if(b){
+            if(this.thirdSelectEL?.value){
+                this.setAttribute('third','');
+            }else {
+                this.removeAttribute('third');
+            }
+        }else{
+            this.removeAttribute('third');
+        }
+    }
+
     initElements(): void {
         this.cutList = [];
         this.libraryList = [];
@@ -331,9 +343,10 @@ export class TabPaneFilter extends BaseElement {
             html += `</lit-select>`;
         }
         let thtml = '';
-        thtml += `<lit-select show-search style="display: ${
-            thirdList ? 'inline-flex' : 'none'
-        }" default-value="" id="third-select" class="spacing" placeholder="please choose">`;
+        if (thirdList) {
+            this.setAttribute('third','');
+        }
+        thtml += `<lit-select show-search default-value="" id="third-select" class="spacing" placeholder="please choose">`;
         if (thirdList) {
             if (thirdTitle != '') {
                 thtml += `<lit-select-option  value="${thirdTitle}" disabled>${thirdTitle}</lit-select-option>`;
@@ -773,6 +786,9 @@ export class TabPaneFilter extends BaseElement {
             display: none;
         }
         :host(:not([second])) #second-select{
+            display: none;
+        }
+        :host(:not([third])) #third-select{
             display: none;
         }
         :host(:not([tree])) .tree{

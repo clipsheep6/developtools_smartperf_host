@@ -149,6 +149,7 @@ export class FuncStruct extends BaseStruct {
     tid: number | undefined; // 2785
     identify: number | undefined;
     track_id: number | undefined; // 414
+    textMetricsWidth: number | undefined;
 
     static setFuncFrame(
         node: any,
@@ -201,7 +202,7 @@ export class FuncStruct extends BaseStruct {
                             0,
                             ColorUtils.FUNC_COLOR.length
                         )
-                    ]; 
+                    ];
                 let textColor =
                     ColorUtils.FUNC_COLOR[
                         ColorUtils.hashFunc(
@@ -209,7 +210,7 @@ export class FuncStruct extends BaseStruct {
                             0,
                             ColorUtils.FUNC_COLOR.length
                         )
-                    ]; 
+                    ];
                 let miniHeight = 20;
                 if (
                     FuncStruct.hoverFuncStruct &&
@@ -224,12 +225,21 @@ export class FuncStruct extends BaseStruct {
                     miniHeight - padding * 2
                 );
                 if (data.frame.width > 10) {
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        data.frame.x,
+                        data.frame.y,
+                        data.frame.width,
+                        miniHeight - padding * 2
+                    );
                     ctx.fillStyle = ColorUtils.funcTextColor(textColor);
                     FuncStruct.drawString(
                         ctx,
                         `${data.funName || ''}`,
                         5,
-                        data.frame
+                        data.frame,
+                        data
                     );
                 }
                 if (FuncStruct.isSelected(data)) {
@@ -250,32 +260,48 @@ export class FuncStruct extends BaseStruct {
         ctx: CanvasRenderingContext2D,
         str: string,
         textPadding: number,
-        frame: Rect
+        frame: Rect,
+        func:FuncStruct
     ): boolean {
-        let textMetrics = ctx.measureText(str);
-        let charWidth = Math.round(textMetrics.width / str.length);
-        if (textMetrics.width < frame.width - textPadding * 2) {
+        if(func.textMetricsWidth === undefined){
+            func.textMetricsWidth = ctx.measureText(str).width;
+        }
+        let charWidth = Math.round(func.textMetricsWidth / str.length);
+        let fillTextWidth = frame.width - textPadding * 2;
+        if (func.textMetricsWidth < fillTextWidth) {
             let x2 = Math.floor(
-                frame.width / 2 - textMetrics.width / 2 + frame.x + textPadding
+                frame.width / 2 -
+                func.textMetricsWidth / 2 +
+                frame.x +
+                textPadding
             );
             ctx.fillText(
                 str,
                 x2,
                 Math.floor(frame.y + frame.height / 2 + 2),
-                frame.width - textPadding * 2
+                fillTextWidth
             );
             return true;
-        }
-        if (frame.width - textPadding * 2 > charWidth * 4) {
-            let chatNum = (frame.width - textPadding * 2) / charWidth;
-            let x1 = frame.x + textPadding;
-            ctx.fillText(
-                str.substring(0, chatNum - 4) + '...',
-                x1,
-                Math.floor(frame.y + frame.height / 2 + 2),
-                frame.width - textPadding * 2
-            );
-            return true;
+        } else {
+            if (fillTextWidth >= charWidth) {
+                let chatNum = fillTextWidth / charWidth;
+                let x1 = frame.x + textPadding;
+                if (chatNum < 2) {
+                    ctx.fillText(
+                        str.substring(0, 1),
+                        x1,
+                        Math.floor(frame.y + frame.height / 2 + 2),
+                        fillTextWidth
+                    );
+                } else {
+                    ctx.fillText(
+                        str.substring(0, chatNum - 1) + '...',
+                        x1, Math.floor(frame.y + frame.height / 2 + 2),
+                        fillTextWidth
+                    );
+                }
+                return true;
+            }
         }
         return false;
     }
