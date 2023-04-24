@@ -296,7 +296,7 @@ int BytraceParser::GetNextSegment()
 
 void BytraceParser::GetDataSegAttr(DataSegment& seg, const std::smatch& matcheLine) const
 {
-    const uint64_t US_TO_NS = 1000;
+    const uint64_t S_TO_NS = 1e9;
     size_t index = 0;
     std::string pidStr = matcheLine[++index].str();
     std::optional<uint32_t> optionalPid = base::StrToUInt32(pidStr);
@@ -316,8 +316,7 @@ void BytraceParser::GetDataSegAttr(DataSegment& seg, const std::smatch& matcheLi
     }
     std::string timeStr = matcheLine[++index].str();
     // Directly parsing double may result in accuracy loss issues
-    timeStr.erase(std::remove(timeStr.begin(), timeStr.end(), '.'), timeStr.end());
-    std::optional<uint64_t> optionalTime = base::StrToUInt64(timeStr);
+    std::optional<double> optionalTime = base::StrToDouble(timeStr);
     if (!optionalTime.has_value()) {
         TS_LOGD("Illegal ts %s", timeStr.c_str());
         seg.status = TS_PARSE_STATUS_INVALID;
@@ -331,7 +330,7 @@ void BytraceParser::GetDataSegAttr(DataSegment& seg, const std::smatch& matcheLi
     seg.bufLine.argsStr = StrTrim(matcheLine.suffix());
     seg.bufLine.pid = optionalPid.value();
     seg.bufLine.cpu = optionalCpu.value();
-    seg.bufLine.ts = optionalTime.value() * US_TO_NS;
+    seg.bufLine.ts = optionalTime.value() * S_TO_NS;
     seg.bufLine.tGidStr = tGidStr;
     seg.bufLine.eventName = eventName;
     seg.status = TS_PARSE_STATUS_PARSED;

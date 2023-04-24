@@ -62,6 +62,13 @@ HtraceParser::~HtraceParser()
     TS_LOGI("clockid 2 is for RealTime and 1 is for BootTime");
 }
 
+bool HtraceParser::ReloadSymbolFiles(std::vector<std::string>& symbolsPaths)
+{
+#if WITH_PERF
+    perfDataParser_->ReloadSymbolFiles(symbolsPaths);
+#endif
+    return true;
+}
 void HtraceParser::WaitForParserEnd()
 {
     if (parseThreadStarted_ || filterThreadStarted_) {

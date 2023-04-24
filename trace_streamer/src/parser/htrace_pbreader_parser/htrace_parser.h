@@ -59,6 +59,7 @@ public:
     HtraceParser(TraceDataCache* dataCache, const TraceStreamerFilters* filters);
     ~HtraceParser();
     void ParseTraceDataSegment(std::unique_ptr<uint8_t[]> bufferStr, size_t size) override;
+    bool ReloadSymbolFiles(std::vector<std::string>& symbolsPaths);
     void WaitForParserEnd();
 
 private:

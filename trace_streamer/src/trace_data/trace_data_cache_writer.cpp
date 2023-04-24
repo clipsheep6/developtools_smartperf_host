@@ -326,6 +326,43 @@ GPUSlice* TraceDataCacheWriter::GetGPUSliceData()
 {
     return &gpuSliceData_;
 }
+
+JsHeapFiles* TraceDataCacheWriter::GetJsHeapFilesData()
+{
+    return &JsHeapFilesData_;
+}
+JsHeapEdges* TraceDataCacheWriter::GetJsHeapEdgesData()
+{
+    return &JsHeapEdgesData_;
+}
+JsHeapInfo* TraceDataCacheWriter::GetJsHeapInfoData()
+{
+    return &JsHeapInfoData_;
+}
+JsHeapLocation* TraceDataCacheWriter::GetJsHeapLocationData()
+{
+    return &JsHeapLocationData_;
+}
+JsHeapNodes* TraceDataCacheWriter::GetJsHeapNodesData()
+{
+    return &JsHeapNodesData_;
+}
+JsHeapSample* TraceDataCacheWriter::GetJsHeapSampleData()
+{
+    return &JsHeapSampleData_;
+}
+JsHeapString* TraceDataCacheWriter::GetJsHeapStringData()
+{
+    return &JsHeapStringData_;
+}
+JsHeapTraceFuncInfo* TraceDataCacheWriter::GetJsHeapTraceFuncInfoData()
+{
+    return &JsHeapTraceFuncInfoData_;
+}
+JsHeapTraceNode* TraceDataCacheWriter::GetJsHeapTraceNodeData()
+{
+    return &JsHeapTraceNodeData_;
+}
 void TraceDataCacheWriter::Clear()
 {
     rawData_.Clear();

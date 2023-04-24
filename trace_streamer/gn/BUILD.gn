@@ -38,6 +38,16 @@ config("trace_cfg") {
   }
 }
 
+config("hiperf_trace_cfg") {
+  cflags_cc = [
+    "-std=c++17",
+
+    # "-std=gnu++17",
+    "-fvisibility=hidden",
+    "-Wno-unused-variable",
+  ]
+}
+
 config("visibility_hidden") {
   cflags = [ "-fvisibility=hidden" ]
 }
@@ -60,7 +70,7 @@ config("default") {
     cflags += [ "-D IS_PBDECODER" ]
   }
   if (target_os == "windows") {
-    cflags += []
+    cflags += ["-D target_cpu_x86_64"]
   } else if (is_linux || is_macx) {
     cflags += [
       "-Wa,--noexecstack",
@@ -78,6 +88,7 @@ config("default") {
 
         # "-D HAVE_ELF_H",
         "-D target_cpu_x64",
+        "-D target_cpu_x86_64",
 
         # "-D HAVE_LINK_H",
         # "-D_GNU_SOURCE",
@@ -98,6 +109,7 @@ config("default") {
 
         #  "-D HAVE_LIBUNWIND",
         "-D target_cpu_x64",
+        "-D target_cpu_x86_64",
         "-DHAVE_CONFIG_H",
         "-DNDEBUG",
         "-DCC_IS_CLANG",
@@ -118,7 +130,7 @@ config("default") {
   }
   if (use_wasm) {
     cflags += [
-      "-D IS_WASM"
+      "-D IS_WASM",
     ]
   }
   if (is_win) {

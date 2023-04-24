@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "print_event_parser.h"
+#include "clock_filter.h"
 #include "frame_filter.h"
 #include "stat_filter.h"
 #include "string_to_numerical.h"
@@ -40,7 +41,7 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm,
 {
     streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_RECEIVED);
     TracePoint point;
-    if (GetTracePoint(event, point) != SUCCESS) {
+    if (GetTracePoint(event, point) != PARSE_SUCCESS) {
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_INVALID);
         return false;
     }
@@ -103,7 +104,16 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm,
     }
     return true;
 }
-
+void PrintEventParser::SetTraceType(TraceFileType traceType)
+{
+    traceType_ = traceType;
+}
+void PrintEventParser::SetTraceClockId(BuiltinClocks clock)
+{
+    if (clock != clock_) {
+        clock_ = clock;
+    }
+}
 void PrintEventParser::Finish()
 {
     eventToFrameFunctionMap_.clear();
@@ -115,34 +125,34 @@ ParseResult PrintEventParser::CheckTracePoint(std::string_view pointStr) const
 {
     if (pointStr.size() == 0) {
         TS_LOGD("get trace point data size is 0!");
-        return ERROR;
+        return PARSE_ERROR;
     }
 
     std::string clockSyncSts = "trace_event_clock_sync";
     if (pointStr.compare(0, clockSyncSts.length(), clockSyncSts.c_str()) == 0) {
         TS_LOGD("skip trace point :%s!", clockSyncSts.c_str());
-        return ERROR;
+        return PARSE_ERROR;
     }
 
     if (pointStr.find_first_of('B') != 0 && pointStr.find_first_of('E') != 0 && pointStr.find_first_of('C') != 0 &&
         pointStr.find_first_of('S') != 0 && pointStr.find_first_of('F') != 0) {
         TS_LOGD("trace point not supported : [%c] !", pointStr[0]);
-        return ERROR;
+        return PARSE_ERROR;
     }
 
     if (pointStr.find_first_of('E') != 0 && pointStr.size() == 1) {
         TS_LOGD("point string size error!");
-        return ERROR;
+        return PARSE_ERROR;
     }
 
     if (pointStr.size() >= maxPointLength_) {
         if ((pointStr[1] != '|') && (pointStr[1] != '\n')) {
             TS_LOGD("not support data formart!");
-            return ERROR;
+            return PARSE_ERROR;
         }
     }
 
-    return SUCCESS;
+    return PARSE_SUCCESS;
 }
 
 std::string_view PrintEventParser::GetPointNameForBegin(std::string_view pointStr, size_t tGidlength) const
@@ -159,7 +169,7 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
     outPoint.name_ = GetPointNameForBegin(pointStr, tGidlength);
     if (outPoint.name_.empty()) {
         TS_LOGD("point name is empty!");
-        return ERROR;
+        return PARSE_ERROR;
     }
     // Use $# to differentiate distributed data
     if (outPoint.name_.find("$#") == std::string::npos) {
@@ -171,7 +181,7 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
         } else {
             outPoint.funcPrefixId_ = traceDataCache_->GetDataIndex(outPoint.name_);
         }
-        return SUCCESS;
+        return PARSE_SUCCESS;
     }
     // Resolve distributed calls
     // the normal data mybe like:
@@ -190,7 +200,7 @@ ParseResult PrintEventParser::HandlerB(std::string_view pointStr, TracePoint& ou
         outPoint.name_ = matcheLine[++index].str();
         outPoint.args_ = matcheLine[++index].str();
     }
-    return SUCCESS;
+    return PARSE_SUCCESS;
 }
 
 void PrintEventParser::HandleFrameSliceBeginEvent(DataIndex eventName,
@@ -225,6 +235,14 @@ bool PrintEventParser::ReciveVsync(size_t callStackRow, std::string& args, const
             vsyncId = base::StrToUInt64(value).value();
         }
         ++it;
+    }
+    if (convertVsyncTs_ && traceType_ == TRACE_FILETYPE_H_TRACE) {
+        if (now != INVALID_UINT64) {
+            now = streamFilters_->clockFilter_->ToPrimaryTraceTime(TS_MONOTONIC, now);
+        }
+        if (expectEnd != INVALID_UINT64) {
+            expectEnd = streamFilters_->clockFilter_->ToPrimaryTraceTime(TS_MONOTONIC, expectEnd);
+        }
     }
     auto iTid = streamFilters_->processFilter_->GetInternalTid(line.pid);
     auto iPid = streamFilters_->processFilter_->GetInternalPid(line.tgid);
@@ -312,7 +330,7 @@ void PrintEventParser::HandleFrameQueueEndEvent(uint64_t ts, uint64_t pid, uint6
 }
 ParseResult PrintEventParser::HandlerE(void)
 {
-    return SUCCESS;
+    return PARSE_SUCCESS;
 }
 
 size_t PrintEventParser::GetNameLength(std::string_view pointStr, size_t nameIndex)
@@ -356,7 +374,7 @@ ParseResult PrintEventParser::HandlerCSF(std::string_view pointStr, TracePoint& 
     size_t namelength = GetNameLength(pointStr, nameIndex);
     if (namelength == 0) {
         TS_LOGD("point name length is error!");
-        return ERROR;
+        return PARSE_ERROR;
     }
     outPoint.name_ = std::string_view(pointStr.data() + nameIndex, namelength);
 
@@ -365,13 +383,13 @@ ParseResult PrintEventParser::HandlerCSF(std::string_view pointStr, TracePoint& 
     size_t valueLen = GetValueLength(pointStr, valueIndex);
     if (valueLen == 0) {
         TS_LOGD("point value length is error!");
-        return ERROR;
+        return PARSE_ERROR;
     }
 
     std::string valueStr(pointStr.data() + valueIndex, valueLen);
     if (!base::StrToUInt64(valueStr).has_value()) {
         TS_LOGD("point value is error!");
-        return ERROR;
+        return PARSE_ERROR;
     }
     outPoint.value_ = base::StrToUInt64(valueStr).value();
 
@@ -379,7 +397,7 @@ ParseResult PrintEventParser::HandlerCSF(std::string_view pointStr, TracePoint& 
     if (valuePipe != std::string_view::npos) {
         size_t groupLen = pointStr.size() - valuePipe - pointLength_;
         if (groupLen == 0) {
-            return ERROR;
+            return PARSE_ERROR;
         }
 
         if (pointStr[pointStr.size() - pointLength_] == '\n') {
@@ -389,13 +407,13 @@ ParseResult PrintEventParser::HandlerCSF(std::string_view pointStr, TracePoint& 
         outPoint.categoryGroup_ = std::string_view(pointStr.data() + valuePipe + 1, groupLen);
     }
 
-    return SUCCESS;
+    return PARSE_SUCCESS;
 }
 
 ParseResult PrintEventParser::GetTracePoint(std::string_view pointStr, TracePoint& outPoint) const
 {
-    if (CheckTracePoint(pointStr) != SUCCESS) {
-        return ERROR;
+    if (CheckTracePoint(pointStr) != PARSE_SUCCESS) {
+        return PARSE_ERROR;
     }
 
     size_t tGidlength = 0;
@@ -405,7 +423,7 @@ ParseResult PrintEventParser::GetTracePoint(std::string_view pointStr, TracePoin
     outPoint.phase_ = pointStr.front();
     outPoint.tgid_ = GetThreadGroupId(pointStr, tGidlength);
 
-    ParseResult ret = ERROR;
+    ParseResult ret = PARSE_ERROR;
     switch (outPoint.phase_) {
         case 'B': {
             ret = HandlerB(pointStr, outPoint, tGidlength);
@@ -422,7 +440,7 @@ ParseResult PrintEventParser::GetTracePoint(std::string_view pointStr, TracePoin
             break;
         }
         default:
-            return ERROR;
+            return PARSE_ERROR;
     }
     return ret;
 }
@@ -435,7 +453,7 @@ uint32_t PrintEventParser::GetThreadGroupId(std::string_view pointStr, size_t& l
         }
 
         if (pointStr[i] < '0' || pointStr[i] > '9') {
-            return ERROR;
+            return PARSE_ERROR;
         }
 
         length++;

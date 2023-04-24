@@ -827,6 +827,16 @@ void PerfCallChain::SetName(uint64_t index, const std::string& name)
 {
     names_[index] = name;
 }
+void PerfCallChain::Clear()
+{
+    CacheBase::Clear();
+    sampleIds_.clear();
+    callChainIds_.clear();
+    vaddrInFiles_.clear();
+    fileIds_.clear();
+    symbolIds_.clear();
+    names_.clear();
+}
 size_t PerfFiles::AppendNewPerfFiles(uint64_t fileIds, uint32_t serial, DataIndex symbols, DataIndex filePath)
 {
     ids_.emplace_back(Size());
@@ -852,6 +862,15 @@ const std::deque<DataIndex>& PerfFiles::Symbols() const
 const std::deque<DataIndex>& PerfFiles::FilePaths() const
 {
     return filePaths_;
+}
+
+void PerfFiles::Clear()
+{
+    CacheBase::Clear();
+    fileIds_.clear();
+    serials_.clear();
+    symbols_.clear();
+    filePaths_.clear();
 }
 
 size_t PerfSample::AppendNewPerfSample(uint32_t sampleId,
@@ -903,6 +922,18 @@ const std::deque<DataIndex>& PerfSample::ThreadStates() const
     return threadStates_;
 }
 
+void PerfSample::Clear()
+{
+    CacheBase::Clear();
+    sampleIds_.clear();
+    tids_.clear();
+    eventCounts_.clear();
+    eventTypeIds_.clear();
+    timestampTraces_.clear();
+    cpuIds_.clear();
+    threadStates_.clear();
+}
+
 size_t PerfThread::AppendNewPerfThread(uint32_t pid, uint32_t tid, DataIndex threadName)
 {
     ids_.emplace_back(Size());
@@ -922,6 +953,13 @@ const std::deque<uint32_t>& PerfThread::Tids() const
 const std::deque<DataIndex>& PerfThread::ThreadNames() const
 {
     return threadNames_;
+}
+void PerfThread::Clear()
+{
+    CacheBase::Clear();
+    tids_.clear();
+    pids_.clear();
+    threadNames_.clear();
 }
 size_t PerfReport::AppendNewPerfReport(DataIndex type, DataIndex value)
 {
@@ -2259,5 +2297,320 @@ const size_t GPUSlice::Size() const
 {
     return durs_.size();
 }
+
+void JsHeapFiles::AppendNewData(uint32_t id, std::string filePath)
+{
+    ids_.emplace_back(id);
+    filePaths_.emplace_back(filePath);
+}
+const std::deque<uint32_t>& JsHeapFiles::IDs() const
+{
+    return ids_;
+}
+const std::deque<std::string>& JsHeapFiles::FilePaths() const
+{
+    return filePaths_;
+}
+const std::deque<uint64_t>& JsHeapFiles::StartTimes() const
+{
+    return startTimes_;
+}
+const std::deque<uint64_t>& JsHeapFiles::EndTimes() const
+{
+    return endTimes_;
+}
+
+void JsHeapEdges::AppendNewData(uint32_t fileId,
+                                uint32_t edgeIndex,
+                                uint32_t type,
+                                uint32_t nameOrIndex,
+                                uint32_t toNode,
+                                uint32_t fromNodeId,
+                                uint32_t toNodeId)
+{
+    fileIds_.emplace_back(fileId);
+    edgeIndexs_.emplace_back(edgeIndex);
+    types_.emplace_back(type);
+    nameOrIndexs_.emplace_back(nameOrIndex);
+    toNodes_.emplace_back(toNode);
+    fromNodeIds_.emplace_back(fromNodeId);
+    toNodeIds_.emplace_back(toNodeId);
+}
+const std::deque<uint32_t>& JsHeapEdges::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint32_t>& JsHeapEdges::EdgeIndexs() const
+{
+    return edgeIndexs_;
+}
+const std::deque<uint32_t>& JsHeapEdges::Types() const
+{
+    return types_;
+}
+const std::deque<uint32_t>& JsHeapEdges::NameOrIndexs() const
+{
+    return nameOrIndexs_;
+}
+const std::deque<uint32_t>& JsHeapEdges::ToNodes() const
+{
+    return toNodes_;
+}
+const std::deque<uint32_t>& JsHeapEdges::FromNodeIds() const
+{
+    return fromNodeIds_;
+}
+const std::deque<uint32_t>& JsHeapEdges::ToNodeIds() const
+{
+    return toNodeIds_;
+}
+
+void JsHeapInfo::AppendNewData(uint32_t fileId, std::string key, uint32_t type, uint32_t intValue, std::string strValue)
+{
+    fileIds_.emplace_back(fileId);
+    keys_.emplace_back(key);
+    types_.emplace_back(type);
+    intValues_.emplace_back(intValue);
+    strValues_.emplace_back(strValue);
+}
+const std::deque<uint32_t>& JsHeapInfo::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<std::string>& JsHeapInfo::Keys() const
+{
+    return keys_;
+}
+const std::deque<uint32_t>& JsHeapInfo::Types() const
+{
+    return types_;
+}
+const std::deque<uint32_t>& JsHeapInfo::IntValues() const
+{
+    return intValues_;
+}
+const std::deque<std::string>& JsHeapInfo::StrValues() const
+{
+    return strValues_;
+}
+
+void JsHeapLocation::AppendNewData(uint32_t fileId,
+                                   uint32_t objectIndex,
+                                   uint32_t scriptId,
+                                   uint32_t line,
+                                   uint32_t column)
+{
+    fileIds_.emplace_back(fileId);
+    objectIndexs_.emplace_back(objectIndex);
+    scriptIds_.emplace_back(scriptId);
+    lines_.emplace_back(line);
+    columns_.emplace_back(column);
+}
+const std::deque<uint32_t>& JsHeapLocation::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint32_t>& JsHeapLocation::ObjectIndexs() const
+{
+    return objectIndexs_;
+}
+const std::deque<uint32_t>& JsHeapLocation::ScriptIds() const
+{
+    return scriptIds_;
+}
+const std::deque<uint32_t>& JsHeapLocation::Lines() const
+{
+    return lines_;
+}
+const std::deque<uint32_t>& JsHeapLocation::Columns() const
+{
+    return columns_;
+}
+
+void JsHeapNodes::AppendNewData(uint32_t fileId,
+                                uint32_t nodeIndex,
+                                uint32_t type,
+                                uint32_t name,
+                                uint32_t id,
+                                uint32_t selfSize,
+                                uint32_t edgeCount,
+                                uint32_t traceNodeId,
+                                uint32_t detachedNess)
+{
+    fileIds_.emplace_back(fileId);
+    nodeIndexs_.emplace_back(nodeIndex);
+    types_.emplace_back(type);
+    names_.emplace_back(name);
+    ids_.emplace_back(id);
+    selfSizes_.emplace_back(selfSize);
+    edgeCounts_.emplace_back(edgeCount);
+    traceNodeIds_.emplace_back(traceNodeId);
+    detachedNess_.emplace_back(detachedNess);
+}
+const std::deque<uint32_t>& JsHeapNodes::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint32_t>& JsHeapNodes::NodeIndexs() const
+{
+    return nodeIndexs_;
+}
+const std::deque<uint32_t>& JsHeapNodes::Types() const
+{
+    return types_;
+}
+const std::deque<uint32_t>& JsHeapNodes::Names() const
+{
+    return names_;
+}
+const std::deque<uint32_t>& JsHeapNodes::IDs() const
+{
+    return ids_;
+}
+const std::deque<uint32_t>& JsHeapNodes::SelfSizes() const
+{
+    return selfSizes_;
+}
+const std::deque<uint32_t>& JsHeapNodes::EdgeCounts() const
+{
+    return edgeCounts_;
+}
+const std::deque<uint32_t>& JsHeapNodes::TraceNodeIds() const
+{
+    return traceNodeIds_;
+}
+const std::deque<uint32_t>& JsHeapNodes::DetachedNess() const
+{
+    return detachedNess_;
+}
+
+void JsHeapSample::AppendNewData(uint32_t fileId, uint64_t timeStampUs, uint32_t lastAssignedId)
+{
+    fileIds_.emplace_back(fileId);
+    timeStampUs_.emplace_back(timeStampUs);
+    lastAssignedIds_.emplace_back(lastAssignedId);
+}
+const std::deque<uint32_t>& JsHeapSample::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint64_t>& JsHeapSample::TimeStampUs() const
+{
+    return timeStampUs_;
+}
+const std::deque<uint32_t>& JsHeapSample::LastAssignedIds() const
+{
+    return lastAssignedIds_;
+}
+
+void JsHeapString::AppendNewData(uint32_t fileId, uint32_t fileIndex, std::string string)
+{
+    fileIds_.emplace_back(fileId);
+    fileIndexs_.emplace_back(fileIndex);
+    strings_.emplace_back(string);
+}
+const std::deque<uint32_t>& JsHeapString::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint64_t>& JsHeapString::FileIndexs() const
+{
+    return fileIndexs_;
+}
+const std::deque<std::string>& JsHeapString::Strings() const
+{
+    return strings_;
+}
+
+void JsHeapTraceFuncInfo::AppendNewData(uint32_t fileId,
+                                        uint32_t functionIndex,
+                                        uint32_t functionId,
+                                        uint32_t name,
+                                        uint32_t scriptName,
+                                        uint32_t scriptId,
+                                        uint32_t line,
+                                        uint32_t column)
+{
+    fileIds_.emplace_back(fileId);
+    functionIndexs_.emplace_back(functionIndex);
+    functionIds_.emplace_back(functionId);
+    names_.emplace_back(name);
+    scriptNames_.emplace_back(scriptName);
+    scriptIds_.emplace_back(scriptId);
+    lines_.emplace_back(line);
+    columns_.emplace_back(column);
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::FunctionIndexs() const
+{
+    return functionIndexs_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::FunctionIds() const
+{
+    return functionIds_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::Names() const
+{
+    return names_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::ScriptNames() const
+{
+    return scriptNames_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::ScriptIds() const
+{
+    return scriptIds_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::Lines() const
+{
+    return lines_;
+}
+const std::deque<uint32_t>& JsHeapTraceFuncInfo::Columns() const
+{
+    return columns_;
+}
+
+void JsHeapTraceNode::AppendNewData(uint32_t fileId,
+                                    uint32_t id,
+                                    uint32_t functionInfoIndex,
+                                    uint32_t count,
+                                    uint32_t size,
+                                    uint32_t parentId)
+{
+    fileIds_.emplace_back(fileId);
+    ids_.emplace_back(id);
+    functionInfoIndexs_.emplace_back(functionInfoIndex);
+    counts_.emplace_back(count);
+    sizes_.emplace_back(size);
+    parentIds_.emplace_back(parentId);
+}
+const std::deque<uint32_t>& JsHeapTraceNode::FileIds() const
+{
+    return fileIds_;
+}
+const std::deque<uint32_t>& JsHeapTraceNode::IDs() const
+{
+    return ids_;
+}
+const std::deque<uint32_t>& JsHeapTraceNode::FunctionInfoIndexs() const
+{
+    return functionInfoIndexs_;
+}
+const std::deque<uint32_t>& JsHeapTraceNode::Counts() const
+{
+    return counts_;
+}
+const std::deque<uint32_t>& JsHeapTraceNode::NodeSizes() const
+{
+    return sizes_;
+}
+const std::deque<uint32_t>& JsHeapTraceNode::ParentIds() const
+{
+    return parentIds_;
+}
+
 } // namespace TraceStdtype
 } // namespace SysTuning

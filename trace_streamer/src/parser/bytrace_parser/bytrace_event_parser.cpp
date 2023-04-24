@@ -48,6 +48,7 @@ std::string GetFunctionName(const std::string_view& text, const std::string_view
 BytraceEventParser::BytraceEventParser(TraceDataCache* dataCache, const TraceStreamerFilters* filter)
     : EventParserBase(dataCache, filter), printEventParser_(traceDataCache_, streamFilters_)
 {
+    printEventParser_.SetTraceType(TRACE_FILETYPE_BY_TRACE);
     eventToFunctionMap_ = {
         {config_.eventNameMap_.at(TRACE_EVENT_SCHED_SWITCH),
          bind(&BytraceEventParser::SchedSwitchEvent, this, std::placeholders::_1, std::placeholders::_2)},
@@ -129,6 +130,11 @@ bool BytraceEventParser::SchedSwitchEvent(const ArgsMap& args, const BytraceLine
     auto nextPrioValue = base::StrToInt32(args.at("next_prio"));
     auto prevPidValue = base::StrToUInt32(args.at("prev_pid"));
     auto nextPidValue = base::StrToUInt32(args.at("next_pid"));
+    DataIndex nextInfo = INVALID_DATAINDEX;
+    auto nextInfoIt = args.find("next_info");
+    if (nextInfoIt != args.end()) {
+        nextInfo = traceDataCache_->GetDataIndex(std::string_view(args.at("next_info")));
+    }
     if (!(prevPidValue.has_value() && prevPrioValue.has_value() && nextPidValue.has_value() &&
           nextPrioValue.has_value())) {
         TS_LOGD("Failed to parse sched_switch event");
@@ -159,9 +165,9 @@ bool BytraceEventParser::SchedSwitchEvent(const ArgsMap& args, const BytraceLine
     } else {
         uprevtid = streamFilters_->processFilter_->UpdateOrCreateThread(line.ts, prevPidValue.value());
     }
-    streamFilters_->cpuFilter_->InsertSwitchEvent(line.ts, line.cpu, uprevtid,
-                                                  static_cast<uint64_t>(prevPrioValue.value()), prevState,
-                                                  nextInternalTid, static_cast<uint64_t>(nextPrioValue.value()));
+    streamFilters_->cpuFilter_->InsertSwitchEvent(
+        line.ts, line.cpu, uprevtid, static_cast<uint64_t>(prevPrioValue.value()), prevState, nextInternalTid,
+        static_cast<uint64_t>(nextPrioValue.value()), nextInfo);
     streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_SCHED_SWITCH, STAT_EVENT_RECEIVED);
     return true;
 }

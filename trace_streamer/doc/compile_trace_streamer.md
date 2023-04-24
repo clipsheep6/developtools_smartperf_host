@@ -172,6 +172,8 @@ third_party/libunwind/src/x86_64/unwind_i.h第60行，注释。
 ```
 // #define setcontext                      UNW_ARCH_OBJ (setcontext)
 ```
+### hiperf
+直接执行pare_third_party.sh即可自动完成hiperf相关配置。
 
 ### 其他文件
 

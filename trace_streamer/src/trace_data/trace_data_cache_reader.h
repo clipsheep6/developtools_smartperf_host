@@ -96,6 +96,15 @@ public:
     const FrameSlice& GetConstFameSliceData() const;
     const FrameMaps& GetConstFameMapsData() const;
     const GPUSlice& GetConstGPUSliceData() const;
+    const JsHeapFiles& GetConstJsHeapFilesData() const;
+    const JsHeapEdges& GetConstJsHeapEdgesData() const;
+    const JsHeapInfo& GetConstJsHeapInfoData() const;
+    const JsHeapLocation& GetConstJsHeapLocationData() const;
+    const JsHeapNodes& GetConstJsHeapNodesData() const;
+    const JsHeapSample& GetConstJsHeapSampleData() const;
+    const JsHeapString& GetConstJsHeapStringData() const;
+    const JsHeapTraceFuncInfo& GetConstJsHeapTraceFuncInfoData() const;
+    const JsHeapTraceNode& GetConstJsHeapTraceNodeData() const;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

@@ -275,8 +275,14 @@ int main(int argc, char** argv)
         metaData->SetParserToolVersion(TRACE_STREAM_VERSION.c_str());
         metaData->SetParserToolPublishDateTime(TRACE_STREAM_PUBLISHVERSION.c_str());
         metaData->SetTraceDataSize(g_loadSize);
-        ts.SearchData();
-        return 0;
+        while (1) {
+            auto values = ts.SearchData();
+            if (!values.empty()) {
+                ts.ReloadSymbolFiles(values);
+            } else {
+                return 0;
+            }
+        }
     }
     if (ExportDatabase(ts, tsOption.sqliteFilePath)) {
         ExportStatusToLog(tsOption.sqliteFilePath, GetAnalysisResult());

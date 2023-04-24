@@ -141,6 +141,11 @@ HtraceEventParser::~HtraceEventParser()
 
 void HtraceEventParser::ParseDataItem(HtraceDataSegment& tracePacket, BuiltinClocks clock)
 {
+    if (clock != clock_) {
+        clock_ = clock;
+        printEventParser_.SetTraceType(TRACE_FILETYPE_H_TRACE);
+        printEventParser_.SetTraceClockId(clock);
+    }
     ProtoReader::TracePluginResult_Reader tracePluginResult(tracePacket.protoData);
     if (!tracePluginResult.has_ftrace_cpu_detail()) {
         return;
@@ -396,7 +401,7 @@ bool HtraceEventParser::SchedSwitchEvent(const ProtoReader::DataArea& event)
         streamFilters_->processFilter_->UpdateOrCreateThreadWithName(eventTimeStamp_, prevPidValue, prevCommStr);
     streamFilters_->cpuFilter_->InsertSwitchEvent(eventTimeStamp_, eventCpu_, uprevtid,
                                                   static_cast<uint64_t>(prevPrioValue), prevState, nextInternalTid,
-                                                  static_cast<uint64_t>(nextPrioValue));
+                                                  static_cast<uint64_t>(nextPrioValue), INVALID_DATAINDEX);
     return true;
 }
 bool HtraceEventParser::SchedBlockReasonEvent(const ProtoReader::DataArea& event)

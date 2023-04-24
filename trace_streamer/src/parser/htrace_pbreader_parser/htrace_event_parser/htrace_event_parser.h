@@ -136,6 +136,7 @@ private:
     const DataIndex sysExitName_ = traceDataCache_->GetDataIndex("sys_exit");
     const DataIndex oomScoreAdjName_ = traceDataCache_->GetDataIndex("oom_score_adj");
     TraceStreamerConfig config_{};
+    BuiltinClocks clock_ = TS_CLOCK_BOOTTIME;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

@@ -34,6 +34,8 @@ public:
                          std::string_view event,
                          const BytraceLine& line);
     void Finish();
+    void SetTraceType(TraceFileType traceType);
+    void SetTraceClockId(BuiltinClocks clock);
 
 private:
     using FrameFuncCall = std::function<bool(const size_t callStackRow, std::string& args, const BytraceLine& line)>;
@@ -73,6 +75,10 @@ private:
     const std::regex mainProcessCmdPattern = std::regex("\\[(\\d+),(\\d+)\\]");
     std::vector<uint64_t> frameCallIds_ = {};
     std::vector<uint64_t> vsyncSliceIds_ = {};
+    TraceFileType traceType_ = TRACE_FILETYPE_H_TRACE;
+    BuiltinClocks clock_ = TS_CLOCK_BOOTTIME;
+    // if convert vsync's now and expectEnd
+    bool convertVsyncTs_ = true;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

@@ -15,9 +15,7 @@ set -e
 PARAMS=$*
 echo $PARAMS
 echo "begin to check input"
-if [ ! -d "third_party" ];then
-    ./pare_third_party.sh
-fi
+./pare_third_party.sh
 target_os="linux"
 target_dir="linux"
 gn_path="linux"

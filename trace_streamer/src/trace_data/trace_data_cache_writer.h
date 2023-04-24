@@ -95,6 +95,15 @@ public:
     FrameSlice* GetFrameSliceData();
     FrameMaps* GetFrameMapsData();
     GPUSlice* GetGPUSliceData();
+    JsHeapFiles* GetJsHeapFilesData();
+    JsHeapEdges* GetJsHeapEdgesData();
+    JsHeapInfo* GetJsHeapInfoData();
+    JsHeapLocation* GetJsHeapLocationData();
+    JsHeapNodes* GetJsHeapNodesData();
+    JsHeapSample* GetJsHeapSampleData();
+    JsHeapString* GetJsHeapStringData();
+    JsHeapTraceFuncInfo* GetJsHeapTraceFuncInfoData();
+    JsHeapTraceNode* GetJsHeapTraceNodeData();
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

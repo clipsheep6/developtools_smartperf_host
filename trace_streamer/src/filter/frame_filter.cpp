@@ -205,6 +205,8 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
             frame->second.erase(pos);
         }
     } else { // for app
+        traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->get()->frameSliceRow_, ts,
+                                                                pos->get()->expectedDur_, pos->get()->expectedEndTs_);
         if (ISINVALIDU32(pos->get()->frameNum_)) {
             // if app's frame num not received
             traceDataCache_->GetFrameSliceData()->Erase(pos->get()->frameSliceRow_);
@@ -212,8 +214,6 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
             frame->second.erase(pos);
             return false;
         }
-        traceDataCache_->GetFrameSliceData()->SetEndTimeAndFlag(pos->get()->frameSliceRow_, ts,
-                                                                pos->get()->expectedDur_, pos->get()->expectedEndTs_);
         pos->get()->endTs_ = ts;
         frame->second.erase(pos);
     }

@@ -342,7 +342,7 @@ bool HtraceEventParser::SchedSwitchEvent(const MessageLite& event)
         streamFilters_->processFilter_->UpdateOrCreateThreadWithName(eventTimeStamp_, prevPidValue, prevCommStr);
     streamFilters_->cpuFilter_->InsertSwitchEvent(eventTimeStamp_, eventCpu_, uprevtid,
                                                   static_cast<uint64_t>(prevPrioValue), prevState, nextInternalTid,
-                                                  static_cast<uint64_t>(nextPrioValue));
+                                                  static_cast<uint64_t>(nextPrioValue), INVALID_DATAINDEX);
     return true;
 }
 bool HtraceEventParser::SchedBlockReasonEvent(const MessageLite& event)

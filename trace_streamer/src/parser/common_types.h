@@ -53,7 +53,7 @@
 
 namespace SysTuning {
 namespace TraceStreamer {
-enum ParseResult { ERROR = 0, SUCCESS };
+enum ParseResult { PARSE_ERROR = 0, PARSE_SUCCESS };
 enum RawType { RAW_CPU_IDLE = 1, RAW_SCHED_WAKEUP = 2, RAW_SCHED_WAKING = 3 };
 
 struct BytraceLine {

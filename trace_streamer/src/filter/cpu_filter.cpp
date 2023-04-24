@@ -28,7 +28,8 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
                                   uint64_t prevPior,
                                   uint64_t prevState,
                                   uint32_t nextPid,
-                                  uint64_t nextPior)
+                                  uint64_t nextPior,
+                                  DataIndex nextInfo)
 {
     auto index = traceDataCache_->GetSchedSliceData()->AppendSchedSlice(ts, 0, cpu, nextPid, 0, nextPior);
     auto prevTidOnCpu = cpuToRowSched_.find(cpu);
@@ -48,6 +49,12 @@ void CpuFilter::InsertSwitchEvent(uint64_t ts,
         }
         auto index =
             traceDataCache_->GetThreadStateData()->AppendThreadState(ts, INVALID_TIME, cpu, nextPid, TASK_RUNNING);
+        if (nextInfo != INVALID_DATAINDEX) {
+            ArgsSet args;
+            args.AppendArg(nextInfo_, BASE_DATA_TYPE_STRING, nextInfo);
+            auto argSetId = streamFilters_->argsFilter_->NewArgs(args);
+            traceDataCache_->GetThreadStateData()->SetArgSetId(index, argSetId);
+        }
         RemberInternalTidInStateTable(nextPid, index, TASK_RUNNING);
         if (cpuToRowThreadState_.find(cpu) == cpuToRowThreadState_.end()) {
             cpuToRowThreadState_.insert(std::make_pair(cpu, index));
