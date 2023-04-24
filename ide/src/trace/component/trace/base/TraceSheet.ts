@@ -24,7 +24,6 @@ import { WakeupBean } from '../../../bean/WakeupBean.js';
 import { LitIcon } from '../../../../base-ui/icon/LitIcon.js';
 import { tabConfig } from './TraceSheetConfig.js';
 import { TabPaneBoxChild } from '../sheet/cpu/TabPaneBoxChild.js';
-import { SpFreqChart } from '../../chart/SpFreqChart.js';
 import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU.js';
 import { CpuFreqStruct } from '../../../database/ui-worker/ProcedureWorkerFreq.js';
 import { CpuFreqLimitsStruct } from '../../../database/ui-worker/ProcedureWorkerCpuFreqLimits.js';
@@ -35,6 +34,9 @@ import { CpuStateStruct } from '../../../database/ui-worker/ProcedureWorkerCpuSt
 import { ClockStruct } from '../../../database/ui-worker/ProcedureWorkerClock.js';
 import { IrqStruct } from '../../../database/ui-worker/ProcedureWorkerIrq.js';
 import { JankStruct } from '../../../database/ui-worker/ProcedureWorkerJank.js';
+import { HeapStruct } from '../../../database/ui-worker/ProcedureWorkerHeap.js';
+import { TabpaneNMCalltree } from '../sheet/native-memory/TabPaneNMCallTree';
+import { LitTable } from '../../../../base-ui/table/lit-table.js';
 
 @element('trace-sheet')
 export class TraceSheet extends BaseElement {
@@ -262,13 +264,13 @@ export class TraceSheet extends BaseElement {
             };
         };
         let tabsOpenUp: LitIcon | undefined | null =
-            this.shadowRoot?.querySelector<LitIcon>(
-                '#tabs > div > lit-icon:nth-child(1)'
-            );
+            this.shadowRoot?.querySelector<LitIcon>('#max-btn');
         let tabsPackUp: LitIcon | undefined | null =
-            this.shadowRoot?.querySelector<LitIcon>(
-                '#tabs > div > lit-icon:nth-child(2)'
-            );
+            this.shadowRoot?.querySelector<LitIcon>('#min-btn');
+        let importSoBt: LitIcon | undefined | null =
+            this.shadowRoot?.querySelector<LitIcon>('#import-btn');
+        let exportDataBt: LitIcon | undefined | null =
+            this.shadowRoot?.querySelector<LitIcon>('#export-btn');
         tabsOpenUp!.onclick = () => {
             tabs!.style.height =
                 window.innerHeight -
@@ -310,6 +312,33 @@ export class TraceSheet extends BaseElement {
                 );
             }
         };
+        importSoBt!.onclick = () => {
+            window.publish(window.SmartEvent.UI.UploadSOFile, {});
+        };
+        exportDataBt!.onclick = () => {
+            let currentTab = this.getTabpaneByKey(this.litTabs?.activekey!);
+            if (currentTab) {
+                let tables = Array.from(
+                    (
+                        currentTab.firstChild as BaseElement
+                    ).shadowRoot?.querySelectorAll<LitTable>('lit-table') || []
+                );
+                for (let table of tables) {
+                    if (!table.hasAttribute('hideDownload')) {
+                        table.exportData();
+                    }
+                }
+            }
+        };
+    }
+
+    getTabpaneByKey(key: string): LitTabpane | undefined {
+        let tabs = Array.from(
+            this.shadowRoot
+                ?.querySelectorAll<LitTabpane>('#tabs lit-tabpane')
+                .values() || []
+        );
+        return tabs.find((it) => it.key === key);
     }
 
     initHtml(): string {
@@ -330,7 +359,11 @@ export class TraceSheet extends BaseElement {
             <div style="border-top: 1px solid var(--dark-border1,#D5D5D5);">
                 <lit-tabs id="tabs" position="top-left" activekey="1" mode="card" >
                     <div slot="right" style="margin: 0 10px; color: var(--dark-icon,#606060);display: flex;align-items: center;">
-                        <lit-icon id="max-btn" name="vertical-align-top" style="font-weight: bold;cursor: pointer;margin-right: 5px" size="20">
+                        <lit-icon id="import-btn" name="import-so" style="display: none;font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
+                        </lit-icon>
+                        <lit-icon id="export-btn" name="copy-csv" style="font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
+                        </lit-icon>
+                        <lit-icon id="max-btn" name="vertical-align-top" style="font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
                         </lit-icon>
                         <lit-icon id="min-btn" name="down" style="font-weight: bold;cursor: pointer;" size="20">
                         </lit-icon>
@@ -359,6 +392,15 @@ export class TraceSheet extends BaseElement {
         this.displayTab<TabPaneCurrentSelection>(
             'current-selection'
         ).setIrqData(data);
+
+    displayNativeHookData = (data: HeapStruct, rowType: string) => {
+        let val = new SelectionParam();
+        val.nativeMemoryStatistic.push(rowType);
+        val.nativeMemory = [];
+        val.leftNs = data.startTime!;
+        val.rightNs = data.startTime! + data.dur!;
+        this.displayTab<TabpaneNMCalltree>('box-native-calltree').data = val;
+    };
 
     displayFuncData = (data: FuncStruct, scrollCallback: Function) =>
         this.displayTab<TabPaneCurrentSelection>(

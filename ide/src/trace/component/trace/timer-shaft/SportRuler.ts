@@ -349,7 +349,6 @@ export class SportRuler extends Graph {
             this.slicesTime = { startTime: null, endTime: null, color: null };
         }
         this.range.slicesTime = this.slicesTime;
-        this.draw();
         this.timerShaftEL?.render();
     }
 

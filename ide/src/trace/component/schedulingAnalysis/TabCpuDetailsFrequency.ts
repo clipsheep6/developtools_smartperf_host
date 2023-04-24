@@ -68,6 +68,16 @@ export class TabCpuDetailsFrequency extends BaseElement {
             // @ts-ignore
             this.sortByColumn(evt.detail);
         });
+        this.table!.addEventListener('row-hover', (evt: any) => {
+            if (evt.detail.data) {
+                let data = evt.detail.data;
+                data.isHover = true;
+                if ((evt.detail as any).callBack) {
+                    (evt.detail as any).callBack(true);
+                }
+            }
+            this.pie?.showHover();
+        });
     }
 
     init(cpu: number) {
@@ -92,7 +102,7 @@ export class TabCpuDetailsFrequency extends BaseElement {
                 this.noData(this.data.length == 0);
                 this.pie!.config = {
                     appendPadding: 0,
-                    data: res.get(cpu) || [],
+                    data: this.data,
                     angleField: 'sum',
                     colorField: 'value',
                     radius: 1,
@@ -109,6 +119,13 @@ export class TabCpuDetailsFrequency extends BaseElement {
                                 <div>ratio:${obj.obj.ratio}%</div>
                             </div>
                                 `;
+                    },
+                    hoverHandler: (data) => {
+                        if (data) {
+                            this.table!.setCurrentHover(data);
+                        } else {
+                            this.table!.mouseOut();
+                        }
                     },
                     angleClick: (it) => {
                         this.tabCpuDetailsThreads!.setShow = true;
@@ -269,7 +286,7 @@ export class TabCpuDetailsFrequency extends BaseElement {
             </div>
             <div class="table-box">
                 <table-no-data id="table-no-data">
-                    <lit-table id="tb-cpu-usage">
+                    <lit-table id="tb-cpu-usage" hideDownload>
                         <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start" order></lit-table-column>
                         <lit-table-column width="150px" title="frequency" data-index="value" key="value" align="flex-start" order></lit-table-column>
                         <lit-table-column width="100px" title="min" data-index="min" key="min" align="flex-start" order></lit-table-column>

@@ -55,6 +55,16 @@ export class Top20ProcessSwitchCount extends BaseElement {
             // @ts-ignore
             this.sortByColumn(evt.detail);
         });
+        this.table!.addEventListener('row-hover', (evt: any) => {
+            if (evt.detail.data) {
+                let data = evt.detail.data;
+                data.isHover = true;
+                if ((evt.detail as any).callBack) {
+                    (evt.detail as any).callBack(true);
+                }
+            }
+            this.pie?.showHover();
+        });
     }
 
     init() {
@@ -90,6 +100,13 @@ export class Top20ProcessSwitchCount extends BaseElement {
                     },
                     label: {
                         type: 'outer',
+                    },
+                    hoverHandler: (data) => {
+                        if (data) {
+                            this.table!.setCurrentHover(data);
+                        } else {
+                            this.table!.mouseOut();
+                        }
                     },
                     interactions: [
                         {
@@ -189,7 +206,7 @@ export class Top20ProcessSwitchCount extends BaseElement {
                 <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
             </div>
             <div class="tb_switch_count" >
-                <lit-table id="tb-process-switch-count" style="height: auto">
+                <lit-table id="tb-process-switch-count" hideDownload style="height: auto">
                     <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start" order></lit-table-column>
                     <lit-table-column width="1fr" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
                     <lit-table-column width="1fr" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>

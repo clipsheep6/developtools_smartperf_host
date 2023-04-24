@@ -92,9 +92,8 @@ export class IrqStruct extends BaseStruct {
             ctx.fillStyle = ColorUtils.colorForName(data.name || '');
             ctx.strokeStyle = '#232c5d';
             if (
-                (data.startNS === IrqStruct.hoverIrqStruct?.startNS &&
-                    isHover) ||
-                data.id === IrqStruct.selectIrqStruct?.id
+                (data === IrqStruct.hoverIrqStruct && isHover) ||
+                data === IrqStruct.selectIrqStruct
             ) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = 0.6;

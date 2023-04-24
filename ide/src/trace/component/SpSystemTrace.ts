@@ -73,6 +73,7 @@ import { Utils } from './trace/base/Utils.js';
 import { IrqStruct } from '../database/ui-worker/ProcedureWorkerIrq.js';
 import { JanksStruct } from '../bean/JanksStruct.js';
 import { JankStruct } from '../database/ui-worker/ProcedureWorkerJank.js';
+import { HeapStruct } from '../database/ui-worker/ProcedureWorkerHeap.js';
 
 function dpr() {
     return window.devicePixelRatio || 1;
@@ -749,7 +750,9 @@ export class SpSystemTrace extends BaseElement {
         this.canvasPanelConfig();
         window.subscribe(
             window.SmartEvent.UI.SliceMark,
-            this.sliceMarkEventHandler
+            (data) => {
+                this.sliceMarkEventHandler(data)
+            }
         );
         window.subscribe(window.SmartEvent.UI.TraceRowComplete, (tr) => {});
         window.subscribe(window.SmartEvent.UI.RefreshCanvas, () => {
@@ -1067,7 +1070,6 @@ export class SpSystemTrace extends BaseElement {
             ev.stopPropagation()
             return;
         }
-        ;
         TraceRow.isUserInteraction = true;
         if (this.isMouseInSheet(ev)) return;
         this.observerScrollHeightEnable = false;
@@ -1379,6 +1381,7 @@ export class SpSystemTrace extends BaseElement {
         FpsStruct.hoverFpsStruct = undefined;
         ClockStruct.hoverClockStruct = undefined;
         IrqStruct.hoverIrqStruct = undefined;
+        HeapStruct.hoverHeapStruct = undefined;
         JankStruct.hoverJankStruct = undefined;
     }
 
@@ -1394,6 +1397,7 @@ export class SpSystemTrace extends BaseElement {
         ClockStruct.selectClockStruct = undefined;
         IrqStruct.selectIrqStruct = undefined;
         JankStruct.selectJankStruct = undefined;
+        HeapStruct.selectHeapStruct = undefined;
     }
 
     isWASDKeyPress() {
@@ -1416,11 +1420,15 @@ export class SpSystemTrace extends BaseElement {
             (window as any).isPackUpTable = false;
             return;
         }
+        let x = ev.offsetX - this.timerShaftEL!.canvas!.offsetLeft;
+        let y = ev.offsetY;
+        if (this.timerShaftEL?.getRangeRuler()?.frame.contains(x,y)) {
+            this.clickEmptyArea();
+            return;
+        }
         if (this.rangeSelect.isDrag()) {
             return;
         }
-        let x = ev.offsetX - this.timerShaftEL!.canvas!.offsetLeft;
-        let y = ev.offsetY;
         if (
             this.timerShaftEL!.sportRuler!.frame.contains(x, y) &&
             x > (TraceRow.rangeSelectObject?.startX || 0) &&
@@ -1436,7 +1444,7 @@ export class SpSystemTrace extends BaseElement {
                 rows[0] &&
                 this.traceRowClickJudgmentConditions.get(rows[0]!.rowType!)?.()
             ) {
-                this.onClickHandler(rows[0]!.rowType!);
+                this.onClickHandler(rows[0]!.rowType!, rows[0]);
                 this.documentOnMouseMove(ev);
             } else {
                 this.clickEmptyArea();
@@ -1448,7 +1456,12 @@ export class SpSystemTrace extends BaseElement {
     clickEmptyArea() {
         this.shadowRoot
             ?.querySelectorAll<TraceRow<any>>('trace-row')
-            .forEach((it) => (it.rangeSelect = false));
+            .forEach((it) => {
+                it.checkType = '-1';
+                it.rangeSelect = false;
+            });
+        this.rangeSelect.rangeTraceRow = [];
+        TraceRow.rangeSelectObject = undefined;
         this.selectStructNull();
         this.clearPointPair();
         this.observerScrollHeightEnable = false;
@@ -1515,9 +1528,15 @@ export class SpSystemTrace extends BaseElement {
                     JankStruct.hoverJankStruct !== null &&
                     JankStruct.hoverJankStruct !== undefined,
             ],
+            [
+                TraceRow.ROW_TYPE_HEAP,
+                () =>
+                    HeapStruct.hoverHeapStruct !== null &&
+                    HeapStruct.hoverHeapStruct !== undefined,
+            ],
         ]);
 
-    onClickHandler(clickRowType: string) {
+    onClickHandler(clickRowType: string,row?: TraceRow<any>) {
         if (!this.loadTraceCompleted) return;
         this.shadowRoot
             ?.querySelectorAll<TraceRow<any>>('trace-row')
@@ -1811,6 +1830,15 @@ export class SpSystemTrace extends BaseElement {
             this.traceSheetEL?.displayIrqData(IrqStruct.selectIrqStruct);
             this.timerShaftEL?.modifyFlagList(undefined);
         } else if (
+            clickRowType === TraceRow.ROW_TYPE_HEAP &&
+            row &&
+            row.getAttribute('heap-type') === 'native_hook_statistic' &&
+            HeapStruct.hoverHeapStruct
+        ) {
+            HeapStruct.selectHeapStruct = HeapStruct.hoverHeapStruct;
+            this.traceSheetEL?.displayNativeHookData(HeapStruct.selectHeapStruct, row.rowId!);
+            this.timerShaftEL?.modifyFlagList(undefined);
+        } else if (
             clickRowType === TraceRow.ROW_TYPE_JANK &&
             JankStruct.hoverJankStruct
         ) {
@@ -1865,6 +1893,9 @@ export class SpSystemTrace extends BaseElement {
 
     drawJankLine(endParentRow: any, selectJankStruct: JankStruct, data: any) {
         let startRow: any;
+        if (selectJankStruct == undefined || selectJankStruct == null) {
+            return;
+        }
         if (selectJankStruct.frame_type == 'frameTime') {
             startRow = this.shadowRoot?.querySelector<TraceRow<JankStruct>>(
                 `trace-row[row-id='actual frameTime'][row-type='janks']`
@@ -2391,6 +2422,15 @@ export class SpSystemTrace extends BaseElement {
             startNS: startNS - ev.maxDuration,
             endNS: endNS + ev.maxDuration,
         });
+        this.shadowRoot
+            ?.querySelectorAll<TraceRow<any>>('trace-row')
+            .forEach((it) => {
+                it.checkType = '-1';
+            });
+        this.rangeSelect.rangeTraceRow = [];
+        this.selectStructNull();
+        this.traceSheetEL?.setAttribute('mode', 'hidden');
+        this.clearPointPair();
         TraceRow.range!.refresh = true;
         this.refreshCanvas(false);
     }

@@ -14,10 +14,12 @@
  */
 
 import { LitTableColumn } from './lit-table-column.js';
+import { LitProgressBar } from './../progress-bar/LitProgressBar.js';
 import { element } from '../BaseElement.js';
 import '../utils/Template.js';
 import { TableRowObject } from './TableRowObject.js';
 import { ExcelFormater } from '../utils/ExcelFormater.js';
+import { JSonToCSV } from '../utils/CSVFormater.js';
 
 @element('lit-table')
 export class LitTable extends HTMLElement {
@@ -32,6 +34,7 @@ export class LitTable extends HTMLElement {
     /*Grid css layout descriptions are obtained according to the clustern[] nested structure*/
     private st: HTMLSlotElement | null | undefined;
     private tableElement: HTMLDivElement | null | undefined;
+    private exportProgress: LitProgressBar | null | undefined;
     private theadElement: HTMLDivElement | null | undefined;
     private columns: Array<Element> | null | undefined;
     private tbodyElement: HTMLDivElement | undefined | null;
@@ -41,6 +44,8 @@ export class LitTable extends HTMLElement {
     private currentScrollTop: number = 0;
     private isRecycleList: boolean = true;
     private isScrollXOutSide: boolean = false;
+    private exportLoading:boolean = false;
+
     constructor() {
         super();
         const shadowRoot = this.attachShadow({ mode: 'open' });
@@ -209,30 +214,39 @@ export class LitTable extends HTMLElement {
             background-color: var(--dark-background6,#DEEDFF);
         }
         .export{
-            height:40px;
-            width: 40px;
+            height:32px;
+            width: 32px;
             cursor:pointer;
             display:none;
-            color:var(--dark-background6,#262626);
-            border-radius:40px;
-            border: 1px solid var(--dark-background6,#262626);
-            box-sizing: border-box;
-            position:absolute;
-            right:40px;
-            bottom:30px;
-            z-index: 9999999;
-        }
-        :host([download]) .export{
-            display: flex;
             align-items:center;
             justify-content:center;
+            border-radius:5px;
+            box-sizing: border-box;
+            background-color: #000000;
+            opacity: 0.3;
+            position:absolute;
+            right:20px;
+            bottom:20px;
+            z-index: 999999;
+        }
+        .progress{
+            position: absolute;
+            height: 1px;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999999;
+        } 
+        :host([hideDownload]) .export{
+            display: none;
         }
         </style>
-
+        <lit-progress-bar id="export_progress_bar" class="progress"></lit-progress-bar>
         <slot id="slot" style="display: none"></slot>
         <slot name="head"></slot>
-        <div class="export"><lit-icon size="25" name="download" ></lit-icon></div>
-       
+        <div class="export">
+            <lit-icon size="18" style="color: #ffffff" name="copyhovered" ></lit-icon>
+        </div>
         <div class="table" style="overflow-x:auto;">
             <div class="thead"></div>
             <div class="tbody">
@@ -250,19 +264,19 @@ export class LitTable extends HTMLElement {
             'no-head',
             'grid-line',
             'defaultOrderColumn',
-            'download',
+            'hideDownload',
         ];
     }
 
-    get download() {
-        return this.hasAttribute('download');
+    get hideDownload() {
+        return this.hasAttribute('hideDownload');
     }
 
-    set download(value) {
+    set hideDownload(value) {
         if (value) {
-            this.setAttribute('download', '');
+            this.setAttribute('hideDownload', '');
         } else {
-            this.removeAttribute('download');
+            this.removeAttribute('hideDownload');
         }
     }
 
@@ -333,32 +347,37 @@ export class LitTable extends HTMLElement {
             (exportDiv.onclick = () => {
                 this.exportData();
             });
-        let tab = document
-            ?.querySelector('body > sp-application')
-            ?.shadowRoot?.querySelector('#sp-system-trace')
-            ?.shadowRoot?.querySelector('div > trace-sheet')
-            ?.shadowRoot?.querySelector('#tabs');
-        if (tab != undefined) {
-            new ResizeObserver(() => {
-                if (tab && tab.clientHeight > 38 + 70) {
-                    exportDiv!.style.visibility = 'visible';
-                } else {
-                    exportDiv!.style.visibility = 'hidden';
-                }
-            }).observe(tab);
-        }
     }
 
     exportData() {
+        if (this.exportLoading) {
+            return;
+        }
+        this.exportLoading = true;
+        this.exportProgress!.loading = true;
         let date = new Date();
-        let list = [
-            {
-                columns: this.columns as any[],
-                tables: this.ds,
-                sheetName: date.getTime() + '',
-            },
-        ];
-        ExcelFormater.testExport(list, date.getTime() + '');
+        JSonToCSV.csvExport({
+            columns: this.columns as any[],
+            tables: this.ds,
+            fileName: date.getTime() + '',
+        }).then(res => {
+            this.exportLoading = false;
+            this.exportProgress!.loading = false;
+        });
+    }
+
+    exportExcelData() {
+        let now = Date.now();
+        ExcelFormater.testExport(
+            [
+                {
+                    columns: this.columns as any[],
+                    tables: this.ds,
+                    sheetName: now + '',
+                },
+            ],
+            now + ''
+        );
     }
 
     formatExportData(dataSource: any[]): any[] {
@@ -433,6 +452,7 @@ export class LitTable extends HTMLElement {
     connectedCallback() {
         this.st = this.shadowRoot?.querySelector('#slot');
         this.tableElement = this.shadowRoot?.querySelector('.table');
+        this.exportProgress = this.shadowRoot?.querySelector('#export_progress_bar');
         this.theadElement = this.shadowRoot?.querySelector('.thead');
         this.treeElement = this.shadowRoot?.querySelector('.tree');
         this.tbodyElement = this.shadowRoot?.querySelector('.body');
@@ -733,6 +753,9 @@ export class LitTable extends HTMLElement {
         });
 
         this.shadowRoot!.addEventListener('load', function (event) {});
+        this.tableElement!.addEventListener('mouseout', (ev) =>
+            this.mouseOut()
+        );
     }
 
     // Is called when the custom element is removed from the document DOM.
@@ -1050,7 +1073,8 @@ export class LitTable extends HTMLElement {
 
     getCheckRows() {
         // @ts-ignore
-        return [...this.shadowRoot!.querySelectorAll('div[class=tr][checked]')].map((a) => a.data)
+        return [...this.shadowRoot!.querySelectorAll('div[class=tr][checked]')]
+            .map((a) => (a as any).data)
             .map((a) => {
                 delete a['children'];
                 return a;
@@ -1549,7 +1573,7 @@ export class LitTable extends HTMLElement {
             this.dispatchRowClickEvent(rowData, [newTableElement]);
         };
         newTableElement.onmouseenter = () => {
-            this.dispatchRowHoverEvent(rowData.data);
+            this.dispatchRowHoverEvent(rowData, [newTableElement]);
         };
         if (rowData.data.isSelected != undefined) {
             this.setSelectedRow(rowData.data.isSelected, [newTableElement]);
@@ -1655,13 +1679,18 @@ export class LitTable extends HTMLElement {
             }
         };
         element.onmouseenter = () => {
-            this.dispatchRowHoverEvent(rowObject.data);
+            this.dispatchRowHoverEvent(rowObject, [element]);
         };
         (element as any).data = rowObject.data;
         if (rowObject.data.isSelected != undefined) {
             this.setSelectedRow(rowObject.data.isSelected, [element]);
         } else {
             this.setSelectedRow(false, [element]);
+        }
+        if (rowObject.data.isHover != undefined) {
+            this.setMouseIn(rowObject.data.isHover, [element]);
+        } else {
+            this.setMouseIn(false, [element]);
         }
     }
 
@@ -1746,6 +1775,44 @@ export class LitTable extends HTMLElement {
         }
     }
 
+    clearAllHover(rowObjectData: any) {
+        if (this.isRecycleList) {
+            this.recycleDs.forEach((item) => {
+                if (item.data != rowObjectData && item.data.isHover) {
+                    item.data.isHover = false;
+                }
+            });
+            this.setMouseIn(false, this.currentTreeDivList);
+            this.setMouseIn(false, this.currentRecycleList);
+        } else {
+            this.dataSource.forEach((item) => {
+                if (item != rowObjectData && item.isHover) {
+                    item.isHover = false;
+                }
+            });
+            this.setMouseIn(false, this.normalDs);
+        }
+    }
+
+    mouseOut() {
+        if (this.isRecycleList) {
+            this.recycleDs.forEach((item) => (item.data.isHover = false));
+            this.setMouseIn(false, this.currentTreeDivList);
+            this.setMouseIn(false, this.currentRecycleList);
+        } else {
+            this.dataSource.forEach((item) => (item.isHover = false));
+            this.setMouseIn(false, this.normalDs);
+        }
+        this.dispatchEvent(
+            new CustomEvent('row-hover', {
+                detail: {
+                    data: undefined,
+                },
+                composed: true,
+            })
+        );
+    }
+
     setCurrentSelection(data: any) {
         if (this.isRecycleList) {
             if (data.isSelected != undefined) {
@@ -1765,6 +1832,34 @@ export class LitTable extends HTMLElement {
                 this.normalDs.forEach((item) => {
                     if ((item as any).data == data) {
                         this.setSelectedRow(data.isSelected, [item]);
+                    }
+                });
+            }
+        }
+    }
+
+    setCurrentHover(data: any) {
+        if (this.isRecycleList) {
+            this.setMouseIn(false, this.currentTreeDivList);
+            this.setMouseIn(false, this.currentRecycleList);
+            if (data.isHover != undefined) {
+                this.currentTreeDivList.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setMouseIn(data.isHover, [item]);
+                    }
+                });
+                this.currentRecycleList.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setMouseIn(data.isHover, [item]);
+                    }
+                });
+            }
+        } else {
+            this.setMouseIn(false, this.normalDs);
+            if (data.isHover != undefined) {
+                this.normalDs.forEach((item) => {
+                    if ((item as any).data == data) {
+                        this.setMouseIn(data.isHover, [item]);
                     }
                 });
             }
@@ -1793,11 +1888,15 @@ export class LitTable extends HTMLElement {
         );
     }
 
-    dispatchRowHoverEvent(data: any) {
+    dispatchRowHoverEvent(rowObject: any, elements: any[]) {
         this.dispatchEvent(
             new CustomEvent('row-hover', {
                 detail: {
-                    data: data,
+                    data: rowObject.data,
+                    callBack: () => {
+                        this.clearAllHover(rowObject.data);
+                        this.setMouseIn(rowObject.data.isHover, elements);
+                    },
                 },
                 composed: true,
             })

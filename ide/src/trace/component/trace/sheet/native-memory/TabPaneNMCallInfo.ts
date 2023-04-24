@@ -462,7 +462,7 @@ export class TabPaneNMCallInfo extends BaseElement {
                     </lit-table>
                 </div>
                 <lit-slicer-track ></lit-slicer-track>
-                <lit-table id="tb-native-data" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+                <lit-table id="tb-native-data" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)" hideDownload>
                     <lit-table-column width="60px" title="" data-index="type" key="type"  align="flex-start" >
                         <template>
                             <img src="img/library.png" size="20" v-if=" type == 1 ">

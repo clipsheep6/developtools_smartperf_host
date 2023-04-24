@@ -280,6 +280,31 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         return this.hasAttribute('expansion');
     }
 
+    expansionChildrenNode(
+        fragment: DocumentFragment,
+        parentId: string,
+        value: boolean
+    ) {
+        this.parentElement
+            ?.querySelectorAll<any>(`[row-parent-id='${parentId}']`)
+            .forEach((it) => {
+                fragment.appendChild(it);
+                if (!it.collect) {
+                    it.rowHidden = !value;
+                }
+                if (it.folder && !value && it.expansion) {
+                    it.expansion = value;
+                }
+                if (it.folder) {
+                    this.expansionChildrenNode(
+                        fragment,
+                        it.rowId,
+                        it.expansion
+                    );
+                }
+            });
+    }
+
     set expansion(value) {
         if (value) {
             this.setAttribute('expansion', '');
@@ -287,21 +312,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             this.removeAttribute('expansion');
         }
         const fragment = document.createDocumentFragment();
-        let node;
-        this.parentElement
-            ?.querySelectorAll<any>(`[row-parent-id='${this.rowId}']`)
-            .forEach((it) => {
-                node = it;
-                fragment.appendChild(node);
-            });
-        Array.prototype.slice.call(fragment.childNodes).forEach((it) => {
-            if (!it.collect) {
-                it.rowHidden = !this.expansion;
-            }
-            if (it.folder && !value && it.expansion) {
-                it.expansion = value;
-            }
-        });
+        this.expansionChildrenNode(fragment, this.rowId!, value);
         this.insertAfter(fragment, this);
         this.dispatchEvent(
             new CustomEvent('expansion-change', {
@@ -1113,6 +1124,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             overflow: hidden;
             user-select: none;
             text-overflow: ellipsis;
+            white-space:nowrap
         }
         :host([highlight]) .name{
             color: #4b5766;
@@ -1266,7 +1278,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             <div class="describe flash" style="position: inherit">
                 <lit-icon class="icon" name="caret-down" size="19"></lit-icon>
                 <label class="name"></label>
-                <lit-icon class="collect" name="star-fill" size="20"></lit-icon>
+                <lit-icon class="collect" name="star-fill" size="19"></lit-icon>
                 <lit-popover placement="bottomLeft" trigger="click" id = "nativeRadioList" class="popover" haveRadio="true" style="z-index: 1;position: absolute;left: 230px">
                     <div style="display: block" slot="content">
                         <div id="first-radio" style="margin-bottom: 5px">
@@ -1281,7 +1293,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                     </div>
                     <lit-icon name="setting" size="19" id="setting"></lit-icon>
                 </lit-popover>
-                <lit-check-box class="lit-check-box" style="margin-right: 7px;"></lit-check-box>
+                <lit-check-box class="lit-check-box" style="margin-right: 10px;"></lit-check-box>
             </div>
         </div>
         `;

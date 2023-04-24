@@ -1439,9 +1439,7 @@ export const queryThreadWakeUpFrom = (
     startTime: number
 ): Promise<Array<WakeupBean>> => {
     let sql = `
-select (A.ts - B.start_ts) as ts,A.tid,A.pid,A.cpu,A.dur,P.name process,T.name thread from thread_state A,trace_range B
-left join process P on A.pid = P.pid
-left join Thread T on A.tid = T.tid
+select (A.ts - B.start_ts) as ts,A.tid,A.pid,A.cpu,A.dur from thread_state A,trace_range B
 where A.state = 'Running'
 and A.itid = (select wakeup_from from instant where ts = ${startTime} and ref = ${itid} limit 1)
 and (A.ts - B.start_ts) < (${startTime} - B.start_ts)

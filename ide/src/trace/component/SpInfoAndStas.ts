@@ -264,7 +264,7 @@ export class SpInfoAndStats extends BaseElement {
             <div class="metadata info">
                 <p>System info and metadata</p>
                 <div id="dataKeyResult">
-                    <lit-table id="metaData-table">
+                    <lit-table id="metaData-table" hideDownload>
                             <lit-table-column title="name" data-index="name" key="name" align="flex-start">
                             </lit-table-column>
                             <lit-table-column title="value" data-index="value" key="value" align="flex-start">
@@ -276,7 +276,7 @@ export class SpInfoAndStats extends BaseElement {
             <div class="metadata stats">
                 <p>Debugging stats</p>
                 <div id="dataValueResult">
-                    <lit-table id="stats-table">
+                    <lit-table id="stats-table" hideDownload>
                             <lit-table-column title="name" data-index="event_name" key="name" align="flex-start">
                             </lit-table-column>
                             <lit-table-column title="value" data-index="count" key="value" align="flex-start">

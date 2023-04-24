@@ -69,6 +69,16 @@ export class TabCpuDetailsThreads extends BaseElement {
             // @ts-ignore
             this.sortByColumn(evt.detail);
         });
+        this.table!.addEventListener('row-hover', (evt: any) => {
+            if (evt.detail.data) {
+                let data = evt.detail.data;
+                data.isHover = true;
+                if ((evt.detail as any).callBack) {
+                    (evt.detail as any).callBack(true);
+                }
+            }
+            this.pie?.showHover();
+        });
     }
 
     init(cpu: number, it: any) {
@@ -104,7 +114,7 @@ export class TabCpuDetailsThreads extends BaseElement {
         this.noData(this.data.length == 0);
         this.pie!.config = {
             appendPadding: 0,
-            data: res || [],
+            data: this.data,
             angleField: 'dur',
             colorField: 'tName',
             radius: 1,
@@ -121,6 +131,13 @@ export class TabCpuDetailsThreads extends BaseElement {
                                 <div>ratio:${obj.obj.ratio}%</div>
                             </div>
                                 `;
+            },
+            hoverHandler: (data) => {
+                if (data) {
+                    this.table!.setCurrentHover(data);
+                } else {
+                    this.table!.mouseOut();
+                }
             },
             interactions: [
                 {
@@ -256,7 +273,7 @@ export class TabCpuDetailsThreads extends BaseElement {
             </div>
             <div class="table-box">
                 <table-no-data id="table-no-data">
-                    <lit-table id="tb-cpu-usage">
+                    <lit-table id="tb-cpu-usage" hideDownload>
                         <lit-table-column width="100px" title="No" data-index="index" key="index" align="flex-start" order></lit-table-column>
                         <lit-table-column width="200px" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>
                         <lit-table-column width="100px" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>

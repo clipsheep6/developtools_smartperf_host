@@ -80,6 +80,30 @@ export class LitChartPie extends BaseElement {
         }
     }
 
+    showHover() {
+        let hasHover = false;
+        this.data.forEach((it) => {
+            it.hover = it.obj.isHover;
+            if (it.hover) {
+                hasHover = true;
+            }
+            this.updateHoverItemStatus(it);
+            if (it.hover) {
+                this.showTip(
+                    this.centerX || 0,
+                    this.centerY || 0,
+                    this.cfg!.tip
+                        ? this.cfg!.tip(it)
+                        : `${it.key}: ${it.value}`
+                );
+            }
+        });
+        if (!hasHover) {
+            this.hideTip();
+        }
+        this.render();
+    }
+
     measure() {
         if (!this.cfg) return;
         this.data = [];
@@ -188,7 +212,9 @@ export class LitChartPie extends BaseElement {
                     it.hover =
                         degree >= it.startDegree! && degree <= it.endDegree!;
                     this.updateHoverItemStatus(it);
+                    it.obj.isHover = it.hover;
                     if (it.hover) {
+                        this.cfg!.hoverHandler?.(it.obj);
                         this.showTip(
                             ev.pageX - rect.left + 10,
                             ev.pageY - this.offsetTop - 10,
@@ -202,8 +228,10 @@ export class LitChartPie extends BaseElement {
                 this.hideTip();
                 this.data.forEach((it) => {
                     it.hover = false;
+                    it.obj.isHover = false;
                     this.updateHoverItemStatus(it);
                 });
+                this.cfg!.hoverHandler?.(undefined);
             }
             this.render();
         };

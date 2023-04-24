@@ -310,8 +310,8 @@ export class CpuStateStruct extends BaseStruct {
     ) {
         if (data.frame) {
             if (
-                data.startTs === CpuStateStruct.hoverStateStruct?.startTs ||
-                data.startTs === CpuStateStruct.selectStateStruct?.startTs
+                data === CpuStateStruct.hoverStateStruct ||
+                data === CpuStateStruct.selectStateStruct
             ) {
                 path.rect(
                     data.frame.x,

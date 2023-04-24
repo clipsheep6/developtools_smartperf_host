@@ -240,7 +240,7 @@ export class FpsStruct extends BaseStruct {
             let width = data.frame.width || 0;
             ctx.fillStyle = '#535da6';
             ctx.strokeStyle = '#535da6';
-            if (data.startNS === FpsStruct.hoverFpsStruct?.startNS) {
+            if (data === FpsStruct.hoverFpsStruct) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = 0.6;
                 let drawHeight: number =

@@ -77,7 +77,16 @@ export class Top20FrequencyThread extends BaseElement {
             // @ts-ignore
             this.sortByColumn(evt.detail);
         });
-        this.table!.addEventListener('row-hover', (evt: any) => {});
+        this.table!.addEventListener('row-hover', (evt: any) => {
+            if (evt.detail.data) {
+                let data = evt.detail.data;
+                data.isHover = true;
+                if ((evt.detail as any).callBack) {
+                    (evt.detail as any).callBack(true);
+                }
+            }
+            this.pie?.showHover();
+        });
     }
 
     sortByColumn(detail: any) {
@@ -191,6 +200,13 @@ export class Top20FrequencyThread extends BaseElement {
                         </div>
                 `;
                     },
+                    hoverHandler: (data) => {
+                        if (data) {
+                            this.table!.setCurrentHover(data);
+                        } else {
+                            this.table!.mouseOut();
+                        }
+                    },
                     interactions: [
                         {
                             type: 'element-active',
@@ -261,7 +277,6 @@ export class Top20FrequencyThread extends BaseElement {
         }
         .tb_thread_count{
             width: calc(100% - 100px);
-            overflow: auto ;
             border-radius: 5px;
             border: solid 1px var(--dark-border1,#e0e0e0);
             margin: 15px;
@@ -295,9 +310,9 @@ export class Top20FrequencyThread extends BaseElement {
                 <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
             </div>
             <div style="flex: 1;display: flex;flex-direction: column;align-items: center;padding-top: 15px;height: 60vh">
-                <div id="current_thread" style="font-weight: bold"></div>
+                <div id="current_thread" style="font-weight: bold;height: 40px"></div>
                 <div id="tb_container" class="tb_thread_count">
-                    <lit-table id="tb-process-thread-count" style="height: auto">
+                    <lit-table id="tb-process-thread-count" hideDownload style="height: calc(60vh - 60px)">
                         <lit-table-column width="1fr" title="NO" data-index="no" key="no" align="flex-start" order></lit-table-column>
                         <lit-table-column width="1fr" title="cpu" data-index="cpu" key="cpu" align="flex-start" order></lit-table-column>
                         <lit-table-column width="1fr" title="frequency" data-index="freq" key="freq" align="flex-start" order></lit-table-column>

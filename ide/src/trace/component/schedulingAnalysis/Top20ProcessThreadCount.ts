@@ -56,6 +56,16 @@ export class Top20ProcessThreadCount extends BaseElement {
             // @ts-ignore
             this.sortByColumn(evt.detail);
         });
+        this.table!.addEventListener('row-hover', (evt: any) => {
+            if (evt.detail.data) {
+                let data = evt.detail.data;
+                data.isHover = true;
+                if ((evt.detail as any).callBack) {
+                    (evt.detail as any).callBack(true);
+                }
+            }
+            this.pie?.showHover();
+        });
     }
 
     init() {
@@ -84,11 +94,18 @@ export class Top20ProcessThreadCount extends BaseElement {
                     label: {
                         type: 'outer',
                     },
+                    hoverHandler: (data) => {
+                        if (data) {
+                            this.table!.setCurrentHover(data);
+                        } else {
+                            this.table!.mouseOut();
+                        }
+                    },
                     tip: (obj) => {
                         return `<div>
                              <div>pid:${obj.obj.pid}</div> 
                              <div>p_name:${obj.obj.pName}</div> 
-                             <div>thread number:${obj.obj.threadNumber}</div> 
+                             <div>thread count:${obj.obj.threadNumber}</div> 
                         </div>
                 `;
                     },
@@ -189,7 +206,7 @@ export class Top20ProcessThreadCount extends BaseElement {
                 <lit-chart-pie id="pie" class="pie-chart"></lit-chart-pie>
             </div>
             <div class="tb_thread_count">
-                <lit-table id="tb-process-thread-count" style="height: auto">
+                <lit-table id="tb-process-thread-count" hideDownload style="height: auto">
                     <lit-table-column width="1fr" title="NO" data-index="NO" key="NO" align="flex-start" order></lit-table-column>
                     <lit-table-column width="1fr" title="pid" data-index="pid" key="pid" align="flex-start" order></lit-table-column>
                     <lit-table-column width="1fr" title="p_name" data-index="pName" key="pName" align="flex-start" order></lit-table-column>

@@ -30,6 +30,7 @@ export interface LitChartPieConfig {
             textAlign: string;
         };
     };
+    hoverHandler?: (data: any) => void;
     showChartLine?: boolean;
     tip: ((a: any) => string) | undefined;
     interactions: {

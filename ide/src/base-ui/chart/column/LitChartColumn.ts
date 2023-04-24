@@ -72,7 +72,6 @@ export class LitChartColumn extends BaseElement {
             this.data.forEach((it) => (it.hover = false));
             this.render();
         };
-        this.canvas!.onmouseover = (e) => {};
         this.canvas!.onmousemove = (ev) => {
             let rect = this.getBoundingClientRect();
             let x = ev.pageX - rect.left;
@@ -80,6 +79,7 @@ export class LitChartColumn extends BaseElement {
             this.data.forEach((it) => {
                 if (contains(it.bgFrame!, x, y)) {
                     it.hover = true;
+                    this.cfg?.hoverHandler?.(it.obj.no);
                 } else {
                     it.hover = false;
                 }
@@ -134,6 +134,50 @@ export class LitChartColumn extends BaseElement {
             }
         };
         this.render();
+    }
+
+    showHoverColumn(index: number) {
+        this.data.forEach((it) => {
+            if (it.obj.no === index) {
+                it.hover = true;
+            } else {
+                it.hover = false;
+            }
+        });
+        let pillars = this.data.filter((it) => it.hover);
+        if (this.cfg?.seriesField) {
+            if (pillars.length > 0) {
+                let hoverData = pillars[0];
+                let title = `<label>${this.cfg.xField}: ${pillars[0].xLabel}</label>`;
+                let msg = pillars
+                    .map((it) => `<label>${it.type}: ${it.yLabel}</label>`)
+                    .join('');
+                let sum = `<label>Total: ${pillars
+                    .map((it) => it.obj[this.cfg?.yField!])
+                    .reduce((pre, current) => pre + current, 0)}</label>`;
+                let innerHtml = `<div class="tip-content">${title}${msg}${sum}</div>`;
+                this.showTip(
+                    this.clientWidth/2,
+                    this.clientHeight/2,
+                    this.cfg!.tip ? this.cfg!.tip(pillars) : innerHtml
+                );
+            }
+        } else {
+            if (pillars.length > 0) {
+                let hoverData = pillars[0];
+                let title = `<label>${pillars[0].xLabel}:${pillars[0].yLabel}</label>`;
+                let innerHtml = `<div class="tip-content">${title}</div>`;
+                this.showTip(
+                    this.clientWidth/2,
+                    this.clientHeight/2,
+                    this.cfg!.tip ? this.cfg!.tip(pillars) : innerHtml
+                );
+            }
+        }
+
+        if (this.data.filter((it) => it.process).length == 0) {
+            this.render();
+        }
     }
 
     initElements(): void {

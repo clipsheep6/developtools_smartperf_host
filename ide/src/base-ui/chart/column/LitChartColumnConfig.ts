@@ -21,6 +21,7 @@ export interface LitChartColumnConfig {
     seriesField: string;
     color: (a: any) => string;
     tip: ((a: any) => string) | undefined;
+    hoverHandler?: (no: number) => void;
     label:
         | {
               offset: number;

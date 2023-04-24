@@ -545,7 +545,7 @@ export class TabPaneNMemory extends BaseElement {
                         </lit-table>
                     </div>
                     <lit-slicer-track ></lit-slicer-track>
-                    <lit-table id="tb-native-data" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+                    <lit-table id="tb-native-data" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)" hideDownload>
                         <lit-table-column width="80px" title="" data-index="type" key="type"  align="flex-start" >
                             <template>
                                 <div v-if=" type == -1 ">Thread:</div>

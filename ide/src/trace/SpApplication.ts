@@ -717,7 +717,7 @@ export class SpApplication extends BaseElement {
                     },
                 },
                 {
-                    title: 'DownLoad',
+                    title: 'Download File',
                     icon: 'download',
                     clickHandler: function () {
                         if (that.vs) {
@@ -729,6 +729,17 @@ export class SpApplication extends BaseElement {
                             );
                         } else {
                             that.download(mainMenu, fileName, isServer, dbName);
+                        }
+                    },
+                },
+                {
+                    title: 'Download Database',
+                    icon: 'download',
+                    clickHandler: function () {
+                        if (that.vs) {
+                            that.vsDownloadDB(mainMenu, fileName);
+                        } else {
+                            that.downloadDB(mainMenu, fileName);
                         }
                     },
                 },
@@ -1311,6 +1322,83 @@ export class SpApplication extends BaseElement {
             : {};
     }
 
+    private downloadDB(
+        mainMenu: LitMainMenu,
+        fileDbName: string
+    ) {
+        let fileName =
+            fileDbName?.substring(0, fileDbName?.lastIndexOf('.')) +
+            '.db';
+        threadPool.submit(
+            'download-db',
+            '',
+            {},
+            (reqBufferDB: any) => {
+                let a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([reqBufferDB]));
+                a.download = fileName;
+                a.click();
+                let querySelectorAll =
+                    mainMenu.shadowRoot?.querySelectorAll<LitMainMenuGroup>(
+                        'lit-main-menu-group'
+                    );
+                querySelectorAll!.forEach((menuGroup) => {
+                    let attribute = menuGroup.getAttribute('title');
+                    if (attribute === 'Current Trace') {
+                        let querySelectors =
+                            menuGroup.querySelectorAll<LitMainMenuItem>(
+                                'lit-main-menu-item'
+                            );
+                        querySelectors.forEach((item) => {
+                            if (
+                                item.getAttribute('title') ==
+                                'Download Database'
+                            ) {
+                                item!.setAttribute('icon', 'convert-loading');
+                                let querySelector1 =
+                                    item!.shadowRoot?.querySelector(
+                                        '.icon'
+                                    ) as LitIcon;
+                                querySelector1.setAttribute('spin', '');
+                            }
+                        });
+                    }
+                });
+                window.URL.revokeObjectURL(a.href);
+                let timer = setInterval(function () {
+                    let querySelectorAll =
+                        mainMenu.shadowRoot?.querySelectorAll<LitMainMenuGroup>(
+                            'lit-main-menu-group'
+                        );
+                    querySelectorAll!.forEach((menuGroup) => {
+                        let attribute = menuGroup.getAttribute('title');
+                        if (attribute === 'Current Trace') {
+                            let querySelectors =
+                                menuGroup.querySelectorAll<LitMainMenuItem>(
+                                    'lit-main-menu-item'
+                                );
+                            querySelectors.forEach((item) => {
+                                if (
+                                    item.getAttribute('title') ==
+                                    'Download Database'
+                                ) {
+                                    item!.setAttribute('icon', 'download');
+                                    let querySelector1 =
+                                        item!.shadowRoot?.querySelector(
+                                            '.icon'
+                                        ) as LitIcon;
+                                    querySelector1.removeAttribute('spin');
+                                }
+                            });
+                            clearInterval(timer);
+                        }
+                    });
+                }, 4000);
+            },
+            'download-db'
+        );
+    }
+
     private download(
         mainMenu: LitMainMenu,
         fileName: string,
@@ -1384,6 +1472,67 @@ export class SpApplication extends BaseElement {
         }, 4000);
     }
 
+    private vsDownloadDB(
+        mainMenu: LitMainMenu,
+        fileDbName: string
+    ) {
+        let fileName =
+            fileDbName?.substring(0, fileDbName?.lastIndexOf('.')) + '.db';
+        threadPool.submit(
+            'download-db',
+            '',
+            {},
+            (reqBufferDB: any) => {
+                Cmd.showSaveFile((filePath: string) => {
+                    if (filePath != '') {
+                        let querySelectorAll =
+                            mainMenu.shadowRoot?.querySelectorAll<LitMainMenuGroup>(
+                                'lit-main-menu-group'
+                            );
+                        querySelectorAll!.forEach((menuGroup) => {
+                            let attribute = menuGroup.getAttribute('title');
+                            if (attribute === 'Current Trace') {
+                                let querySelectors =
+                                    menuGroup.querySelectorAll<LitMainMenuItem>(
+                                        'lit-main-menu-item'
+                                    );
+                                querySelectors.forEach((item) => {
+                                    if (
+                                        item.getAttribute('title') ==
+                                        'Download Database'
+                                    ) {
+                                        item!.setAttribute(
+                                            'icon',
+                                            'convert-loading'
+                                        );
+                                        let querySelector1 =
+                                            item!.shadowRoot?.querySelector(
+                                                '.icon'
+                                            ) as LitIcon;
+                                        querySelector1.setAttribute('spin', '');
+                                    }
+                                });
+                            }
+                        });
+                        const fd = new FormData();
+                        fd.append('convertType', 'download');
+                        fd.append('filePath', filePath);
+                        fd.append('file', new File([reqBufferDB], fileName));
+                        Cmd.uploadFile(fd, (res: Response) => {
+                            if (res.ok) {
+                                this.stopDownLoading(
+                                    mainMenu,
+                                    'Download Database'
+                                );
+                            }
+                        });
+                    }
+                });
+            },
+            'download-db'
+        );
+    }
+
     private vsDownload(
         mainMenu: LitMainMenu,
         fileName: string,
@@ -1442,7 +1591,10 @@ export class SpApplication extends BaseElement {
         });
     }
 
-    private stopDownLoading(mainMenu: LitMainMenu) {
+    private stopDownLoading(
+        mainMenu: LitMainMenu,
+        title: string = 'Download File'
+    ) {
         let querySelectorAll =
             mainMenu.shadowRoot?.querySelectorAll<LitMainMenuGroup>(
                 'lit-main-menu-group'
@@ -1455,7 +1607,7 @@ export class SpApplication extends BaseElement {
                         'lit-main-menu-item'
                     );
                 querySelectors.forEach((item) => {
-                    if (item.getAttribute('title') == 'DownLoad') {
+                    if (item.getAttribute('title') == title) {
                         item!.setAttribute('icon', 'download');
                         let querySelector1 = item!.shadowRoot?.querySelector(
                             '.icon'

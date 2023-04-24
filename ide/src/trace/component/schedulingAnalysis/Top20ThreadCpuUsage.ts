@@ -144,6 +144,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
 
         for (let key of this.map!.keys()) {
             let tab = this.map!.get(key)!.table;
+            let chart = this.map!.get(key)!.chart;
             tab!.addEventListener('row-click', (evt: any) => {
                 let data = evt.detail.data;
                 data.isSelected = true;
@@ -164,6 +165,16 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     this.sortByColumn(evt.detail, tab, this.dataMid);
                 } else if (key == 'big') {
                     this.sortByColumn(evt.detail, tab, this.dataBig);
+                }
+            });
+            tab!.addEventListener('row-hover', (evt: any) => {
+                if (evt.detail.data) {
+                    let data = evt.detail.data;
+                    data.isHover = true;
+                    if ((evt.detail as any).callBack) {
+                        (evt.detail as any).callBack(true);
+                    }
+                    chart.showHoverColumn(data.no);
                 }
             });
         }
@@ -322,6 +333,15 @@ export class Top20ThreadCpuUsage extends BaseElement {
                                 return '#0a59f7';
                             }
                         },
+                        hoverHandler: (no) => {
+                            let data = source.find( it => it.no === no);
+                            if (data) {
+                                data.isHover = true;
+                                obj.table!.setCurrentHover(data);
+                            } else {
+                                obj.table!.mouseOut();
+                            }
+                        },
                         tip: (a) => {
                             if (a && a[0]) {
                                 let tip = '';
@@ -388,6 +408,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     tName: obj.tName,
                     total: obj.big,
                     size: 'big core',
+                    no:obj.no,
                     timeStr: obj.bigTimeStr,
                 });
                 data.push({
@@ -397,6 +418,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     tName: obj.tName,
                     total: obj.mid,
                     size: 'middle core',
+                    no:obj.no,
                     timeStr: obj.midTimeStr,
                 });
                 data.push({
@@ -406,6 +428,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     tName: obj.tName,
                     total: obj.small,
                     size: 'small core',
+                    no:obj.no,
                     timeStr: obj.smallTimeStr,
                 });
             } else {
@@ -415,6 +438,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     tid: obj.tid,
                     tName: obj.tName,
                     total: obj[type],
+                    no:obj.no,
                     timeStr: obj[`${type}TimeStr`],
                 });
             }
@@ -527,7 +551,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     </div>
                 </div>
                 <div class="tb_cpu_usage" >
-                    <lit-table id="tb-thread-usage" style="height: 360px;margin: 5px 15px"></lit-table>
+                    <lit-table id="tb-thread-usage" hideDownload style="height: 360px;margin: 5px 15px"></lit-table>
                 </div>
             </div>
             <div class="content_grid" id="small">
@@ -539,7 +563,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     </div>
                 </div>
                 <div  class="tb_cpu_usage">
-                    <lit-table id="tb-thread-small" style="height: 360px;margin: 5px 15px "></lit-table>
+                    <lit-table id="tb-thread-small" hideDownload style="height: 360px;margin: 5px 15px "></lit-table>
                 </div>
             </div>
             <div class="content_grid" id="mid">
@@ -551,7 +575,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     </div>
                 </div>
                 <div  class="tb_cpu_usage">
-                    <lit-table id="tb-thread-mid" style="height: 360px;margin: 5px 15px"></lit-table>
+                    <lit-table id="tb-thread-mid" hideDownload style="height: 360px;margin: 5px 15px"></lit-table>
                 </div>
             </div>
             <div class="content_grid" id="big">
@@ -563,7 +587,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
                     </div>
                 </div>
                 <div class="tb_cpu_usage">
-                    <lit-table id="tb-thread-big" style="height: 360px;margin: 5px 15px"></lit-table>
+                    <lit-table id="tb-thread-big" hideDownload style="height: 360px;margin: 5px 15px"></lit-table>
                 </div>
             </div>
         </div>

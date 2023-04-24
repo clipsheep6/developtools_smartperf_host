@@ -311,6 +311,11 @@ export class RangeSelect {
                 );
             } else {
                 bound = it.getBoundingClientRect();
+                if (spacerRect.height > 0 &&
+                    (bound.y + bound.height) < (spacerRect.y + spacerRect.height)) {
+                    it.rangeSelect = false;
+                    return false;
+                }
                 itRect = Rect.getIntersect(
                     bound,
                     new Rect(

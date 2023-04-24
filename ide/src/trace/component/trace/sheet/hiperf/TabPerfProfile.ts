@@ -740,7 +740,7 @@ export class TabpanePerfProfile extends BaseElement {
             
         </div>
         <lit-slicer-track ></lit-slicer-track>
-        <lit-table id="tb-perf-list" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+        <lit-table id="tb-perf-list" no-head hideDownload style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
             <span slot="head">Heaviest Stack Trace</span>
             <lit-table-column width="60px" title="" data-index="type" key="type"  align="flex-start" >
                 <template>

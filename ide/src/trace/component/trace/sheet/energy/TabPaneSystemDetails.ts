@@ -405,7 +405,7 @@ export class TabPaneSystemDetails extends BaseElement {
                         </lit-table>
                     </div>
                     <lit-slicer-track ></lit-slicer-track>
-                    <lit-table id="tb-system-details-data" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+                    <lit-table id="tb-system-details-data" no-head hideDownload style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
                         <lit-table-column width="100px" title="" data-index="key" key="key"  align="flex-start" >
                         </lit-table-column>
                         <lit-table-column width="1fr" title="" data-index="value" key="value"  align="flex-start">

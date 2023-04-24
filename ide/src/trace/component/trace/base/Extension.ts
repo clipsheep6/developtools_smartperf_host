@@ -47,6 +47,7 @@ declare global {
                 TimeRange: string; //Set the timeline range
                 TraceRowComplete: string; //Triggered after the row component has finished loading data
                 KeyboardEnable: string; // SystemTrace Keyboard enable
+                UploadSOFile: string; // Upload so file
             };
         };
 
@@ -91,6 +92,7 @@ window.SmartEvent = {
         TimeRange: 'SmartEvent-UI-TimeRange',
         TraceRowComplete: 'SmartEvent-UI-TraceRowComplete',
         KeyboardEnable: 'SmartEvent-UI-StopWASD',
+        UploadSOFile: 'SmartEvent-UI-UploadSoFile'
     },
 };
 Window.prototype.subscribe = (ev, fn) => EventCenter.subscribe(ev, fn);

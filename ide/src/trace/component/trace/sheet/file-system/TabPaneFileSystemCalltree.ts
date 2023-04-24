@@ -682,7 +682,7 @@ export class TabpaneFilesystemCalltree extends BaseElement {
             
         </div>
         <lit-slicer-track ></lit-slicer-track>
-        <lit-table id="tb-filesystem-list" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+        <lit-table id="tb-filesystem-list" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)" hideDownload>
             <span slot="head">Heaviest Stack Trace</span>
             <lit-table-column width="30px" title="" data-index="type" key="type"  align="flex-start" >
                 <template>

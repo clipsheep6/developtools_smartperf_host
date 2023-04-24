@@ -228,6 +228,7 @@ export function heap(
 
 export class HeapStruct extends BaseStruct {
     static hoverHeapStruct: HeapStruct | undefined;
+    static selectHeapStruct: HeapStruct | undefined;
     startTime: number | undefined;
     endTime: number | undefined;
     dur: number | undefined;
@@ -311,7 +312,7 @@ export class HeapStruct extends BaseStruct {
                     );
                 }
             }
-            if (data == HeapStruct.hoverHeapStruct) {
+            if (data == HeapStruct.hoverHeapStruct || data == HeapStruct.selectHeapStruct) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = 0.6;
                 ctx.fillRect(

@@ -47,7 +47,6 @@ export class FreqRender extends Render {
         req.context.beginPath();
         let find = false;
         for (let re of filter) {
-            CpuFreqStruct.draw(req.context, re);
             if (
                 row.isHover &&
                 re.frame &&
@@ -56,6 +55,7 @@ export class FreqRender extends Render {
                 CpuFreqStruct.hoverCpuFreqStruct = re;
                 find = true;
             }
+            CpuFreqStruct.draw(req.context, re);
         }
         if (!find && row.isHover) CpuFreqStruct.hoverCpuFreqStruct = undefined;
         req.context.closePath();
@@ -89,8 +89,8 @@ export class CpuFreqStruct extends BaseStruct {
             ctx.fillStyle = ColorUtils.colorForTid(index);
             ctx.strokeStyle = ColorUtils.colorForTid(index);
             if (
-                data.startNS === CpuFreqStruct.hoverCpuFreqStruct?.startNS ||
-                data.startNS === CpuFreqStruct.selectCpuFreqStruct?.startNS
+                data === CpuFreqStruct.hoverCpuFreqStruct ||
+                data === CpuFreqStruct.selectCpuFreqStruct
             ) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = 0.6;

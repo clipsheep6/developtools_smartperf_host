@@ -279,10 +279,10 @@ export class CpuFreqLimitsStruct extends BaseStruct {
             ctx.fillStyle = ColorUtils.colorForTid(index);
             ctx.strokeStyle = ColorUtils.colorForTid(index);
             if (
-                data.startNs ===
-                    CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct?.startNs ||
-                data.startNs ===
-                    CpuFreqLimitsStruct.selectCpuFreqLimitsStruct?.startNs
+                data ===
+                    CpuFreqLimitsStruct.hoverCpuFreqLimitsStruct ||
+                data ===
+                    CpuFreqLimitsStruct.selectCpuFreqLimitsStruct
             ) {
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = this.minAlpha;

@@ -155,7 +155,7 @@ export class Top20ThreadRunTime extends BaseElement {
         <div style="height: 5px"></div>
         <div class="tb_run_time" >
             <table-no-data id="nodata" contentHeight="500px">
-                <lit-table id="tb-thread-run-time" style="height: auto;">
+                <lit-table id="tb-thread-run-time" style="height: auto;" hideDownload>
                     <lit-table-column width="90px" title="NO" data-index="no" key="no" align="flex-start" order></lit-table-column>
                     <lit-table-column width="140px" title="tid" data-index="tid" key="tid" align="flex-start" order></lit-table-column>
                     <lit-table-column width="240px" title="t_name" data-index="tName" key="tName" align="flex-start" order></lit-table-column>

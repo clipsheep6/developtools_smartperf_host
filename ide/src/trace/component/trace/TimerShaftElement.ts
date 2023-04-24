@@ -185,6 +185,10 @@ export class TimerShaftElement extends BaseElement {
         );
     }
 
+    getRangeRuler() {
+        return this.rangeRuler;
+    }
+
     connectedCallback() {
         if (this.canvas) {
             if (this.isOffScreen) {

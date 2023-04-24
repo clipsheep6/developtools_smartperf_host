@@ -902,11 +902,14 @@ export class TabPaneCurrentSelection extends BaseElement {
         );
         if (wakeup && wakeup[0]) {
             let wakeupTs = wakeup[0].ts as number;
+            let recordStartTs = (window as any).recordStartNS;
             let wf = await queryThreadWakeUpFrom(data.id, wakeupTs);
             if (wf && wf[0]) {
                 wb = wf[0];
                 if (wb != null) {
-                    wb.wakeupTime = wakeupTs - (window as any).recordStartNS;
+                    wb.wakeupTime = wakeupTs - recordStartTs;
+                    wb.process = Utils.PROCESS_MAP.get(wb.pid!);
+                    wb.thread = Utils.THREAD_MAP.get(wb.tid!);
                     wb.schedulingLatency =
                         (data.startTime || 0) - (wb.wakeupTime || 0);
                     if (wb.process == null) {
@@ -1138,7 +1141,7 @@ export class TabPaneCurrentSelection extends BaseElement {
             </div>
             <div class="bottom-scroll-area">
                 <div class="left-table">
-                    <lit-table id="selectionTbl" no-head style="height: auto">
+                    <lit-table id="selectionTbl" no-head hideDownload style="height: auto">
                         <lit-table-column title="name" data-index="name" key="name" align="flex-start"  width="180px">
                             <template><div>{{name}}</div></template>
                         </lit-table-column>
