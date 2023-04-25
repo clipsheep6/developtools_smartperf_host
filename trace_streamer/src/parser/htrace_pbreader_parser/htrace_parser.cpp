@@ -147,7 +147,7 @@ void HtraceParser::ParseTraceDataItem(const std::string& buffer)
 void HtraceParser::FilterData(HtraceDataSegment& seg)
 {
     if (seg.dataType == DATA_SOURCE_TYPE_NATIVEHOOK) {
-        htraceNativeHookParser_->SortNativeHookData(seg);
+        htraceNativeHookParser_->Parse(seg);
     } else if (seg.dataType == DATA_SOURCE_TYPE_NATIVEHOOK_CONFIG) {
         htraceNativeHookParser_->ParseConfigInfo(seg);
     } else if (seg.dataType == DATA_SOURCE_TYPE_TRACE) {

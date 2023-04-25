@@ -888,8 +888,9 @@ public:
     const std::deque<uint64_t>& ReleaseCounts() const;
     const std::deque<uint64_t>& ApplySizes() const;
     const std::deque<uint64_t>& ReleaseSizes() const;
-    void Clear()
+    void Clear() override
     {
+        CacheBase::Clear();
         ids_.clear();
         ipids_.clear();
         callChainIds_.clear();
@@ -934,7 +935,7 @@ public:
     const std::deque<uint64_t>& SymbolIds() const;
     const std::deque<std::string>& Names() const;
     void SetName(uint64_t index, const std::string& name);
-    void Clear();
+    void Clear() override;
 
 private:
     std::deque<uint64_t> sampleIds_ = {};
@@ -952,7 +953,7 @@ public:
     const std::deque<DataIndex>& Symbols() const;
     const std::deque<DataIndex>& FilePaths() const;
     const std::deque<uint32_t>& Serials() const;
-    void Clear();
+    void Clear() override;
 
 private:
     std::deque<uint64_t> fileIds_ = {};
@@ -978,7 +979,7 @@ public:
     const std::deque<uint64_t>& TimestampTraces() const;
     const std::deque<uint64_t>& CpuIds() const;
     const std::deque<DataIndex>& ThreadStates() const;
-    void Clear();
+    void Clear() override;
 
 private:
     std::deque<uint32_t> sampleIds_ = {};
@@ -996,7 +997,7 @@ public:
     const std::deque<uint32_t>& Pids() const;
     const std::deque<uint32_t>& Tids() const;
     const std::deque<DataIndex>& ThreadNames() const;
-    void Clear();
+    void Clear() override;
 
 private:
     std::deque<uint32_t> tids_ = {};

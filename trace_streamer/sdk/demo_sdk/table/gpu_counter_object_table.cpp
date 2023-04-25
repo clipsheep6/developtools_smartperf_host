@@ -18,9 +18,7 @@
 
 namespace SysTuning {
 namespace TraceStreamer {
-namespace {
 enum Index { COUNTER_ID = 0, COUNTER_NAME = 1 };
-}
 GpuCounterObjectTable::GpuCounterObjectTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
     tableColumn_.push_back(TableBase::ColumnInfo("counter_id", "INTEGER"));

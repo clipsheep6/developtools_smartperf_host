@@ -129,9 +129,7 @@ config("default") {
     }
   }
   if (use_wasm) {
-    cflags += [
-      "-D IS_WASM",
-    ]
+    cflags += [ "-D IS_WASM" ]
   }
   if (is_win) {
     cflags += [ "-D is_mingw" ]

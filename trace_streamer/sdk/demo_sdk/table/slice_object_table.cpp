@@ -18,9 +18,7 @@
 
 namespace SysTuning {
 namespace TraceStreamer {
-namespace {
 enum Index { SLICE_ID = 0, SLICE_NAME = 1 };
-}
 SliceObjectTable::SliceObjectTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
     tableColumn_.push_back(TableBase::ColumnInfo("slice_id", "INTEGER"));
