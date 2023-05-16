@@ -15,12 +15,12 @@
 
 // @ts-ignore
 import {
-    StateProcessThread,
-    SPTChild,
-    SPT,
-    ThreadState,
-    ThreadProcess,
-    SptSlice,
+  StateProcessThread,
+  SPTChild,
+  SPT,
+  ThreadState,
+  ThreadProcess,
+  SptSlice,
 } from '../../../dist/trace/bean/StateProcessThread.js';
 
 describe('StateProcessThread Test', () => {
@@ -44,23 +44,21 @@ describe('StateProcessThread Test', () => {
         };
         expect(stateProcessThread).not.toBeUndefined();
         expect(stateProcessThread).toMatchInlineSnapshot(
-            {
-                id: expect.any(String),
-                pid: expect.any(String),
-                title: expect.any(String),
-                process: expect.any(String),
-                processId: expect.any(Number),
-                thread: expect.any(String),
-                threadId: expect.any(Number),
-                wallDuration: expect.any(Number),
-                avgDuration: expect.any(String),
-                count: expect.any(Number),
-                minDuration: expect.any(Number),
-                maxDuration: expect.any(Number),
-                stdDuration: expect.any(String),
-            },
-            `
-Object {
+{
+  id: expect.any(String),
+  pid: expect.any(String),
+  title: expect.any(String),
+  process: expect.any(String),
+  processId: expect.any(Number),
+  thread: expect.any(String),
+  threadId: expect.any(Number),
+  wallDuration: expect.any(Number),
+  avgDuration: expect.any(String),
+  count: expect.any(Number),
+  minDuration: expect.any(Number),
+  maxDuration: expect.any(Number),
+  stdDuration: expect.any(String) }, `
+{
   "avgDuration": Any<String>,
   "count": Any<Number>,
   "id": Any<String>,
@@ -76,9 +74,8 @@ Object {
   "title": Any<String>,
   "wallDuration": Any<Number>,
 }
-`
-        );
-    });
+`);
+  });
 
     it('SPTChildTest02', function () {
         let sptChild = new SPTChild();
@@ -101,25 +98,23 @@ Object {
         };
         expect(sptChild).not.toBeUndefined();
         expect(sptChild).toMatchInlineSnapshot(
-            {
-                process: expect.any(String),
-                processId: expect.any(Number),
-                processName: expect.any(String),
-                thread: expect.any(String),
-                threadId: expect.any(Number),
-                threadName: expect.any(String),
-                state: expect.any(String),
-                startNs: expect.any(Number),
-                startTime: expect.any(String),
-                duration: expect.any(Number),
-                cpu: expect.any(Number),
-                core: expect.any(String),
-                priority: expect.any(Number),
-                prior: expect.any(String),
-                note: expect.any(String),
-            },
-            `
-Object {
+{
+  process: expect.any(String),
+  processId: expect.any(Number),
+  processName: expect.any(String),
+  thread: expect.any(String),
+  threadId: expect.any(Number),
+  threadName: expect.any(String),
+  state: expect.any(String),
+  startNs: expect.any(Number),
+  startTime: expect.any(String),
+  duration: expect.any(Number),
+  cpu: expect.any(Number),
+  core: expect.any(String),
+  priority: expect.any(Number),
+  prior: expect.any(String),
+  note: expect.any(String) }, `
+{
   "core": Any<String>,
   "cpu": Any<Number>,
   "duration": Any<Number>,
@@ -137,8 +132,8 @@ Object {
   "threadName": Any<String>,
 }
 `
-        );
-    });
+    );
+  });
 
     it('SPTTest03', function () {
         let spt = new SPT();
@@ -157,21 +152,19 @@ Object {
         };
         expect(spt).not.toBeUndefined();
         expect(spt).toMatchInlineSnapshot(
-            {
-                process: expect.any(String),
-                processId: expect.any(Number),
-                thread: expect.any(String),
-                threadId: expect.any(Number),
-                state: expect.any(String),
-                dur: expect.any(Number),
-                start_ts: expect.any(Number),
-                end_ts: expect.any(Number),
-                cpu: expect.any(Number),
-                priority: expect.any(String),
-                note: expect.any(String),
-            },
-            `
-Object {
+{
+  process: expect.any(String),
+  processId: expect.any(Number),
+  thread: expect.any(String),
+  threadId: expect.any(Number),
+  state: expect.any(String),
+  dur: expect.any(Number),
+  start_ts: expect.any(Number),
+  end_ts: expect.any(Number),
+  cpu: expect.any(Number),
+  priority: expect.any(String),
+  note: expect.any(String) }, `
+{
   "cpu": Any<Number>,
   "dur": Any<Number>,
   "end_ts": Any<Number>,
@@ -185,8 +178,8 @@ Object {
   "threadId": Any<Number>,
 }
 `
-        );
-    });
+    );
+  });
 
     it('ThreadStateTest04', function () {
         let threadState = new ThreadState();
@@ -201,17 +194,15 @@ Object {
         };
         expect(threadState).not.toBeUndefined();
         expect(threadState).toMatchInlineSnapshot(
-            {
-                itid: expect.any(Number),
-                state: expect.any(String),
-                dur: expect.any(Number),
-                ts: expect.any(Number),
-                end_ts: expect.any(Number),
-                start_ts: expect.any(Number),
-                cpu: expect.any(Number),
-            },
-            `
-Object {
+{
+  itid: expect.any(Number),
+  state: expect.any(String),
+  dur: expect.any(Number),
+  ts: expect.any(Number),
+  end_ts: expect.any(Number),
+  start_ts: expect.any(Number),
+  cpu: expect.any(Number) }, `
+{
   "cpu": Any<Number>,
   "dur": Any<Number>,
   "end_ts": Any<Number>,
@@ -221,8 +212,8 @@ Object {
   "ts": Any<Number>,
 }
 `
-        );
-    });
+    );
+  });
 
     it('ThreadProcessTest05', function () {
         let threadProcess = new ThreadProcess();
@@ -235,15 +226,13 @@ Object {
         };
         expect(threadProcess).not.toBeUndefined();
         expect(threadProcess).toMatchInlineSnapshot(
-            {
-                id: expect.any(Number),
-                threadId: expect.any(Number),
-                thread: expect.any(String),
-                processId: expect.any(Number),
-                process: expect.any(String),
-            },
-            `
-Object {
+{
+  id: expect.any(Number),
+  threadId: expect.any(Number),
+  thread: expect.any(String),
+  processId: expect.any(Number),
+  process: expect.any(String) }, `
+{
   "id": Any<Number>,
   "process": Any<String>,
   "processId": Any<Number>,
@@ -251,8 +240,8 @@ Object {
   "threadId": Any<Number>,
 }
 `
-        );
-    });
+    );
+  });
 
     it('SptSliceTest06', function () {
         let sptSlice = new SptSlice();
@@ -263,18 +252,17 @@ Object {
         };
         expect(sptSlice).not.toBeUndefined();
         expect(sptSlice).toMatchInlineSnapshot(
-            {
-                itid: expect.any(Number),
-                ts: expect.any(Number),
-                priority: expect.any(Number),
-            },
-            `
-Object {
+{
+  itid: expect.any(Number),
+  ts: expect.any(Number),
+  priority: expect.any(Number) }, `
+{
   "itid": Any<Number>,
   "priority": Any<Number>,
   "ts": Any<Number>,
 }
 `
-        );
-    });
+    );
+  });
+
 });

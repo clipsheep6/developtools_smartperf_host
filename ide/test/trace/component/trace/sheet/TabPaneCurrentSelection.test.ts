@@ -14,11 +14,8 @@
  */
 
 // @ts-ignore
-import {
-    TabPaneCurrentSelection,
-    getTimeString,
-} from '../../../../../dist/trace/component/trace/sheet/TabPaneCurrentSelection.js';
-import { SpApplication } from '../../../../../src/trace/SpApplication';
+import { getTimeString, TabPaneCurrentSelection } from '../../../../../dist/trace/component/trace/sheet/TabPaneCurrentSelection.js';
+
 window.ResizeObserver =
     window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
@@ -296,6 +293,10 @@ describe('TabPaneCurrentSelection Test', () => {
     ];
     queryPreceding.mockResolvedValue(queryPrecedingData);
 
+    tabPaneCurrentSelection.queryWakeUpData = jest.fn(() => 'WakeUpData');
+    tabPaneCurrentSelection.queryWakeUpData.wb = jest.fn(() => null);
+    tabPaneCurrentSelection.setCpuData(cpuData, undefined, 1);
+
     it('TabPaneCurrentSelectionTest01', function () {
         let result = tabPaneCurrentSelection.setFunctionData(functionData);
         expect(result).toBeUndefined();
@@ -343,9 +344,7 @@ describe('TabPaneCurrentSelection Test', () => {
     });
 
     it('TabPaneCurrentSelectionTest10', function () {
-        expect(
-            tabPaneCurrentSelection.setCpuData(cpuData, undefined, 1)
-        ).toBeTruthy();
+        expect(tabPaneCurrentSelection.setCpuData(cpuData, undefined, 1)).toBeTruthy();
     });
 
     it('TabPaneCurrentSelectionTest13', function () {
@@ -360,9 +359,76 @@ describe('TabPaneCurrentSelection Test', () => {
     });
 
     it('TabPaneCurrentSelectionTest15', function () {
-        expect(
-            tabPaneCurrentSelection.transferString('&amp;')
-        ).not.toBeUndefined();
+        expect(tabPaneCurrentSelection.transferString('&amp;')).not.toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest16', function () {
+        expect(tabPaneCurrentSelection.drawRight(null)).toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest01', function () {
+        let result = tabPaneCurrentSelection.setFunctionData(functionData);
+        expect(result).toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest02', function () {
+        let result = tabPaneCurrentSelection.setMemData(memData);
+        expect(result).toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest03', function () {
+        let result = getTimeString(3600_000_000_002);
+        expect(result).toBe('1h 2ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest04', function () {
+        let result = getTimeString(60000000001);
+        expect(result).toBe('1m 1ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest05', function () {
+        let result = getTimeString(1000000001);
+        expect(result).toBe('1s 1ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest06', function () {
+        let result = getTimeString(1000001);
+        expect(result).toBe('1ms 1ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest07', function () {
+        let result = getTimeString(1001);
+        expect(result).toBe('1μs 1ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest08', function () {
+        let result = getTimeString(101);
+        expect(result).toBe('101ns ');
+    });
+
+    it('TabPaneCurrentSelectionTest09', function () {
+        tabPaneCurrentSelection.setCpuData = jest.fn(() => true);
+        tabPaneCurrentSelection.data = jest.fn(() => true);
+        expect(tabPaneCurrentSelection.data).toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest10', function () {
+        expect(tabPaneCurrentSelection.setCpuData(cpuData, undefined, 1)).toBeTruthy();
+    });
+
+    it('TabPaneCurrentSelectionTest13', function () {
+        expect(tabPaneCurrentSelection.initCanvas()).not.toBeUndefined();
+    });
+
+    it('TabPaneCurrentSelectionTest14', function () {
+        let str = {
+            length: 0,
+        };
+        expect(tabPaneCurrentSelection.transferString(str)).toBe('');
+    });
+
+    it('TabPaneCurrentSelectionTest15', function () {
+        expect(tabPaneCurrentSelection.transferString('&amp;')).not.toBeUndefined();
     });
 
     it('TabPaneCurrentSelectionTest16', function () {
@@ -400,24 +466,24 @@ describe('TabPaneCurrentSelection Test', () => {
                 width: 50%;
             }
         </style>
-        <div style=\\"width: 100%;height: auto;position: relative\\">
-            <div class=\\"current-title\\">
-                <h2 id=\\"leftTitle\\"></h2>
-                <h2 id=\\"rightTitle\\">Scheduling Latency</h2>
+        <div style="width: 100%;height: auto;position: relative">
+            <div class="current-title">
+                <h2 id="leftTitle"></h2>
+                <h2 id="rightTitle">Scheduling Latency</h2>
             </div>
-            <div class=\\"bottom-scroll-area\\">
-                <div class=\\"left-table\\">
-                    <lit-table id=\\"selectionTbl\\" no-head style=\\"height: auto\\">
-                        <lit-table-column title=\\"name\\" data-index=\\"name\\" key=\\"name\\" align=\\"flex-start\\"  width=\\"180px\\">
+            <div class="bottom-scroll-area">
+                <div class="left-table">
+                    <lit-table id="selectionTbl" no-head hideDownload style="height: auto">
+                        <lit-table-column title="name" data-index="name" key="name" align="flex-start"  width="180px">
                             <template><div>{{name}}</div></template>
                         </lit-table-column>
-                        <lit-table-column title=\\"value\\" data-index=\\"value\\" key=\\"value\\" align=\\"flex-start\\" >
-                            <template><div style=\\"display: flex;\\">{{value}}</div></template>
+                        <lit-table-column title="value" data-index="value" key="value" align="flex-start" >
+                            <template><div style="display: flex;">{{value}}</div></template>
                         </lit-table-column>
                     </lit-table>
                 </div>
-                <div class=\\"right-table\\">
-                    <canvas id=\\"rightDraw\\" style=\\"width: 100%;height: 100%;\\"></canvas>
+                <div class="right-table">
+                    <canvas id="rightDraw" style="width: 100%;height: 100%;"></canvas>
                 </div>
             </div>
         </div>
@@ -426,20 +492,12 @@ describe('TabPaneCurrentSelection Test', () => {
     });
 
     it('TabPaneCurrentSelectionTest12', function () {
-        let result = tabPaneCurrentSelection.setJankData(
-            jankData,
-            undefined,
-            1
-        );
+        let result = tabPaneCurrentSelection.setJankData(jankData, undefined, 1);
         expect(result).toBeUndefined();
     });
 
     it('TabPaneCurrentSelectionTest13', function () {
-        let result = tabPaneCurrentSelection.setJankData(
-            jankDataRender,
-            undefined,
-            1
-        );
+        let result = tabPaneCurrentSelection.setJankData(jankDataRender, undefined, 1);
         expect(result).toBeUndefined();
     });
 
@@ -449,11 +507,7 @@ describe('TabPaneCurrentSelection Test', () => {
     });
 
     it('TabPaneCurrentSelectionTest15', function () {
-        let result = tabPaneCurrentSelection.setThreadData(
-            threadData,
-            undefined,
-            1
-        );
+        let result = tabPaneCurrentSelection.setThreadData(threadData, undefined, 1);
         expect(result).toBeUndefined();
     });
 

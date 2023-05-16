@@ -17,37 +17,37 @@
 import { StackBar } from '../../../dist/trace/component/StackBar.js';
 
 describe('StackBar Test', () => {
-    let stackBar = new StackBar();
+  let stackBar = new StackBar();
 
-    it('StackBarTest01', function () {
-        expect(stackBar.initHtml()).not.toBe('');
-    });
+  it('StackBarTest01', function () {
+    expect(stackBar.initHtml()).not.toBe('');
+  });
 
-    it('StackBarTest02', function () {
-        expect(stackBar.initElements()).toBeUndefined();
-    });
+  it('StackBarTest02', function () {
+    expect(stackBar.initElements()).toBeUndefined();
+  });
 
-    it('StackBarTest03', function () {
-        let stateWidth = stackBar.getStateWidth('state');
-        let hasWidth = stateWidth > 0;
-        expect(hasWidth).toBeTruthy();
-    });
+  it('StackBarTest03', function () {
+    let stateWidth = stackBar.getStateWidth('state');
+    let hasWidth = stateWidth > 0;
+    expect(hasWidth).toBeTruthy();
+  });
 
-    it('StackBarTest04', function () {
-        let htmlDivElement = stackBar.createBarElement(
-            {
-                state: '',
-                color: '',
-                value: 0,
-            },
-            5
-        );
-        let hasDivEl = htmlDivElement.toLocaleString().length > 5;
-        expect(hasDivEl).toBeTruthy();
-    });
+  it('StackBarTest04', function () {
+    let htmlDivElement = stackBar.createBarElement(
+      {
+        state: '',
+        color: '',
+        value: 0,
+      },
+      5
+    );
+    let hasDivEl = htmlDivElement.toLocaleString().length > 5;
+    expect(hasDivEl).toBeTruthy();
+  });
 
-    it('StackBarTest05', function () {
-        expect(stackBar.initHtml()).toMatchInlineSnapshot(`
+  it('StackBarTest05', function () {
+    expect(stackBar.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
             :host([mode='hidden']){
@@ -61,9 +61,9 @@ describe('StackBar Test', () => {
                 width: 10%;display: inline-block;overflow: hidden;white-space: nowrap;padding: 5px; margin-right: 2px;font-size: 9pt;
             }
             </style>
-            <div style=\\"display: flex;flex-direction: row;width: 100%;\\" id=\\"container\\">
+            <div style="display: flex;flex-direction: row;width: 100%;" id="container">
             </div>
         "
 `);
-    });
+  });
 });

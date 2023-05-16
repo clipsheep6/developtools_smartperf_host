@@ -17,50 +17,48 @@
 import { SpInfoAndStats } from '../../../dist/trace/component/SpInfoAndStas.js';
 
 describe('SpInfoAndStasTest', () => {
-    document.body.innerHTML = `<sp-info-and-stats id="ddd"></sp-info-and-stats>`;
-    let spInfoAndStats = document.querySelector('#ddd') as SpInfoAndStats;
-    it('SpInfoAndStasTest01', function () {
-        let spInfoAndStats = new SpInfoAndStats();
-        expect(spInfoAndStats.initElements()).toBeUndefined();
-    });
+  document.body.innerHTML = `<sp-info-and-stats id="ddd"></sp-info-and-stats>`;
+  let spInfoAndStats = document.querySelector('#ddd') as SpInfoAndStats;
+  it('SpInfoAndStasTest01', function () {
+    let spInfoAndStats = new SpInfoAndStats();
+    expect(spInfoAndStats.initElements()).toBeUndefined();
+  });
 
-    it('SpInfoAndStasTest03', function () {
-        spInfoAndStats.initMetricItemData = jest.fn(() => true);
-        expect(spInfoAndStats.initMetricItemData()).toBeTruthy();
-    });
+  it('SpInfoAndStasTest03', function () {
+    spInfoAndStats.initMetricItemData = jest.fn(() => true);
+    expect(spInfoAndStats.initMetricItemData()).toBeTruthy();
+  });
 
-    it('SpInfoAndStasTest04', function () {
-        let spInfoAndStats = new SpInfoAndStats();
-        expect(
-            spInfoAndStats.initDataTableStyle({
-                children: [
-                    {
-                        length: 1,
-                        style: {
-                            backgroundColor: 'var(--dark-background5,#F6F6F6)',
-                        },
-                    },
-                ],
-            })
-        ).toBeUndefined();
-    });
+  it('SpInfoAndStasTest04', function () {
+    let spInfoAndStats = new SpInfoAndStats();
+    expect(
+      spInfoAndStats.initDataTableStyle({
+        children: [
+          {
+            length: 1,
+            style: {
+              backgroundColor: 'var(--dark-background5,#F6F6F6)',
+            },
+          },
+        ],
+      })
+    ).toBeUndefined();
+  });
 
-    it('SpInfoAndStasTest06 ', function () {
-        expect(spInfoAndStats.connectedCallback()).toBeUndefined();
-    });
+  it('SpInfoAndStasTest06 ', function () {
+    expect(spInfoAndStats.connectedCallback()).toBeUndefined();
+  });
 
-    it('SpInfoAndStasTest07 ', function () {
-        expect(spInfoAndStats.disconnectedCallback()).toBeUndefined();
-    });
+  it('SpInfoAndStasTest07 ', function () {
+    expect(spInfoAndStats.disconnectedCallback()).toBeUndefined();
+  });
 
-    it('SpInfoAndStasTest08 ', function () {
-        expect(
-            spInfoAndStats.attributeChangedCallback([], [], [])
-        ).toBeUndefined();
-    });
+  it('SpInfoAndStasTest08 ', function () {
+    expect(spInfoAndStats.attributeChangedCallback([], [], [])).toBeUndefined();
+  });
 
-    it('SpInfoAndStasTest05', function () {
-        expect(spInfoAndStats.initHtml()).toMatchInlineSnapshot(`
+  it('SpInfoAndStasTest05', function () {
+    expect(spInfoAndStats.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
             :host{
@@ -160,28 +158,28 @@ describe('SpInfoAndStasTest', () => {
 
         </style>
 
-        <div class=\\"info-stats\\">
-            <div class=\\"metadata info\\">
+        <div class="info-stats">
+            <div class="metadata info">
                 <p>System info and metadata</p>
-                <div id=\\"dataKeyResult\\">
-                    <lit-table id=\\"metaData-table\\">
-                            <lit-table-column title=\\"name\\" data-index=\\"name\\" key=\\"name\\" align=\\"flex-start\\">
+                <div id="dataKeyResult">
+                    <lit-table id="metaData-table" hideDownload>
+                            <lit-table-column title="name" data-index="name" key="name" align="flex-start">
                             </lit-table-column>
-                            <lit-table-column title=\\"value\\" data-index=\\"value\\" key=\\"value\\" align=\\"flex-start\\">
+                            <lit-table-column title="value" data-index="value" key="value" align="flex-start">
                             </lit-table-column>
                     </lit-table>
                 </div>
-                <lit-progress-bar class=\\"load-metric\\"></lit-progress-bar>
+                <lit-progress-bar class="load-metric"></lit-progress-bar>
             </div>
-            <div class=\\"metadata stats\\">
+            <div class="metadata stats">
                 <p>Debugging stats</p>
-                <div id=\\"dataValueResult\\">
-                    <lit-table id=\\"stats-table\\">
-                            <lit-table-column title=\\"name\\" data-index=\\"event_name\\" key=\\"name\\" align=\\"flex-start\\">
+                <div id="dataValueResult">
+                    <lit-table id="stats-table" hideDownload>
+                            <lit-table-column title="name" data-index="event_name" key="name" align="flex-start">
                             </lit-table-column>
-                            <lit-table-column title=\\"value\\" data-index=\\"count\\" key=\\"value\\" align=\\"flex-start\\">
+                            <lit-table-column title="value" data-index="count" key="value" align="flex-start">
                             </lit-table-column>
-                            <lit-table-column title=\\"type\\" data-index=\\"stat_type\\" key=\\"type\\" align=\\"flex-start\\">
+                            <lit-table-column title="type" data-index="stat_type" key="type" align="flex-start">
                             </lit-table-column>
                     </lit-table>
                 </div>
@@ -189,9 +187,12 @@ describe('SpInfoAndStasTest', () => {
         </div>
         "
 `);
-    });
+  });
 
-    it('SpInfoAndStasTest9', function () {
-        expect(spInfoAndStats.initMetricItemData()).toBeTruthy();
-    });
+  it('SpInfoAndStasTest9', function () {
+    expect(spInfoAndStats.initMetricItemData()).toBeTruthy();
+  });
+  it('SpInfoAndStasTest10', function () {
+    expect(spInfoAndStats.initMetricItemData()).toBeTruthy();
+  });
 });

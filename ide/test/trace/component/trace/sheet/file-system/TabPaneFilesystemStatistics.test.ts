@@ -15,8 +15,28 @@
 
 // @ts-ignore
 import { TabPaneFileStatistics } from '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneFilesystemStatistics.js';
+import '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneFilesystemStatistics.js';
 // @ts-ignore
 import { Utils } from '../../../../../../dist/trace/component/trace/base/Utils.js';
+// @ts-ignore
+import { LitTable } from '../../../../../../dist/base-ui/table/lit-table.js';
+import crypto from 'crypto';
+// @ts-ignore
+import { TabPaneFilter } from '../../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js';
+// @ts-ignore
+window.ResizeObserver =
+    window.ResizeObserver ||
+    jest.fn().mockImplementation(() => ({
+        disconnect: jest.fn(),
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+    }));
+
+Object.defineProperty(global.self, 'crypto', {
+    value: {
+        getRandomValues: (arr: string | any[]) => crypto.randomBytes(arr.length),
+    },
+});
 
 window.ResizeObserver =
     window.ResizeObserver ||
@@ -26,9 +46,52 @@ window.ResizeObserver =
         unobserve: jest.fn(),
     }));
 describe('TabPaneFileStatistics Test', () => {
-    document.body.innerHTML = `<tabpane-file-statistics id="statistics"></tabpane-file-statistics>`;
-    let tabPaneFileStatistics =
-        document.querySelector<TabPaneFileStatistics>('#statistics');
+    document.body.innerHTML = `<div><tabpane-file-statistics id="statistics"></tabpane-file-statistics></div>`;
+    let tabPaneFileStatistics = document.querySelector<TabPaneFileStatistics>('#statistics');
+    let param = {
+        anomalyEnergy: [],
+        clockMapData: { size: 0 },
+        cpuAbilityIds: [],
+        cpuFreqFilterIds: [],
+        cpuFreqLimitDatas: [],
+        cpuStateFilterIds: [],
+        cpus: [],
+        diskAbilityIds: [],
+        diskIOLatency: false,
+        diskIOReadIds: [2, 7, 1, 3, 4, 5, 6],
+        diskIOWriteIds: [2, 7, 1, 3, 4, 5, 6],
+        diskIOipids: [2, 7, 1, 3, 4, 5, 6],
+        fileSysVirtualMemory: false,
+        fileSystemType: [],
+        fsCount: 0,
+        funAsync: [],
+        funTids: [],
+        hasFps: false,
+        irqMapData: { size: 0 },
+        jsMemory: [],
+        leftNs: 964699689,
+        memoryAbilityIds: [],
+        nativeMemory: [],
+        nativeMemoryStatistic: [],
+        networkAbilityIds: [],
+        perfAll: false,
+        perfCpus: [],
+        perfProcess: [],
+        perfSampleIds: [],
+        perfThread: [],
+        powerEnergy: [],
+        processTrackIds: [],
+        promiseList: [],
+        recordStartNs: 780423789228,
+        rightNs: 24267556624,
+        sdkCounterIds: [],
+        sdkSliceIds: [],
+        smapsType: [],
+        systemEnergy: [],
+        threadIds: [],
+        virtualTrackIds: [],
+        vmCount: 0,
+    };
 
     it('TabPaneFileStatisticsTest01', function () {
         tabPaneFileStatistics.setInitDua = jest.fn(() => true);
@@ -108,5 +171,12 @@ describe('TabPaneFileStatistics Test', () => {
             children: [],
         };
         expect(FileStatistics.sortTable(node, '')).toBeUndefined();
+    });
+
+    it('TabPaneFileStatisticsTest10', function () {
+        let litTable = new LitTable();
+        tabPaneFileStatistics.appendChild(litTable);
+        tabPaneFileStatistics.data = param;
+        expect(tabPaneFileStatistics.selectionParam).not.toBeUndefined();
     });
 });

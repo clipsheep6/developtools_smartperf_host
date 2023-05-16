@@ -17,37 +17,35 @@
 import { SpMetrics } from '../../../dist/trace/component/SpMetrics.js';
 
 describe('SpMetrics Test', () => {
-    let spMetrics = new SpMetrics();
-    it('SpMetricsTest01', function () {
-        expect(SpMetrics.initElements).toBeUndefined();
-    });
-    it('SpMetricsTest02', function () {
-        expect(spMetrics.metric).toBe('');
-    });
-    it('SpMetricsTest03', function () {
-        spMetrics.metric = true;
-        expect(spMetrics.metric).toBe('');
-    });
-    it('SpMetricsTest04', function () {
-        expect(spMetrics.metricResult).toBe('');
-    });
-    it('SpMetricsTest05', function () {
-        spMetrics.metricResult = true;
-        expect(spMetrics.metricResult).toBeTruthy();
-    });
+  let spMetrics = new SpMetrics();
+  it('SpMetricsTest01', function () {
+    expect(SpMetrics.initElements).toBeUndefined();
+  });
+  it('SpMetricsTest02', function () {
+    expect(spMetrics.metric).toBe('');
+  });
+  it('SpMetricsTest03', function () {
+    spMetrics.metric = true;
+    expect(spMetrics.metric).toBe('');
+  });
+  it('SpMetricsTest04', function () {
+    expect(spMetrics.metricResult).toBe('');
+  });
+  it('SpMetricsTest05', function () {
+    spMetrics.metricResult = true;
+    expect(spMetrics.metricResult).toBeTruthy();
+  });
 
-    it('SpMetricsTest06', function () {
-        expect(spMetrics.attributeChangedCallback('metric')).toBeUndefined();
-    });
+  it('SpMetricsTest06', function () {
+    expect(spMetrics.attributeChangedCallback('metric')).toBeUndefined();
+  });
 
-    it('SpMetricsTest07', function () {
-        expect(
-            spMetrics.attributeChangedCallback('metricResult')
-        ).toBeUndefined();
-    });
+  it('SpMetricsTest07', function () {
+    expect(spMetrics.attributeChangedCallback('metricResult')).toBeUndefined();
+  });
 
-    it('SpMetricsTest08', function () {
-        expect(spMetrics.initHtml()).toMatchInlineSnapshot(`
+  it('SpMetricsTest08', function () {
+    expect(spMetrics.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
 
@@ -175,40 +173,40 @@ describe('SpMetrics Test', () => {
 
         </style>
 
-        <div class=\\"metric\\">
-            <div class=\\"metric-select request\\">
+        <div class="metric">
+            <div class="metric-select request">
                 <p>Select a metric</p>
-                <select class=\\"sql-select\\">
+                <select class="sql-select">
                 </select>
-                <button class=\\"sql-select-button\\">&nbsp;&nbsp; Run &nbsp;&nbsp;</button>
-                <lit-progress-bar class=\\"load-metric\\"></lit-progress-bar>
+                <button class="sql-select-button">&nbsp;&nbsp; Run &nbsp;&nbsp;</button>
+                <lit-progress-bar class="load-metric"></lit-progress-bar>
             </div>
-            <div class=\\"metric-select response\\">
-                 <textarea class=\\"response-json\\" readonly>
+            <div class="metric-select response">
+                 <textarea class="response-json" readonly>
                  </textarea>
             </div>
         </div>
         "
 `);
-    });
+  });
 
-    it('SpMetricsTest09', function () {
-        expect(spMetrics.reset()).toBeUndefined();
-    });
+  it('SpMetricsTest09', function () {
+    expect(spMetrics.reset()).toBeUndefined();
+  });
 
-    it('SpMetricsTest10', function () {
-        expect(spMetrics.connectedCallback()).toBeUndefined();
-    });
+  it('SpMetricsTest10', function () {
+    expect(spMetrics.connectedCallback()).toBeUndefined();
+  });
 
-    it('SpMetricsTest11', function () {
-        expect(spMetrics.disconnectedCallback()).toBeUndefined();
-    });
+  it('SpMetricsTest11', function () {
+    expect(spMetrics.disconnectedCallback()).toBeUndefined();
+  });
 
-    it('SpMetricsTest12', function () {
-        expect(spMetrics.initMetricSelectOption()).toBeUndefined();
-    });
+  it('SpMetricsTest12', function () {
+    expect(spMetrics.initMetricSelectOption()).toBeUndefined();
+  });
 
-    it('SpMetricsTest13', function () {
-        expect(spMetrics.initMetricDataHandle()).toBeUndefined();
-    });
+  it('SpMetricsTest13', function () {
+    expect(spMetrics.initMetricDataHandle()).toBeUndefined();
+  });
 });

@@ -19,55 +19,55 @@ import { TabPaneBoxChild } from '../../../../../../dist/trace/component/trace/sh
 import { getTabBoxChildData } from '../../../../../../src/trace/database/SqlLite';
 
 window.ResizeObserver =
-    window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn(),
-    }));
+  window.ResizeObserver ||
+  jest.fn().mockImplementation(() => ({
+    disconnect: jest.fn(),
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+  }));
 
 describe('TabPaneBoxChild Test', () => {
-    document.body.innerHTML = `<div id="div"></div>`;
-    let element = document.querySelector('#div') as HTMLDivElement;
-    let tabPaneBoxChild = new TabPaneBoxChild();
-    element.appendChild(tabPaneBoxChild);
-    tabPaneBoxChild.loadDataInCache = true;
-    tabPaneBoxChild.data = {
-        cpus: [],
-        threadIds: [],
-        trackIds: [],
-        funTids: [],
-        heapIds: [],
-        leftNs: 0,
-        rightNs: 0,
-        hasFps: false,
-    };
-    let val = {
-        leftNs: 2,
-        rightNs: 1,
-        state: '1',
-        processId: 0,
-        threadId: 1,
-    };
+  document.body.innerHTML = `<div id="div"></div>`;
+  let element = document.querySelector('#div') as HTMLDivElement;
+  let tabPaneBoxChild = new TabPaneBoxChild();
+  element.appendChild(tabPaneBoxChild);
+  tabPaneBoxChild.loadDataInCache = true;
+  tabPaneBoxChild.data = {
+    cpus: [],
+    threadIds: [],
+    trackIds: [],
+    funTids: [],
+    heapIds: [],
+    leftNs: 0,
+    rightNs: 0,
+    hasFps: false,
+  };
+  let val = {
+    leftNs: 2,
+    rightNs: 1,
+    state: '1',
+    processId: 0,
+    threadId: 1,
+  };
 
-    it('TabPaneBoxChildTest01', function () {
-        expect(
-            tabPaneBoxChild.sortByColumn({
-                key: 'number',
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneBoxChildTest01', function () {
+    expect(
+      tabPaneBoxChild.sortByColumn({
+        key: 'number',
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneCounterTest02', function () {
-        expect(
-            tabPaneBoxChild.sortByColumn({
-                sort: () => {},
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneCounterTest02', function () {
+    expect(
+      tabPaneBoxChild.sortByColumn({
+        sort: () => {},
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneCounterTest03', function () {
-        expect(tabPaneBoxChild.initHtml()).toMatchInlineSnapshot(`
+  it('TabPaneCounterTest03', function () {
+    expect(tabPaneBoxChild.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -76,26 +76,26 @@ describe('TabPaneBoxChild Test', () => {
             padding: 10px 10px;
         }
         </style>
-        <label id=\\"time-range\\" style=\\"width: 100%;height: 20px;text-align: end;font-size: 10pt;margin-bottom: 5px\\">Selected range:0.0 ms</label>
-        <lit-table id=\\"tb-cpu-thread\\" style=\\"height: auto\\">
-            <lit-table-column order width=\\"15%\\" title=\\"StartTime(Relative)\\" data-index=\\"startTime\\" key=\\"startTime\\" align=\\"flex-start\\" order >
+        <label id="time-range" style="width: 100%;height: 20px;text-align: end;font-size: 10pt;margin-bottom: 5px">Selected range:0.0 ms</label>
+        <lit-table id="tb-cpu-thread" style="height: auto">
+            <lit-table-column order width="15%" title="StartTime(Relative)" data-index="startTime" key="startTime" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"15%\\" title=\\"StartTime(Absolute)\\" data-index=\\"absoluteTime\\" key=\\"absoluteTime\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="15%" title="StartTime(Absolute)" data-index="absoluteTime" key="absoluteTime" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"20%\\" title=\\"Process\\" data-index=\\"processName\\" key=\\"processName\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="20%" title="Process" data-index="processName" key="processName" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"20%\\" title=\\"Thread\\" data-index=\\"threadName\\" key=\\"threadName\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="20%" title="Thread" data-index="threadName" key="threadName" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"1fr\\" title=\\"State\\" data-index=\\"state\\" key=\\"state\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="1fr" title="State" data-index="state" key="state" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"1fr\\" title=\\"Core\\" data-index=\\"core\\" key=\\"core\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="1fr" title="Core" data-index="core" key="core" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"1fr\\" title=\\"Priority\\" data-index=\\"prior\\" key=\\"prior\\" align=\\"flex-start\\" order >
+            <lit-table-column order width="1fr" title="Priority" data-index="prior" key="prior" align="flex-start" order >
             </lit-table-column>
-            <lit-table-column order width=\\"1fr\\" title=\\"Note\\" data-index=\\"note\\" key=\\"note\\" align=\\"flex-start\\" >
+            <lit-table-column order width="1fr" title="Note" data-index="note" key="note" align="flex-start" >
             </lit-table-column>
         </lit-table>
         "
 `);
-    });
+  });
 });

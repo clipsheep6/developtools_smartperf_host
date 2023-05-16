@@ -16,14 +16,14 @@
 import { SpText } from '../../../dist/trace/component/Sptext.js';
 
 describe('Sptext Test', () => {
-    let sptext = new SpText();
+  let sptext = new SpText();
 
-    it('SptextTest01', function () {
-        expect(sptext.initElements()).toBeUndefined();
-    });
+  it('SptextTest01', function () {
+    expect(sptext.initElements()).toBeUndefined();
+  });
 
-    it('SptextTest01', function () {
-        expect(sptext.initHtml()).toMatchInlineSnapshot(`
+  it('SptextTest01', function () {
+    expect(sptext.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -42,15 +42,15 @@ describe('Sptext Test', () => {
             overflow: auto;
         }
         </style>
-        <div class=\\"root\\">
-            <div id=\\"trace-content\\" class=\\"trace-content\\">
-            <img src=\\"img/pic.png\\">
-            <lit-popover direction=\\"topleft\\" type=\\"multiple-text\\" title=\\"\\">
+        <div class="root">
+            <div id="trace-content" class="trace-content">
+            <img src="img/pic.png">
+            <lit-popover direction="topleft" type="multiple-text" title="">
               <button>test</button>
             </lit-popover>
             </div>
         </div>
         "
 `);
-    });
+  });
 });

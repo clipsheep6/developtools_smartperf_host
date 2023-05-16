@@ -20,36 +20,36 @@ const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 
 window.ResizeObserver =
-    window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn(),
-    }));
+  window.ResizeObserver ||
+  jest.fn().mockImplementation(() => ({
+    disconnect: jest.fn(),
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+  }));
 
 describe('TabPaneSlices Test', () => {
-    let tabPaneSlices = new TabPaneSlices();
+  let tabPaneSlices = new TabPaneSlices();
 
-    it('TabPaneSlicesTest01', function () {
-        expect(
-            tabPaneSlices.sortByColumn({
-                key: 'name',
-                sort: () => {},
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneSlicesTest01', function () {
+    expect(
+      tabPaneSlices.sortByColumn({
+        key: 'name',
+        sort: () => {},
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneSlicesTest05', function () {
-        expect(
-            tabPaneSlices.sortByColumn({
-                key: !'name',
-                sort: () => {},
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneSlicesTest05', function () {
+    expect(
+      tabPaneSlices.sortByColumn({
+        key: !'name',
+        sort: () => {},
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneSlicesTest04', function () {
-        expect(tabPaneSlices.initHtml()).toMatchInlineSnapshot(`
+  it('TabPaneSlicesTest04', function () {
+    expect(tabPaneSlices.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -58,18 +58,18 @@ describe('TabPaneSlices Test', () => {
             padding: 10px 10px;
         }
         </style>
-        <label id=\\"time-range\\" style=\\"width: 100%;height: 20px;text-align: end;font-size: 10pt;margin-bottom: 5px\\">Selected range:0.0 ms</label>
-        <lit-table id=\\"tb-slices\\" style=\\"height: auto\\">
-            <lit-table-column title=\\"Name\\" width=\\"500px\\" data-index=\\"name\\" key=\\"name\\"  align=\\"flex-start\\" order>
+        <label id="time-range" style="width: 100%;height: 20px;text-align: end;font-size: 10pt;margin-bottom: 5px">Selected range:0.0 ms</label>
+        <lit-table id="tb-slices" style="height: auto">
+            <lit-table-column title="Name" width="500px" data-index="name" key="name"  align="flex-start" order>
             </lit-table-column>
-            <lit-table-column title=\\"Wall duration(ms)\\" width=\\"1fr\\" data-index=\\"wallDuration\\" key=\\"wallDuration\\"  align=\\"flex-start\\" order >
+            <lit-table-column title="Wall duration(ms)" width="1fr" data-index="wallDuration" key="wallDuration"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column title=\\"Avg Wall duration(ms)\\" width=\\"1fr\\" data-index=\\"avgDuration\\" key=\\"avgDuration\\"  align=\\"flex-start\\" order >
+            <lit-table-column title="Avg Wall duration(ms)" width="1fr" data-index="avgDuration" key="avgDuration"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column title=\\"Occurrences\\" width=\\"1fr\\" data-index=\\"occurrences\\" key=\\"occurrences\\"  align=\\"flex-start\\" order >
+            <lit-table-column title="Occurrences" width="1fr" data-index="occurrences" key="occurrences"  align="flex-start" order >
             </lit-table-column>
         </lit-table>
         "
 `);
-    });
+  });
 });

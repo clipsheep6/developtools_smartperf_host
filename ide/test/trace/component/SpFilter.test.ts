@@ -17,14 +17,14 @@
 import { SpFilter } from '../../../dist/trace/component/SpFilter.js';
 
 describe('SpFilter Test', () => {
-    let spFilter = new SpFilter();
+  let spFilter = new SpFilter();
 
-    it('SpFilterTest01', function () {
-        expect(spFilter.initElements()).toBeUndefined();
-    });
+  it('SpFilterTest01', function () {
+    expect(spFilter.initElements()).toBeUndefined();
+  });
 
-    it('SSpFilterTest01', function () {
-        expect(spFilter.initHtml()).toMatchInlineSnapshot(`
+  it('SSpFilterTest01', function () {
+    expect(spFilter.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -76,14 +76,14 @@ describe('SpFilter Test', () => {
             outline:none;
         }
         </style>
-        <div class=\\"root\\">
-         <span class=\\"inputFilter\\">Input Filter</span>
-         <div class=\\"search\\">
-           <img src=\\"img/screening.png\\" class=\\"image\\">
-           <input placeholder=\\"Detail Filter\\" class=\\"input\\"/>
+        <div class="root">
+         <span class="inputFilter">Input Filter</span>
+         <div class="search">
+           <img src="img/screening.png" class="image">
+           <input placeholder="Detail Filter" class="input"/>
         </div>
         </div>
         "
 `);
-    });
+  });
 });

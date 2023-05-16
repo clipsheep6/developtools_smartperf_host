@@ -17,71 +17,71 @@
 import { TabPaneThreadStates } from '../../../../../../dist/trace/component/trace/sheet/process/TabPaneThreadStates.js';
 
 window.ResizeObserver =
-    window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn(),
-    }));
+  window.ResizeObserver ||
+  jest.fn().mockImplementation(() => ({
+    disconnect: jest.fn(),
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+  }));
 
 const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 describe('TabPaneThreadStates Test', () => {
-    let tabPaneThreadStates = new TabPaneThreadStates();
+  let tabPaneThreadStates = new TabPaneThreadStates();
 
-    it('TabPaneThreadStatesTest01', function () {
-        expect(
-            tabPaneThreadStates.sortByColumn({
-                key: 'name' || 'thread' || 'state',
-                sort: () => {},
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneThreadStatesTest01', function () {
+    expect(
+      tabPaneThreadStates.sortByColumn({
+        key: 'name' || 'thread' || 'state',
+        sort: () => {},
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneThreadStatesTest05', function () {
-        expect(
-            tabPaneThreadStates.sortByColumn({
-                key: !'name' || !'thread' || !'state',
-                sort: () => {},
-            })
-        ).toBeUndefined();
-    });
+  it('TabPaneThreadStatesTest05', function () {
+    expect(
+      tabPaneThreadStates.sortByColumn({
+        key: !'name' || !'thread' || !'state',
+        sort: () => {},
+      })
+    ).toBeUndefined();
+  });
 
-    it('TabPaneThreadStatesTest02', function () {
-        // @ts-ignore
-        let mockgetTabThreadStates = sqlit.getTabThreadStates;
-        mockgetTabThreadStates.mockResolvedValue([
-            {
-                process: '11',
-                thread: '222',
-                wallDuration: 10,
-                occurrences: 10,
-                state: 'sss',
-                stateJX: 'mm',
-            },
-            {
-                process: '11',
-                thread: '222',
-                wallDuration: 10,
-                occurrences: 10,
-                state: 'sss',
-                stateJX: 'mm',
-            },
-        ]);
-        let a = { rightNs: 1, leftNs: 0, threadIds: [11, 12, 13] };
-        expect((tabPaneThreadStates.data = a)).toBeTruthy();
-    });
+  it('TabPaneThreadStatesTest02', function () {
+    // @ts-ignore
+    let mockgetTabThreadStates = sqlit.getTabThreadStates;
+    mockgetTabThreadStates.mockResolvedValue([
+      {
+        process: '11',
+        thread: '222',
+        wallDuration: 10,
+        occurrences: 10,
+        state: 'sss',
+        stateJX: 'mm',
+      },
+      {
+        process: '11',
+        thread: '222',
+        wallDuration: 10,
+        occurrences: 10,
+        state: 'sss',
+        stateJX: 'mm',
+      },
+    ]);
+    let a = { rightNs: 1, leftNs: 0, threadIds: [11, 12, 13] };
+    expect((tabPaneThreadStates.data = a)).toBeTruthy();
+  });
 
-    it('TabPaneThreadStatesTest03', function () {
-        // @ts-ignore
-        let mockgetTabThreadStates = sqlit.getTabThreadStates;
-        mockgetTabThreadStates.mockResolvedValue([]);
-        let a = { rightNs: 1, leftNs: 0, threadIds: [11, 12, 13] };
-        expect((tabPaneThreadStates.data = a)).toBeTruthy();
-    });
+  it('TabPaneThreadStatesTest03', function () {
+    // @ts-ignore
+    let mockgetTabThreadStates = sqlit.getTabThreadStates;
+    mockgetTabThreadStates.mockResolvedValue([]);
+    let a = { rightNs: 1, leftNs: 0, threadIds: [11, 12, 13] };
+    expect((tabPaneThreadStates.data = a)).toBeTruthy();
+  });
 
-    it('TabPaneThreadStatesTest04', function () {
-        expect(tabPaneThreadStates.initHtml()).toMatchInlineSnapshot(`
+  it('TabPaneThreadStatesTest04', function () {
+    expect(tabPaneThreadStates.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -90,29 +90,29 @@ describe('TabPaneThreadStates Test', () => {
             padding: 10px 10px;
         }
         </style>
-        <div style=\\"display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px\\">
-            <stack-bar id=\\"stack-bar\\" style=\\"flex: 1\\"></stack-bar>
-            <label id=\\"time-range\\"  style=\\"width: auto;text-align: end;font-size: 10pt;\\">Selected range:0.0 ms</label>
+        <div style="display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px">
+            <stack-bar id="stack-bar" style="flex: 1"></stack-bar>
+            <label id="time-range"  style="width: auto;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
         </div>
-        <lit-table id=\\"tb-thread-states\\" style=\\"height: auto\\">
-            <lit-table-column width=\\"25%\\" title=\\"Process\\" data-index=\\"process\\" key=\\"process\\"  align=\\"flex-start\\" order>
+        <lit-table id="tb-thread-states" style="height: auto;overflow-x: auto">
+            <lit-table-column width="240px" title="Process" data-index="process" key="process"  align="flex-start" order>
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"PID\\" data-index=\\"pid\\" key=\\"pid\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="120px" title="PID" data-index="pid" key="pid"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"20%\\" title=\\"Thread\\" data-index=\\"thread\\" key=\\"thread\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="240px" title="Thread" data-index="thread" key="thread"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"TID\\" data-index=\\"tid\\" key=\\"tid\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="120px" title="TID" data-index="tid" key="tid"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"State\\" data-index=\\"state\\" key=\\"state\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="240px" title="State" data-index="state" key="state"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"Wall duration(ms)\\" data-index=\\"wallDuration\\" key=\\"wallDuration\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="120px" title="Wall duration(ms)" data-index="wallDuration" key="wallDuration"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"Avg Wall duration(ms)\\" data-index=\\"avgDuration\\" key=\\"avgDuration\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="120px" title="Avg Wall duration(ms)" data-index="avgDuration" key="avgDuration"  align="flex-start" order >
             </lit-table-column>
-            <lit-table-column width=\\"1fr\\" title=\\"Occurrences\\" data-index=\\"occurrences\\" key=\\"occurrences\\"  align=\\"flex-start\\" order >
+            <lit-table-column width="120px" title="Occurrences" data-index="occurrences" key="occurrences"  align="flex-start" order >
             </lit-table-column>
         </lit-table>
         "
 `);
-    });
+  });
 });

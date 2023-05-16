@@ -17,29 +17,29 @@
 import { SpTraceCommand } from '../../../../dist/trace/component/setting/SpTraceCommand.js';
 
 describe('SPTraceCommand Test', () => {
-    beforeAll(() => {
-        document.body.innerHTML = `
+  beforeAll(() => {
+    document.body.innerHTML = `
             <trace-command id = "command"><trace-command>
         `;
-    });
-    it('new SPTraceCommand', function () {
-        expect(new SpTraceCommand()).not.toBeNull();
-    });
+  });
+  it('new SPTraceCommand', function () {
+    expect(new SpTraceCommand()).not.toBeNull();
+  });
 
-    it(' SpAllocations get Default attrValue', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        expect(spEle.hdcCommon).toEqual('');
-    });
+  it(' SpAllocations get Default attrValue', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    expect(spEle.hdcCommon).toEqual('');
+  });
 
-    it(' SpAllocations set  attrValue', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        spEle.hdcCommon = 'test';
-        expect(spEle.hdcCommon).toEqual('test');
-    });
+  it(' SpAllocations set  attrValue', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    spEle.hdcCommon = 'test';
+    expect(spEle.hdcCommon).toEqual('test');
+  });
 
-    it(' SpTraceCommand test', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        expect(spEle.initHtml()).toMatchInlineSnapshot(`
+  it(' SpTraceCommand test', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    expect(spEle.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -143,28 +143,28 @@ describe('SPTraceCommand Test', () => {
             display: block
         } 
         </style>
-        <div id=\\"text-cmd\\">
-            <button id=\\"copy-button\\">
-                <img id=\\"copy-image\\" src=\\"img/copy.png\\">
+        <div id="text-cmd">
+            <button id="copy-button">
+                <img id="copy-image" src="img/copy.png">
             </button>
-            <textarea id=\\"code-text\\" readonly></textarea>
-            <button id=\\"stop-button\\">Stop Cmd</button>
+            <textarea id="code-text" readonly></textarea>
+            <button id="stop-button">Stop Cmd</button>
         </div>
         "
 `);
-    });
-    it(' SpTraceCommandtest01', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        spEle.show = false;
-        expect(spEle.show).toBeFalsy();
-    });
-    it(' SpTraceCommandtest02', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        spEle.show = true;
-        expect(spEle.show).toBeTruthy();
-    });
-    it(' SpTraceCommandtest03', function () {
-        let spEle = document.querySelector('#command') as SpTraceCommand;
-        expect(spEle.disconnectedCallback()).toBeUndefined();
-    });
+  });
+  it(' SpTraceCommandtest01', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    spEle.show = false;
+    expect(spEle.show).toBeFalsy();
+  });
+  it(' SpTraceCommandtest02', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    spEle.show = true;
+    expect(spEle.show).toBeTruthy();
+  });
+  it(' SpTraceCommandtest03', function () {
+    let spEle = document.querySelector('#command') as SpTraceCommand;
+    expect(spEle.disconnectedCallback()).toBeUndefined();
+  });
 });

@@ -17,71 +17,69 @@
 import { LitSlider } from '../../../dist/base-ui/slider/LitSlider.js';
 
 describe('LitSlider Test', () => {
-    let litSliderPanel = new LitSlider();
+  let litSliderPanel = new LitSlider();
 
-    litSliderPanel.disabledX = 'disabledX';
-    litSliderPanel.customSlider = 'customSlider';
-    litSliderPanel.customLine = 'customLine';
-    litSliderPanel.customButton = 'customButton';
-    litSliderPanel.percent = 'percent';
-    litSliderPanel.resultUnit = 'resultUnit';
+  litSliderPanel.disabledX = 'disabledX';
+  litSliderPanel.customSlider = 'customSlider';
+  litSliderPanel.customLine = 'customLine';
+  litSliderPanel.customButton = 'customButton';
+  litSliderPanel.percent = 'percent';
+  litSliderPanel.resultUnit = 'resultUnit';
 
-    it('LitSliderTest01', () => {
-        expect(litSliderPanel.disabledX).toEqual('');
-    });
+  it('LitSliderTest01', () => {
+    expect(litSliderPanel.disabledX).toEqual('');
+  });
 
-    it('LitSliderTest02', () => {
-        expect(litSliderPanel.customSlider).toEqual('');
-    });
+  it('LitSliderTest02', () => {
+    expect(litSliderPanel.customSlider).toEqual('');
+  });
 
-    it('LitSliderTest03', () => {
-        expect(litSliderPanel.customLine).toEqual('customLine');
-    });
+  it('LitSliderTest03', () => {
+    expect(litSliderPanel.customLine).toEqual('customLine');
+  });
 
-    it('LitSliderTest04', () => {
-        expect(litSliderPanel.customButton).toEqual('customButton');
-    });
+  it('LitSliderTest04', () => {
+    expect(litSliderPanel.customButton).toEqual('customButton');
+  });
 
-    it('LitSliderTest05', () => {
-        expect(litSliderPanel.percent).toEqual('percent');
-    });
+  it('LitSliderTest05', () => {
+    expect(litSliderPanel.percent).toEqual('percent');
+  });
 
-    it('LitSliderTest06', () => {
-        expect(litSliderPanel.resultUnit).toEqual('resultUnit');
-    });
+  it('LitSliderTest06', () => {
+    expect(litSliderPanel.resultUnit).toEqual('resultUnit');
+  });
 
-    it('LitSliderTest07', () => {
-        expect(litSliderPanel.formatSeconds(10)).toBe('00:00:10');
-    });
+  it('LitSliderTest07', () => {
+    expect(litSliderPanel.formatSeconds(10)).toBe('00:00:10');
+  });
 
-    it('LitSliderTest08', () => {
-        litSliderPanel.litSliderStyle = jest.fn(() => true);
-        litSliderPanel.litSliderStyle.minRange = jest.fn(() => 2);
-        litSliderPanel.litSliderStyle.maxRange = jest.fn(() => 1);
-        litSliderPanel.litSliderStyle.stepSize = jest.fn(() => 1);
-        expect(litSliderPanel.renderDefaultSlider()).toBeUndefined();
-    });
+  it('LitSliderTest08', () => {
+    litSliderPanel.litSliderStyle = jest.fn(() => true);
+    litSliderPanel.litSliderStyle.minRange = jest.fn(() => 2);
+    litSliderPanel.litSliderStyle.maxRange = jest.fn(() => 1);
+    litSliderPanel.litSliderStyle.stepSize = jest.fn(() => 1);
+    expect(litSliderPanel.renderDefaultSlider()).toBeUndefined();
+  });
 
-    it('LitSliderTest9', () => {
-        expect(litSliderPanel.adoptedCallback()).toBeUndefined();
-    });
+  it('LitSliderTest9', () => {
+    expect(litSliderPanel.adoptedCallback()).toBeUndefined();
+  });
 
-    it('LitSliderTest10', () => {
-        expect(litSliderPanel.disconnectedCallback()).toBeUndefined();
-    });
+  it('LitSliderTest10', () => {
+    expect(litSliderPanel.disconnectedCallback()).toBeUndefined();
+  });
 
-    it('LitSliderTest11', () => {
-        expect(litSliderPanel.disconnectedCallback()).toBeUndefined();
-    });
+  it('LitSliderTest11', () => {
+    expect(litSliderPanel.disconnectedCallback()).toBeUndefined();
+  });
 
-    it('LitSliderTest12', function () {
-        expect(
-            litSliderPanel.attributeChangedCallback('percent', '', '0%' || null)
-        ).toBeUndefined();
-    });
+  it('LitSliderTest12', function () {
+    expect(litSliderPanel.attributeChangedCallback('percent', '', '0%' || null)).toBeUndefined();
+  });
 
-    it('LitSliderTest13', function () {
-        expect(litSliderPanel.initHtml()).toMatchInlineSnapshot(`
+  it('LitSliderTest13', function () {
+    expect(litSliderPanel.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         /*
@@ -102,7 +100,7 @@ describe('LitSlider Test', () => {
         /*
          * Disable sliding
          */
-        :host([disabled]) input[type=\\"range\\"]{
+        :host([disabled]) input[type="range"]{
             pointer-events:none;
         }
         /*
@@ -131,7 +129,7 @@ describe('LitSlider Test', () => {
         /*
          * Slider basic style
          */
-        input[type=\\"range\\"]{
+        input[type="range"]{
             pointer-events:all;
             margin:0 -5px;
             width: 100%;
@@ -146,7 +144,7 @@ describe('LitSlider Test', () => {
         /*
          * Slider-line slidedAble area component
          */
-        input[type=\\"range\\"]::-webkit-slider-runnable-track{
+        input[type="range"]::-webkit-slider-runnable-track{
             display: flex;
             align-items: center;
             position: relative;
@@ -157,7 +155,7 @@ describe('LitSlider Test', () => {
          /*
          * Slider slider component
          */
-        input[type=\\"range\\"]::-webkit-slider-thumb{
+        input[type="range"]::-webkit-slider-thumb{
             -webkit-appearance: none;
             position: relative;
             width:20px;
@@ -168,7 +166,7 @@ describe('LitSlider Test', () => {
             transition:0.2s cubic-bezier(.12, .4, .29, 1.46);
         }
         
-        input[type=\\"range\\"]:focus{
+        input[type="range"]:focus{
             z-index:2;
         }
 
@@ -177,29 +175,29 @@ describe('LitSlider Test', () => {
         }
         
         </style>
-        <slot id=\\"slot\\"></slot>
-        <div id='slider-con' dir=\\"right\\">
-            <input id=\\"slider\\" type=\\"range\\" max=\\"10000000\\">
+        <slot id="slot"></slot>
+        <div id='slider-con' dir="right">
+            <input id="slider" type="range" max="10000000">
         </div>
         "
 `);
-    });
+  });
 
-    it('LitSliderTest14', () => {
-        litSliderPanel.disabledX = false;
-        expect(litSliderPanel.disabledX).toBeFalsy();
-    });
+  it('LitSliderTest14', () => {
+    litSliderPanel.disabledX = false;
+    expect(litSliderPanel.disabledX).toBeFalsy();
+  });
 
-    it('LitSliderTest15', () => {
-        litSliderPanel.customSlider = false;
-        expect(litSliderPanel.customSlider).toBeFalsy();
-    });
+  it('LitSliderTest15', () => {
+    litSliderPanel.customSlider = false;
+    expect(litSliderPanel.customSlider).toBeFalsy();
+  });
 
-    it('LitSliderTest16', () => {
-        expect(litSliderPanel.formatSeconds(36000)).toBe('10:00:00');
-    });
+  it('LitSliderTest16', () => {
+    expect(litSliderPanel.formatSeconds(36000)).toBe('10:00:00');
+  });
 
-    it('LitSliderTest17', () => {
-        expect(litSliderPanel.formatSeconds(4000)).toBe('01:06:40');
-    });
+  it('LitSliderTest17', () => {
+    expect(litSliderPanel.formatSeconds(4000)).toBe('01:06:40');
+  });
 });

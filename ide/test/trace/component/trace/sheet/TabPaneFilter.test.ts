@@ -17,56 +17,56 @@
 import { TabPaneFilter } from '../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js';
 
 describe('TabPaneFilter Test', () => {
-    let tabPaneFilter = new TabPaneFilter();
+  let tabPaneFilter = new TabPaneFilter();
 
-    it('TabPaneFilterTest01', function () {
-        expect(tabPaneFilter.firstSelect).toBe('');
-    });
+  it('TabPaneFilterTest01', function () {
+    expect(tabPaneFilter.firstSelect).toBe('');
+  });
 
-    it('TabPaneFilterTest02', function () {
-        expect(tabPaneFilter.secondSelect).toBe('');
-    });
+  it('TabPaneFilterTest02', function () {
+    expect(tabPaneFilter.secondSelect).toBe('');
+  });
 
-    it('TabPaneFilterTest03', function () {
-        expect(tabPaneFilter.filterValue).toBe('');
-    });
+  it('TabPaneFilterTest03', function () {
+    expect(tabPaneFilter.filterValue).toBe('');
+  });
 
-    it('TabPaneFilterTest04', function () {
-        tabPaneFilter.filterValue = true;
-        expect(tabPaneFilter.filterValue).toBeTruthy();
-    });
+  it('TabPaneFilterTest04', function () {
+    tabPaneFilter.filterValue = true;
+    expect(tabPaneFilter.filterValue).toBeTruthy();
+  });
 
-    it('TabPaneFilterTest05', function () {
-        expect(tabPaneFilter.icon).toBe('tree');
-    });
+  it('TabPaneFilterTest05', function () {
+    expect(tabPaneFilter.icon).toBe('tree');
+  });
 
-    it('TabPaneFilterTest08', function () {
-        tabPaneFilter.iconEL.name = 'menu';
-        expect(tabPaneFilter.icon).toBe('block');
-    });
+  it('TabPaneFilterTest08', function () {
+    tabPaneFilter.iconEL.name = 'menu';
+    expect(tabPaneFilter.icon).toBe('block');
+  });
 
-    it('TabPaneFilterTest09', function () {
-        tabPaneFilter.iconEL.name = '';
-        expect(tabPaneFilter.icon).toBe('');
-    });
+  it('TabPaneFilterTest09', function () {
+    tabPaneFilter.iconEL.name = '';
+    expect(tabPaneFilter.icon).toBe('');
+  });
 
-    it('TabPaneFilterTest06', function () {
-        tabPaneFilter.icon = true;
-        expect(tabPaneFilter.icon).toBe('');
-    });
+  it('TabPaneFilterTest06', function () {
+    tabPaneFilter.icon = true;
+    expect(tabPaneFilter.icon).toBe('');
+  });
 
-    it('TabPaneFilterTest010', function () {
-        tabPaneFilter.icon = 'block';
-        expect(tabPaneFilter.icon).toBe('block');
-    });
+  it('TabPaneFilterTest010', function () {
+    tabPaneFilter.icon = 'block';
+    expect(tabPaneFilter.icon).toBe('block');
+  });
 
-    it('TabPaneFilterTest011', function () {
-        tabPaneFilter.icon = 'tree';
-        expect(tabPaneFilter.icon).toBe('tree');
-    });
+  it('TabPaneFilterTest011', function () {
+    tabPaneFilter.icon = 'tree';
+    expect(tabPaneFilter.icon).toBe('tree');
+  });
 
-    it('TabPaneFilterTest07', function () {
-        expect(tabPaneFilter.initHtml()).toMatchInlineSnapshot(`
+  it('TabPaneFilterTest07', function () {
+    expect(tabPaneFilter.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -163,6 +163,9 @@ describe('TabPaneFilter Test', () => {
         :host(:not([second])) #second-select{
             display: none;
         }
+        :host(:not([third])) #third-select{
+            display: none;
+        }
         :host(:not([tree])) .tree{
             display: none;
         }
@@ -175,7 +178,7 @@ describe('TabPaneFilter Test', () => {
         :host(:not([icon])) #icon{
             display: none;
         }
-        #icon[name=\\"statistics\\"]{
+        #icon[name="statistics"]{
             margin-left: 12px;
         }
         
@@ -214,13 +217,13 @@ describe('TabPaneFilter Test', () => {
             padding: 2px 18px;
         }
         
-        #call-tree-popover[visible=\\"true\\"] #call-tree{
+        #call-tree-popover[visible="true"] #call-tree{
             color: #0A59F7;
         }
-        #tree-constraints-popover[visible=\\"true\\"] #tree-constraints{
+        #tree-constraints-popover[visible="true"] #tree-constraints{
             color: #0A59F7;
         }
-        #data-mining-popover[visible=\\"true\\"] #data-mining{
+        #data-mining-popover[visible="true"] #data-mining{
             color: #0A59F7;
         }
         
@@ -228,7 +231,7 @@ describe('TabPaneFilter Test', () => {
             color: #FFFFFF;
             background: #0C65D1;
         }
-        #data-library-popover[visible=\\"true\\"] #data-library{
+        #data-library-popover[visible="true"] #data-library{
             color: #0A59F7;
         }
         .library-checked[highlight]{
@@ -273,84 +276,82 @@ describe('TabPaneFilter Test', () => {
             display: flex;
         }
 </style>
-    <lit-icon name=\\"statistics\\" class=\\"spacing\\" id=\\"icon\\" size=\\"16\\"></lit-icon>
-    <span class=\\"describe left-text spacing\\">Input Filter</span>
-    <input id=\\"filter-input\\" class=\\"spacing\\" placeholder=\\"Detail Filter\\"/>
-    <button id=\\"mark\\" class=\\"spacing\\">Mark Snapshot</button>
-    <div id=\\"load\\" style=\\"display: flex\\">
+    <lit-icon name="statistics" class="spacing" id="icon" size="20"></lit-icon>
+    <span class="describe left-text spacing">Input Filter</span>
+    <input id="filter-input" class="spacing" placeholder="Detail Filter"/>
+    <button id="mark" class="spacing">Mark Snapshot</button>
+    <div id="load" style="display: flex">
     
     </div>
-        <lit-popover placement=\\"topLeft\\" class=\\"popover\\" haveRadio=\\"true\\" trigger=\\"click\\" id=\\"call-tree-popover\\">
-             <div slot=\\"content\\">
-                 <div class=\\"tree-check\\"><lit-check-box class=\\"lit-check-box\\" not-close></lit-check-box><div>Invert</div></div>
-                 <div class=\\"tree-check\\"><lit-check-box class=\\"lit-check-box\\" not-close></lit-check-box><div>Hide System so</div></div>
+        <lit-popover placement="topLeft" class="popover" haveRadio="true" trigger="click" id="call-tree-popover">
+             <div slot="content">
+                 <div class="tree-check"><lit-check-box class="lit-check-box" not-close></lit-check-box><div>Invert</div></div>
+                 <div class="tree-check"><lit-check-box class="lit-check-box" not-close></lit-check-box><div>Hide System so</div></div>
              </div>
-             <span class=\\"describe tree max-spacing\\" id=\\"call-tree\\">Options</span>
+             <span class="describe tree max-spacing" id="call-tree">Options</span>
         </lit-popover>
-        <lit-popover placement=\\"topLeft\\" class=\\"popover\\" haveRadio=\\"true\\" trigger=\\"click\\" id=\\"tree-constraints-popover\\">
-             <div slot=\\"content\\" style=\\"display: flex; align-items: flex-end\\">
-                 <lit-check-box id=\\"constraints-check\\" not-close></lit-check-box>
-                 <input class=\\"constraints-input\\" disabled value=\\"0\\" not-close/>
-                 <lit-popover placement=\\"topLeft\\" class=\\"popover\\" haveRadio=\\"true\\" not-close>
-                     <div slot=\\"content\\">
-                         <div style=\\"font-size: 0.7rem\\">Constraints：Only enabled with data and while stopped；</div>
-                         <div style=\\"font-size: 0.7rem\\">filters data to thresholds. </div>
+        <lit-popover placement="topLeft" class="popover" haveRadio="true" trigger="click" id="tree-constraints-popover">
+             <div slot="content" style="display: flex; align-items: flex-end">
+                 <lit-check-box id="constraints-check" not-close></lit-check-box>
+                 <input class="constraints-input" disabled value="0" not-close/>
+                 <lit-popover placement="topLeft" class="popover" haveRadio="true" not-close>
+                     <div slot="content">
+                         <div style="font-size: 0.7rem">Constraints：Only enabled with data and while stopped；</div>
+                         <div style="font-size: 0.7rem">filters data to thresholds. </div>
                      </div>
-                     <input class=\\"constraints-input\\" disabled value=\\"∞\\" not-close/>
+                     <input class="constraints-input" disabled value="∞" not-close/>
                   </lit-popover>
              </div>
-             <span class=\\"describe tree max-spacing\\" id=\\"tree-constraints\\">Sample Count Filter</span>
+             <span class="describe tree max-spacing" id="tree-constraints">Sample Count Filter</span>
         </lit-popover>
-         <lit-popover placement=\\"topLeft\\" class=\\"popover\\" haveRadio=\\"true\\" trigger=\\"click\\" id=\\"data-mining-popover\\">
-            <div slot=\\"content\\">
-                 <div id=\\"mining-row\\">
+         <lit-popover placement="topLeft" class="popover" haveRadio="true" trigger="click" id="data-mining-popover">
+            <div slot="content">
+                 <div id="mining-row">
                      
                  </div>
-                 <div style=\\"display: flex;justify-content: space-around; margin-top: 8px\\">
-                     <div class=\\"mining-button\\">Reset</div>
+                 <div style="display: flex;justify-content: space-around; margin-top: 8px">
+                     <div class="mining-button">Reset</div>
                  </div>
             </div>
-            <span class=\\"describe tree max-spacing\\" id=\\"data-mining\\">Symbol Filter</span>
+            <span class="describe tree max-spacing" id="data-mining">Symbol Filter</span>
         </lit-popover>
-        <lit-popover placement=\\"topLeft\\" class=\\"popover\\" haveRadio=\\"true\\" trigger=\\"click\\" id=\\"data-library-popover\\">
-            <div slot=\\"content\\">
-                 <div id=\\"library-row\\">
+        <lit-popover placement="topLeft" class="popover" haveRadio="true" trigger="click" id="data-library-popover">
+            <div slot="content">
+                 <div id="library-row">
                      
                  </div>
-                 <div style=\\"display: flex;justify-content: space-around; margin-top: 8px\\">
-                     <div class=\\"library-button\\">Reset</div>
+                 <div style="display: flex;justify-content: space-around; margin-top: 8px">
+                     <div class="library-button">Reset</div>
                  </div>
             </div>
-            <span class=\\"describe tree max-spacing\\" id=\\"data-library\\">Library Filter</span>
+            <span class="describe tree max-spacing" id="data-library">Library Filter</span>
         </lit-popover>
-        <div class=\\"sort\\">
-            <lit-icon name=\\"swap\\" class=\\"spacing\\" size=\\"16\\"></lit-icon>
-            <div style=\\"margin-left: 5px\\" class=\\"describe statistics-name\\">Statistics by Thread</div>
+        <div class="sort">
+            <lit-icon name="swap" class="spacing" size="16"></lit-icon>
+            <div style="margin-left: 5px" class="describe statistics-name">Statistics by Thread</div>
         </div>
         "
 `);
-    });
+  });
 
-    it('TabPaneFilterTest10', function () {
-        expect(tabPaneFilter.addDataMining({ name: '' }, '')).toBe(-1);
-    });
+  it('TabPaneFilterTest10', function () {
+    expect(tabPaneFilter.addDataMining({ name: '' }, '')).toBe(-1);
+  });
 
-    it('TabPaneFilterTest11', function () {
-        expect(tabPaneFilter.getFilterTreeData()).not.toBeUndefined();
-    });
+  it('TabPaneFilterTest11', function () {
+    expect(tabPaneFilter.getFilterTreeData()).not.toBeUndefined();
+  });
 
-    it('TabPaneFilterTest12', function () {
-        expect(
-            tabPaneFilter.initializeFilterTree(true, true, true)
-        ).toBeUndefined();
-    });
+  it('TabPaneFilterTest12', function () {
+    expect(tabPaneFilter.initializeFilterTree(true, true, true)).toBeUndefined();
+  });
 
-    it('TabPaneFilterTest13', function () {
-        expect(tabPaneFilter.disabledMining).toBeFalsy();
-    });
+  it('TabPaneFilterTest13', function () {
+    expect(tabPaneFilter.disabledMining).toBeFalsy();
+  });
 
-    it('TabPaneFilterTest14', function () {
-        tabPaneFilter.disabledMining = true;
-        expect(tabPaneFilter.disabledMining).toBeTruthy();
-    });
+  it('TabPaneFilterTest14', function () {
+    tabPaneFilter.disabledMining = true;
+    expect(tabPaneFilter.disabledMining).toBeTruthy();
+  });
 });

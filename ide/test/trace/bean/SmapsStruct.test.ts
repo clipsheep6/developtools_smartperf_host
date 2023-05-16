@@ -61,10 +61,9 @@ describe('SmapsStruct Test', () => {
                 rssStr: expect.any(String),
                 pssStr: expect.any(String),
                 sizeStr: expect.any(String),
-                resideStr: expect.any(String),
-            },
-            `
-Object {
+                resideStr: expect.any(String)
+            }, `
+{
   "address": Any<String>,
   "dirty": Any<Number>,
   "dirtyStr": Any<String>,
@@ -116,31 +115,29 @@ Object {
         };
         expect(sMapsTreeObj).not.toBeUndefined();
         expect(sMapsTreeObj).toMatchInlineSnapshot(
-            {
-                id: expect.any(String),
-                pid: expect.any(String),
-                rsspro: expect.any(Number),
-                rssproStr: expect.any(String),
-                type: expect.any(String),
-                reg: expect.any(Number),
-                regStr: expect.any(String),
-                path: expect.any(String),
-                rss: expect.any(Number),
-                rssStr: expect.any(String),
-                dirty: expect.any(Number),
-                dirtyStr: expect.any(String),
-                swapper: expect.any(Number),
-                swapperStr: expect.any(String),
-                pss: expect.any(Number),
-                pssStr: expect.any(String),
-                size: expect.any(Number),
-                sizeStr: expect.any(String),
-                respro: expect.any(Number),
-                resproStr: expect.any(String),
-                children: expect.any(Array),
-            },
-            `
-Object {
+{
+  id: expect.any(String),
+  pid: expect.any(String),
+  rsspro: expect.any(Number),
+  rssproStr: expect.any(String),
+  type: expect.any(String),
+  reg: expect.any(Number),
+  regStr: expect.any(String),
+  path: expect.any(String),
+  rss: expect.any(Number),
+  rssStr: expect.any(String),
+  dirty: expect.any(Number),
+  dirtyStr: expect.any(String),
+  swapper: expect.any(Number),
+  swapperStr: expect.any(String),
+  pss: expect.any(Number),
+  pssStr: expect.any(String),
+  size: expect.any(Number),
+  sizeStr: expect.any(String),
+  respro: expect.any(Number),
+  resproStr: expect.any(String),
+  children: expect.any(Array) }, `
+{
   "children": Any<Array>,
   "dirty": Any<Number>,
   "dirtyStr": Any<String>,
@@ -163,7 +160,6 @@ Object {
   "swapperStr": Any<String>,
   "type": Any<String>,
 }
-`
-        );
+`);
     });
 });

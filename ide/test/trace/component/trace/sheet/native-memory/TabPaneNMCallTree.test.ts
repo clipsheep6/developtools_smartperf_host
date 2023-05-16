@@ -17,6 +17,10 @@ import '../../../../../../dist/trace/component/trace/sheet/native-memory/TabPane
 import { TabPaneNMCallTree } from '../../../../../../dist/trace/component/trace/sheet/native-memory/TabPaneNMCallTree.js';
 // @ts-ignore
 import { TabPaneFilter } from '../../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js';
+// @ts-ignore
+import { FrameChart } from '../../../../../../dist/trace/component/chart/FrameChart.js';
+// @ts-ignore
+import { DisassemblingWindow } from '../../../../../../dist/trace/component/DisassemblingWindow.js';
 
 const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../../../dist/trace/database/SqlLite.js');
@@ -24,48 +28,48 @@ jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 window.ResizeObserver =
     window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
-        disconnect: jest.fn(),
-        observe: jest.fn(),
-        unobserve: jest.fn(),
+      disconnect: jest.fn(),
+      observe: jest.fn(),
+      unobserve: jest.fn(),
     }));
 
 describe('TabPaneNMCallTree Test', () => {
-    document.body.innerHTML =
-        '<div><tabpane-nm-calltree id="ddd"></tabpane-nm-calltree></div>';
-    let tabPaneNMCallTree = document.querySelector<TabPaneNMCallTree>('#ddd');
-    let dom = document.createElement('div');
-    dom.setAttribute('id', 'framechart');
-    tabPaneNMCallTree.frameChart = dom;
+  document.body.innerHTML = '<div><tabpane-nm-calltree id="ddd"></tabpane-nm-calltree></div>';
+  let tabPaneNMCallTree = document.querySelector<TabPaneNMCallTree>('#ddd');
+  let dom = new FrameChart();
+  dom.setAttribute('id', 'framechart');
+  tabPaneNMCallTree.frameChart = dom;
+  tabPaneNMCallTree.modal = new DisassemblingWindow();
+  tabPaneNMCallTree.filter = new TabPaneFilter();
 
-    it('TabPaneNMCallTreeTest01', function () {
-        let hookLeft = {
-            ip: '',
-            symbolsId: 0,
-            pathId: 0,
-            processName: '',
-            type: 0,
-            children: [],
-        };
-        tabPaneNMCallTree.dataSource = [];
-        tabPaneNMCallTree.setRightTableData = jest.fn(() => true);
-        let groupByWithTid = tabPaneNMCallTree.setRightTableData(hookLeft);
-        expect(groupByWithTid).toBeTruthy();
-    });
+  it('TabPaneNMCallTreeTest01', function () {
+    let hookLeft = {
+      ip: '',
+      symbolsId: 0,
+      pathId: 0,
+      processName: '',
+      type: 0,
+      children: [],
+    };
+    tabPaneNMCallTree.dataSource = [];
+    tabPaneNMCallTree.setRightTableData = jest.fn(() => true);
+    let groupByWithTid = tabPaneNMCallTree.setRightTableData(hookLeft);
+    expect(groupByWithTid).toBeTruthy();
+  });
 
-    it('TabPaneNMCallTreeTest02', function () {
-        let data = [
-            { size: 10, count: 20, children: [] },
-            { size: 11, count: 21, children: [] },
-            { size: 21, count: 31, children: [] },
-        ];
-        expect(tabPaneNMCallTree.sortTree(data).length).toBe(3);
-    });
+  it('TabPaneNMCallTreeTest02', function () {
+    let data = [
+      { size: 10, count: 20, children: [] },
+      { size: 11, count: 21, children: [] },
+      { size: 21, count: 31, children: [] },
+    ];
+    expect(tabPaneNMCallTree.sortTree(data).length).toBe(3);
+  });
 
-    it('TabPaneNMCallTreeTest03', function () {
-    });
+  it('TabPaneNMCallTreeTest03', function () {});
 
-    it('TabPaneNMCallTreeTest04', function () {
-        expect(tabPaneNMCallTree.initHtml()).toMatchInlineSnapshot(`
+  it('TabPaneNMCallTreeTest04', function () {
+    expect(tabPaneNMCallTree.initHtml()).toMatchInlineSnapshot(`
 "
         <style>
         :host{
@@ -132,7 +136,7 @@ describe('TabPaneNMCallTree Test', () => {
             
         </div>
         <lit-slicer-track ></lit-slicer-track>
-        <lit-table id="tb-filesystem-list" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)">
+        <lit-table id="tb-filesystem-list" no-head style="height: auto;border-left: 1px solid var(--dark-border1,#e2e2e2)" hideDownload>
             <span slot="head">Heaviest Stack Trace</span>
             <lit-table-column width="30px" title="" data-index="type" key="type"  align="flex-start" >
                 <template>
@@ -153,58 +157,93 @@ describe('TabPaneNMCallTree Test', () => {
     <div class="loading"></div>
     </div>"
 `);
+  });
+  it('TabPaneNMCallTreeTest05', function () {
+    let hook = {
+      id: '1',
+      dur: 1,
+      children: [],
+    };
+    let id = '1';
+    expect(tabPaneNMCallTree.getParentTree([hook], { id }, [])).not.toBeUndefined();
+  });
+  it('TabPaneNMCallInfoTest06', function () {
+    let hook = {
+      eventId: '1',
+      dur: 1,
+      children: [],
+    };
+    expect(tabPaneNMCallTree.getChildTree([hook], '1', [])).not.toBeUndefined();
+  });
+  it('TabPaneNMCallInfoTest07', function () {
+    document.body.innerHTML = "<div id='filter' tree></div>";
+    let table = document.querySelector('#filter');
+    table!.setAttribute('tree', '1');
+    tabPaneNMCallTree.filter = table;
+    tabPaneNMCallTree.filter.showThird = jest.fn(() => {
+      false;
     });
-    it('TabPaneNMCallTreeTest05', function () {
-        let hook = {
-            id: '1',
-            dur: 1,
-            children: [],
-        };
-        let id = '1';
-        expect(
-            tabPaneNMCallTree.getParentTree([hook], { id }, [])
-        ).not.toBeUndefined();
+    expect(tabPaneNMCallTree.showButtomMenu()).toBeUndefined();
+  });
+  it('TabPaneNMCallInfoTest08', function () {
+    let isShow = 1;
+    document.body.innerHTML = "<div id='filter' tree></div>";
+    let table = document.querySelector('#filter');
+    table!.setAttribute('tree', '1');
+    tabPaneNMCallTree.filter = table;
+    tabPaneNMCallTree.filter.showThird = jest.fn(() => {
+      false;
     });
-    it('TabPaneNMCallInfoTest06', function () {
-        let hook = {
-            eventId: '1',
-            dur: 1,
-            children: [],
-        };
-        expect(
-            tabPaneNMCallTree.getChildTree([hook], '1', [])
-        ).not.toBeUndefined();
-    });
-    it('TabPaneNMCallInfoTest07', function () {
-        document.body.innerHTML = "<div id='filter' tree></div>";
-        let table = document.querySelector('#filter');
-        table!.setAttribute('tree', '1');
-        tabPaneNMCallTree.filter = table;
-        expect(tabPaneNMCallTree.showButtomMenu()).toBeUndefined();
-    });
-    it('TabPaneNMCallInfoTest08', function () {
-        let isShow = 1;
-        document.body.innerHTML = "<div id='filter' tree></div>";
-        let table = document.querySelector('#filter');
-        table!.setAttribute('tree', '1');
-        tabPaneNMCallTree.filter = table;
-        expect(tabPaneNMCallTree.showButtomMenu(isShow)).toBeUndefined();
-    });
+    expect(tabPaneNMCallTree.showButtomMenu(isShow)).toBeUndefined();
+  });
 
-    it('TabPaneNMCallInfoTest09', function () {
-        tabPaneNMCallTree.filter.initializeFilterTree = jest.fn();
-        tabPaneNMCallTree.initFilterTypes = jest.fn();
-        tabPaneNMCallTree.native_type = jest.fn(() => [
-            'All Heap & Anonymous VM',
-            'All Heap',
-            'All Anonymous VM',
-        ]);
-        tabPaneNMCallTree.getDataByWorkerQuery = jest.fn();
-        tabPaneNMCallTree.data = {
-            leftNs: 0,
-            rightNs: 500,
-            nativeMemory: 'All Heap & Anonymous VM',
-        };
-        expect(tabPaneNMCallTree.data).toBeUndefined();
-    });
+  it('TabPaneNMCallInfoTest09', function () {
+    tabPaneNMCallTree.filter.initializeFilterTree = jest.fn();
+    tabPaneNMCallTree.initFilterTypes = jest.fn();
+    tabPaneNMCallTree.native_type = jest.fn(() => ['All Heap & Anonymous VM', 'All Heap', 'All Anonymous VM']);
+    tabPaneNMCallTree.getDataByWorkerQuery = jest.fn();
+    tabPaneNMCallTree.data = {
+      leftNs: 0,
+      rightNs: 500,
+      nativeMemory: 'All Heap & Anonymous VM',
+    };
+    expect(tabPaneNMCallTree.data).toBeUndefined();
+  });
+  it('TabPaneNMCallTreeTest10', function () {
+    let data = [
+      { size: 10, count: 20, children: [] },
+      { size: 11, count: 21, children: [] },
+      { size: 21, count: 31, children: [] },
+    ];
+    expect(tabPaneNMCallTree.setLTableData(data)).toBe();
+  });
+  it('TabPaneNMCallTreeTest11', function () {
+    let data = [
+      { callTreeConstraints:{
+          inputs:[1]
+        }
+        , dataMining: 20, callTree: [] ,icon : 'block'},
+      { callTreeConstraints:{
+          inputs:[1]
+        }, dataMining: 21, callTree: [] ,icon : 'block'},
+      { callTreeConstraints:{
+          inputs:[1]
+        }, dataMining: 31, callTree: [] ,icon : 'block'},
+    ];
+    expect(tabPaneNMCallTree.switchFlameChart(data)).toBe();
+  });
+  it('TabPaneNMCallTreeTest12', function () {
+    expect(tabPaneNMCallTree.initFilterTypes()).toBe();
+  });
+  it('TabPaneNMCallTreeTest13', function () {
+    let data = [
+      { id: 0, count: 20, children: [] },
+      { id: 1, count: 21, children: [] },
+      { id: 2, count: 31, children: [] },
+    ];
+    expect(tabPaneNMCallTree.setRightTableData(data)).toBeTruthy();
+  });
+  it('TabPaneNMCallTreeTest14', function () {
+    expect(tabPaneNMCallTree.getDataByWorkerQuery({},{})).toBeUndefined();
+  });
 });
