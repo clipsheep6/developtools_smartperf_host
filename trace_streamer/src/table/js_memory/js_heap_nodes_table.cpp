@@ -17,7 +17,7 @@
 
 namespace SysTuning {
 namespace TraceStreamer {
-enum Index { FILE_ID = 0, NODE_INDEX, TYPE, NAME, ID, SELF_SIZE, EDGE_COUNT, TRACE_NODE_ID, DETACHEDNESS };
+enum Index { FILE_ID = 0, NODE_INDEX, TYPE, NAME, NODE_ID, SELF_SIZE, EDGE_COUNT, TRACE_NODE_ID, DETACHEDNESS };
 JsHeapNodesTable::JsHeapNodesTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
     tableColumn_.push_back(TableBase::ColumnInfo("file_id", "INTEGER"));
@@ -47,7 +47,7 @@ JsHeapNodesTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* tab
 
 JsHeapNodesTable::Cursor::~Cursor() {}
 
-int JsHeapNodesTable::Cursor::Column(int col) const
+int32_t JsHeapNodesTable::Cursor::Column(int32_t col) const
 {
     switch (col) {
         case FILE_ID:
@@ -62,8 +62,8 @@ int JsHeapNodesTable::Cursor::Column(int col) const
         case NAME:
             sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapNodes_.Names()[CurrentRow()]));
             break;
-        case ID:
-            sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapNodes_.IDs()[CurrentRow()]));
+        case NODE_ID:
+            sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapNodes_.NodeIds()[CurrentRow()]));
             break;
         case SELF_SIZE:
             sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapNodes_.SelfSizes()[CurrentRow()]));

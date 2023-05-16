@@ -26,6 +26,8 @@
 #include "hilog_plugin_result.pbreader.h"
 #include "hisysevent_plugin_config.pbreader.h"
 #include "hisysevent_plugin_result.pbreader.h"
+#include "js_heap_config.pbreader.h"
+#include "js_heap_result.pbreader.h"
 #include "memory_plugin_result.pbreader.h"
 #include "native_hook_result.pbreader.h"
 #include "network_plugin_result.pbreader.h"
@@ -122,7 +124,10 @@ public:
           spanId_(point.spanId_),
           parentSpanId_(point.parentSpanId_),
           flag_(point.flag_),
-          args_(point.args_)
+          args_(point.args_),
+          funcPrefixId_(point.funcPrefixId_),
+          funcPrefix_(point.funcPrefix_),
+          funcArgs_(point.funcArgs_)
     {
     }
     void operator=(const TracePoint& point)

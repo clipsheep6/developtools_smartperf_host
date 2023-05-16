@@ -29,6 +29,7 @@ if (is_test) {
           "unittest/ebpf_parser_test.cpp",
           "unittest/event_parser_test.cpp",
           "unittest/filter_filter_test.cpp",
+          "unittest/frame_filter_test.cpp",
           "unittest/hidump_parser_test.cpp",
           "unittest/hilog_parser_test.cpp",
           "unittest/hisys_event_parser_test.cpp",
@@ -59,7 +60,10 @@ if (is_test) {
           "unittest/wasm_func_test.cpp",
         ]
       } else {
-        sources = [ "unittest/parser_pbreader_test.cpp" ]
+        sources = [
+          "unittest/js_memory_test.cpp",
+          "unittest/parser_pbreader_test.cpp",
+        ]
       }
     }
     deps = [
@@ -85,6 +89,7 @@ if (is_test) {
       "../src",
       "../src/trace_data",
       "../src/table",
+      "../src/table/base",
       "../src/filter",
       "../src/base",
       "../src/rpc",
@@ -118,6 +123,7 @@ if (is_test) {
       "${OHOS_PROCESS_PROTO_DIR}",
       "${OHOS_SERVICE_PROTO_DIR}",
       "${OHOS_TEST_PROTO_DIR}",
+      "${OHOS_JSMEMORY_PROTO_DIR}",
     ]
     if (is_test) {
       if (is_pbdecoder) {

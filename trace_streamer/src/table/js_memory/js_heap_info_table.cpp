@@ -23,8 +23,8 @@ JsHeapInfoTable::JsHeapInfoTable(const TraceDataCache* dataCache) : TableBase(da
     tableColumn_.push_back(TableBase::ColumnInfo("file_id", "INTEGER"));
     tableColumn_.push_back(TableBase::ColumnInfo("key", "TEXT"));
     tableColumn_.push_back(TableBase::ColumnInfo("type", "INTEGER"));
-    tableColumn_.push_back(TableBase::ColumnInfo("intValue", "INTEGER"));
-    tableColumn_.push_back(TableBase::ColumnInfo("strValue", "TEXT"));
+    tableColumn_.push_back(TableBase::ColumnInfo("int_value", "INTEGER"));
+    tableColumn_.push_back(TableBase::ColumnInfo("str_value", "TEXT"));
     tablePriKey_.push_back("file_id");
 }
 
@@ -43,7 +43,7 @@ JsHeapInfoTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase* tabl
 
 JsHeapInfoTable::Cursor::~Cursor() {}
 
-int JsHeapInfoTable::Cursor::Column(int col) const
+int32_t JsHeapInfoTable::Cursor::Column(int32_t col) const
 {
     switch (col) {
         case FILE_ID:

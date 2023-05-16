@@ -30,6 +30,10 @@ public:
     ~EbpfDataParser();
     void InitAndParseEbpfData(const std::deque<uint8_t>& dequeBuffer, uint64_t size);
     void Finish();
+    bool SupportImportSymbolTable()
+    {
+        return reader_ ? true : false;
+    }
 
 private:
     bool Init(const std::deque<uint8_t> dequeBuffer, uint64_t size);

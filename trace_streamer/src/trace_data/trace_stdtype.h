@@ -744,7 +744,7 @@ public:
                                    std::string eventType,
                                    DataIndex subType,
                                    uint64_t timeStamp,
-                                   uint64_t endTimestamp,
+                                   uint64_t endTimeStamp,
                                    uint64_t duration,
                                    uint64_t addr,
                                    int64_t memSize);
@@ -824,6 +824,11 @@ public:
                                     uint64_t offset,
                                     uint64_t symbolOffset,
                                     const std::string& vaddr);
+    void UpdateFrameInfo(size_t row,
+                         DataIndex symbolIndex,
+                         DataIndex filePathIndex,
+                         uint64_t offset,
+                         uint64_t symbolOffset);
     void UpdateSymbolIdToNameMap(uint64_t originSymbolId, uint64_t symbolId);
     void UpdateSymbolId();
     void UpdateSymbolId(size_t index, DataIndex symbolId);
@@ -1359,12 +1364,13 @@ private:
 };
 class EbpfCallStackData : public CacheBase {
 public:
-    size_t AppendNewData(uint32_t callChainId, uint32_t depth, uint64_t ip, uint64_t symbolId, uint64_t filePathId);
+    size_t AppendNewData(uint32_t callChainId, uint32_t depth, DataIndex ip, DataIndex symbolId, DataIndex filePathId);
+    void UpdateSymbolAndFilePathIndex(size_t row, DataIndex symbolId, DataIndex filePathId);
     const std::deque<uint32_t>& CallChainIds() const;
     const std::deque<uint32_t>& Depths() const;
-    const std::deque<uint64_t>& Ips() const;
-    const std::deque<uint64_t>& SymbolIds() const;
-    const std::deque<uint64_t>& FilePathIds() const;
+    const std::deque<DataIndex>& Ips() const;
+    const std::deque<DataIndex>& SymbolIds() const;
+    const std::deque<DataIndex>& FilePathIds() const;
     void Clear() override
     {
         CacheBase::Clear();
@@ -1377,9 +1383,9 @@ public:
 private:
     std::deque<uint32_t> callChainIds_ = {};
     std::deque<uint32_t> depths_ = {};
-    std::deque<uint64_t> ips_ = {};
-    std::deque<uint64_t> symbolIds_ = {};
-    std::deque<uint64_t> filePathIds_ = {};
+    std::deque<DataIndex> ips_ = {};
+    std::deque<DataIndex> symbolIds_ = {};
+    std::deque<DataIndex> filePathIds_ = {};
 };
 class PagedMemorySampleData : public CacheBase {
 public:
@@ -1884,7 +1890,7 @@ public:
     void SetEndTime(uint64_t row, uint64_t end);
     void SetType(uint64_t row, uint8_t type);
     void SetDst(uint64_t row, uint64_t dst);
-    void SetSrcs(uint64_t row, std::vector<uint64_t>& fromSlices);
+    void SetSrcs(uint64_t row, const std::vector<uint64_t>& fromSlices);
     const std::deque<uint32_t> Ipids() const;
     const std::deque<uint32_t> VsyncIds() const;
     const std::deque<uint64_t> CallStackIds() const;
@@ -1927,36 +1933,39 @@ private:
 
 class JsHeapFiles : public CacheBase {
 public:
-    void AppendNewData(uint32_t id, std::string filePath);
+    size_t AppendNewData(uint32_t id, std::string filePath, uint64_t startTime, uint64_t endTime, uint32_t ipid);
     const std::deque<uint32_t>& IDs() const;
     const std::deque<std::string>& FilePaths() const;
     const std::deque<uint64_t>& StartTimes() const;
     const std::deque<uint64_t>& EndTimes() const;
+    const std::deque<uint32_t>& Pids() const;
     void Clear() override
     {
         CacheBase::Clear();
-        ids_.clear();
+        fileIds_.clear();
         filePaths_.clear();
         startTimes_.clear();
         endTimes_.clear();
+        ipids_.clear();
     }
 
 private:
-    std::deque<uint32_t> ids_ = {};
+    std::deque<uint32_t> fileIds_ = {};
     std::deque<std::string> filePaths_ = {};
     std::deque<uint64_t> startTimes_ = {};
     std::deque<uint64_t> endTimes_ = {};
+    std::deque<uint32_t> ipids_ = {};
 };
 
 class JsHeapEdges : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId,
-                       uint32_t edgeIndex,
-                       uint32_t type,
-                       uint32_t nameOrIndex,
-                       uint32_t toNode,
-                       uint32_t fromNodeId,
-                       uint32_t toNodeId);
+    size_t AppendNewData(uint32_t fileId,
+                         uint32_t edgeIndex,
+                         uint32_t type,
+                         uint32_t nameOrIndex,
+                         uint32_t toNode,
+                         uint32_t fromNodeId,
+                         uint32_t toNodeId);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint32_t>& EdgeIndexs() const;
     const std::deque<uint32_t>& Types() const;
@@ -1988,11 +1997,11 @@ private:
 
 class JsHeapInfo : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId, std::string key, uint32_t type, uint32_t intValue, std::string strValue);
+    size_t AppendNewData(uint32_t fileId, std::string key, uint32_t type, int32_t intValue, std::string strValue);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<std::string>& Keys() const;
     const std::deque<uint32_t>& Types() const;
-    const std::deque<uint32_t>& IntValues() const;
+    const std::deque<int32_t>& IntValues() const;
     const std::deque<std::string>& StrValues() const;
     void Clear() override
     {
@@ -2008,13 +2017,13 @@ private:
     std::deque<uint32_t> fileIds_ = {};
     std::deque<std::string> keys_ = {};
     std::deque<uint32_t> types_ = {};
-    std::deque<uint32_t> intValues_ = {};
+    std::deque<int32_t> intValues_ = {};
     std::deque<std::string> strValues_ = {};
 };
 
 class JsHeapLocation : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId, uint32_t objectIndex, uint32_t scriptId, uint32_t line, uint32_t column);
+    size_t AppendNewData(uint32_t fileId, uint32_t objectIndex, uint32_t scriptId, uint32_t line, uint32_t column);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint32_t>& ObjectIndexs() const;
     const std::deque<uint32_t>& ScriptIds() const;
@@ -2040,20 +2049,20 @@ private:
 
 class JsHeapNodes : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId,
-                       uint32_t nodeIndex,
-                       uint32_t type,
-                       uint32_t name,
-                       uint32_t id,
-                       uint32_t selfSize,
-                       uint32_t edgeCount,
-                       uint32_t traceNodeId,
-                       uint32_t detachedNess);
+    size_t AppendNewData(uint32_t fileId,
+                         uint32_t nodeIndex,
+                         uint32_t type,
+                         uint32_t name,
+                         uint32_t id,
+                         uint32_t selfSize,
+                         uint32_t edgeCount,
+                         uint32_t traceNodeId,
+                         uint32_t detachedNess);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint32_t>& NodeIndexs() const;
     const std::deque<uint32_t>& Types() const;
     const std::deque<uint32_t>& Names() const;
-    const std::deque<uint32_t>& IDs() const;
+    const std::deque<uint32_t>& NodeIds() const;
     const std::deque<uint32_t>& SelfSizes() const;
     const std::deque<uint32_t>& EdgeCounts() const;
     const std::deque<uint32_t>& TraceNodeIds() const;
@@ -2065,7 +2074,7 @@ public:
         nodeIndexs_.clear();
         types_.clear();
         names_.clear();
-        ids_.clear();
+        nodeIds_.clear();
         selfSizes_.clear();
         edgeCounts_.clear();
         traceNodeIds_.clear();
@@ -2077,7 +2086,7 @@ private:
     std::deque<uint32_t> nodeIndexs_ = {};
     std::deque<uint32_t> types_ = {};
     std::deque<uint32_t> names_ = {};
-    std::deque<uint32_t> ids_ = {};
+    std::deque<uint32_t> nodeIds_ = {};
     std::deque<uint32_t> selfSizes_ = {};
     std::deque<uint32_t> edgeCounts_ = {};
     std::deque<uint32_t> traceNodeIds_ = {};
@@ -2086,7 +2095,7 @@ private:
 
 class JsHeapSample : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId, uint64_t timeStampUs, uint32_t lastAssignedId);
+    size_t AppendNewData(uint32_t fileId, uint64_t timeStampUs, uint32_t lastAssignedId);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint64_t>& TimeStampUs() const;
     const std::deque<uint32_t>& LastAssignedIds() const;
@@ -2106,7 +2115,7 @@ private:
 
 class JsHeapString : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId, uint32_t fileIndex, std::string string);
+    size_t AppendNewData(uint32_t fileId, uint32_t fileIndex, std::string string);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint64_t>& FileIndexs() const;
     const std::deque<std::string>& Strings() const;
@@ -2126,14 +2135,14 @@ private:
 
 class JsHeapTraceFuncInfo : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId,
-                       uint32_t functionIndex,
-                       uint32_t functionId,
-                       uint32_t name,
-                       uint32_t scriptName,
-                       uint32_t scriptId,
-                       uint32_t line,
-                       uint32_t column);
+    size_t AppendNewData(uint32_t fileId,
+                         uint32_t functionIndex,
+                         uint32_t functionId,
+                         uint32_t name,
+                         uint32_t scriptName,
+                         uint32_t scriptId,
+                         uint32_t line,
+                         uint32_t column);
     const std::deque<uint32_t>& FileIds() const;
     const std::deque<uint32_t>& FunctionIndexs() const;
     const std::deque<uint32_t>& FunctionIds() const;
@@ -2168,23 +2177,23 @@ private:
 
 class JsHeapTraceNode : public CacheBase {
 public:
-    void AppendNewData(uint32_t fileId,
-                       uint32_t id,
-                       uint32_t functionInfoIndex,
-                       uint32_t count,
-                       uint32_t size,
-                       uint32_t parentId);
+    size_t AppendNewData(uint32_t fileId,
+                         uint32_t id,
+                         uint32_t functionInfoIndex,
+                         uint32_t count,
+                         uint32_t size,
+                         int32_t parentId);
     const std::deque<uint32_t>& FileIds() const;
-    const std::deque<uint32_t>& IDs() const;
+    const std::deque<uint32_t>& TraceNodeIDs() const;
     const std::deque<uint32_t>& FunctionInfoIndexs() const;
     const std::deque<uint32_t>& Counts() const;
     const std::deque<uint32_t>& NodeSizes() const;
-    const std::deque<uint32_t>& ParentIds() const;
+    const std::deque<int32_t>& ParentIds() const;
     void Clear() override
     {
         CacheBase::Clear();
         fileIds_.clear();
-        ids_.clear();
+        traceNodeIds_.clear();
         functionInfoIndexs_.clear();
         counts_.clear();
         sizes_.clear();
@@ -2193,11 +2202,11 @@ public:
 
 private:
     std::deque<uint32_t> fileIds_ = {};
-    std::deque<uint32_t> ids_ = {};
+    std::deque<uint32_t> traceNodeIds_ = {};
     std::deque<uint32_t> functionInfoIndexs_ = {};
     std::deque<uint32_t> counts_ = {};
     std::deque<uint32_t> sizes_ = {};
-    std::deque<uint32_t> parentIds_ = {};
+    std::deque<int32_t> parentIds_ = {};
 };
 
 class GPUSlice {

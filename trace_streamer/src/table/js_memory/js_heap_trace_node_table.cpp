@@ -17,7 +17,7 @@
 
 namespace SysTuning {
 namespace TraceStreamer {
-enum Index { FILE_ID = 0, ID, FUNCTION_INFO_INDEX, COUNT, SIZE, PARENT_ID };
+enum Index { FILE_ID = 0, TRACE_NODE_ID, FUNCTION_INFO_INDEX, COUNT, SIZE, PARENT_ID };
 JsHeapTraceNodeTable::JsHeapTraceNodeTable(const TraceDataCache* dataCache) : TableBase(dataCache)
 {
     tableColumn_.push_back(TableBase::ColumnInfo("file_id", "INTEGER"));
@@ -44,14 +44,14 @@ JsHeapTraceNodeTable::Cursor::Cursor(const TraceDataCache* dataCache, TableBase*
 
 JsHeapTraceNodeTable::Cursor::~Cursor() {}
 
-int JsHeapTraceNodeTable::Cursor::Column(int col) const
+int32_t JsHeapTraceNodeTable::Cursor::Column(int32_t col) const
 {
     switch (col) {
         case FILE_ID:
             sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapTraceNode_.FileIds()[CurrentRow()]));
             break;
-        case ID:
-            sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapTraceNode_.IDs()[CurrentRow()]));
+        case TRACE_NODE_ID:
+            sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapTraceNode_.TraceNodeIDs()[CurrentRow()]));
             break;
         case FUNCTION_INFO_INDEX:
             sqlite3_result_int64(context_, static_cast<int64_t>(jsHeapTraceNode_.FunctionInfoIndexs()[CurrentRow()]));

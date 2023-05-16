@@ -60,6 +60,7 @@ ohos_source_set("lib") {
     "${OHOS_PROTO_GEN}/types/plugins/diskio_data",
     "${OHOS_PROTO_GEN}/types/plugins/process_data",
     "${OHOS_PROTO_GEN}/types/plugins/hisysevent_data",
+    "${OHOS_PROTO_GEN}/types/plugins/js_memory",
     "${OHOS_PROTO_GEN}",
     "//third_party/protobuf/src",
     "//third_party/hiperf/include",
@@ -127,6 +128,7 @@ ohos_source_set("trace_streamer_source") {
     "${OHOS_PROTO_GEN}/types/plugins/diskio_data",
     "${OHOS_PROTO_GEN}/types/plugins/process_data",
     "${OHOS_PROTO_GEN}/types/plugins/hisysevent_data",
+    "${OHOS_PROTO_GEN}/types/plugins/js_memory",
     "${OHOS_PROTO_GEN}",
     "//third_party/protobuf/src",
   ]
@@ -184,7 +186,7 @@ ohos_source_set("trace_streamer_source") {
     deps += [ "parser/hiperf_parser:hiperf_parser" ]
   }
 
-  if (use_wasm || enable_ts_utest) {
+  if (use_wasm) {
     sources += [
       "rpc/wasm_func.cpp",
       "rpc/wasm_func.h",

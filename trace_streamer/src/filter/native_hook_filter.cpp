@@ -24,7 +24,6 @@ NativeHookFilter::NativeHookFilter(TraceDataCache* dataCache, const TraceStreame
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib/ld-musl-aarch64.so.1"));
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib/ld-musl-arm.so.1"));
 }
-NativeHookFilter::~NativeHookFilter() = default;
 
 void NativeHookFilter::ParseConfigInfo(ProtoReader::BytesView& protoData)
 {
@@ -68,6 +67,7 @@ void NativeHookFilter::AppendFrameMaps(uint32_t id, const ProtoReader::BytesView
 void NativeHookFilter::AppendFilePathMaps(uint32_t id, uint64_t fileIndex)
 {
     filePathIdToFileIndex_.emplace(id, fileIndex);
+    fileIndexToFilePathId_.emplace(fileIndex, id);
 }
 void NativeHookFilter::AppendSymbolMap(uint32_t id, uint64_t symbolIndex)
 {
@@ -532,7 +532,20 @@ void NativeHookFilter::ParseMapsEvent(std::unique_ptr<NativeHookMetaData>& nativ
     }
     startAddrToMapsInfoMap_.insert(std::make_pair(startAddr, std::move(reader)));
 }
-
+template <class T>
+void NativeHookFilter::UpdateSymbolTablePtrAndStValueToSymAddrMap(
+    T* firstSymbolAddr,
+    const int size,
+    std::shared_ptr<ProtoReader::SymbolTable_Reader> reader)
+{
+    for (auto i = 0; i < size; i++) {
+        auto symAddr = firstSymbolAddr + i;
+        if ((symAddr->st_info & STT_FUNC) && symAddr->st_value) {
+            symbolTablePtrAndStValueToSymAddr_.Insert(reader, symAddr->st_value,
+                                                      reinterpret_cast<const uint8_t*>(symAddr));
+        }
+    }
+}
 // Only called in offline symbolization mode.
 void NativeHookFilter::ParseSymbolTableEvent(std::unique_ptr<NativeHookMetaData>& nativeHookMetaData)
 {
@@ -595,23 +608,9 @@ void NativeHookFilter::ParseSymbolTableEvent(std::unique_ptr<NativeHookMetaData>
     auto symTable = reader->sym_table();
     auto size = symTable.Size() / symEntrySize;
     if (symEntrySize == ELF32_SYM) {
-        auto firstSymbolAddr = reinterpret_cast<const Elf32_Sym*>(symTable.Data());
-        for (auto i = 0; i < size; i++) {
-            auto symAddr = firstSymbolAddr + i;
-            if ((symAddr->st_info & STT_FUNC) && symAddr->st_value) {
-                symbolTablePtrAndStValueToSymAddr_.Insert(reader, symAddr->st_value,
-                                                          reinterpret_cast<const uint8_t*>(symAddr));
-            }
-        }
+        UpdateSymbolTablePtrAndStValueToSymAddrMap(reinterpret_cast<const Elf32_Sym*>(symTable.Data()), size, reader);
     } else {
-        auto firstSymbolAddr = reinterpret_cast<const Elf64_Sym*>(symTable.Data());
-        for (auto i = 0; i < size; i++) {
-            auto symAddr = firstSymbolAddr + i;
-            if ((symAddr->st_info & STT_FUNC) && symAddr->st_value) {
-                symbolTablePtrAndStValueToSymAddr_.Insert(reader, symAddr->st_value,
-                                                          reinterpret_cast<const uint8_t*>(symAddr));
-            }
-        }
+        UpdateSymbolTablePtrAndStValueToSymAddrMap(reinterpret_cast<const Elf64_Sym*>(symTable.Data()), size, reader);
     }
 }
 
@@ -623,7 +622,8 @@ void NativeHookFilter::MaybeUpdateCurrentSizeDur(uint64_t row, uint64_t timeStam
     }
     lastAnyEventRaw = row;
 }
-void NativeHookFilter::UpdateSymbolIdByOffline()
+// when symbolization failed, use filePath + vaddr as symbol name
+void NativeHookFilter::UpdateSymbolIdsForSymbolizationFailed()
 {
     auto size = traceDataCache_->GetNativeHookFrameData()->Size();
     for (auto i = 0; i < size; ++i) {
@@ -669,6 +669,7 @@ void NativeHookFilter::ParseFramesInOfflineSymbolizationMode()
 
 void NativeHookFilter::GetNativeHookFrameVaddrs()
 {
+    vaddrs_.clear();
     auto size = traceDataCache_->GetNativeHookFrameData()->Size();
     // Traverse every piece of native_hook frame data
     for (auto i = 0; i < size; i++) {
@@ -792,7 +793,7 @@ void NativeHookFilter::FinishParseNativeHookData()
     if (isOfflineSymbolizationMode_) {
         ParseFramesInOfflineSymbolizationMode();
         ReparseStacksWithDifferentMeans();
-        UpdateSymbolIdByOffline();
+        UpdateSymbolIdsForSymbolizationFailed();
     }
     FilterNativeHookMainEvent(tsToMainEventsMap_.size());
     // In online symbolization mode and callstack is not compressed mode parse stack should after parse main event
@@ -808,25 +809,6 @@ void NativeHookFilter::FinishParseNativeHookData()
         traceDataCache_->GetNativeHookData()->UpdateLastCallerPathIndexs(callIdToLastCallerPathIndex_);
     }
     UpdateThreadNameWithNativeHookData();
-
-    allStackIdToFramesMap_.clear();
-    stackIdToCallChainIdMap_.clear();
-    threadNameIdToThreadNameIndex_.clear();
-    callIdToLastCallerPathIndex_.clear();
-    functionNameIndexToVaddr_.clear();
-    vaddrs_.clear();
-    frameIdToFrameBytes_.clear();
-    stackHashValueToFramesHashMap_.clear();
-    frameHashToFrameInfoMap_.clear();
-    stackIdToFramesMap_.clear();
-    symbolIdToSymbolIndex_.clear();
-    callChainIdToStackHashValueMap_.clear();
-    stackHashValueToCallChainIdMap_.clear();
-    itidToThreadNameId_.clear();
-    filePathIdToFileIndex_.clear();
-    invalidLibPathIndexs_.clear();
-    addrToAllocEventRow_.clear();
-    addrToMmapEventRow_.clear();
 }
 void NativeHookFilter::GetCallIdToLastLibId()
 {
@@ -861,6 +843,99 @@ void NativeHookFilter::GetCallIdToLastLibId()
             }
         }
     }
+}
+bool NativeHookFilter::GetIpsWitchNeedResymbolization(DataIndex filePathId, std::set<uint64_t>& ips)
+{
+    bool value = false;
+    for (auto itor = ipToFrameInfo_.begin(); itor != ipToFrameInfo_.end(); itor++) {
+        if (!itor->second) {
+            TS_LOGI("ip :%lu can not symbolization! FrameInfo is nullptr", itor->first);
+            continue;
+        }
+        if (itor->second->filePathId_ == filePathId) {
+            ips.insert(itor->first);
+            value = true;
+        }
+    }
+    return value;
+}
+
+template <class T>
+void NativeHookFilter::UpdateFilePathIdAndStValueToSymAddrMap(T* firstSymbolAddr, const int size, uint32_t filePathId)
+{
+    for (auto i = 0; i < size; i++) {
+        auto symAddr = firstSymbolAddr + i;
+        if (symAddr->st_info & STT_FUNC && symAddr->st_value) {
+            filePathIdAndStValueToSymAddr_.Insert(filePathId, symAddr->st_value,
+                                                  reinterpret_cast<const uint8_t*>(symAddr));
+        }
+    }
+}
+bool NativeHookFilter::NativeHookReloadElfSymbolTable(
+    std::shared_ptr<std::vector<std::shared_ptr<ElfSymbolTable>>> elfSymbolTables)
+{
+    std::set<uint64_t> resymbolizationIps;
+    for (auto elfSymbolTable : *elfSymbolTables) {
+        auto filePathIndex = traceDataCache_->dataDict_.GetStringIndex(elfSymbolTable->filePath);
+        if (!fileIndexToFilePathId_.count(filePathIndex)) {
+            TS_LOGD("native_hook maps does not support using %s resymbolization!", elfSymbolTable->filePath.c_str());
+            continue;
+        }
+        auto filePathId = fileIndexToFilePathId_.at(filePathIndex);
+        // record ips whitch needs resymbolization
+        auto ret = GetIpsWitchNeedResymbolization(filePathId, resymbolizationIps);
+        if (!ret) {
+            continue;
+        }
+        auto symEntrySize = elfSymbolTable->symEntSize;
+        auto size = elfSymbolTable->symTable.size() / symEntrySize;
+        if (symEntrySize == ELF32_SYM) {
+            UpdateFilePathIdAndStValueToSymAddrMap(reinterpret_cast<const Elf32_Sym*>(elfSymbolTable->symTable.data()),
+                                                   size, filePathId);
+        } else {
+            UpdateFilePathIdAndStValueToSymAddrMap(reinterpret_cast<const Elf64_Sym*>(elfSymbolTable->symTable.data()),
+                                                   size, filePathId);
+        }
+        if (filePathIdToImportSymbolTableMap_.count(filePathId)) {
+            filePathIdToImportSymbolTableMap_.at(filePathId) = elfSymbolTable;
+        } else {
+            filePathIdToImportSymbolTableMap_.emplace(std::make_pair(filePathId, elfSymbolTable));
+        }
+    }
+    // Delete symbolization results with the same filePath
+    for (auto ip : resymbolizationIps) {
+        ipToFrameInfo_.erase(ip);
+    }
+    OfflineSymbolization(resymbolizationIps);
+    UpdateResymbolizationResult(resymbolizationIps);
+    return true;
+}
+void NativeHookFilter::UpdateResymbolizationResult(const std::set<uint64_t>& ips)
+{
+    auto nativeHookFrame = traceDataCache_->GetNativeHookFrameData();
+    for (auto i = 0; i < nativeHookFrame->Size(); i++) {
+        auto ip = nativeHookFrame->Ips()[i];
+        auto itor = ips.lower_bound(ip);
+        if (itor == ips.end() || *itor != ip) {
+            continue;
+        }
+        if (!ipToFrameInfo_.count(ip)) {
+            continue;
+        }
+        auto frameInfo = ipToFrameInfo_.at(ip);
+        DataIndex filePathIndex = INVALID_DATAINDEX;
+        if (!filePathIdToFileIndex_.count(frameInfo->filePathId_)) {
+            TS_LOGE("filePathId_%u not found", frameInfo->filePathId_);
+            continue;
+        }
+        filePathIndex = filePathIdToFileIndex_.at(frameInfo->filePathId_);
+        nativeHookFrame->UpdateFrameInfo(i, frameInfo->symbolIndex_, filePathIndex, frameInfo->offset_,
+                                         frameInfo->symbolOffset_);
+    }
+    UpdateSymbolIdsForSymbolizationFailed();
+    // update vaddrs
+    GetNativeHookFrameVaddrs();
+    nativeHookFrame->UpdateVaddrs(vaddrs_);
 }
 } // namespace TraceStreamer
 } // namespace SysTuning
