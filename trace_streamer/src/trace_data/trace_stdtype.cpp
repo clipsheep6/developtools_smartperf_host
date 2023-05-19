@@ -2627,14 +2627,14 @@ const std::deque<uint32_t>& JsHeapTraceFuncInfo::Columns() const
 }
 
 size_t JsHeapTraceNode::AppendNewData(uint32_t fileId,
-                                      uint32_t traceNodeIds,
+                                      uint32_t traceNodeId,
                                       uint32_t functionInfoIndex,
                                       uint32_t count,
                                       uint32_t size,
                                       int32_t parentId)
 {
     fileIds_.emplace_back(fileId);
-    traceNodeIds_.emplace_back(traceNodeIds);
+    traceNodeIds_.emplace_back(traceNodeId);
     functionInfoIndexs_.emplace_back(functionInfoIndex);
     counts_.emplace_back(count);
     sizes_.emplace_back(size);

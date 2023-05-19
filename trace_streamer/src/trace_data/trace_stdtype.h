@@ -2178,7 +2178,7 @@ private:
 class JsHeapTraceNode : public CacheBase {
 public:
     size_t AppendNewData(uint32_t fileId,
-                         uint32_t id,
+                         uint32_t traceNodeId,
                          uint32_t functionInfoIndex,
                          uint32_t count,
                          uint32_t size,

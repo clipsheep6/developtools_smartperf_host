@@ -86,3 +86,26 @@ const char* GetDemangleSymbolIndex(const char* mangled)
         return demangle;
     }
 }
+int GetProcessorNumFromString(char *str)
+{
+    int processorNum = 0;
+    int lastNum = -1;
+    char *s = str;
+    while (*s != '\0') {
+        if (isdigit(*s)) {
+            int currentNum = strtol(s, &s, 10);
+            if (lastNum == -1) {
+                processorNum++;
+            } else {
+                processorNum += currentNum - lastNum;
+            }
+            lastNum = currentNum;
+        } else {
+            if (*s == ',') {
+                lastNum = -1;
+            }
+            s++;
+        }
+    }
+    return processorNum;
+}

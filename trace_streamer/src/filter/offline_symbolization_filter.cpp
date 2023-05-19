@@ -38,10 +38,10 @@ std::shared_ptr<std::vector<std::shared_ptr<FrameInfo>>> OfflineSymbolizationFil
 }
 template <class T>
 void OfflineSymbolizationFilter::UpdateFrameInfo(T* elfSym,
-                                              uint32_t& symbolStart,
-                                              uint64_t symVaddr,
-                                              uint64_t ip,
-                                              FrameInfo* frameInfo)
+                                                 uint32_t& symbolStart,
+                                                 uint64_t symVaddr,
+                                                 uint64_t ip,
+                                                 FrameInfo* frameInfo)
 {
     if (elfSym->st_value + elfSym->st_size >= symVaddr) {
         symbolStart = elfSym->st_name;
@@ -106,9 +106,11 @@ std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::OfflineSymbolization(uint
     if (length > 0) {
         end--;
         if (symEntLen == ELF32_SYM) {
-            UpdateFrameInfo(reinterpret_cast<const Elf32_Sym*>(end->second), symbolStart, symVaddr, ip, frameInfo.get());
+            UpdateFrameInfo(reinterpret_cast<const Elf32_Sym*>(end->second), symbolStart, symVaddr, ip,
+                            frameInfo.get());
         } else {
-            UpdateFrameInfo(reinterpret_cast<const Elf64_Sym*>(end->second), symbolStart, symVaddr, ip, frameInfo.get());
+            UpdateFrameInfo(reinterpret_cast<const Elf64_Sym*>(end->second), symbolStart, symVaddr, ip,
+                            frameInfo.get());
         }
     }
 
@@ -176,9 +178,11 @@ void OfflineSymbolizationFilter::OfflineSymbolization(const std::set<uint64_t>& 
         if (length > 0) {
             end--;
             if (symEntLen == ELF32_SYM) {
-                UpdateFrameInfo(reinterpret_cast<const Elf32_Sym*>(end->second), symbolStart, symVaddr, ip, frameInfo.get());
+                UpdateFrameInfo(reinterpret_cast<const Elf32_Sym*>(end->second), symbolStart, symVaddr, ip,
+                                frameInfo.get());
             } else {
-                UpdateFrameInfo(reinterpret_cast<const Elf64_Sym*>(end->second), symbolStart, symVaddr, ip, frameInfo.get());
+                UpdateFrameInfo(reinterpret_cast<const Elf64_Sym*>(end->second), symbolStart, symVaddr, ip,
+                                frameInfo.get());
             }
         }
         if (symbolStart == INVALID_UINT32 || symbolStart >= symbolTable->strTable.size()) {

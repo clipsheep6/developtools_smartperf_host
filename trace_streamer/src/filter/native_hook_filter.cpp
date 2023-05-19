@@ -865,7 +865,7 @@ void NativeHookFilter::UpdateFilePathIdAndStValueToSymAddrMap(T* firstSymbolAddr
 {
     for (auto i = 0; i < size; i++) {
         auto symAddr = firstSymbolAddr + i;
-        if (symAddr->st_info & STT_FUNC && symAddr->st_value) {
+        if ((symAddr->st_info & STT_FUNC) && (symAddr->st_value)) {
             filePathIdAndStValueToSymAddr_.Insert(filePathId, symAddr->st_value,
                                                   reinterpret_cast<const uint8_t*>(symAddr));
         }

@@ -791,7 +791,6 @@ void HtraceEventParser::FilterAllEventsReader()
     if (eventList_.size() < maxBuffSize * maxQueue) {
         return;
     }
-    // TS_LOGE("size = %d", eventList_.size());
     auto cmp = [](const std::unique_ptr<EventInfo>& a, const std::unique_ptr<EventInfo>& b) {
         return a->eventTimeStamp_ < b->eventTimeStamp_;
     };

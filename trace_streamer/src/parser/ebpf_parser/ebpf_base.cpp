@@ -181,7 +181,7 @@ void EbpfBase::UpdateFilePathIndexAndStValueToSymAddrMap(T* firstSymbolAddr, con
 {
     for (auto i = 0; i < size; i++) {
         auto symAddr = firstSymbolAddr + i;
-        if (symAddr->st_info & STT_FUNC && symAddr->st_value) {
+        if ((symAddr->st_info & STT_FUNC) && (symAddr->st_value)) {
             filePathIndexAndStValueToSymAddr_.Insert(filePathIndex, symAddr->st_value,
                                                      reinterpret_cast<const uint8_t*>(symAddr));
         }

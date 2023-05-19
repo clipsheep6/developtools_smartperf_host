@@ -100,7 +100,9 @@ private:
     void ParseSymbolizedNativeHookFrame();
     bool GetIpsWitchNeedResymbolization(DataIndex filePathId, std::set<uint64_t>& ips);
     template <class T>
-    void UpdateSymbolTablePtrAndStValueToSymAddrMap(T* firstSymbolAddr, const int size, std::shared_ptr<ProtoReader::SymbolTable_Reader> reader);
+    void UpdateSymbolTablePtrAndStValueToSymAddrMap(T* firstSymbolAddr,
+                                                    const int size,
+                                                    std::shared_ptr<ProtoReader::SymbolTable_Reader> reader);
     void ReparseStacksWithDifferentMeans();
     void CompressStackAndFrames(ProtoReader::RepeatedDataAreaIterator<ProtoReader::BytesView> frames);
     std::tuple<uint64_t, uint64_t> GetNeedUpdateProcessMapsAddrRange(uint64_t startAddr, uint64_t endAddr);

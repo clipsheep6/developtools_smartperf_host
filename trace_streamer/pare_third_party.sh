@@ -17,6 +17,9 @@ sed='sed'
 cp='cp'
 rm='rm'
 
+case "$OSTYPE" in
+  darwin*)  sed="gsed" ;;
+esac
 if [ ! -d "third_party" ];then
     mkdir third_party
 fi
@@ -97,7 +100,7 @@ fi
 
 if [ ! -f "hiperf/BUILD.gn" ];then
     rm -rf hiperf developtools_hiperf
-    git clone -b OpenHarmony-3.1-Release --depth=1 git@gitee.com:openharmony/developtools_hiperf.git
+    git clone -b OpenHarmony-3.2-Release --depth=1 git@gitee.com:openharmony/developtools_hiperf.git
     if [ -d "developtools_hiperf" ];then
         mv developtools_hiperf hiperf
         $cp ../prebuilts/patch_hiperf/BUILD.gn ../third_party/hiperf/BUILD.gn
