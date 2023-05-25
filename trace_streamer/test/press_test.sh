@@ -1,3 +1,4 @@
+#! /bin/sh
 # Copyright (C) 2021 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -10,27 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import("//build/ohos.gni")
-OHOS_PROTO_GEN = "${THIRD_PARTY}/protogen"
-ohos_source_set("sdk_plugin") {
-  subsystem_name = "trace_streamer"
-  part_name = "sdk_sdk_plugin"
-  sources = [
-    "sdk_plugin_data_parser.cpp",
-    "sdk_plugin_data_parser.h",
-  ]
-  include_dirs = [
-    "base",
-    "..",
-    "../include",
-    "../filter",
-    "../trace_data",
-    "../base",
-    "${THIRD_PARTY}/sqlite/include",
-    "${OHOS_PROTO_GEN}/types/plugins/mock_data",
-    "${THIRD_PARTY}/protobuf/src",
-  ]
-
-  public_deps = []
-}
+set -e
+repeated=1000
+if [ "$#" -ne "0" ];then
+    repeated = $1
+fi
+echo "begin" > repeated.text
+for ((i=1; i<=$repeated; i ++))
+do
+# user_trace_20230222203404.trace
+# user_trace_20230222203015
+echo $i
+./out/macx/trace_streamer ~/SourceData/repeated/user_trace_20230222203404.trace -e 1.db >> repeated.txt
+done
+echo "end" >> repeated.text

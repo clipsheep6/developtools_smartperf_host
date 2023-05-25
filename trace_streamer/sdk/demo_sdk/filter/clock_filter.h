@@ -58,7 +58,7 @@ public:
     {
         primaryClock_ = primary;
     }
-    ClockId GetPrimaryClock()
+    ClockId GetPrimaryClock() const
     {
         return primaryClock_;
     }
