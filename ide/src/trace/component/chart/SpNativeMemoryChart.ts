@@ -69,6 +69,9 @@ export class SpNativeMemoryChart {
     nativeRow.selectChangeHandler = this.trace.selectChangeHandler;
     nativeRow.onDrawTypeChangeHandler = (type) => {
       nativeRow.childrenList.forEach(row => row.drawType = type);
+      this.trace.favoriteRowsEL?.querySelectorAll<TraceRow<any>>(`trace-row[row-type='heap']`).forEach((it) => {
+        it.drawType = type;
+      });
       this.trace.refreshCanvas(false);
     };
     nativeRow.supplier = () => new Promise<Array<any>>((resolve) => resolve([]));

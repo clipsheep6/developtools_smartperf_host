@@ -325,11 +325,11 @@ export class TraceSheet extends BaseElement {
                         <div title="SO导入" id="import_div" style="width: 20px;height: 20px;display: flex;flex-direction: row;margin-right: 10px">
                             <input id="import-file" style="display: none;pointer-events: none" type="file" webkitdirectory>
                             <label style="width: 20px;height: 20px;cursor: pointer;" for="import-file">
-                                <lit-icon id="import-btn" name="import-so" style="pointer-events: none" size="20">
+                                <lit-icon id="import-btn" name="copy-csv" style="pointer-events: none" size="20">
                                 </lit-icon>
                             </label>
                         </div>
-                        <lit-icon title="下载数据" id="export-btn" name="copy-csv" style="font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
+                        <lit-icon title="下载数据" id="export-btn" name="import-so" style="font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
                         </lit-icon>
                         <lit-icon title="最大化" id="max-btn" name="vertical-align-top" style="font-weight: bold;cursor: pointer;margin-right: 10px" size="20">
                         </lit-icon>
