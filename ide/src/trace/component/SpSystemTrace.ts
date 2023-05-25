@@ -219,7 +219,11 @@ export class SpSystemTrace extends BaseElement {
         replaceRow.style.display = 'none';
         currentRow.rowHidden = !currentRow.hasAttribute('scene');
         currentRow.setAttribute('relationship', this.appendFamilyRelationships(currentRow));
-        this.rowsEL!.replaceChild(replaceRow, currentRow);
+        if (this.rowsEL!.contains(currentRow)) {
+          this.rowsEL!.replaceChild(replaceRow, currentRow);
+        } else {
+          this.rowsEL!.append(replaceRow);
+        }
         this.favoriteRowsEL!.append(currentRow);
       } else {
         this.favoriteRowsEL!.removeChild(currentRow);
@@ -613,17 +617,17 @@ export class SpSystemTrace extends BaseElement {
             minNodeId = it.dataList[it.dataList.length - 1].last_assigned_id;
           }
           // If you select the box from the beginning
-          if (startNS === TraceRow.range?.startNS) {
+          if (startNS! <= TraceRow.range?.startNS!) {
             minNodeId = HeapDataInterface.getInstance().getMinNodeId(SpJsMemoryChart.file.id);
           }
           //If you select the box from the ending
-          if (endNS === TraceRow.range?.endNS) {
+          if (endNS! >= TraceRow.range?.endNS! || endNS! >= it.dataList[it.dataList.length - 1].timestamp_us * 1000) {
             maxNodeId = HeapDataInterface.getInstance().getMaxNodeId(SpJsMemoryChart.file.id);
           }
           let summary = (this.traceSheetEL?.shadowRoot?.querySelector('#tabs') as LitTabs)
             ?.querySelector('#box-heap-summary')
             ?.querySelector('tabpane-summary') as TabPaneSummary;
-          summary.initSummaryData(SpJsMemoryChart.file.id, maxNodeId, minNodeId);
+          summary.initSummaryData(SpJsMemoryChart.file.id, minNodeId, maxNodeId);
           selection.jsMemory.push(1);
         }
         if (this.rangeTraceRow!.length !== rows.length) {
@@ -1295,7 +1299,7 @@ export class SpSystemTrace extends BaseElement {
         this.hoverStructNull();
       }
       rows
-        .filter((it) => it.focusContain(ev) && it.collect === this.inFavoriteArea)
+        .filter((it) => it.focusContain(ev,this.inFavoriteArea!) && it.collect === this.inFavoriteArea)
         .filter((it) => {
           if (it.collect) {
             return true;
@@ -1405,8 +1409,8 @@ export class SpSystemTrace extends BaseElement {
     ) {
     } else {
       let inFavoriteArea = this.favoriteRowsEL?.containPoint(ev);
-      let rows = this.visibleRows.filter((it) => it.focusContain(ev) && it.collect == inFavoriteArea);
-      if (rows.length != 0) {
+      let rows = this.visibleRows.filter((it) => it.focusContain(ev,inFavoriteArea!) && it.collect == inFavoriteArea);
+      if (JankStruct.delJankLineFlag) {
         this.clearPointPair();
       }
       if (rows && rows[0] && this.traceRowClickJudgmentConditions.get(rows[0]!.rowType!)?.()) {
@@ -1432,6 +1436,7 @@ export class SpSystemTrace extends BaseElement {
     this.timerShaftEL?.removeTriangle('inverted');
     this.traceSheetEL?.setAttribute('mode', 'hidden');
     this.refreshCanvas(true);
+    JankStruct.delJankLineFlag = true;
   }
 
   //泳道图点击判定条件
@@ -1514,7 +1519,7 @@ export class SpSystemTrace extends BaseElement {
     };
 
     cpuClickHandler = (d: CpuStruct) => {
-      let traceRow = this.shadowRoot?.querySelector<TraceRow<any>>(`trace-row[row-id='${d.processId}']`);
+      let traceRow = this.shadowRoot?.querySelector<TraceRow<any>>(`trace-row[row-id='${d.processId}'][row-type='process']`);
       if (traceRow) {
         traceRow.expansion = true;
       }
@@ -2084,7 +2089,7 @@ export class SpSystemTrace extends BaseElement {
           this.refreshCanvas(true);
           let param: SelectionParam = new SelectionParam();
           Object.assign(param, this.selectionParam);
-          this.traceSheetEL?.rangeSelect(param);
+          this.traceSheetEL?.rangeSelect(param, true);
         }
       });
     });
@@ -2100,14 +2105,16 @@ export class SpSystemTrace extends BaseElement {
       });
     } else {
       let row = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowParentId}'][folder]`);
-      if (row) {
+      if (row && !row.expansion) {
         row.expansion = true;
       }
-      this.rowsPaneEL!.scroll({
-        top: (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + (rootRow?.offsetHeight || 0),
-        left: 0,
-        behavior: smooth ? 'smooth' : undefined,
-      });
+      if(rootRow && rootRow.offsetTop >= 0 && rootRow.offsetHeight >= 0){
+        this.rowsPaneEL!.scroll({
+          top: (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + (rootRow?.offsetHeight || 0),
+          left: 0,
+          behavior: smooth ? 'smooth' : undefined,
+        });
+      }
     }
   }
 
@@ -2121,14 +2128,16 @@ export class SpSystemTrace extends BaseElement {
       });
     } else {
       let row = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowParentId}'][folder]`);
-      if (row) {
+      if (row && !row.expansion) {
         row.expansion = true;
       }
-      this.rowsPaneEL!.scroll({
-        top: (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + (++depth * 20 || 0),
-        left: 0,
-        behavior: smooth ? 'smooth' : undefined,
-      });
+      if(rootRow && rootRow.offsetTop >= 0 && rootRow.offsetHeight >= 0){
+        this.rowsPaneEL!.scroll({
+          top: (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + (++depth * 20 || 0),
+          left: 0,
+          behavior: smooth ? 'smooth' : undefined,
+        });
+      }
     }
   }
 
@@ -2486,10 +2495,6 @@ export class SpSystemTrace extends BaseElement {
     if (row && !row.expansion) {
       row.expansion = true;
     }
-    if (funcStract.cookie == null) {
-      this.scrollToProcess(`${funcStract.tid}`, `${funcStract.pid}`, 'thread', false);
-    }
-    this.scrollToDepth(`${funcRowID}`, `${funcStract.pid}`, funcStract.type, true, funcStract.depth || 0);
     let completeEntry = () => {
       let searchEntry = filterRow!.dataList!.find((dat) => dat.startTs === funcStract.startTime);
       this.hoverStructNull();
@@ -2693,6 +2698,63 @@ export class SpSystemTrace extends BaseElement {
     info('All TraceRow Data initialized');
     this.loadTraceCompleted = true;
     this.rowsEL!.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => {
+      if(it.folder){
+        let offsetYTimeOut: any = undefined;
+        it.addEventListener('expansion-change', (event: any) => {
+          JankStruct.delJankLineFlag = false;
+          if (offsetYTimeOut) {
+            clearTimeout(offsetYTimeOut);
+          }
+          if (event.detail.expansion) {
+            offsetYTimeOut = setTimeout(() => {
+              this.linkNodes.forEach((linkNode) => {
+                JankStruct.selectJankStructList?.forEach((selectStruct: any) => {
+                  if (event.detail.rowId == selectStruct.pid) {
+                    JankStruct.selectJankStruct = selectStruct;
+                    JankStruct.hoverJankStruct = selectStruct;
+                  }
+                });
+                if (linkNode[0].rowEL.collect) {
+                  linkNode[0].rowEL.translateY = linkNode[0].rowEL.getBoundingClientRect().top - 195;
+                } else {
+                  linkNode[0].rowEL.translateY = linkNode[0].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+                }
+                linkNode[0].y = linkNode[0].rowEL!.translateY! + linkNode[0].offsetY;
+                if (linkNode[1].rowEL.collect) {
+                  linkNode[1].rowEL.translateY = linkNode[1].rowEL.getBoundingClientRect().top - 195;
+                } else {
+                  linkNode[1].rowEL.translateY = linkNode[1].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+                }
+                linkNode[1].y = linkNode[1].rowEL!.translateY! + linkNode[1].offsetY;
+              });
+            }, 300);
+          } else {
+            if (JankStruct!.selectJankStruct) {
+              JankStruct.selectJankStructList?.push(<JankStruct>JankStruct!.selectJankStruct);
+            }
+            offsetYTimeOut = setTimeout(() => {
+              this.linkNodes?.forEach((linkNode) => {
+                if (linkNode[0].rowEL.collect) {
+                  linkNode[0].rowEL.translateY = linkNode[0].rowEL.getBoundingClientRect().top - 195;
+                } else {
+                  linkNode[0].rowEL.translateY = linkNode[0].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+                }
+                linkNode[0].y = linkNode[0].rowEL!.translateY! + linkNode[0].offsetY;
+                if (linkNode[1].rowEL.collect) {
+                  linkNode[1].rowEL.translateY = linkNode[1].rowEL.getBoundingClientRect().top - 195;
+                } else {
+                  linkNode[1].rowEL.translateY = linkNode[1].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+                }
+                linkNode[1].y = linkNode[1].rowEL!.translateY! + linkNode[1].offsetY;
+              });
+            }, 300);
+          }
+          let refreshTimeOut = setTimeout(() => {
+            this.refreshCanvas(true);
+            clearTimeout(refreshTimeOut);
+          }, 360);
+        });
+      }
       this.intersectionObserver?.observe(it);
     });
     return { status: true, msg: 'success' };

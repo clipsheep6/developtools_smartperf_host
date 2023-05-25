@@ -722,10 +722,10 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         parentCheck!.checked = true;
         parentCheck!.indeterminate = false;
       }
-      checkList?.forEach((it) => {
-        it.checkType = '2';
-        it.rangeSelect = true;
-        it.draw();
+      checkList?.forEach((rowItem) => {
+        rowItem.checkType = '2';
+        rowItem.rangeSelect = true;
+        rowItem.draw();
       });
       checkList2?.forEach((it) => {
         it.checkType = '2';
@@ -748,10 +748,10 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         it.rangeSelect = true;
         it.draw();
       });
-      unselectedList?.forEach((it) => {
-        it.checkType = '0';
-        it.rangeSelect = false;
-        it.draw();
+      unselectedList?.forEach((item) => {
+        item.checkType = '0';
+        item.rangeSelect = false;
+        item.draw();
       });
       unselectedList2?.forEach((it) => {
         it.checkType = '0';
@@ -1011,7 +1011,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     }
   }
 
-  focusContain(e: MouseEvent): boolean {
+  focusContain(e: MouseEvent, inFavoriteArea: boolean): boolean {
     let _y = (e.currentTarget as HTMLElement).getBoundingClientRect().y;
     let myRect = this.getBoundingClientRect();
     let x = e.offsetX;
@@ -1019,7 +1019,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     if (x >= myRect.x && x <= myRect.x + myRect.width && y >= myRect.y && y <= myRect.y + myRect.height) {
       this.hoverX = x - this.describeEl!.clientWidth;
       this.hoverY = y - myRect.y;
-      this.isHover = true;
+      this.isHover = this.collect === inFavoriteArea;
       return true;
     } else {
       this.isHover = false;
