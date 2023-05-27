@@ -42,7 +42,6 @@ HtraceParser::HtraceParser(TraceDataCache* dataCache, const TraceStreamerFilters
       networkParser_(std::make_unique<HtraceNetworkParser>(dataCache, filters)),
       diskIOParser_(std::make_unique<HtraceDiskIOParser>(dataCache, filters)),
       processParser_(std::make_unique<HtraceProcessParser>(dataCache, filters)),
-      ebpfDataParser_(std::make_unique<EbpfDataParser>(dataCache, filters)),
       hisyseventParser_(std::make_unique<HtraceHisyseventParser>(dataCache, filters)),
 #if WITH_PERF
       perfDataParser_(std::make_unique<PerfDataParser>(dataCache, filters)),
@@ -51,6 +50,7 @@ HtraceParser::HtraceParser(TraceDataCache* dataCache, const TraceStreamerFilters
       dataSegArray_(std::make_unique<HtraceDataSegment[]>(MAX_SEG_ARRAY_SIZE)),
       supportThread_(true),
 #else
+      ebpfDataParser_(std::make_unique<EbpfDataParser>(dataCache, filters)),
       dataSegArray_(std::make_unique<HtraceDataSegment[]>(1))
 #endif
 {
