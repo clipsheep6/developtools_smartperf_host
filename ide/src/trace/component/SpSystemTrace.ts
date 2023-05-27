@@ -145,22 +145,6 @@ export class SpSystemTrace extends BaseElement {
     this.linkNodes.length = 0;
   }
 
-  appendFamilyRelationships(currentRow: TraceRow<any>): string {
-    let relationships = '';
-    if (currentRow.rowParentId !== '') {
-      let parentRow = this.rowsEL!.querySelector<TraceRow<any>>(
-        `trace-row[row-id='${currentRow.rowParentId}'][folder]`
-      );
-      if (parentRow) {
-        relationships = this.appendFamilyRelationships(parentRow) + ':' + parentRow.rowId;
-      }
-    }
-    if (relationships.startsWith(':')) {
-      return relationships.trim().substring(1);
-    }
-    return relationships.trim();
-  }
-
   initElements(): void {
     this.rowsEL = this.shadowRoot?.querySelector<HTMLDivElement>('.rows');
     this.tipEL = this.shadowRoot?.querySelector<HTMLDivElement>('.tip');
@@ -218,11 +202,33 @@ export class SpSystemTrace extends BaseElement {
         replaceRow.setAttribute('row-parent-id', currentRow.rowParentId);
         replaceRow.style.display = 'none';
         currentRow.rowHidden = !currentRow.hasAttribute('scene');
-        currentRow.setAttribute('relationship', this.appendFamilyRelationships(currentRow));
         if (this.rowsEL!.contains(currentRow)) {
           this.rowsEL!.replaceChild(replaceRow, currentRow);
         } else {
-          this.rowsEL!.append(replaceRow);
+          for (let index = 0; index < currentRow.familyGenealogy.length; index++) {
+            let family = currentRow.familyGenealogy[index];
+            let parent = this.rowsEL!.querySelector<TraceRow<any>>(
+                `trace-row[row-id='${family.rowId}'][row-type='${family.rowType}']`
+            );
+            if (parent) {
+              while (
+                  parent!.folder &&
+                  index < currentRow.familyGenealogy.length &&
+                  currentRow.familyGenealogy.length > 1
+                  ) {
+                let child: TraceRow<any> = parent!.childrenList.filter((chd) => {
+                  let genealogy = currentRow.familyGenealogy[index + 1];
+                  return chd.rowId == genealogy.rowId && chd.rowType == genealogy.rowType;
+                })[0];
+                if (child) {
+                  parent = child;
+                } else {
+                  break;
+                }
+              }
+              parent!.replaceTraceRow(replaceRow, currentRow);
+            }
+          }
         }
         this.favoriteRowsEL!.append(currentRow);
       } else {
@@ -233,9 +239,9 @@ export class SpSystemTrace extends BaseElement {
             this.collectRows.splice(rowIndex, 1);
           }
         }
-        let relationships = currentRow.getAttribute('relationship');
-        relationships.split(':').forEach((relationship: string) => {
-          let parentRow = this.rowsEL!.querySelector<TraceRow<any>>(`trace-row[row-id='${relationship}'][folder]`);
+        currentRow.familyGenealogy.forEach((relationship:{rowId:any, rowType:any}) => {
+          let parentRow = this.rowsEL!.querySelector<TraceRow<any>>(
+            `trace-row[row-id='${relationship.rowId}'][row-type='${relationship.rowType}'][folder]`);
           if (parentRow) {
             parentRow.expansion = true;
           }
@@ -1260,7 +1266,6 @@ export class SpSystemTrace extends BaseElement {
       }
     }
     this.rangeTraceRow = rows;
-    console.log('-------', this.rangeSelect.rangeTraceRow);
     this.rangeSelect.selectHandler?.(this.rangeSelect.rangeTraceRow, false);
   };
   inFavoriteArea: boolean | undefined;

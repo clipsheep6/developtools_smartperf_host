@@ -1161,7 +1161,7 @@ export class LitTable extends HTMLElement {
         };
         td.onclick = () => {
           let indexOf = this.currentTreeDivList.indexOf(td);
-          this.dispatchRowClickEvent(rowData, [this.treeElement?.children[indexOf] as HTMLElement, newTableElement]);
+          this.dispatchRowClickEvent(rowData, [td, newTableElement]);
         };
         this.setHighLight(rowData.data.isSearch, td);
         this.treeElement!.style.width = column.getAttribute('width');
@@ -1252,7 +1252,6 @@ export class LitTable extends HTMLElement {
         resetNodeHidden(false, rowData);
       }
       this.reMeauseHeight();
-      e.stopPropagation();
     });
     return btn;
   }

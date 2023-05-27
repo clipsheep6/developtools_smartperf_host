@@ -130,6 +130,8 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   asyncFuncNamePID: number | undefined | null;
   translateY: number = 0; //single canvas offsetY;
   childrenList: Array<TraceRow<any>> = [];
+  familyGenealogy:Array<{rowId:string | undefined | null, rowType:string | undefined | null}> = [];
+
   depth: number = 1;
   focusHandler?: (ev: MouseEvent) => void | undefined;
 
@@ -315,7 +317,15 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     );
   }
 
+  replaceTraceRow(newNode:any, oldNode:any) {
+    let oldIndex = this.childrenList.indexOf(oldNode);
+    if (oldIndex != -1) {
+      this.childrenList.splice(oldIndex, 1, newNode);
+    }
+  }
+
   addChildTraceRow(child: TraceRow<any>) {
+    this.addFamilyGenealogy(child);
     this.depth = 2;
     if (child.rowType == TraceRow.ROW_TYPE_HIPERF_PROCESS) {
       this.depth = 3;
@@ -323,8 +333,16 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     this.childrenList.push(child);
   }
 
+  private addFamilyGenealogy(child: TraceRow<any>) {
+    if (this.familyGenealogy.length > 0) {
+      child.familyGenealogy.push(...this.familyGenealogy)
+    }
+    child.familyGenealogy.push({rowId:this.rowId,rowType:this.rowType})
+  }
+
   addChildTraceRowAfter(child: TraceRow<any>, targetRow: TraceRow<any>) {
     this.depth = 2;
+    this.addFamilyGenealogy(child);
     let index = this.childrenList.indexOf(targetRow);
     if (index != -1) {
       this.childrenList.splice(index + 1, 0, child);
@@ -334,6 +352,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   addChildTraceRowSpecifyLocation(child: TraceRow<any>, index: number) {
+    this.addFamilyGenealogy(child);
     this.childrenList.splice(index, 0, child);
   }
   insertAfter(newEl: DocumentFragment, targetEl: HTMLElement) {

@@ -141,6 +141,7 @@ export class TabPaneComparison extends BaseElement {
                   i++;
                   if (i < that.retainsData[0].distance - 1 && list[0].distance != '-') {
                     list[0].getChildren();
+                    list[0].expanded = false;
                     if (row.hasNext) {
                       getList(row.children);
                     }
@@ -199,6 +200,7 @@ export class TabPaneComparison extends BaseElement {
         let that = this;
         if (this.retainsData[0].distance > 1) {
           this.retainsData[0].getChildren();
+          this.retainsData[0].expanded = false;
         }
         let retainsTable = function () {
           const getList = function (list: any) {
@@ -215,6 +217,7 @@ export class TabPaneComparison extends BaseElement {
               i++;
               if (i < that.retainsData[0].distance - 1 && list[0].distance != '-') {
                 list[0].getChildren();
+                list[0].expanded = false;
                 if (structRow.hasNext) {
                   getList(structRow.children);
                 }
