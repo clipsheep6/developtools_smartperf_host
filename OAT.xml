@@ -79,6 +79,9 @@ Note:If the text contains special characters, please escape them according to th
                 <filteritem type="filepath" name="trace_streamer/prebuilts/buildgoogletest/.*.patch" desc="the third_party patch file, the file is self-developed"/>
                 <filteritem type="filepath" name="trace_streamer/prebuilts/buildprotobuf/.*.patch" desc="the third_party patch file, the file is self-developed"/>
                 <filteritem type="filepath" name="trace_streamer/prebuilts/buildsqlite/.*.patch" desc="the third_party patch file, the file is self-developed"/>
+                <filteritem type="filename" name="*.jpg" desc="all jpg file have check"/>
+                <filteritem type="filename" name="*.gif" desc="all gif file have check"/>
+                <filteritem type="filename" name="*.png" desc="all png file have check"/>
             </filefilter>
         </filefilterlist>
     </oatconfig>
