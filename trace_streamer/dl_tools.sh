@@ -22,7 +22,7 @@ if [ ! -f "prebuilts/$gn_path/gn" ];then
     fi
     if [ ! -d "tools/public_tools" ];then
         cd tools
-        git clone git@gitee.com:su_ze1688/public_tools.git
+        git clone https://gitee.com/su_ze1688/public_tools.git
         cd ..
         mv tools/public_tools/gn/$gn_path/gn prebuilts/$gn_path
         mv tools/public_tools/gn/$gn_path/ninja prebuilts/$gn_path/ninja
