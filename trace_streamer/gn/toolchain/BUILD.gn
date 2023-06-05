@@ -15,7 +15,7 @@ import("//gn/wasm.gni")
 declare_args() {
   if (target_os == "linux" || target_os == "macx") {
     cc = "/usr/bin/clang"
-    cxx = "/usr/bin/clang++"
+    cxx = "/home/tools/llvm/bin/clang++"
     pic = "-fPIC"
     rebuild_string = ""
     extra_asmflags = ""
