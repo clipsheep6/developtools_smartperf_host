@@ -49,16 +49,13 @@ void OfflineSymbolizationFilter::UpdateFrameInfo(T* elfSym,
         frameInfo->symbolOffset_ = symVaddr - elfSym->st_value;
     }
 }
-std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::OfflineSymbolization(uint64_t ip)
+
+bool OfflineSymbolizationFilter::FillFrameInfo(std::shared_ptr<FrameInfo>& frameInfo,
+                                               uint64_t ip,
+                                               uint64_t& vmStart,
+                                               uint64_t& vmOffset)
 {
-    if (ipToFrameInfo_.count(ip)) {
-        return ipToFrameInfo_.at(ip);
-    }
-    // start symbolization
-    std::shared_ptr<FrameInfo> frameInfo = std::make_shared<FrameInfo>();
     frameInfo->ip_ = ip;
-    uint64_t vmStart = INVALID_UINT64;
-    uint64_t vmOffset = INVALID_UINT64;
     auto endItor = startAddrToMapsInfoMap_.upper_bound(ip);
     auto length = std::distance(startAddrToMapsInfoMap_.begin(), endItor);
     if (length > 0) {
@@ -73,6 +70,21 @@ std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::OfflineSymbolization(uint
     if (frameInfo->filePathId_ == INVALID_UINT32) {
         // find matching MapsInfo failed!!!
         TS_LOGD("find matching Maps Info failed, ip = %lu", ip);
+        return false;
+    }
+    return true;
+}
+
+std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::OfflineSymbolization(uint64_t ip)
+{
+    if (ipToFrameInfo_.count(ip)) {
+        return ipToFrameInfo_.at(ip);
+    }
+    uint64_t vmStart = INVALID_UINT64;
+    uint64_t vmOffset = INVALID_UINT64;
+    // start symbolization
+    std::shared_ptr<FrameInfo> frameInfo = std::make_shared<FrameInfo>();
+    if (!FillFrameInfo(frameInfo, ip, vmStart, vmOffset)) {
         return nullptr;
     }
     // find SymbolTable by filePathId
@@ -101,7 +113,7 @@ std::shared_ptr<FrameInfo> OfflineSymbolizationFilter::OfflineSymbolization(uint
     }
     // Traverse array, st_value <= symVaddr and symVaddr <= st_value + st_size.  then you can get st_name
     auto end = startValueToSymAddrMap->upper_bound(symVaddr);
-    length = std::distance(startValueToSymAddrMap->begin(), end);
+    auto length = std::distance(startValueToSymAddrMap->begin(), end);
     uint32_t symbolStart = INVALID_UINT32;
     if (length > 0) {
         end--;
@@ -135,23 +147,9 @@ void OfflineSymbolizationFilter::OfflineSymbolization(const std::set<uint64_t>& 
     for (auto ip : ips) {
         // start symbolization
         std::shared_ptr<FrameInfo> frameInfo = std::make_shared<FrameInfo>();
-        frameInfo->ip_ = ip;
         uint64_t vmStart = INVALID_UINT64;
         uint64_t vmOffset = INVALID_UINT64;
-        auto endItor = startAddrToMapsInfoMap_.upper_bound(ip);
-        auto length = std::distance(startAddrToMapsInfoMap_.begin(), endItor);
-        if (length > 0) {
-            endItor--;
-            // Follow the rules of front closing and rear opening, [start, end)
-            if (ip < endItor->second->end()) {
-                vmStart = endItor->second->start();
-                vmOffset = endItor->second->offset();
-                frameInfo->filePathId_ = endItor->second->file_path_id();
-            }
-        }
-        if (frameInfo->filePathId_ == INVALID_UINT32) {
-            // find matching MapsInfo failed!!!
-            TS_LOGD("find matching Maps Info failed, ip = %lu", ip);
+        if (FillFrameInfo(frameInfo, ip, vmStart, vmOffset)) {
             continue;
         }
         if (!filePathIdToImportSymbolTableMap_.count(frameInfo->filePathId_)) {
@@ -173,7 +171,7 @@ void OfflineSymbolizationFilter::OfflineSymbolization(const std::set<uint64_t>& 
         }
         // Traverse array, st_value <= symVaddr and symVaddr <= st_value + st_size.  then you can get st_name
         auto end = startValueToSymAddrMap->upper_bound(symVaddr);
-        length = std::distance(startValueToSymAddrMap->begin(), end);
+        auto length = std::distance(startValueToSymAddrMap->begin(), end);
         uint32_t symbolStart = INVALID_UINT32;
         if (length > 0) {
             end--;

@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 #include "codec_cov.h"
-#include "ext/sqlite_ext_funcs.h"
+#include "sqlite_ext/sqlite_ext_funcs.h"
 #include "file.h"
 #include "log.h"
 #include "sqlite3.h"

@@ -103,6 +103,8 @@ private:
     void UpdateSymbolTablePtrAndStValueToSymAddrMap(T* firstSymbolAddr,
                                                     const int size,
                                                     std::shared_ptr<ProtoReader::SymbolTable_Reader> reader);
+    void FillOfflineSymbolizationFrames(std::map<uint32_t, std::shared_ptr<std::vector<uint64_t>>>::iterator itor);
+    void ReparseStacksWithAddrRange(uint64_t start, uint64_t end);
     void ReparseStacksWithDifferentMeans();
     void CompressStackAndFrames(ProtoReader::RepeatedDataAreaIterator<ProtoReader::BytesView> frames);
     std::tuple<uint64_t, uint64_t> GetNeedUpdateProcessMapsAddrRange(uint64_t startAddr, uint64_t endAddr);
