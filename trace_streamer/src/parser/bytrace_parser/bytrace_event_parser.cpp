@@ -206,19 +206,9 @@ bool BytraceEventParser::TaskRenameEvent(const ArgsMap& args, const BytraceLine&
         streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TASK_RENAME, STAT_EVENT_DATA_INVALID);
         return false;
     }
-    uint32_t tgid = 0;
-    if (line.tGidStr.size() && line.tGidStr.at(0) != '-') {
-        tgid = base::StrToInt<uint32_t>(line.tGidStr).value_or(0);
-    } else {
-        tgid = 0;
-    }
     auto prevCommStr = std::string_view(args.at("newcomm"));
     auto pidValue = base::StrToInt<uint32_t>(args.at("pid"));
-    if (!tgid) {
-        streamFilters_->processFilter_->UpdateOrCreateThreadWithName(line.ts, pidValue.value(), prevCommStr);
-    } else {
-        streamFilters_->processFilter_->UpdateOrCreateThreadWithPidAndName(pidValue.value(),tgid, prevCommStr);
-    }
+    streamFilters_->processFilter_->UpdateOrCreateThreadWithName(line.ts, pidValue.value(), prevCommStr);
     return true;
 }
 
