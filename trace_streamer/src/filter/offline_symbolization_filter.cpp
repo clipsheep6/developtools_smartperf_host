@@ -149,7 +149,7 @@ void OfflineSymbolizationFilter::OfflineSymbolization(const std::set<uint64_t>& 
         std::shared_ptr<FrameInfo> frameInfo = std::make_shared<FrameInfo>();
         uint64_t vmStart = INVALID_UINT64;
         uint64_t vmOffset = INVALID_UINT64;
-        if (FillFrameInfo(frameInfo, ip, vmStart, vmOffset)) {
+        if (!FillFrameInfo(frameInfo, ip, vmStart, vmOffset)) {
             continue;
         }
         if (!filePathIdToImportSymbolTableMap_.count(frameInfo->filePathId_)) {
