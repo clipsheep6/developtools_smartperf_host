@@ -22,11 +22,6 @@ window.ResizeObserver = window.ResizeObserver || jest.fn().mockImplementation(()
     observe: jest.fn(),
     unobserve: jest.fn(),
 }));
-// jest.mock('../../../../dist/trace/component/schedulingAnalysis/TabCpuAnalysis.js', () => {
-//     return {init : jest.fn()
-//     };
-// });
-
 
 describe('SpSchedulingAnalysis Test', () => {
     it('SpSchedulingAnalysisTest01', () => {

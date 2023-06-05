@@ -47,6 +47,7 @@ export class LitTable extends HTMLElement {
   private isRecycleList: boolean = true;
   private isScrollXOutSide: boolean = false;
   private exportLoading: boolean = false;
+  private _loading: boolean = false;
 
   constructor() {
     super();
@@ -260,7 +261,12 @@ export class LitTable extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['scroll-y', 'selectable', 'no-head', 'grid-line', 'defaultOrderColumn', 'hideDownload'];
+    return ['scroll-y', 'selectable', 'no-head', 'grid-line', 'defaultOrderColumn', 'hideDownload', 'loading'];
+  }
+
+  set loading(value : boolean){
+    this._loading = value;
+    this.exportProgress!.loading = value;
   }
 
   get hideDownload() {
@@ -1130,16 +1136,13 @@ export class LitTable extends HTMLElement {
           let btn = this.createExpandBtn(rowData);
           td.title = rowData.data.objectName;
           td.insertBefore(btn, td.firstChild);
-          td.style.paddingLeft = rowData.depth * 15 + 'px';
         }
         if (rowData.data.hasNext) {
           td.title = rowData.data.objectName;
           let btn = this.createBtn(rowData);
           td.insertBefore(btn, td.firstChild);
-          td.style.paddingLeft = 15 * rowData.depth + 'px';
-        } else {
-          td.style.paddingLeft = rowData.depth * 15 + 20 + 'px';
         }
+        td.style.paddingLeft = rowData.depth * 15 + 'px';
         if (rowData.data.rowName === 'js-memory') {
           let nodeText = document.createElement('text');
           nodeText.classList.add('nodeName');
@@ -1463,16 +1466,13 @@ export class LitTable extends HTMLElement {
         if (rowObject.children && rowObject.children.length > 0 && !rowObject.data.hasNext) {
           let btn = this.createExpandBtn(rowObject);
           firstElement.insertBefore(btn, firstElement.firstChild);
-          firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
         }
         if (rowObject.data.hasNext) {
           let btn = this.createBtn(rowObject);
           firstElement.title = rowObject.data.objectName;
           firstElement.insertBefore(btn, firstElement.firstChild);
-          firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
-        } else {
-          firstElement.style.paddingLeft = 20 + 15 * rowObject.depth + 'px';
         }
+        firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
         if (rowObject.data.rowName === 'js-memory') {
           let nodeText = document.createElement('text');
           nodeText.classList.add('nodeName');

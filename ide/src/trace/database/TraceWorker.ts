@@ -371,7 +371,6 @@ function uploadSoFile(files: Array<File>, callback: () => void) {
             data.length,
             fileNameBuffer.length,
             sliceLen,
-            files.length,
             uploadFileIndex === files.length - 1 ? 1 : 0
           );
         }

@@ -205,20 +205,20 @@ describe('SpProbesConfig Test', () => {
                     <div>
                        <div>
                           <p>Buffer Size</p>
-                          <p class="buffer-size-des">The ftrace buffer size range is 1024 Kb to 65536 KB</p>
+                          <p class="buffer-size-des">The ftrace buffer size range is 2048 KB to 307200 KB</p>
                        </div>
                        <div id="ftrace-buff-size-div">
                           <lit-slider id="ftrace-buff-size-slider" defaultColor="var(--dark-color3,#46B1E3)" open dir="right">
                           </lit-slider>
                           <div class='ftrace-buff-size-result-div'>
-                              <input class="ftrace-buff-size-result" type="text" value='0' onkeyup="this.value=this.value.replace(/\\D/g,'')">
+                              <input class="ftrace-buff-size-result" type="text" value='20480' onkeyup="this.value=this.value.replace(/\\D/g,'')">
                               <span style="text-align: center; margin: 8px"> KB </span>
                            </div>
                        </div>
                     </div>
                 </div>
                 <div class="memory-config">
-                    <div class="span-col-2">
+                    <div class="span-col-2">6有
                       <span>Memory Config</span>
                     </div>
                 </div>

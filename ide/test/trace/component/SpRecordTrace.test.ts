@@ -241,7 +241,7 @@ describe('SpRecordTrace Test', () => {
     expect(spRecordTrace.createHtracePluginConfig()).toStrictEqual(
         {
           "configData": {
-            "bufferSizeKb": 1024,
+            "bufferSizeKb": 20480,
                 "clock": "boot",
                 "debugOn": false,
                 "flushIntervalMs": 1000,
@@ -358,17 +358,4 @@ describe('SpRecordTrace Test', () => {
         spRecordTrace.record_template = 'record_template';
         expect(spRecordTrace.record_template).toBeTruthy();
     });
-    // it('SpRecordTraceTest38', function () {
-    //     expect(spRecordTrace.setDeviceVersionSelect(true)).toBe();
-    // });
-    // it('SpRecordTraceTest39', function () {
-    //     expect(spRecordTrace.recordButtonListener()).toBe();
-    // });
-    // it('SpRecordTraceTest40', function () {
-    //     let evt = {
-    //         isTrusted:true,
-    //         device:true
-    //     }
-    //     expect(spRecordTrace.usbConnectionListener(evt)).toBe();
-    // });
 });

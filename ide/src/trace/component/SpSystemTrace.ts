@@ -223,7 +223,7 @@ export class SpSystemTrace extends BaseElement {
         let row = currentRow;
         while (row.hasParentRowEl) {
           let parent = row.parentRowEl;
-          if (!parent.expansion) {
+          if (!parent.expansion && parent.hasAttribute('scene')) {
             parent.expansion = true;
           }
           row = parent;
@@ -2070,22 +2070,9 @@ export class SpSystemTrace extends BaseElement {
     window.subscribe(window.SmartEvent.UI.UploadSOFile, (data) => {
       this.chartManager?.importSoFileUpdate().then(() => {
         window.publish(window.SmartEvent.UI.Loading, false);
-        if (
-          this.selectionParam &&
-          (this.selectionParam.nativeMemory.length > 0 ||
-            this.selectionParam.nativeMemoryStatistic.length > 0 ||
-            this.selectionParam.perfSampleIds.length > 0 ||
-            this.selectionParam.fileSystemType.length > 0 ||
-            this.selectionParam.fsCount > 0 ||
-            this.selectionParam.fileSysVirtualMemory ||
-            this.selectionParam.vmCount > 0 ||
-            this.selectionParam.diskIOLatency ||
-            this.selectionParam.diskIOipids.length > 0)
-        ) {
+        let updateCanvas = this.traceSheetEL?.updateRangeSelect();
+        if (updateCanvas) {
           this.refreshCanvas(true);
-          let param: SelectionParam = new SelectionParam();
-          Object.assign(param, this.selectionParam);
-          this.traceSheetEL?.rangeSelect(param, true);
         }
       });
     });

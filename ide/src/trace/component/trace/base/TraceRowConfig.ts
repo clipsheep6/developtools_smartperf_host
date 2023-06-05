@@ -24,6 +24,7 @@ import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU.js';
 
 @element('trace-row-config')
 export class TraceRowConfig extends BaseElement {
+  static allTraceRowList: Array<TraceRow<any>> = [];
   selectTypeList: Array<string> | undefined = [];
   private spSystemTrace: SpSystemTrace | null | undefined;
   private sceneTable: HTMLDivElement | null | undefined;
@@ -54,6 +55,7 @@ export class TraceRowConfig extends BaseElement {
         "trace-row[row-parent-id='']"
       );
     let allowSceneList: Array<string> = [];
+    TraceRowConfig.allTraceRowList.push(...this.traceRowList!);
     this.traceRowList!.forEach((traceRow: TraceRow<any>) => {
       traceRow.setAttribute('scene', '');
       if (traceRow.templateType.length > 0) {
@@ -101,41 +103,38 @@ export class TraceRowConfig extends BaseElement {
     div.className = 'chart-option-div chart-item';
     div.textContent = row.name;
     div.title = templateType;
+    div.setAttribute('search_text', row.name);
     let optionCheckBox: LitCheckBox = new LitCheckBox();
     optionCheckBox.checked = true;
     optionCheckBox.className = 'chart-config-check chart-item';
     optionCheckBox.style.height = '100%';
     optionCheckBox.style.justifySelf = 'center';
     optionCheckBox.title = templateType;
-    let showOrHiddenRow = (parentRow: any, check: boolean) => {
-      if (parentRow.folder) {
-        parentRow.childrenList.forEach((childRow: any) => {
-          if (childRow.folder) {
-            showOrHiddenRow(childRow, check);
-          } else {
-            if (check) {
-              childRow.removeAttribute('row-hidden');
-              childRow.setAttribute('scene', '');
-            } else {
-              childRow.removeAttribute('scene');
-              childRow.setAttribute('row-hidden', '');
-            }
-          }
-        });
-      }
-      if (check) {
-        parentRow.expansion = false;
-        parentRow.removeAttribute('row-hidden');
-        parentRow.setAttribute('scene', '');
-      } else {
-        parentRow.removeAttribute('scene');
-        parentRow.setAttribute('row-hidden', '');
-      }
-    };
+    optionCheckBox.setAttribute('search_text', row.name);
     optionCheckBox.addEventListener('change', (e) => {
-      showOrHiddenRow(row, optionCheckBox.checked);
+      TraceRowConfig.allTraceRowList.forEach(chartRow => {
+        let upParentRow = getUpParentRow(chartRow);
+        if (upParentRow == row) {
+          if (optionCheckBox.checked) {
+            chartRow.removeAttribute('row-hidden');
+            chartRow.setAttribute('scene', '');
+          } else {
+            chartRow.removeAttribute('scene');
+            chartRow.setAttribute('row-hidden', '');
+          }
+        }
+      });
       this.refreshSystemPanel();
     });
+
+    let getUpParentRow = (currentTraceRow: TraceRow<any>) => {
+      let newTraceRow = currentTraceRow;
+      if (currentTraceRow.hasParentRowEl) {
+        newTraceRow = currentTraceRow.parentRowEl!;
+        getUpParentRow(newTraceRow);
+      }
+      return newTraceRow;
+    }
     this.chartTable!.append(...[div, optionCheckBox]);
   }
 
@@ -162,7 +161,7 @@ export class TraceRowConfig extends BaseElement {
 
   resetChartTable() {
     if (this.traceRowList && this.traceRowList.length > 0) {
-      this.traceRowList.forEach((traceRow: TraceRow<any>) => {
+      TraceRowConfig.allTraceRowList.forEach((traceRow: TraceRow<any>) => {
         let isShowRow: boolean = false;
         if (this.selectTypeList!.length == 0) {
           traceRow.removeAttribute('row-hidden');
@@ -230,7 +229,8 @@ export class TraceRowConfig extends BaseElement {
     this.inputElement = this.shadowRoot!.querySelector('input');
     this.inputElement?.addEventListener('keyup', () => {
       this.shadowRoot!.querySelectorAll<HTMLElement>('.chart-item').forEach((elementOption: HTMLElement) => {
-        if (elementOption.title!.indexOf(this.inputElement!.value) <= -1) {
+        let searchText = elementOption.getAttribute('search_text') || '';
+        if (searchText!.indexOf(this.inputElement!.value) <= -1) {
           elementOption.style.display = 'none';
         } else {
           elementOption.style.display = 'block';

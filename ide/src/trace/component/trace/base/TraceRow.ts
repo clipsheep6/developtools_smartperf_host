@@ -28,6 +28,7 @@ import { LitPopover } from '../../../../base-ui/popover/LitPopoverV.js';
 import { info } from '../../../../log/Log.js';
 import { ColorUtils } from './ColorUtils.js';
 import { drawSelectionRange } from '../../../database/ui-worker/ProcedureWorkerCommon.js';
+import { TraceRowConfig } from './TraceRowConfig.js';
 
 export class RangeSelectStruct {
   startX: number | undefined;
@@ -342,13 +343,15 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   addChildTraceRow(child: TraceRow<any>) {
+    TraceRowConfig.allTraceRowList.push(child);
     child.parentRowEl = this;
-    this.toParentAddTemplateType(child)
+    this.toParentAddTemplateType(child);
     child.setAttribute('scene', '');
     this.childrenList.push(child);
   }
 
   addChildTraceRowAfter(child: TraceRow<any>, targetRow: TraceRow<any>) {
+    TraceRowConfig.allTraceRowList.push(child);
     child.parentRowEl = this;
     let index = this.childrenList.indexOf(targetRow);
     child.setAttribute('scene', '');
@@ -360,6 +363,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   addChildTraceRowSpecifyLocation(child: TraceRow<any>, index: number) {
+    TraceRowConfig.allTraceRowList.push(child);
     child.parentRowEl = this;
     child.setAttribute('scene', '');
     this.childrenList.splice(index, 0, child);
@@ -450,6 +454,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         this.checkBoxEL!.checked = true;
         this.checkBoxEL!.indeterminate = false;
         break;
+    }
+    if (this.folder) {
+      this.childrenList.forEach(it => it.checkType = value)
     }
   }
 
