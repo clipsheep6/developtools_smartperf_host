@@ -77,7 +77,7 @@ public:
     bool NativeHookReloadElfSymbolTable(std::shared_ptr<std::vector<std::shared_ptr<ElfSymbolTable>>> elfSymbolTables);
     bool SupportImportSymbolTable()
     {
-        return isOfflineSymbolizationMode_;
+        return traceDataCache_->GetNativeHookFrameData()->Size();
     }
 
 private:
@@ -111,7 +111,6 @@ private:
     std::unique_ptr<NativeHookFrameInfo> ParseFrame(const ProtoReader::DataArea& frame);
     template <class T>
     void UpdateFilePathIdAndStValueToSymAddrMap(T* firstSymbolAddr, const int size, uint32_t filePathId);
-    void UpdateResymbolizationResult(const std::set<uint64_t>& ips);
 
 private:
     std::multimap<uint64_t, std::unique_ptr<NativeHookMetaData>> tsToMainEventsMap_ = {};

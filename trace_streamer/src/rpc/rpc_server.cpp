@@ -190,7 +190,6 @@ int32_t RpcServer::DownloadELFCallback(const std::string& fileName,
                                        size_t totalLen,
                                        const uint8_t* data,
                                        size_t len,
-                                       int32_t count,
                                        int32_t finish,
                                        ParseELFFileCallBack parseELFFile)
 {

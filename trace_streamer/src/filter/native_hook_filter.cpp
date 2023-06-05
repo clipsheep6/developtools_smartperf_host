@@ -850,71 +850,42 @@ void NativeHookFilter::UpdateFilePathIdAndStValueToSymAddrMap(T* firstSymbolAddr
         }
     }
 }
+
 bool NativeHookFilter::NativeHookReloadElfSymbolTable(
     std::shared_ptr<std::vector<std::shared_ptr<ElfSymbolTable>>> elfSymbolTables)
 {
-    std::set<uint64_t> resymbolizationIps;
+    auto nativeHookFrame = traceDataCache_->GetNativeHookFrameData();
+    auto size = nativeHookFrame->Size();
+    auto filePathIndexs = nativeHookFrame->FilePaths();
+    auto vaddrs = nativeHookFrame->Vaddrs();
     for (auto elfSymbolTable : *elfSymbolTables) {
-        auto filePathIndex = traceDataCache_->dataDict_.GetStringIndex(elfSymbolTable->filePath);
-        if (!fileIndexToFilePathId_.count(filePathIndex)) {
-            TS_LOGD("native_hook maps does not support using %s resymbolization!", elfSymbolTable->filePath.c_str());
-            continue;
-        }
-        auto filePathId = fileIndexToFilePathId_.at(filePathIndex);
-        // record ips whitch needs resymbolization
-        auto ret = GetIpsWitchNeedResymbolization(filePathId, resymbolizationIps);
-        if (!ret) {
-            continue;
-        }
+        auto filePathIndex = elfSymbolTable->filePathIndex;
         auto symEntrySize = elfSymbolTable->symEntSize;
-        auto size = elfSymbolTable->symTable.size() / symEntrySize;
+        auto totalSize = elfSymbolTable->symTable.size() / symEntrySize;
         if (symEntrySize == ELF32_SYM) {
             UpdateFilePathIdAndStValueToSymAddrMap(reinterpret_cast<const Elf32_Sym*>(elfSymbolTable->symTable.data()),
-                                                   size, filePathId);
+                                                   totalSize, filePathIndex);
         } else {
             UpdateFilePathIdAndStValueToSymAddrMap(reinterpret_cast<const Elf64_Sym*>(elfSymbolTable->symTable.data()),
-                                                   size, filePathId);
+                                                   totalSize, filePathIndex);
         }
-        if (filePathIdToImportSymbolTableMap_.count(filePathId)) {
-            filePathIdToImportSymbolTableMap_.at(filePathId) = elfSymbolTable;
+        if (filePathIdToImportSymbolTableMap_.count(filePathIndex)) {
+            filePathIdToImportSymbolTableMap_.at(filePathIndex) = elfSymbolTable;
         } else {
-            filePathIdToImportSymbolTableMap_.emplace(std::make_pair(filePathId, elfSymbolTable));
+            filePathIdToImportSymbolTableMap_.emplace(std::make_pair(filePathIndex, elfSymbolTable));
+        }
+        for (auto row  = 0; row < size; row++) {
+            if (filePathIndexs[row] !=  filePathIndex) {
+                continue;
+            }
+            auto symVaddr = base::StrToInt<uint32_t>(vaddrs[row], base::INTEGER_RADIX_TYPE_HEX).value();
+            auto symbolIndex = OfflineSymbolization(symVaddr, filePathIndex);
+            if (symbolIndex != INVALID_UINT64) {
+                nativeHookFrame->UpdateSymbolId(row, symbolIndex);
+            }
         }
     }
-    // Delete symbolization results with the same filePath
-    for (auto ip : resymbolizationIps) {
-        ipToFrameInfo_.erase(ip);
-    }
-    OfflineSymbolization(resymbolizationIps);
-    UpdateResymbolizationResult(resymbolizationIps);
     return true;
-}
-void NativeHookFilter::UpdateResymbolizationResult(const std::set<uint64_t>& ips)
-{
-    auto nativeHookFrame = traceDataCache_->GetNativeHookFrameData();
-    for (auto i = 0; i < nativeHookFrame->Size(); i++) {
-        auto ip = nativeHookFrame->Ips()[i];
-        auto itor = ips.lower_bound(ip);
-        if (itor == ips.end() || *itor != ip) {
-            continue;
-        }
-        if (!ipToFrameInfo_.count(ip)) {
-            continue;
-        }
-        auto frameInfo = ipToFrameInfo_.at(ip);
-        DataIndex filePathIndex = INVALID_DATAINDEX;
-        if (!filePathIdToFileIndex_.count(frameInfo->filePathId_)) {
-            TS_LOGE("filePathId_%u not found", frameInfo->filePathId_);
-            continue;
-        }
-        filePathIndex = filePathIdToFileIndex_.at(frameInfo->filePathId_);
-        nativeHookFrame->UpdateFrameInfo(i, frameInfo->symbolIndex_, filePathIndex, frameInfo->offset_,
-                                         frameInfo->symbolOffset_);
-    }
-    UpdateSymbolIdsForSymbolizationFailed();
-    // update vaddrs
-    GetNativeHookFrameVaddrs();
-    nativeHookFrame->UpdateVaddrs(vaddrs_);
 }
 } // namespace TraceStreamer
 } // namespace SysTuning
