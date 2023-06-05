@@ -58,8 +58,8 @@ export class TabPaneThreadStates extends BaseElement {
         count.wallDuration = parseFloat((sumWall / 1000000.0).toFixed(5));
         count.occurrences = sumOcc;
         result.splice(0, 0, count);
-        this.threadStatesTblSource = result;
-        this.threadStatesTbl!.recycleDataSource = result;
+        this.threadStatesTblSource = result.filter(it => threadStatesParam.processIds.includes(it.pid));
+        this.threadStatesTbl!.recycleDataSource = result.filter(it => threadStatesParam.processIds.includes(it.pid));
         this.stackBar!.data = result;
       } else {
         this.threadStatesTblSource = [];

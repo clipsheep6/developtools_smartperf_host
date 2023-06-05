@@ -14,8 +14,8 @@
  */
 
 // @ts-ignore
-import { TabPaneFilesystemStatisticsAnalysis } from '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneFilesystemStatisticsAnalysis.js';
-import '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneFilesystemStatisticsAnalysis.js';
+import { TabPaneVirtualMemoryStatisticsAnalysis } from '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneVirtualMemoryStatisticsAnalysis.js';
+import '../../../../../../dist/trace/component/trace/sheet/file-system/TabPaneVirtualMemoryStatisticsAnalysis.js';
 // @ts-ignore
 import { LitTable } from '../../../../../../dist/base-ui/table/lit-table.js';
 import crypto from 'crypto';
@@ -29,17 +29,15 @@ window.ResizeObserver =
         observe: jest.fn(),
         unobserve: jest.fn(),
     }));
-
 Object.defineProperty(global.self, 'crypto', {
     value: {
         getRandomValues: (arr: string | any[]) => crypto.randomBytes(arr.length),
     },
 });
 
-describe('TabPaneFilesystemStatisticsAnalysis Test', () => {
-    document.body.innerHTML = `<tabpane-file-statistics-analysis id="statistics-analysis"></tabpane-file-statistics-analysis>`;
-    let tabPane = document.querySelector<TabPaneFilesystemStatisticsAnalysis>('#statistics-analysis');
-
+describe('TabPaneVirtualMemoryStatisticsAnalysis Test', () => {
+    document.body.innerHTML = `<tabpane-virtual-memory-statistics-analysis id="statistics-analysis"></tabpane-virtual-memory-statistics-analysis>`;
+    let tabPane = document.querySelector<TabPaneVirtualMemoryStatisticsAnalysis>('#statistics-analysis');
     let param = {
         anomalyEnergy: [],
         clockMapData: { size: 0 },
@@ -84,27 +82,6 @@ describe('TabPaneFilesystemStatisticsAnalysis Test', () => {
         virtualTrackIds: [],
         vmCount: 0,
     };
-
-    let item = {
-        durFormat: '194.23ms ',
-        duration: 194230478,
-        isHover: true,
-        percent: '99.00',
-        pid: 3744,
-        tableName: 'test(3744)',
-    };
-
-    let res = [
-        {
-            durFormat: '194.23ms ',
-            duration: 194230478,
-            isHover: true,
-            percent: '99.00',
-            pid: 3744,
-            tableName: 'test(3744)',
-        },
-    ];
-
     let processData = [
         {
             callChainId: 13,
@@ -120,66 +97,69 @@ describe('TabPaneFilesystemStatisticsAnalysis Test', () => {
             type: 0,
         },
     ];
-
-    let threadStatisticsData = { durFormat: '194.23ms ', duration: 0, isHover: false, percent: '100.00', tableName: '' };
-
-    it('systemStatisticsAnalysis01', function () {
+    let item = {
+        durFormat: '194.23ms ',
+        duration: 194230478,
+        isHover: true,
+        percent: '99.00',
+        pid: 3744,
+        tableName: 'test(3744)',
+    };
+    let res = [
+        {
+            durFormat: '194.23ms ',
+            duration: 194230478,
+            isHover: true,
+            percent: '99.00',
+            pid: 3744,
+            tableName: 'test(3744)',
+        },
+    ];
+    it('tabPaneVirtualMemoryStatisticsAnalysis01', function () {
         let litTable = new LitTable();
         tabPane.appendChild(litTable);
         let filter = new TabPaneFilter();
         tabPane.filter = filter;
         tabPane.loadingList = [];
         tabPane.data = param;
-        expect(tabPane.fileStatisticsAnalysisCurrentSelection).not.toBeUndefined();
+        expect(tabPane.vmStatisticsAnalysisSelection).toBeUndefined();
     });
-
-    it('systemStatisticsAnalysis02', function () {
+    it('tabPaneVirtualMemoryStatisticsAnalysis02', function () {
         expect(tabPane.clearData()).toBeUndefined();
     });
-
-    it('systemStatisticsAnalysis03', function () {
-        tabPane.fileStatisticsAnalysisProcessData = processData;
-        tabPane.getFilesystemType(item, param);
-        expect(tabPane.fileStatisticsAnalysisProgressEL.loading).toBeFalsy();
+    it('tabPaneVirtualMemoryStatisticsAnalysis03', function () {
+        tabPane.vmStatisticsAnalysisProcessData = jest.fn(() => true);
+        tabPane.getVirtualMemoryProcess(param, processData);
+        expect(tabPane.vmStatisticsAnalysisProcessData).not.toBeUndefined();
     });
-
-    it('systemStatisticsAnalysis04', function () {
-        tabPane.fileStatisticsAnalysisProcessData = processData;
-        tabPane.getFilesystemThread(item, param);
+    it('tabPaneVirtualMemoryStatisticsAnalysis04', function () {
+        tabPane.vmStatisticsAnalysisProcessData = processData;
+        tabPane.getVirtualMemoryType(item, param);
+        expect(tabPane.vmStatisticsAnalysisProgressEL.loading).toBeFalsy();
+    });
+    it('tabPaneVirtualMemoryStatisticsAnalysis05', function () {
+        tabPane.vmStatisticsAnalysisProcessData = processData;
+        tabPane.getVirtualMemoryThread(item, param);
         expect(tabPane.currentLevel).toEqual(2);
     });
-
-    it('systemStatisticsAnalysis05', function () {
-        tabPane.fileStatisticsAnalysisProcessData = processData;
-        tabPane.getFilesystemSo(item, param);
+    it('tabPaneVirtualMemoryStatisticsAnalysis06', function () {
+        tabPane.vmStatisticsAnalysisProcessData = processData;
+        tabPane.getVirtualMemorySo(item, param);
         expect(tabPane.currentLevel).toEqual(3);
     });
-
-    it('systemStatisticsAnalysis06', function () {
-        tabPane.fileStatisticsAnalysisProcessData = processData;
-        tabPane.getFilesystemFunction(item, param);
+    it('tabPaneVirtualMemoryStatisticsAnalysis07', function () {
+        tabPane.vmStatisticsAnalysisProcessData = processData;
+        tabPane.getVirtualMemoryFunction(item, param);
         expect(tabPane.currentLevel).toEqual(4);
     });
-
-    it('systemStatisticsAnalysis07', function () {
-        expect(tabPane.typeIdToString(0)).toEqual('OPEN');
+    it('tabPaneVirtualMemoryStatisticsAnalysis08', function () {
+        expect(tabPane.typeIdToString(1)).toEqual('File Backed In');
     });
 
-    it('systemStatisticsAnalysis08', function () {
-        expect(tabPane.typeIdToString(2)).toEqual('READ');
+    it('tabPaneVirtualMemoryStatisticsAnalysis09', function () {
+        expect(tabPane.typeIdToString(7)).toEqual('Copy On Writer');
     });
-
-    it('systemStatisticsAnalysis09', function () {
-        expect(tabPane.typeIdToString(1)).toEqual('CLOSE');
-    });
-
-    it('systemStatisticsAnalysis10', function () {
+    it('tabPaneVirtualMemoryStatisticsAnalysis10', function () {
         expect(tabPane.getPieChartData(res).length).toEqual(1);
     });
-
-    it('systemStatisticsAnalysis11', function () {
-        tabPane.fileStatisticsAnalysisProcessData.reMeauseHeight = jest.fn(() => true);
-        tabPane.getFilesystemProcess(param, processData);
-        expect(tabPane.fileStatisticsAnalysisProcessData).not.toBeUndefined();
-    });
-});
+})

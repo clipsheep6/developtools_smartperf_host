@@ -212,18 +212,17 @@ export class ProcedureLogicWorkerNativeMemory extends LogicHandler {
                     h.heap_size as heapSize,
                     (case when h.event_type = 'AllocEvent' then 0 else 1 end) as eventType
                 from native_hook h ,trace_range t
-                where h.start_ts >= t.start_ts 
-                    and h.start_ts <= t.end_ts 
+                where h.start_ts between t.start_ts and t.end_ts
                     and (h.event_type = 'AllocEvent' or h.event_type = 'MmapEvent')
-                union
+                union all
                 select 
                     h.end_ts - t.start_ts as startTime,
                     h.heap_size as heapSize,
                     (case when h.event_type = 'AllocEvent' then 2 else 3 end) as eventType
                 from native_hook h ,trace_range t
-                where h.start_ts >= t.start_ts
-                    and h.start_ts <= t.end_ts
-                    and h.end_ts not null 
+                where 
+                    h.start_ts between t.start_ts and t.end_ts
+                    and h.end_ts between t.start_ts and t.end_ts
                     and (h.event_type = 'AllocEvent' or h.event_type = 'MmapEvent')
             )
             order by startTime;
@@ -694,6 +693,9 @@ where ts between start_ts and end_ts ${type === -1 ? '' : `and type = ${type}`};
           return item.subType == selectionElement.memoryTap && item.heapSize == selectionElement.max;
         }
       }
+      if(selectionElement.max === undefined && typeof selectionElement.memoryTap === 'number'){
+        return item.subTypeId === selectionElement.memoryTap
+      }
     }
     return false;
   }
@@ -872,6 +874,7 @@ where ts between start_ts and end_ts ${type === -1 ? '' : `and type = ${type}`};
           ];
         if (root == undefined) {
           root = new NativeHookCallInfo();
+          root.threadName = sample.threadName;
           this.currentTreeMapData[
             sample.tid + '-' + (callChains[topIndex].symbolId || '') + '-' + (callChains[topIndex].fileId || '')
           ] = root;
@@ -938,6 +941,7 @@ where ts between start_ts and end_ts ${type === -1 ? '' : `and type = ${type}`};
     let leftNs = paramMap.get('leftNs');
     let rightNs = paramMap.get('rightNs');
     let nativeHookType = paramMap.get('nativeHookType');
+    let statisticsSelection = paramMap.get('statisticsSelection');
     if (filterAllocType == '0' && filterEventType == '0' && filterResponseType == -1) {
       this.currentSamples = this.queryAllCallchainsSamples;
       return;
@@ -966,7 +970,7 @@ where ts between start_ts and end_ts ${type === -1 ? '' : `and type = ${type}`};
         }
       }
       let filterLastLib = filterResponseType == -1 ? true : filterResponseType == item.lastLibId;
-      let filterNative = this.getTypeFromIndex(parseInt(filterEventType), item, []);
+      let filterNative = this.getTypeFromIndex(parseInt(filterEventType), item, statisticsSelection);
       return filterAllocation && filterNative && filterLastLib;
     });
     filter.forEach((sample) => {

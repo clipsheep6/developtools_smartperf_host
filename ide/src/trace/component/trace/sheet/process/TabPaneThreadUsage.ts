@@ -57,8 +57,9 @@ export class TabPaneThreadUsage extends BaseElement {
     getTabThreadStatesCpu(threadUsageParam.threadIds, threadUsageParam.leftNs, threadUsageParam.rightNs).then((result) => {
       if (result != null && result.length > 0) {
         log('getTabThreadStates result size : ' + result.length);
+        let filterArr = result.filter(it => threadUsageParam.processIds.includes(it.pid))
         let map: Map<number, any> = new Map<number, any>();
-        for (let resultEl of result) {
+        for (let resultEl of filterArr) {
           if (map.has(resultEl.tid)) {
             map.get(resultEl.tid)[`cpu${resultEl.cpu}`] = resultEl.wallDuration || 0;
             map.get(resultEl.tid)[`cpu${resultEl.cpu}TimeStr`] = getProbablyTime(resultEl.wallDuration || 0);

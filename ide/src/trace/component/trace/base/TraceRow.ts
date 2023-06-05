@@ -119,6 +119,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   public _frame: Rect | undefined;
   public isLoading: boolean = false;
   public readonly args: any;
+  public templateType: Array<string> = [];
   private rootEL: HTMLDivElement | null | undefined;
   private nameEL: HTMLLabelElement | null | undefined;
   private _rangeSelect: boolean = false;
@@ -130,9 +131,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   asyncFuncNamePID: number | undefined | null;
   translateY: number = 0; //single canvas offsetY;
   childrenList: Array<TraceRow<any>> = [];
-  familyGenealogy:Array<{rowId:string | undefined | null, rowType:string | undefined | null}> = [];
-
-  depth: number = 1;
+  parentRowEl: TraceRow<any> | undefined;
   focusHandler?: (ev: MouseEvent) => void | undefined;
 
   constructor(
@@ -184,6 +183,10 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       'disabled-check',
       'row-discard',
     ];
+  }
+
+  get hasParentRowEl(): boolean {
+    return this.parentRowEl !== undefined;
   }
 
   get rowDiscard(): boolean {
@@ -317,6 +320,10 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     );
   }
 
+  addTemplateTypes(...type:string[]) {
+    this.templateType.push(...type);
+  }
+
   replaceTraceRow(newNode:any, oldNode:any) {
     let oldIndex = this.childrenList.indexOf(oldNode);
     if (oldIndex != -1) {
@@ -324,26 +331,27 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     }
   }
 
-  addChildTraceRow(child: TraceRow<any>) {
-    this.addFamilyGenealogy(child);
-    this.depth = 2;
-    if (child.rowType == TraceRow.ROW_TYPE_HIPERF_PROCESS) {
-      this.depth = 3;
+  toParentAddTemplateType = (currentRowEl: TraceRow<any>) => {
+    let parentRow = currentRowEl.parentRowEl;
+    if (parentRow !== undefined) {
+      parentRow.templateType.push(...currentRowEl.templateType);
+      if (parentRow.parentRowEl !== undefined) {
+        this.toParentAddTemplateType(parentRow);
+      }
     }
+  }
+
+  addChildTraceRow(child: TraceRow<any>) {
+    child.parentRowEl = this;
+    this.toParentAddTemplateType(child)
+    child.setAttribute('scene', '');
     this.childrenList.push(child);
   }
 
-  private addFamilyGenealogy(child: TraceRow<any>) {
-    if (this.familyGenealogy.length > 0) {
-      child.familyGenealogy.push(...this.familyGenealogy)
-    }
-    child.familyGenealogy.push({rowId:this.rowId,rowType:this.rowType})
-  }
-
   addChildTraceRowAfter(child: TraceRow<any>, targetRow: TraceRow<any>) {
-    this.depth = 2;
-    this.addFamilyGenealogy(child);
+    child.parentRowEl = this;
     let index = this.childrenList.indexOf(targetRow);
+    child.setAttribute('scene', '');
     if (index != -1) {
       this.childrenList.splice(index + 1, 0, child);
     } else {
@@ -352,7 +360,8 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   addChildTraceRowSpecifyLocation(child: TraceRow<any>, index: number) {
-    this.addFamilyGenealogy(child);
+    child.parentRowEl = this;
+    child.setAttribute('scene', '');
     this.childrenList.splice(index, 0, child);
   }
   insertAfter(newEl: DocumentFragment, targetEl: HTMLElement) {
@@ -691,10 +700,17 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
 
   setCheckBox(isCheck: boolean) {
     if (this.folder) {
+      // favorite row  check change;
+      window.publish(window.SmartEvent.UI.CheckALL,{
+        rowId: this.rowId,
+        isCheck: isCheck
+      });
       this.childrenList!.forEach((ck) => {
         ck.setAttribute('check-type', isCheck ? '2' : '0');
         let allCheck: LitCheckBox | null | undefined = ck?.shadowRoot?.querySelector('.lit-check-box');
-        allCheck!.checked = isCheck;
+        if (allCheck) {
+          allCheck!.checked = isCheck;
+        }
       });
     } else if (this.rowParentId == '' && !this.folder) {
       let traceRowList: Array<TraceRow<any>> = [];
@@ -731,12 +747,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         return it.checkType === '0';
       });
     }
-    let parentRow = this.parentElement?.querySelector<TraceRow<any>>(
-      `trace-row[row-id='${this.folder ? this.rowId : this.rowParentId}'][folder]`
-    );
-    let parentCheck: LitCheckBox | null | undefined = parentRow?.shadowRoot?.querySelector('.lit-check-box');
+    let parentCheck: LitCheckBox | null | undefined = this.parentRowEl?.shadowRoot?.querySelector('.lit-check-box');
     if (unselectedList?.length == 0 && unselectedList.length === 0) {
-      parentRow?.setAttribute('check-type', '2');
+      this.parentRowEl?.setAttribute('check-type', '2');
       if (parentCheck) {
         parentCheck!.checked = true;
         parentCheck!.indeterminate = false;
@@ -752,7 +765,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         it.draw();
       });
     } else {
-      parentRow?.setAttribute('check-type', '1');
+      this.parentRowEl?.setAttribute('check-type', '1');
       if (parentCheck) {
         parentCheck!.checked = false;
         parentCheck!.indeterminate = true;
@@ -780,7 +793,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     }
 
     if (checkList?.length == 0 && checkList2?.length === 0) {
-      parentRow?.setAttribute('check-type', '0');
+      this.parentRowEl?.setAttribute('check-type', '0');
       if (parentCheck) {
         parentCheck!.checked = false;
         parentCheck!.indeterminate = false;

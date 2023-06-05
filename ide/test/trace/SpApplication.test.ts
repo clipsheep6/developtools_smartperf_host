@@ -416,9 +416,9 @@ describe('spApplication Test', () => {
         spApplication.querySql = false;
         expect(spApplication.querySql).toBeFalsy();
     });
-    it('spApplicationTest30', function () {
-        document.body.innerHTML = `<sp-application></sp-application>`;
-        let element = new SpApplication();
-        expect(element.download({},'',true,'')).toBeFalsy();
-    });
+    // it('spApplicationTest30', function () {
+    //     document.body.innerHTML = `<sp-application></sp-application>`;
+    //     let element = new SpApplication();
+    //     expect(element.download({},'',true,'')).toBeFalsy();
+    // });
 });

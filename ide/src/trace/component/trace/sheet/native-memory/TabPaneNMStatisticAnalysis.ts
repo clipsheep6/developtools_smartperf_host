@@ -123,9 +123,11 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       return;
     }
     // @ts-ignore
-    this.soUsageTbl?.shadowRoot.querySelector('.table').style.height = this.parentElement.clientHeight - 20 - 31 + 'px';
+    this.tableType?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight   +'px';
     // @ts-ignore
-    this.functionUsageTbl?.shadowRoot.querySelector('.table').style.height = this.parentElement.clientHeight - 20 - 31 + 'px';
+    this.soUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight   +'px';
+    // @ts-ignore
+    this.functionUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight  + 'px';
     this.clearData();
     this.currentSelection = statisticAnalysisParam;
     this.tableType!.style.display = 'grid';
@@ -183,7 +185,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
   typePieChart(val: any) {
     this.pie!.config = {
       appendPadding: 0,
-      data: this.eventTypeData,
+      data: this.getPieChartData(this.eventTypeData),
       angleField: 'existSize',
       colorField: 'tableName',
       radius: 1,
@@ -202,18 +204,20 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
                         </div>`;
       },
       angleClick: (it: any) => {
-        this.clearData();
-        this.back!.style.visibility = 'visible';
-        this.tableType!.style.display = 'none';
-        this.soUsageTbl!.style.display = 'grid';
-        this.tableType!.setAttribute('hideDownload', '');
-        this.soUsageTbl?.removeAttribute('hideDownload');
-        this.getLibSize(it, val);
-        // @ts-ignore
-        this.shadowRoot!.querySelector<HTMLDivElement>('.title')!.textContent = it.typeName;
-        // @ts-ignore
-        this.type = it.typeName;
-        this.pie?.hideTip();
+        if (it.tableName != 'other') {
+          this.clearData();
+          this.back!.style.visibility = 'visible';
+          this.tableType!.style.display = 'none';
+          this.soUsageTbl!.style.display = 'grid';
+          this.tableType!.setAttribute('hideDownload', '');
+          this.soUsageTbl?.removeAttribute('hideDownload');
+          this.getLibSize(it, val);
+          // @ts-ignore
+          this.shadowRoot!.querySelector<HTMLDivElement>('.title')!.textContent = it.typeName;
+          // @ts-ignore
+          this.type = it.typeName;
+          this.pie?.hideTip();
+        }
       },
       hoverHandler: (data) => {
         if (data) {
@@ -243,10 +247,10 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
     this.tabName!.textContent = 'Statistic By Event Type Existing';
     this.eventTypeData.unshift(this.typeStatisticsData);
     this.tableType!.recycleDataSource = this.eventTypeData;
+    this.tableType?.reMeauseHeight();
     // @ts-ignore
     this.eventTypeData.shift(this.typeStatisticsData);
     this.currentLevelData = this.eventTypeData;
-    this.tableType?.reMeauseHeight();
   }
   threadPieChart(val: any) {
     this.pie!.config = {
@@ -383,6 +387,18 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       // @ts-ignore
       this.sortByColumn(evt.detail.key, evt.detail.sort);
     });
+    this.soUsageTbl!.addEventListener('row-click', (evt: any) => {
+      let data = evt.detail.data;
+      this.clearData();
+      this.soUsageTbl!.style.display = 'none';
+      this.functionUsageTbl!.style.display = 'grid';
+      this.soUsageTbl!.setAttribute('hideDownload', '');
+      this.functionUsageTbl?.removeAttribute('hideDownload');
+      this.getNMFunctionSize(data, val);
+      // @ts-ignore
+      this.shadowRoot!.querySelector<HTMLDivElement>('.title')!.textContent = this.type + ' / ' + data.libName;
+      this.pie?.hideTip();
+    })
   }
 
   functionPieChart(val: any) {
@@ -595,6 +611,21 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       // @ts-ignore
       this.sortByColumn(evt.detail.key, evt.detail.sort);
     });
+    this.tableType!.addEventListener('row-click', (evt: any) => {
+      let data = evt.detail.data;
+      this.clearData();
+      this.back!.style.visibility = 'visible';
+      this.tableType!.style.display = 'none';
+      this.soUsageTbl!.style.display = 'grid';
+      this.tableType!.setAttribute('hideDownload', '');
+      this.soUsageTbl?.removeAttribute('hideDownload');
+      this.getLibSize(data, val);
+      // @ts-ignore
+      this.shadowRoot!.querySelector<HTMLDivElement>('.title')!.textContent = data.typeName;
+      // @ts-ignore
+      this.type = data.typeName;
+      this.pie?.hideTip();
+    })
   }
 
   private calTypeSize(val: any, result: any) {
@@ -612,13 +643,35 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       }
     }
     if (this.typeMap.has(TYPE_MAP)) {
-      let mapType = this.setTypeMap(this.typeMap, TYPE_MAP, TYPE_MAP_STRING);
-      if (mapType) {
-        this.calPercent(mapType);
-        this.eventTypeData.push(mapType);
+      let subTypeMap = new Map<string,Array<any>>();
+      for(let item of this.typeMap.get(TYPE_MAP)!){
+        if (item.subType){
+          if (subTypeMap.has(item.subType)) {
+            subTypeMap.get(item.subType)?.push(item);
+          } else {
+            let dataArray = new Array<any>();
+            dataArray.push(item);
+            subTypeMap.set(item.subType, dataArray);
+          }
+        } else {
+          if (subTypeMap.has(TYPE_MAP_STRING)) {
+            subTypeMap.get(TYPE_MAP_STRING)?.push(item);
+          } else {
+            let dataArray = new Array<any>();
+            dataArray.push(item);
+            subTypeMap.set(TYPE_MAP_STRING, dataArray);
+          }
+        }
       }
+      subTypeMap.forEach((arr: Array<any>, subType: any)=>{
+        let mapType = this.setMmpTypeMap(this.typeMap, TYPE_MAP, subType);
+        if (mapType) {
+          this.calPercent(mapType);
+          this.eventTypeData.push(mapType);
+        }
+      })
     }
-    this.eventTypeData.sort((a, b) => b.existSize - a.existCount);
+    this.eventTypeData.sort((a, b) => b.existSize - a.existSize);
     this.typeStatisticsData = this.totalData(this.typeStatisticsData);
     this.progressEL!.loading = false;
     this.currentLevel = 0;
@@ -677,9 +730,26 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
     this.soData = [];
     if (!this.processData) return;
     for (let itemData of this.processData) {
-	  // @ts-ignore
-      if (!types.includes(itemData.type)) {
-        continue;
+      if(typeName == TYPE_ALLOC_STRING){
+        if (!types.includes(itemData.type)) {
+          continue;
+        }
+      }else if(typeName == TYPE_MAP_STRING){
+        if (!itemData.subType) {
+          if(!types.includes(itemData.type)){
+            continue;
+          }
+        }else {
+          continue;
+        }
+      }else{
+        if(itemData.subType){
+          if (!types.includes(itemData.subType)||!types.includes(itemData.type)) {
+            continue;
+          }
+        }else{
+          continue;
+        }
       }
       let libId = itemData.libId;
 
@@ -730,9 +800,26 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       return;
     }
     for (let data of this.processData) {
-	  // @ts-ignore
-      if (!types.includes(data.type) || data.libId !== libId) {
-        continue;
+      if(typeName == TYPE_ALLOC_STRING){
+        if (!types.includes(data.type)|| data.libId !== libId) {
+          continue;
+        }
+      }else if(typeName == TYPE_MAP_STRING){
+        if (!data.subType) {
+          if(!types.includes(data.type)|| data.libId !== libId){
+            continue;
+          }
+        }else {
+          continue;
+        }
+      }else {
+        if (data.subType) {
+          if (!types.includes(data.subType) || !types.includes(data.type) || data.libId !== libId) {
+            continue;
+          }
+        } else {
+          continue;
+        }
       }
       if (symbolMap.has(data.symbolId)) {
         symbolMap.get(data.symbolId)?.push(data);
@@ -826,6 +913,58 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       if (this.isStatistic) {
         releaseSize += applySample.releaseSize;
         releaseCount += applySample.releaseCount;
+      }
+    }
+    let typeItem = new AnalysisObj(applySize, applyCount, releaseSize, releaseCount);
+    typeItem.typeId = tyeId;
+    typeItem.typeName = typeName;
+    typeItem.tableName = typeName;
+    return typeItem;
+  }
+  setMmpTypeMap(typeMap: Map<number, any>, tyeId: number, typeName: string): AnalysisObj | null {
+    let applySize = 0;
+    let releaseSize = 0;
+    let applyCount = 0;
+    let releaseCount = 0;
+    let releaseTypeId =  TYPE_UN_MAP;
+    let currentType = typeMap.get(tyeId);
+    if (!currentType) {
+      return null;
+    }
+
+    if (!this.isStatistic) {
+      if (typeMap.has(releaseTypeId)) {
+        for (let freeSample of typeMap.get(releaseTypeId)!) {
+          if(freeSample.subType){
+            if(freeSample.subType == typeName){
+              releaseSize += freeSample.size;
+              releaseCount += freeSample.count;
+            }
+          }else {
+            if(typeName == TYPE_MAP_STRING){
+              releaseSize += freeSample.size;
+              releaseCount += freeSample.count;
+            }
+          }
+        }
+      }
+    }
+
+    for (let applySample of typeMap.get(tyeId)!) {
+      if (this.isStatistic) {
+        releaseSize += applySample.releaseSize;
+        releaseCount += applySample.releaseCount;
+      }
+      if(applySample.subType){
+        if(applySample.subType == typeName){
+          applySize += applySample.size;
+          applyCount += applySample.count;
+        }
+      }else {
+        if(typeName == TYPE_MAP_STRING){
+          applySize += applySample.size;
+          applyCount += applySample.count;
+        }
       }
     }
     let typeItem = new AnalysisObj(applySize, applyCount, releaseSize, releaseCount);
@@ -992,8 +1131,9 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
   }
 
   getTypes(parent: AnalysisObj) {
-    let types = new Array<number>();
+    let types = new Array<any>();
     types.push(parent.typeId!);
+    types.push(parent.typeName!);
     if (!this.isStatistic) {
       let releaseType;
       if (parent.typeId === TYPE_ALLOC) {
