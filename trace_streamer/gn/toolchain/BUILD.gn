@@ -14,12 +14,12 @@
 import("//gn/wasm.gni")
 declare_args() {
   if (target_os == "linux" || target_os == "macx") {
-    cc = "/home/tools/llvm/bin/clang"
-    cxx = "/home/tools/llvm/bin/clang++"
+    cc = "clang"
+    cxx = "clang++"
     pic = "-fPIC"
     rebuild_string = ""
     extra_asmflags = ""
-    asm = "/home/tools/llvm/bin/clang"
+    asm = "clang"
   } else if (target_os == "windows") {
     cc = "gcc.exe"
     cxx = "g++.exe"
