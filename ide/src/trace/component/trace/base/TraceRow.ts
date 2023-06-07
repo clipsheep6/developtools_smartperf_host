@@ -426,6 +426,12 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       this.removeAttribute('check-type');
       return;
     }
+    if (this.getAttribute('check-type') === value) {
+      return;
+    }
+    if (this.folder) {
+      this.childrenList.forEach(it => it.checkType = value)
+    }
     this.setAttribute('check-type', value);
     if (this.hasAttribute('disabled-check')) {
       this.checkBoxEL!.style.display = 'none';
@@ -454,9 +460,6 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         this.checkBoxEL!.checked = true;
         this.checkBoxEL!.indeterminate = false;
         break;
-    }
-    if (this.folder) {
-      this.childrenList.forEach(it => it.checkType = value)
     }
   }
 
