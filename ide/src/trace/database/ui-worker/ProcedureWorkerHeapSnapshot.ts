@@ -12,8 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BaseStruct, Rect, Render, isFrameContainPoint, drawString } from './ProcedureWorkerCommon.js';
+
+import { BaseStruct, Rect, Render, isFrameContainPoint } from './ProcedureWorkerCommon.js';
 import { TraceRow } from '../../component/trace/base/TraceRow.js';
+import { Utils } from '../../component/trace/base/Utils.js';
 export class HeapSnapshotRender extends Render {
   renderMainThread(
     req: {
@@ -81,7 +83,8 @@ export class HeapSnapshotStruct extends BaseStruct {
   id: number = 0;
   pid: number = 0;
   file_name: string | undefined;
-  textMetricsWidth: number | undefined;
+  textWidth: number | undefined;
+  size: number = 0;
   static hoverSnapshotStruct: HeapSnapshotStruct | undefined;
   static selectSnapshotStruct: HeapSnapshotStruct | undefined;
 
@@ -108,7 +111,8 @@ export class HeapSnapshotStruct extends BaseStruct {
         ctx.fillStyle = '#fff';
         ctx.textBaseline = 'middle';
         ctx.font = '12px sans-serif';
-        drawString(ctx, data.file_name || '', 2, data.frame!, data);
+        HeapSnapshotStruct.drawString(ctx, data.file_name || '', 3, data.frame!, data, 4);
+        HeapSnapshotStruct.drawString(ctx, Utils.getBinaryByteWithUnit(data.size) || '', 9, data.frame!, data, 2);
       }
       if (
         HeapSnapshotStruct.selectSnapshotStruct &&
@@ -117,6 +121,54 @@ export class HeapSnapshotStruct extends BaseStruct {
         ctx.strokeStyle = '#232c5d';
         ctx.lineWidth = 2;
         ctx.strokeRect(data.frame!.x, data.frame!.y + padding, data.frame!.width - 2, data.frame!.height - padding * 2);
+      }
+    }
+  }
+
+  /**
+   *
+   * @param ctx current context
+   * @param str text
+   * @param textPadding padding
+   * @param frame rectangle
+   * @param data HeapSnapshotStruct
+   * @param location the position of the string, the bigger the numerical value, the higher the position on the canvas
+   */
+  static drawString(
+    ctx: CanvasRenderingContext2D,
+    str: string,
+    textPadding: number,
+    frame: Rect,
+    data: any,
+    location: number
+  ) {
+    if (data.textWidth === undefined) {
+      data.textWidth = ctx.measureText(str).width;
+    }
+    let textWidth = Math.round(data.textWidth / str.length);
+    let fillTextWidth = frame.width - textPadding * 2;
+    if (data.textWidth < fillTextWidth) {
+      let x = Math.floor(frame.width / 2 - data.textWidth / 2 + frame.x + textPadding);
+      ctx.fillText(str, x, Math.floor(frame.y + frame.height / location + textPadding), fillTextWidth);
+    } else {
+      if (fillTextWidth >= textWidth) {
+        let characterNum = fillTextWidth / textWidth;
+        let x = frame.x + textPadding;
+        if (characterNum < 2) {
+          ctx.fillText(
+            str.substring(0, 1),
+            x,
+            Math.floor(frame.y + frame.height / location + textPadding),
+            fillTextWidth
+          );
+        } else {
+          ctx.fillText(
+            str.substring(0, characterNum - 1) + '...',
+            x,
+            Math.floor(frame.y + frame.height / location + textPadding),
+            fillTextWidth
+          );
+        }
       }
     }
   }

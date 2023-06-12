@@ -1016,6 +1016,9 @@ export const queryCpuMax = (): Promise<Array<any>> =>
     desc limit 1;`
   );
 
+export const queryCpuDataCount = () =>
+  query('queryCpuDataCount', 'select count(1) as count,cpu from thread_state where cpu not null group by cpu');
+
 export const queryCpuCount = (): Promise<Array<any>> =>
   query(
     'queryCpuCount',
@@ -1441,17 +1444,30 @@ export const queryNativeHookStatisticsSubType = (leftNs: number, rightNs: number
 export const queryNativeHookSubType = (leftNs: number, rightNs: number): Promise<Array<any>> =>
   query(
     'queryNativeHookSubType',
-    `
-    select distinct sub_type_id as subTypeId,DD.data
-from
-      native_hook NH,
-      trace_range TR
-left join data_dict DD on NH.sub_type_id = DD.id
-    where
-      NH.sub_type_id not null and
-      (NH.start_ts - TR.start_ts) between ${leftNs} and ${rightNs}
+    `select distinct sub_type_id as subTypeId, DD.data as subType
+      from
+        native_hook NH,
+        trace_range TR
+      left join data_dict DD on NH.sub_type_id = DD.id
+      where
+        NH.sub_type_id not null and
+        (NH.start_ts - TR.start_ts) between ${leftNs} and ${rightNs}
         `,
     { $leftNs: leftNs, $rightNs: rightNs }
+  );
+
+  export const queryNativeHookStatisticSubType = (leftNs: number, rightNs: number): Promise<Array<any>> =>
+    query(
+      'queryNativeHookStatisticSubType',
+      `SELECT DISTINCT type as subTypeId,
+          CASE WHEN type = 2 THEN 'FILE_PAGE_MSG' WHEN type = 3 THEN 'MEMORY_USING_MSG' ELSE 'MmapEvent' END AS subType
+        FROM
+          native_hook_statistic NHS,
+          trace_range TR
+        WHERE
+          NHS.type > 1 AND
+          (NHS.ts - TR.start_ts) between ${leftNs} and ${rightNs}
+      `,{ $leftNs: leftNs, $rightNs: rightNs }
   );
 
 export const queryNativeHookEventTid = (
@@ -3925,10 +3941,11 @@ export const queryGpuDur = (id: number): Promise<any> =>
 export const queryHeapFile = (): Promise<Array<any>> =>
   query(
     'queryHeapFile',
-    `SELECT f.id, f.file_name, f.start_time, f.end_time, f.pid, t.start_ts, t.end_ts
-        FROM js_heap_files f,trace_range t
-        where (t.end_ts >= f.end_time and f.file_name != 'Timeline')
-        OR f.file_name = 'Timeline'`
+    `SELECT f.id, f.file_name, f.start_time, f.end_time, f.pid, t.start_ts, t.end_ts,sum(n.self_size) as size
+    FROM js_heap_files f,trace_range t LEFT JOIN js_heap_nodes n on f.id = n.file_id
+    where (t.end_ts >= f.end_time and f.file_name != 'Timeline')
+    OR f.file_name = 'Timeline'
+    GROUP BY f.id`
   );
 
 export const queryHeapInfo = (fileId: number): Promise<Array<any>> =>

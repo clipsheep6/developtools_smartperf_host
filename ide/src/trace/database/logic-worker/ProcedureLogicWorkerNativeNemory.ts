@@ -751,6 +751,14 @@ where ts between start_ts and end_ts ${condition};
     );
   }
   queryStatisticCallchainsSamples(action: string, leftNs: number, rightNs: number, types: Array<number>) {
+    let condition = '';
+    if(types.length === 1){
+      if(types[0] === 0){
+        condition = 'and type = 0';
+      } else {
+        condition = 'and type != 0';
+      }
+    }
     this.queryData(
       this.currentEventId,
       action,
@@ -770,7 +778,7 @@ where ts between start_ts and end_ts ${condition};
             where
                 A.ts - B.start_ts
                 between ${leftNs} and ${rightNs}
-                and A.type in (${types.join(',')})
+                ${condition}
             group by callchain_id;
         `,
       {}
@@ -790,6 +798,19 @@ where ts between start_ts and end_ts ${condition};
       if (this.isStatistic) {
         analysisSample.releaseCount = sample.freeCount;
         analysisSample.releaseSize = sample.freeSize;
+        switch(sample.subTypeId){
+          case 1:
+            analysisSample.subType = 'MmapEvent';
+            break;
+          case 2:
+            analysisSample.subType = 'FILE_PAGE_MSG';
+            break;
+          case 3:
+            analysisSample.subType = 'MEMORY_USING_MSG';
+            break;
+          default:
+            analysisSample.subType = undefined;
+        }
       } else {
         let subType = undefined;
         if (sample.subTypeId) {
@@ -855,7 +876,6 @@ where ts between start_ts and end_ts ${condition};
 
       analysisSampleList.push(analysisSample);
     }
-    //analysisSampleList.sort((a, b) => a.id - b.id);
     return analysisSampleList;
   }
 

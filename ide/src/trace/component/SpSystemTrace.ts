@@ -736,11 +736,11 @@ export class SpSystemTrace extends BaseElement {
     };
     // @ts-ignore
     new ResizeObserver((entries) => {
-      let width = entries[0].contentRect.width - 1 - SpSystemTrace.scrollViewWidth;
+      TraceRow.FRAME_WIDTH = this.clientWidth - 249;
       requestAnimationFrame(() => {
-        this.timerShaftEL?.updateWidth(width);
+        this.timerShaftEL?.updateWidth(this.clientWidth);
         this.shadowRoot!.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => {
-          it.updateWidth(width);
+          it.updateWidth(this.clientWidth);
         });
       });
     }).observe(this);
@@ -1081,7 +1081,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: this.timerShaftEL?.canvas?.clientWidth,
+        width: TraceRow.FRAME_WIDTH,
         height: this.canvasPanel?.clientHeight,
       },
       this.timerShaftEL!
@@ -1094,7 +1094,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: this.timerShaftEL?.canvas?.clientWidth,
+        width: TraceRow.FRAME_WIDTH,
         height: this.canvasFavoritePanel?.clientHeight,
       },
       this.timerShaftEL!
@@ -1109,7 +1109,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: this.timerShaftEL!.canvas!.clientWidth,
+        width: TraceRow.FRAME_WIDTH,
         height: this.canvasPanel!.clientHeight!,
       } as Rect
     );
@@ -1123,7 +1123,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: this.timerShaftEL!.canvas!.clientWidth,
+        width: TraceRow.FRAME_WIDTH,
         height: this.canvasFavoritePanel!.clientHeight!,
       } as Rect
     );
@@ -1141,7 +1141,7 @@ export class SpSystemTrace extends BaseElement {
         {
           x: 0,
           y: 0,
-          width: this.timerShaftEL!.canvas!.clientWidth,
+          width: TraceRow.FRAME_WIDTH,
           height: this.canvasPanel!.clientHeight!,
         } as Rect
       );
@@ -1154,7 +1154,7 @@ export class SpSystemTrace extends BaseElement {
         {
           x: 0,
           y: 0,
-          width: this.timerShaftEL!.canvas!.clientWidth,
+          width: TraceRow.FRAME_WIDTH,
           height: this.canvasFavoritePanel!.clientHeight!,
         } as Rect
       );
@@ -2814,6 +2814,7 @@ export class SpSystemTrace extends BaseElement {
     progress && progress('rest timershaft', 8);
     this.timerShaftEL?.reset();
     progress && progress('clear cache', 10);
+    HeapDataInterface.getInstance().clearData();
     procedurePool.clearCache();
   }
 

@@ -741,13 +741,24 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
           continue;
         }
       } else if (typeName === TYPE_MAP_STRING) {
-        if (!itemData.subType) {
-          // @ts-ignore
-          if (!types.includes(itemData.type)) {
+        if (this.isStatistic) {
+          if (itemData.subType) {
+            // @ts-ignore
+            if (!types.includes(itemData.subType) || !types.includes(itemData.type)) {
+              continue;
+            }
+          } else {
             continue;
           }
         } else {
-          continue;
+          if (!itemData.subType) {
+            // @ts-ignore
+            if (!types.includes(itemData.type)) {
+              continue;
+            }
+          } else {
+            continue;
+          }
         }
       } else {
         if (itemData.subType) {
@@ -814,13 +825,24 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
           continue;
         }
       } else if (typeName === TYPE_MAP_STRING) {
-        if (!data.subType) {
-          // @ts-ignore
-          if (!types.includes(data.type) || data.libId !== libId) {
+        if (this.isStatistic) {
+          if (data.subType) {
+            // @ts-ignore
+            if (!types.includes(data.subType) || !types.includes(data.type) || data.libId !== libId) {
+              continue;
+            }
+          } else {
             continue;
           }
         } else {
-          continue;
+          if (!data.subType) {
+            // @ts-ignore
+            if (!types.includes(data.type) || data.libId !== libId) {
+              continue;
+            }
+          } else {
+            continue;
+          }
         }
       } else {
         if (data.subType) {
@@ -922,26 +944,32 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
           }
         }
       } else {
-        if (this.isStatistic) {
-          releaseSize += applySample.releaseSize;
-          releaseCount += applySample.releaseCount;
-        }
         if (applySample.subType) {
           if (applySample.subType === typeName) {
             applySize += applySample.size;
             applyCount += applySample.count;
-            if (applySample.isRelease) {
-              releaseSize += applySample.size;
-              releaseCount += applySample.count;
+            if (this.isStatistic) {
+              releaseSize += applySample.releaseSize;
+              releaseCount += applySample.releaseCount;
+            } else {
+              if (applySample.isRelease) {
+                releaseSize += applySample.size;
+                releaseCount += applySample.count;
+              }
             }
           }
         } else {
           if (typeName === TYPE_MAP_STRING) {
             applySize += applySample.size;
             applyCount += applySample.count;
-            if (applySample.isRelease) {
-              releaseSize += applySample.size;
-              releaseCount += applySample.count;
+            if (this.isStatistic) {
+              releaseSize += applySample.releaseSize;
+              releaseCount += applySample.releaseCount;
+            } else {
+              if (applySample.isRelease) {
+                releaseSize += applySample.size;
+                releaseCount += applySample.count;
+              }
             }
           }
         }

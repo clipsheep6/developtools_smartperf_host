@@ -364,7 +364,7 @@ export class LitTable extends HTMLElement {
   }
 
   exportData() {
-    if (this.exportLoading) {
+    if (this.exportLoading || this.ds.length === 0) {
       return;
     }
     this.exportLoading = true;
@@ -1475,6 +1475,9 @@ export class LitTable extends HTMLElement {
           firstElement.insertBefore(btn, firstElement.firstChild);
         }
         firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
+        if (!rowObject.children || rowObject.children.length === 0) {
+          firstElement.style.paddingLeft = (15 * rowObject.depth + 16) + 'px';
+        }
         if (rowObject.data.rowName === 'js-memory') {
           let nodeText = document.createElement('text');
           nodeText.classList.add('nodeName');

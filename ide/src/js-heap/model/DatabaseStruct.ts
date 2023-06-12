@@ -226,7 +226,6 @@ export class HeapSample {
   }
 }
 export class HeapLocation {
-
   objectIndex: number;
   scriptId: number;
   line: number;
@@ -263,6 +262,16 @@ export class HeapSnapshotStruct {
     this.samples = new Array<HeapSample>();
     this.locations = new Map<number, HeapLocation>();
     this.strings = new Array<string>();
+  }
+
+  public clear() {
+    this.nodeMap.clear();
+    this.edges.length = 0;
+    this.functionInfos.length = 0;
+    this.traceNodes.length = 0;
+    this.samples.length = 0;
+    this.locations.clear();
+    this.strings.length = 0;
   }
 }
 

@@ -48,7 +48,7 @@ export class HeapLoader {
   private dominatorTree: Uint32Array;
   private firstDominatedNodesIdx: Uint32Array;
   private dominatedNodes: Uint32Array;
-  private allClasses!: Map<string, ConstructorItem>;
+  private allClasses?: Map<string, ConstructorItem>;
   private diffToOtherFile: Map<number, Map<string, ConstructorComparison>>;
 
   constructor(fileStruct: FileStruct) {
@@ -1038,6 +1038,14 @@ export class HeapLoader {
 
   public getNodes(): Array<HeapNode> {
     return this.nodes;
+  }
+
+  public clear() {
+    this.allClasses?.clear();
+    this.diffToOtherFile.clear();
+    this.nodeMap.clear();
+    this.edges.length = 0;
+    this.nodes.length = 0;
   }
 }
 
