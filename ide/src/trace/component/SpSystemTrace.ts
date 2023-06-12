@@ -953,9 +953,6 @@ export class SpSystemTrace extends BaseElement {
     if (this.visibleRows.length == 0) {
       return;
     }
-    if (!cache) {
-      TraceRow.range!.refresh = true;
-    }
     //clear main canvas
     this.canvasPanelCtx?.clearRect(0, 0, this.canvasPanel!.offsetWidth, this.canvasPanel!.offsetHeight);
     //clear favorite canvas
@@ -1037,7 +1034,6 @@ export class SpSystemTrace extends BaseElement {
       drawLinkLines(this.canvasPanelCtx!, this.linkNodes, this.timerShaftEL!, false);
       drawLinkLines(this.canvasFavoritePanelCtx!, this.linkNodes, this.timerShaftEL!, true);
     }
-    TraceRow.range!.refresh = false;
   }
 
   documentOnMouseDown = (ev: MouseEvent) => {
