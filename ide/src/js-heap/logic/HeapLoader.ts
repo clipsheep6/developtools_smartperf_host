@@ -164,7 +164,7 @@ export class HeapLoader {
         if (!childNode) {
           continue;
         }
-        if (node.nodeIndex !== this.rootNode?.nodeIndex){
+        if (node.nodeIndex !== this.rootNode?.nodeIndex) {
           childNode.retainsNodeIdx.push(node.nodeIndex);
           childNode.retainsEdgeIdx.push(edge.edgeIndex);
         }

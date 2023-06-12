@@ -384,7 +384,9 @@ export class TabPaneSummary extends BaseElement {
             break;
           case 'shallowSize':
             this.tblSummary!.snapshotDataSource = this.leftArray.sort((leftData, rightData) => {
-              return sort === 1 ? leftData.shallowSize - rightData.shallowSize : rightData.shallowSize - leftData.shallowSize;
+              return sort === 1
+                ? leftData.shallowSize - rightData.shallowSize
+                : rightData.shallowSize - leftData.shallowSize;
             });
             this.leftArray.forEach((currentLeftItem) => {
               let retainsTable = function () {
@@ -406,13 +408,17 @@ export class TabPaneSummary extends BaseElement {
             break;
           case 'retainedSize':
             this.tblSummary!.snapshotDataSource = this.leftArray.sort((leftData, rightData) => {
-              return sort === 1 ? leftData.retainedSize - rightData.retainedSize : rightData.retainedSize - leftData.retainedSize;
+              return sort === 1
+                ? leftData.retainedSize - rightData.retainedSize
+                : rightData.retainedSize - leftData.retainedSize;
             });
             this.leftArray.forEach((currentLeftItem) => {
               let retainsTable = function () {
                 const getList = function (list: any) {
                   list.sort((leftA: any, rightB: any) => {
-                    return sort === 1 ? leftA.retainedSize - rightB.retainedSize : rightB.retainedSize - leftA.retainedSize;
+                    return sort === 1
+                      ? leftA.retainedSize - rightB.retainedSize
+                      : rightB.retainedSize - leftA.retainedSize;
                   });
                   list.forEach(function (row: any) {
                     if (row.children.length > 0) {

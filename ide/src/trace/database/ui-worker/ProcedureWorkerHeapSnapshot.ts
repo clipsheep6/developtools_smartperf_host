@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BaseStruct, Rect, Render, isFrameContainPoint, drawString} from './ProcedureWorkerCommon.js';
+import { BaseStruct, Rect, Render, isFrameContainPoint, drawString } from './ProcedureWorkerCommon.js';
 import { TraceRow } from '../../component/trace/base/TraceRow.js';
 export class HeapSnapshotRender extends Render {
   renderMainThread(
@@ -106,9 +106,9 @@ export class HeapSnapshotStruct extends BaseStruct {
         ctx.globalAlpha = 1.0;
         ctx.lineWidth = 1;
         ctx.fillStyle = '#fff';
-      ctx.textBaseline = 'middle';
-      ctx.font = '12px sans-serif'
-        drawString(ctx, data.file_name || '', 2, data.frame!,data);
+        ctx.textBaseline = 'middle';
+        ctx.font = '12px sans-serif';
+        drawString(ctx, data.file_name || '', 2, data.frame!, data);
       }
       if (
         HeapSnapshotStruct.selectSnapshotStruct &&

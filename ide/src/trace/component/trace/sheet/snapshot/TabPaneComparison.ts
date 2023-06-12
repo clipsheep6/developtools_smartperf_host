@@ -69,7 +69,7 @@ export class TabPaneComparison extends BaseElement {
           for (let item of this.clickRow.children) {
             let nodeName = item.nodeName.concat(` @${item.id}`);
             item.nodeId = ` @${item.id}`;
-            if (item.isString() ) {
+            if (item.isString()) {
               item.objectName = '"' + item.nodeName + '"' + ` @${item.id}`;
             } else {
               item.objectName = nodeName;

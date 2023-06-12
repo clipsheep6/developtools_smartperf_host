@@ -91,7 +91,7 @@ let merged = () => {
   return mergedArray;
 };
 let convertJSON = () => {
-  try{
+  try {
     let str = dec.decode(arr);
     let jsonArray = [];
     str = str.substring(str.indexOf('\n') + 1);
@@ -109,7 +109,7 @@ let convertJSON = () => {
       }
     }
     return jsonArray;
-  }catch (e) {
+  } catch (e) {
     self.postMessage({
       id: currentActionId,
       action: currentAction,
@@ -117,7 +117,7 @@ let convertJSON = () => {
       status: false,
       msg: (e as any).message,
     });
-    return []
+    return [];
   }
 };
 

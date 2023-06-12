@@ -471,13 +471,13 @@ export class SpApplication extends BaseElement {
     };
 
     window.subscribe(window.SmartEvent.UI.MenuTrace, () => showContent(spSystemTrace!));
-    window.subscribe(window.SmartEvent.UI.Error,(err) => {
-      litSearch.setPercent(err,-1);
+    window.subscribe(window.SmartEvent.UI.Error, (err) => {
+      litSearch.setPercent(err, -1);
       progressEL.loading = false;
     });
     window.subscribe(window.SmartEvent.UI.Loading, (loading) => {
-        litSearch.setPercent(loading ? 'Import So File' : '', loading ? -1 : 101);
-        progressEL.loading = loading
+      litSearch.setPercent(loading ? 'Import So File' : '', loading ? -1 : 101);
+      progressEL.loading = loading;
     });
     litSearch.addEventListener('focus', () => {
       window.publish(window.SmartEvent.UI.KeyboardEnable, {
@@ -1154,7 +1154,7 @@ export class SpApplication extends BaseElement {
       if (sidebarButton) {
         sidebarButton.style.width = open ? `0px` : '48px';
       }
-    }
+    };
 
     let urlParams = this.getUrlParams(window.location.href);
     if (urlParams && urlParams.trace && urlParams.link) {
@@ -1166,7 +1166,7 @@ export class SpApplication extends BaseElement {
       progressEL.loading = true;
       let downloadLineFile = false;
       setProgress(downloadLineFile ? 'download trace file' : 'open trace file');
-      this.downloadOnLineFile(urlParams.trace, downloadLineFile,(localPath) => {
+      this.downloadOnLineFile(urlParams.trace, downloadLineFile, (localPath) => {
         let path = urlParams.trace as string;
         let fileName = path.split('/').reverse()[0];
         let showFileName =

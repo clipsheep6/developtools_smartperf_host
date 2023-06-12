@@ -321,11 +321,11 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     );
   }
 
-  addTemplateTypes(...type:string[]) {
+  addTemplateTypes(...type: string[]) {
     this.templateType.push(...type);
   }
 
-  replaceTraceRow(newNode:any, oldNode:any) {
+  replaceTraceRow(newNode: any, oldNode: any) {
     let oldIndex = this.childrenList.indexOf(oldNode);
     if (oldIndex != -1) {
       this.childrenList.splice(oldIndex, 1, newNode);
@@ -340,7 +340,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         this.toParentAddTemplateType(parentRow);
       }
     }
-  }
+  };
 
   addChildTraceRow(child: TraceRow<any>) {
     TraceRowConfig.allTraceRowList.push(child);
@@ -456,7 +456,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         break;
     }
     if (this.folder) {
-      this.childrenList.forEach(it => it.checkType = value)
+      this.childrenList.forEach((it) => (it.checkType = value));
     }
   }
 
@@ -708,9 +708,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   setCheckBox(isCheck: boolean) {
     if (this.folder) {
       // favorite row  check change;
-      window.publish(window.SmartEvent.UI.CheckALL,{
+      window.publish(window.SmartEvent.UI.CheckALL, {
         rowId: this.rowId,
-        isCheck: isCheck
+        isCheck: isCheck,
       });
       this.childrenList!.forEach((ck) => {
         ck.setAttribute('check-type', isCheck ? '2' : '0');

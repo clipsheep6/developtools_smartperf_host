@@ -41,6 +41,9 @@ import { HeapSnapshotStruct } from '../../../database/ui-worker/ProcedureWorkerH
 import { TabPaneComparison } from '../sheet/snapshot/TabPaneComparison.js';
 import { TabPaneSummary } from '../sheet/snapshot/TabPaneSummary.js';
 import { TabPaneNMStatisticAnalysis } from '../sheet/native-memory/TabPaneNMStatisticAnalysis.js';
+import { SpFreqChart } from '../../chart/SpFreqChart.js';
+import { TabPaneCurrent } from '../sheet/TabPaneCurrent.js';
+import { SlicesTime } from '../timer-shaft/SportRuler.js';
 
 @element('trace-sheet')
 export class TraceSheet extends BaseElement {
@@ -340,6 +343,7 @@ export class TraceSheet extends BaseElement {
             </div>`;
   }
 
+  displayCurrent = (data: SlicesTime) => this.displayTab<TabPaneCurrent>('tabpane-current').setCurrentSlicesTime(data);
   displayThreadData = (
     data: ThreadStruct,
     scrollCallback: ((e: ThreadStruct) => void) | undefined,
@@ -356,7 +360,7 @@ export class TraceSheet extends BaseElement {
     val.nativeMemoryStatistic.push(rowType);
     val.nativeMemory = [];
     val.leftNs = data.startTime!;
-    val.rightNs = data.startTime! + data.dur! -1;
+    val.rightNs = data.startTime! + data.dur! - 1;
     this.selection = val;
     this.displayTab<TabPaneNMStatisticAnalysis>('box-native-statistic-analysis', 'box-native-calltree').data = val;
     this.showUploadSoBt(val);
@@ -426,7 +430,7 @@ export class TraceSheet extends BaseElement {
       });
     if (restore) {
       if (this.litTabs?.activekey) {
-        this.loadTabPaneData(this.litTabs?.activekey)
+        this.loadTabPaneData(this.litTabs?.activekey);
         this.setAttribute('mode', 'max');
         return true;
       } else {
@@ -447,7 +451,7 @@ export class TraceSheet extends BaseElement {
     }
   }
 
-  updateRangeSelect() : boolean {
+  updateRangeSelect(): boolean {
     if (
       this.selection &&
       (this.selection.nativeMemory.length > 0 ||
@@ -462,7 +466,7 @@ export class TraceSheet extends BaseElement {
     ) {
       let param: SelectionParam = new SelectionParam();
       Object.assign(param, this.selection);
-      this.rangeSelect(param,true);
+      this.rangeSelect(param, true);
       return true;
     } else {
       return false;
@@ -471,18 +475,16 @@ export class TraceSheet extends BaseElement {
 
   showUploadSoBt(selection: SelectionParam | null | undefined) {
     if (
-        selection &&
-        (
-            selection.nativeMemory.length > 0 ||
-            selection.nativeMemoryStatistic.length > 0 ||
-            selection.perfSampleIds.length > 0 ||
-            selection.fileSystemType.length > 0 ||
-            selection.fsCount > 0 ||
-            selection.fileSysVirtualMemory ||
-            selection.vmCount > 0 ||
-            selection.diskIOLatency ||
-            selection.diskIOipids.length > 0
-        )
+      selection &&
+      (selection.nativeMemory.length > 0 ||
+        selection.nativeMemoryStatistic.length > 0 ||
+        selection.perfSampleIds.length > 0 ||
+        selection.fileSystemType.length > 0 ||
+        selection.fsCount > 0 ||
+        selection.fileSysVirtualMemory ||
+        selection.vmCount > 0 ||
+        selection.diskIOLatency ||
+        selection.diskIOipids.length > 0)
     ) {
       this.importDiv!.style.display = 'flex';
     } else {

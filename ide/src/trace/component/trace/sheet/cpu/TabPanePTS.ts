@@ -20,7 +20,7 @@ import { getStatesProcessThreadDataByRange } from '../../../../database/SqlLite.
 import { SPT, StateProcessThread } from '../../../../bean/StateProcessThread.js';
 import { Utils } from '../../base/Utils.js';
 import { SpSystemTrace } from '../../../SpSystemTrace.js';
-import { resizeObserver } from "../SheetUtils.js";
+import { resizeObserver } from '../SheetUtils.js';
 
 @element('tabpane-pts')
 export class TabPanePTS extends BaseElement {
@@ -50,7 +50,7 @@ export class TabPanePTS extends BaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    resizeObserver(this.parentElement!, this.ptsTbl!)
+    resizeObserver(this.parentElement!, this.ptsTbl!);
   }
 
   queryDataByDB(ptsVal: SelectionParam | any) {

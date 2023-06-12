@@ -264,7 +264,7 @@ export class LitTable extends HTMLElement {
     return ['scroll-y', 'selectable', 'no-head', 'grid-line', 'defaultOrderColumn', 'hideDownload', 'loading'];
   }
 
-  set loading(value : boolean){
+  set loading(value: boolean) {
     this._loading = value;
     this.exportProgress!.loading = value;
   }
@@ -326,8 +326,10 @@ export class LitTable extends HTMLElement {
     if (this.rememberScrollTop) {
       this.currentScrollTop = this.tableElement!.scrollTop;
       this.tableElement!.scrollTop = 0;
+      this.tableElement!.scrollLeft = 0;
     } else {
       this.tableElement!.scrollTop = 0;
+      this.tableElement!.scrollLeft = 0;
     }
     if (this.hasAttribute('tree')) {
       this.recycleDs = this.meauseTreeRowElement(value);
@@ -1224,7 +1226,7 @@ export class LitTable extends HTMLElement {
         newTableElement.append(td);
       }
     });
-    let lastChild = this.treeElement?.lastChild as HTMLElement
+    let lastChild = this.treeElement?.lastChild as HTMLElement;
     if (lastChild) {
       lastChild.style.transform = `translateY(${treeTop}px)`;
     }

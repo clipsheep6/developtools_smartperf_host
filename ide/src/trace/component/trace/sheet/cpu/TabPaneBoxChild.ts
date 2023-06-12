@@ -15,12 +15,12 @@
 
 import { BaseElement, element } from '../../../../../base-ui/BaseElement.js';
 import { LitTable } from '../../../../../base-ui/table/lit-table.js';
-import {BoxJumpParam, SelectionData} from '../../../../bean/BoxSelection.js';
+import { BoxJumpParam, SelectionData } from '../../../../bean/BoxSelection.js';
 import { getTabBoxChildData } from '../../../../database/SqlLite.js';
 import { Utils } from '../../base/Utils.js';
 import { SpSystemTrace } from '../../../SpSystemTrace.js';
 import { SPTChild } from '../../../../bean/StateProcessThread.js';
-import { resizeObserver } from "../SheetUtils.js";
+import { resizeObserver } from '../SheetUtils.js';
 
 @element('tabpane-box-child')
 export class TabPaneBoxChild extends BaseElement {
@@ -34,7 +34,12 @@ export class TabPaneBoxChild extends BaseElement {
     this.boxChildTbl?.shadowRoot?.querySelector('.table')?.style?.height = this.parentElement!.clientHeight - 45 + 'px';
     this.boxChildRange!.textContent =
       'Selected range: ' + parseFloat(((boxChildValue.rightNs - boxChildValue.leftNs) / 1000000.0).toFixed(5)) + ' ms';
-    if (boxChildValue.state != null && boxChildValue.state != undefined && boxChildValue.processId && boxChildValue.threadId) {
+    if (
+      boxChildValue.state != null &&
+      boxChildValue.state != undefined &&
+      boxChildValue.processId &&
+      boxChildValue.threadId
+    ) {
       this.boxChildTbl!.recycleDataSource = [];
       if (this.loadDataInCache) {
         this.getDataByCache(boxChildValue).then((arr) => {
@@ -59,7 +64,7 @@ export class TabPaneBoxChild extends BaseElement {
 
   connectedCallback() {
     super.connectedCallback();
-    resizeObserver(this.parentElement!, this.boxChildTbl!)
+    resizeObserver(this.parentElement!, this.boxChildTbl!);
   }
 
   getDataByDB(val: BoxJumpParam) {

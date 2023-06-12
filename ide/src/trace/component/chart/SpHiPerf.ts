@@ -63,7 +63,6 @@ export class SpHiPerf {
   private rowList: TraceRow<any>[] | undefined;
   private eventTypeList: Array<{ id: number; report_value: string }> = [];
 
-
   constructor(trace: SpSystemTrace) {
     this.trace = trace;
   }
@@ -376,12 +375,12 @@ export class SpHiPerf {
   }
 
   updateChartData() {
-    this.rowList?.forEach((it)=>{
+    this.rowList?.forEach((it) => {
       it.dataList = [];
       it.dataList2 = [];
       it.dataListCache = [];
       it.isComplete = false;
-    })
+    });
   }
 
   hoverTip(

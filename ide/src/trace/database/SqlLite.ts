@@ -207,7 +207,7 @@ export class DbPool {
             let fun = thread.taskMap[event.data.id];
             if (!event.data.init && !event.data.status) {
               if (fun) {
-                fun(['error',event.data.msg]);
+                fun(['error', event.data.msg]);
               }
             } else {
               this.progress!('database ready', 40);
@@ -324,10 +324,10 @@ export function query<T extends any>(
       sql,
       args,
       (res: any) => {
-        if(res[0] && res[0] === 'error'){
-          window.publish(window.SmartEvent.UI.Error,res[1]);
+        if (res[0] && res[0] === 'error') {
+          window.publish(window.SmartEvent.UI.Error, res[1]);
           reject(res);
-        }else{
+        } else {
           resolve(res);
         }
       },
@@ -1270,6 +1270,12 @@ export const queryRunnableTimeByRunning = (tid: number, startTime: number): Prom
 select ts from thread_state,trace_range where ts + dur -start_ts = ${startTime} and state = 'R' and tid=${tid} limit 1
     `;
   return query('queryRunnableTimeByRunning', sql, {});
+};
+export const queryCPUWakeUpIdFromBean = (tid: number | undefined): Promise<Array<WakeupBean>> => {
+  let sql = `
+select itid from thread where tid=${tid} 
+    `;
+  return query('queryCPUWakeUpListFromBean', sql, {});
 };
 
 export const queryThreadWakeUpFrom = (itid: number, startTime: number): Promise<Array<WakeupBean>> => {

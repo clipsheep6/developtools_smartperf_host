@@ -123,11 +123,11 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       return;
     }
     // @ts-ignore
-    this.tableType?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight + 'px';
+    this.tableType?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight - 30 + 'px';
     // @ts-ignore
-    this.soUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight + 'px';
+    this.soUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight - 30 + 'px';
     // @ts-ignore
-    this.functionUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight + 'px';
+    this.functionUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight - 30 + 'px';
     this.clearData();
     this.currentSelection = statisticAnalysisParam;
     this.tableType!.style.display = 'grid';
@@ -617,16 +617,17 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       }
     });
     new ResizeObserver(() => {
+      // @ts-ignore
       if (this.parentElement?.clientHeight != 0) {
         // @ts-ignore
-        this.tableType?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight + 'px';
+        this.tableType?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight - 30 + 'px';
         this.tableType?.reMeauseHeight();
         // @ts-ignore
-        this.soUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight + 'px';
+        this.soUsageTbl?.shadowRoot?.querySelector('.table').style.height = this.parentElement.clientHeight - 30 + 'px';
         this.soUsageTbl?.reMeauseHeight();
         // @ts-ignore
         this.functionUsageTbl?.shadowRoot?.querySelector('.table').style.height =
-          this.parentElement!.clientHeight + 'px';
+          this.parentElement!.clientHeight - 30 + 'px';
         this.functionUsageTbl?.reMeauseHeight();
       }
     }).observe(this.parentElement!);
@@ -689,6 +690,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
     this.resetCurrentLevelData(item);
 
     for (let itemData of this.processData) {
+      // @ts-ignore
       if (!types.includes(itemData.type)) {
         continue;
       }
@@ -734,11 +736,13 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
     if (!this.processData) return;
     for (let itemData of this.processData) {
       if (typeName === TYPE_ALLOC_STRING) {
+        // @ts-ignore
         if (!types.includes(itemData.type)) {
           continue;
         }
       } else if (typeName === TYPE_MAP_STRING) {
         if (!itemData.subType) {
+          // @ts-ignore
           if (!types.includes(itemData.type)) {
             continue;
           }
@@ -747,6 +751,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
         }
       } else {
         if (itemData.subType) {
+          // @ts-ignore
           if (!types.includes(itemData.subType) || !types.includes(itemData.type)) {
             continue;
           }
@@ -804,11 +809,13 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
     }
     for (let data of this.processData) {
       if (typeName === TYPE_ALLOC_STRING) {
+        // @ts-ignore
         if (!types.includes(data.type) || data.libId !== libId) {
           continue;
         }
       } else if (typeName === TYPE_MAP_STRING) {
         if (!data.subType) {
+          // @ts-ignore
           if (!types.includes(data.type) || data.libId !== libId) {
             continue;
           }
@@ -817,6 +824,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
         }
       } else {
         if (data.subType) {
+          // @ts-ignore
           if (!types.includes(data.subType) || !types.includes(data.type) || data.libId !== libId) {
             continue;
           }
@@ -1163,8 +1171,8 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
                          <lit-chart-pie  id="chart-pie"></lit-chart-pie>
                      </div>
                      <div class="table-box" style="height:auto;">
-                    <lit-table id="tb-eventtype-usage" style="max-height:565px;min-height: 350px">
-                        <lit-table-column width="250px" title="Memory Type" data-index="tableName" key="tableName" align="flex-start" ></lit-table-column>
+                    <lit-table id="tb-eventtype-usage" style="max-height: 380px">
+                        <lit-table-column width="250px" title="Memory Type" data-index="tableName" key="tableName" align="flex-start" order></lit-table-column>
                         <lit-table-column width="100px" title="Existing" data-index="existSizeFormat" key="existSizeFormat" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="existSizePercent" key="existSizePercent" align="flex-start"order></lit-table-column>
                         <lit-table-column width="100px" title="# Existing" data-index="existCount" key="existCount" align="flex-start" order></lit-table-column>
@@ -1178,7 +1186,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
                         <lit-table-column width="100px" title="# Transient" data-index="releaseCount" key="releaseCount" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="releaseCountPercent" key="releaseCountPercent" align="flex-start"order></lit-table-column>
                     </lit-table>
-                    <lit-table id="tb-thread-usage" style="max-height:565px;display: none;min-height: 350px"hideDownload>
+                    <lit-table id="tb-thread-usage" style="display: none;max-height: 380px"hideDownload>
                         <lit-table-column width="100px" title="Memory Type" data-index="tableName" key="tableName" align="flex-start" ></lit-table-column>
                         <lit-table-column width="100px" title="Existing" data-index="existSizeFormat" key="existSizeFormat" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="existSizePercent" key="existSizePercent" align="flex-start"order></lit-table-column>
@@ -1193,7 +1201,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
                         <lit-table-column width="100px" title="# Transient" data-index="releaseCount" key="releaseCount" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="releaseCountPercent" key="releaseCountPercent" align="flex-start"order></lit-table-column>
                     </lit-table>
-                    <lit-table id="tb-so-usage" style="max-height:565px;display: none;min-height: 350px"hideDownload>
+                    <lit-table id="tb-so-usage" style="display: none;max-height: 380px"hideDownload>
                         <lit-table-column width="250px" title="Library" data-index="tableName" key="tableName" align="flex-start"order></lit-table-column>
                         <lit-table-column width="100px" title="Existing" data-index="existSizeFormat" key="existSizeFormat" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="existSizePercent" key="existSizePercent" align="flex-start"order></lit-table-column>
@@ -1208,7 +1216,7 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
                         <lit-table-column width="100px" title="# Transient" data-index="releaseCount" key="releaseCount" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="releaseCountPercent" key="releaseCountPercent" align="flex-start"order></lit-table-column>
                     </lit-table>
-                    <lit-table id="tb-function-usage" style="max-height:565px;display: none;min-height: 350px"hideDownload>
+                    <lit-table id="tb-function-usage" style="display: none;max-height: 380px"hideDownload>
                         <lit-table-column width="250px" title="Function" data-index="tableName" key="tableName" align="flex-start"order></lit-table-column>
                          <lit-table-column width="100px" title="Existing" data-index="existSizeFormat" key="existSizeFormat" align="flex-start" order></lit-table-column>
                         <lit-table-column width="50px" title="%" data-index="existSizePercent" key="existSizePercent" align="flex-start"order></lit-table-column>
