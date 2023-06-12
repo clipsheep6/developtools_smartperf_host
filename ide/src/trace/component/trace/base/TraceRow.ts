@@ -1097,7 +1097,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             grid-template-rows: 100%;
             grid-template-columns: 248px 1fr;
             border-bottom: 1px solid var(--dark-border1,#dadada);
-            border-right: 15px solid var(--dark-border1,#ffffff);
+            border-right: 1px solid var(--dark-border1,#ffffff);
             box-sizing: border-box;
         }
         .root .drag{
@@ -1136,7 +1136,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             margin-left: 10px;
             font-size: .9rem;
             font-weight: normal;
-            width: 80%;
+            flex: 1;
             max-height: 100%;
             text-align: left;
             overflow: hidden;

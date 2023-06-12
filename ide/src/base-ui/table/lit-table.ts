@@ -1145,6 +1145,9 @@ export class LitTable extends HTMLElement {
           td.insertBefore(btn, td.firstChild);
         }
         td.style.paddingLeft = rowData.depth * 15 + 'px';
+        if (!rowData.data.children || rowData.data.children.length === 0) {
+          td.style.paddingLeft = (15 * rowData.depth + 16) + 'px';
+        }
         if (rowData.data.rowName === 'js-memory') {
           let nodeText = document.createElement('text');
           nodeText.classList.add('nodeName');
@@ -1469,14 +1472,15 @@ export class LitTable extends HTMLElement {
           let btn = this.createExpandBtn(rowObject);
           firstElement.insertBefore(btn, firstElement.firstChild);
         }
+        firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
+        if (!rowObject.children || rowObject.children.length === 0) {
+          firstElement.style.paddingLeft = 15 * rowObject.depth + 16 + 'px';
+        }
         if (rowObject.data.hasNext) {
           let btn = this.createBtn(rowObject);
           firstElement.title = rowObject.data.objectName;
           firstElement.insertBefore(btn, firstElement.firstChild);
-        }
-        firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
-        if (!rowObject.children || rowObject.children.length === 0) {
-          firstElement.style.paddingLeft = (15 * rowObject.depth + 16) + 'px';
+          firstElement.style.paddingLeft = 15 * rowObject.depth + 'px';
         }
         if (rowObject.data.rowName === 'js-memory') {
           let nodeText = document.createElement('text');

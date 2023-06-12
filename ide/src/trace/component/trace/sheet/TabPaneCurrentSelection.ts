@@ -28,7 +28,6 @@ import {
   queryThreadStateArgs,
   queryThreadWakeUp,
   queryThreadWakeUpFrom,
-  queryCPUWakeUpIdFromBean,
 } from '../../../database/SqlLite.js';
 import { WakeupBean } from '../../../bean/WakeupBean.js';
 import { SpApplication } from '../../../SpApplication.js';
@@ -165,7 +164,6 @@ export class TabPaneCurrentSelection extends BaseElement {
       this.currentSelectionTbl!.dataSource = list;
       let rightArea: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#table-right');
       let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
-      let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton');
       let threadClick = this.currentSelectionTbl?.shadowRoot?.querySelector('#thread-id');
       threadClick?.addEventListener('click', () => {
         //cpu点击
@@ -181,7 +179,6 @@ export class TabPaneCurrentSelection extends BaseElement {
         }
         if (rightTitle != null && rightTitle) {
           rightTitle.style.visibility = 'visible';
-          rightButton!.style.visibility = 'visible';
         }
         this.drawRight(canvas, bean);
       } else {
@@ -799,10 +796,6 @@ export class TabPaneCurrentSelection extends BaseElement {
       if (wf && wf[0]) {
         wb = wf[0];
         if (wb != null) {
-          let wd = await queryCPUWakeUpIdFromBean(wb.tid);
-          if (wd && wd[0]) {
-            wb.itid = wd[0].itid;
-          }
           wb.wakeupTime = wakeupTs - recordStartTs;
           wb.process = Utils.PROCESS_MAP.get(wb.pid!);
           wb.thread = Utils.THREAD_MAP.get(wb.tid!);
@@ -820,40 +813,6 @@ export class TabPaneCurrentSelection extends BaseElement {
     return wb;
   }
 
-  /**
-   * 查询出 线程被唤醒的 线程链信息
-   * @param data
-   */
-  static async queryCPUWakeUpListFromBean(data: WakeupBean) {
-    let wb: WakeupBean | null = null;
-    let wakeup = await queryRunnableTimeByRunning(data.tid!, data.ts!);
-    if (wakeup && wakeup[0]) {
-      let wakeupTs = wakeup[0].ts as number;
-      let recordStartTs = (window as any).recordStartNS;
-      let wf = await queryThreadWakeUpFrom(data.itid!, wakeupTs);
-      if (wf && wf[0]) {
-        wb = wf[0];
-        if (wb != null) {
-          let wd = await queryCPUWakeUpIdFromBean(wb.tid);
-          if (wd && wd[0]) {
-            wb.itid = wd[0].itid;
-          }
-          wb.wakeupTime = wakeupTs - recordStartTs;
-          wb.process = Utils.PROCESS_MAP.get(wb.pid!);
-          wb.thread = Utils.THREAD_MAP.get(wb.tid!);
-          wb.schedulingLatency = (data.ts || 0) - (wb.wakeupTime || 0);
-          if (wb.process == null) {
-            wb.process = wb.thread;
-          }
-          if (wb.pid == undefined) {
-            wb.pid = wb.tid;
-          }
-          wb.schedulingDesc = INPUT_WORD;
-        }
-      }
-    }
-    return wb;
-  }
   /**
    * 查询出 线程唤醒了哪些线程信息
    */
@@ -999,29 +958,12 @@ export class TabPaneCurrentSelection extends BaseElement {
                 width: 100%;
                 display: flex;
             }
-            .table-title>h2{
+            .table-title h2{
                 font-size: 16px;
                 font-weight: 400;
                 visibility: visible;
                 width: 50%;
                 padding: 0 10px;
-            }
-            #rightTitle{
-                width: 50%;
-                display: flex;
-                justify-content: space-between;
-                padding: 0 10px;
-                font-size: 16px;
-                font-weight: 400;
-                visibility: visible;
-            }
-            #rightTitle>h2{
-                font-size: 16px;
-                font-weight: 400;
-            }           
-            #rightButton{
-                padding-top:12px;
-                cursor: pointer; 
             }
             .scroll-area{
                 display: flex;
@@ -1039,12 +981,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         <div style="width: 100%;height: auto;position: relative">
             <div class="table-title">
                 <h2 id="leftTitle"></h2>
-                <div id="rightTitle" >
-                <h2 id="rightText">Scheduling Latency</h2>
-                <div class="right">
-                <lit-button id="rightButton"  height="32px" width="164px" color="black" font_size="14px" border="1px solid black" 
-                  >GetWakeupList</lit-button>
-                </div>
+                <h2 id="rightTitle">Scheduling Latency</h2>
             </div>
             </div>
             <div class="scroll-area">

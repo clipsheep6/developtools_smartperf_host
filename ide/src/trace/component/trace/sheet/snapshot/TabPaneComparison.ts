@@ -67,7 +67,7 @@ export class TabPaneComparison extends BaseElement {
         this.clickRow.children = next;
         if (this.clickRow.children.length > 0) {
           for (let item of this.clickRow.children) {
-            let nodeName = item.nodeName.concat(` @${item.id}`);
+            let nodeName = item.nodeName + ` @${item.id}`;
             item.nodeId = ` @${item.id}`;
             if (item.isString()) {
               item.objectName = '"' + item.nodeName + '"' + ` @${item.id}`;
@@ -138,7 +138,7 @@ export class TabPaneComparison extends BaseElement {
                   let retained = Math.round((row.retainedSize / TabPaneSummary.fileSize) * 100) + '%';
                   row.shallowPercent = shallow;
                   row.retainedPercent = retained;
-                  let nodeId = row.nodeName.concat(` @${row.id}`);
+                  let nodeId = row.nodeName + ` @${row.id}`;
                   row.objectName = row.edgeName + '\xa0' + 'in' + '\xa0' + nodeId;
                   if (row.distance >= 100000000 || row.distance == -5) {
                     row.distance = '-';
@@ -216,7 +216,7 @@ export class TabPaneComparison extends BaseElement {
               let retained = Math.round((structRow.retainedSize / TabPaneSummary.fileSize) * 100) + '%';
               structRow.shallowPercent = shallow;
               structRow.retainedPercent = retained;
-              let nodeId = structRow.nodeName.concat(` @${structRow.id}`);
+              let nodeId = structRow.nodeName + ` @${structRow.id}`;
               structRow.objectName = structRow.edgeName + '\xa0' + 'in' + '\xa0' + nodeId;
               if (structRow.distance >= 100000000 || structRow.distance === -5) {
                 structRow.distance = '-';

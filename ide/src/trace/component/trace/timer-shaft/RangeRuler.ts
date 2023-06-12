@@ -18,7 +18,6 @@ import { Rect } from './Rect.js';
 import { ns2s, TimerShaftElement } from '../TimerShaftElement.js';
 import { ColorUtils } from '../base/ColorUtils.js';
 import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU.js';
-import { SportRuler } from './SportRuler.js';
 
 const MarkPadding = 5;
 
@@ -121,11 +120,9 @@ export class RangeRuler extends Graph {
     5_000_000_000, 10_000_000_000, 20_000_000_000, 50_000_000_000, 100_000_000_000, 200_000_000_000, 500_000_000_000,
   ];
   private _cpuUsage: Array<{ cpu: number; ro: number; rate: number }> = [];
-  private timerShaftEL: TimerShaftElement;
 
   constructor(timerShaftEL: TimerShaftElement, frame: Rect, range: TimeRange, notifyHandler: (r: TimeRange) => void) {
     super(timerShaftEL.canvas, timerShaftEL.ctx!, frame);
-    this.timerShaftEL = timerShaftEL;
     this.range = range;
     this.notifyHandler = notifyHandler;
     this.markAObj = new Mark(
@@ -507,11 +504,6 @@ export class RangeRuler extends Graph {
       }
       this.range.startNS += (this.centerXPercentage * this.currentDuration * this.scale) / this.p;
       this.range.endNS -= ((1 - this.centerXPercentage) * this.currentDuration * this.scale) / this.p;
-      // 对shift+M键 框选的坐标数据按比例进行放大。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS += (this.centerXPercentage * this.currentDuration * this.scale) / this.p;
-        sliceTime.endNS -= ((1 - this.centerXPercentage) * this.currentDuration * this.scale) / this.p;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -530,11 +522,6 @@ export class RangeRuler extends Graph {
       }
       this.range.startNS -= ((this.centerXPercentage * this.scale) / this.p) * this.currentDuration;
       this.range.endNS += (((1 - this.centerXPercentage) * this.scale) / this.p) * this.currentDuration;
-      // 对shift+M键 框选的坐标数据按比例进行缩小。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS -= ((this.centerXPercentage * this.scale) / this.p) * this.currentDuration;
-        sliceTime.endNS += (((1 - this.centerXPercentage) * this.scale) / this.p) * this.currentDuration;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -554,11 +541,6 @@ export class RangeRuler extends Graph {
       let s = (this.scale / this.p) * this.currentDuration * 1.2;
       this.range.startNS -= s;
       this.range.endNS -= s;
-      // 对shift+M键 框选的坐标数据按比例进行左移。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS -= s;
-        sliceTime.endNS -= s;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -578,11 +560,6 @@ export class RangeRuler extends Graph {
       let s = (this.scale / this.p) * this.currentDuration * 1.2;
       this.range.startNS += s;
       this.range.endNS += s;
-      // 对shift+M键 框选的坐标数据按比例进行右移。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS += s;
-        sliceTime.endNS += s;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -633,11 +610,6 @@ export class RangeRuler extends Graph {
       let dur = new Date().getTime() - startTime;
       this.range.startNS += (this.centerXPercentage * 100 * this.scale) / this.p;
       this.range.endNS -= ((1 - this.centerXPercentage) * 100 * this.scale) / this.p;
-      // 对shift+M键 框选的坐标数据按比例进行缩小。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS += (this.centerXPercentage * 100 * this.scale) / this.p;
-        sliceTime.endNS -= ((1 - this.centerXPercentage) * 100 * this.scale) / this.p;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -664,11 +636,6 @@ export class RangeRuler extends Graph {
       let dur = new Date().getTime() - startTime;
       this.range.startNS -= (this.centerXPercentage * 100 * this.scale) / this.p;
       this.range.endNS += ((1 - this.centerXPercentage) * 100 * this.scale) / this.p;
-      // 对shift+M键 框选的坐标数据按比例进行缩小。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS -= (this.centerXPercentage * 100 * this.scale) / this.p;
-        sliceTime.endNS += ((1 - this.centerXPercentage) * 100 * this.scale) / this.p;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -696,11 +663,6 @@ export class RangeRuler extends Graph {
       let s = (this.scale * 80) / this.p;
       this.range.startNS -= s;
       this.range.endNS -= s;
-      // 对shift+M键 框选的坐标数据按比例进行左移。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS -= s;
-        sliceTime.endNS -= s;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;
@@ -728,11 +690,6 @@ export class RangeRuler extends Graph {
       let s = (this.scale * 80) / this.p;
       this.range.startNS += s;
       this.range.endNS += s;
-      // 对shift+M键 框选的坐标数据按比例进行右移。
-      this.timerShaftEL.sportRuler!.slicesTimeList.forEach((sliceTime) => {
-        sliceTime.startNS += s;
-        sliceTime.endNS += s;
-      });
       this.fillX();
       this.draw();
       this.range.refresh = false;

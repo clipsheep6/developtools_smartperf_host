@@ -1274,12 +1274,6 @@ select ts from thread_state,trace_range where ts + dur -start_ts = ${startTime} 
     `;
   return query('queryRunnableTimeByRunning', sql, {});
 };
-export const queryCPUWakeUpIdFromBean = (tid: number | undefined): Promise<Array<WakeupBean>> => {
-  let sql = `
-select itid from thread where tid=${tid} 
-    `;
-  return query('queryCPUWakeUpListFromBean', sql, {});
-};
 
 export const queryThreadWakeUpFrom = (itid: number, startTime: number): Promise<Array<WakeupBean>> => {
   let sql = `

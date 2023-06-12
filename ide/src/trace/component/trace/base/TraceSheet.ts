@@ -41,9 +41,6 @@ import { HeapSnapshotStruct } from '../../../database/ui-worker/ProcedureWorkerH
 import { TabPaneComparison } from '../sheet/snapshot/TabPaneComparison.js';
 import { TabPaneSummary } from '../sheet/snapshot/TabPaneSummary.js';
 import { TabPaneNMStatisticAnalysis } from '../sheet/native-memory/TabPaneNMStatisticAnalysis.js';
-import { SpFreqChart } from '../../chart/SpFreqChart.js';
-import { TabPaneCurrent } from '../sheet/TabPaneCurrent.js';
-import { SlicesTime } from '../timer-shaft/SportRuler.js';
 
 @element('trace-sheet')
 export class TraceSheet extends BaseElement {
@@ -343,7 +340,6 @@ export class TraceSheet extends BaseElement {
             </div>`;
   }
 
-  displayCurrent = (data: SlicesTime) => this.displayTab<TabPaneCurrent>('tabpane-current').setCurrentSlicesTime(data);
   displayThreadData = (
     data: ThreadStruct,
     scrollCallback: ((e: ThreadStruct) => void) | undefined,

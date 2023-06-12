@@ -125,11 +125,8 @@ export class SpCpuChart {
 
   initProcessThreadStateData = async (progress: Function) => {
     let time = new Date().getTime();
-    SpSystemTrace.SPT_DATA = [];
     progress('StateProcessThread', 93);
-    procedurePool.submitWithName('logic1', 'spt-init', {}, undefined, (res: any) => {
-      SpSystemTrace.SPT_DATA = Array.from(res);
-    });
+    procedurePool.submitWithName('logic1', 'spt-init', {}, undefined, (res: any) => {});
     let durTime = new Date().getTime() - time;
     info('The time to load the first ProcessThreadState data is: ', durTime);
   };
