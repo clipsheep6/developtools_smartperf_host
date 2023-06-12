@@ -283,6 +283,8 @@ export abstract class LogicHandler {
       sql: sql,
     });
   }
+
+  abstract clearAll(): void
 }
 
 let dec = new TextDecoder();

@@ -23,6 +23,12 @@ export class ProcedureLogicWorkerSPT extends LogicHandler {
   spt_data: Array<SPT> = [];
   currentEventId: string = '';
 
+  clearAll() {
+    this.arrTs.length = 0;
+    this.arrTp.length = 0;
+    this.spt_data.length = 0;
+  }
+
   handle(data: any): void {
     this.currentEventId = data.id;
     if (data && data.type) {

@@ -515,4 +515,18 @@ export class TraceSheet extends BaseElement {
     param.processId = e.detail.processId;
     (pane.children.item(0) as TabPaneBoxChild).data = param;
   }
+
+  clearMemory() {
+    let allTabs = Array.from(this.shadowRoot?.querySelectorAll<LitTabpane>('#tabs lit-tabpane').values() || []);
+    allTabs.forEach( tab => {
+      if (tab) {
+        let tables = Array.from(
+          (tab.firstChild as BaseElement).shadowRoot?.querySelectorAll<LitTable>('lit-table') || []
+        );
+        for (let table of tables) {
+          table.recycleDataSource = [];
+        }
+      }
+    });
+  }
 }

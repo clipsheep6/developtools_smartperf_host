@@ -71,6 +71,7 @@ import { HeapDataInterface } from '../../js-heap/HeapDataInterface.js';
 import { TabPaneSummary } from './trace/sheet/snapshot/TabPaneSummary.js';
 import { LitTabs } from '../../base-ui/tabs/lit-tabs.js';
 import { SpJsMemoryChart } from './chart/SpJsMemoryChart.js';
+import { TraceRowConfig } from './trace/base/TraceRowConfig.js';
 
 function dpr() {
   return window.devicePixelRatio || 1;
@@ -593,32 +594,36 @@ export class SpSystemTrace extends BaseElement {
             ? TraceRow.rangeSelectObject?.startNS
             : TraceRow.range?.startNS;
           let minNodeId, maxNodeId;
+          if (!it.dataList) {
+            return;
+          }
           for (let sample of it.dataList) {
-            if (sample.timestamp_us * 1000 <= startNS!) {
-              minNodeId = sample.last_assigned_id;
+            if (sample.timestamp * 1000 <= startNS!) {
+              minNodeId = sample.lastAssignedId;
             }
-            if (sample.timestamp_us * 1000 >= endNS!) {
+            if (sample.timestamp * 1000 >= endNS!) {
               if (maxNodeId == undefined) {
-                maxNodeId = sample.last_assigned_id;
+                maxNodeId = sample.lastAssignedId;
               }
             }
           }
+
           // If the start time range of the selected box is greater than the end time of the sampled data
-          if (startNS! >= it.dataList[it.dataList.length - 1].timestamp_us * 1000) {
-            minNodeId = it.dataList[it.dataList.length - 1].last_assigned_id;
+          if (startNS! >= it.dataList[it.dataList.length - 1].timestamp * 1000) {
+            minNodeId = it.dataList[it.dataList.length - 1].lastAssignedId;
           }
           // If you select the box from the beginning
           if (startNS! <= TraceRow.range?.startNS!) {
             minNodeId = HeapDataInterface.getInstance().getMinNodeId(SpJsMemoryChart.file.id);
           }
           //If you select the box from the ending
-          if (endNS! >= TraceRow.range?.endNS! || endNS! >= it.dataList[it.dataList.length - 1].timestamp_us * 1000) {
+          if (endNS! >= TraceRow.range?.endNS! || endNS! >= it.dataList[it.dataList.length - 1].timestampUs * 1000) {
             maxNodeId = HeapDataInterface.getInstance().getMaxNodeId(SpJsMemoryChart.file.id);
           }
           let summary = (this.traceSheetEL?.shadowRoot?.querySelector('#tabs') as LitTabs)
             ?.querySelector('#box-heap-summary')
             ?.querySelector('tabpane-summary') as TabPaneSummary;
-          summary.initSummaryData(SpJsMemoryChart.file.id, minNodeId, maxNodeId);
+          summary.initSummaryData(SpJsMemoryChart.file, minNodeId, maxNodeId);
           selection.jsMemory.push(1);
         }
         if (this.rangeTraceRow!.length !== rows.length) {
@@ -1611,11 +1616,11 @@ export class SpSystemTrace extends BaseElement {
     snapshotClickHandler = (d: HeapSnapshotStruct) => {
       this.observerScrollHeightEnable = true;
       let snapshotRow = this.shadowRoot?.querySelector<TraceRow<HeapSnapshotStruct>>(
-        `trace-row[row-id='heap_snapshot']`
+        `trace-row[row-id='heapsnapshot']`
       );
       let task = () => {
         if (snapshotRow) {
-          let findEntry = snapshotRow!.dataList!.find((dat) => dat.start_time === d.start_time);
+          let findEntry = snapshotRow!.dataList!.find((dat) => dat.startTs === d.startTs);
           this.hoverStructNull();
           this.selectStructNull();
           HeapSnapshotStruct.hoverSnapshotStruct = findEntry;
@@ -1711,7 +1716,7 @@ export class SpSystemTrace extends BaseElement {
       );
     } else if (clickRowType === TraceRow.ROW_TYPE_HEAP_SNAPSHOT && HeapSnapshotStruct.hoverSnapshotStruct) {
       let snapshotRow = this.shadowRoot?.querySelector<TraceRow<HeapSnapshotStruct>>(
-        `trace-row[row-id='heap_snapshot']`
+        `trace-row[row-id='heapsnapshot']`
       );
       HeapSnapshotStruct.selectSnapshotStruct = HeapSnapshotStruct.hoverSnapshotStruct;
       this.traceSheetEL?.displaySnapshotData(
@@ -2646,15 +2651,30 @@ export class SpSystemTrace extends BaseElement {
     this.favoriteRowsEL!.style.height = '0';
     this.canvasFavoritePanel!.style.height = '0';
     this.loadTraceCompleted = false;
+    this.collectRows = [];
+    this.visibleRows = [];
+    TraceRowConfig.allTraceRowList.forEach(it => {
+      it.clearMemory();
+    })
+    TraceRowConfig.allTraceRowList = [];
     if (this.favoriteRowsEL) {
-      this.favoriteRowsEL.querySelectorAll(`trace-row`).forEach((row) => {
+      this.favoriteRowsEL.querySelectorAll<TraceRow<any>>(`trace-row`).forEach((row) => {
+        row.clearMemory();
         this.favoriteRowsEL!.removeChild(row);
       });
     }
-    if (this.rowsEL) this.rowsEL.innerHTML = '';
+    if (this.rowsEL) {
+      this.rowsEL.querySelectorAll<TraceRow<any>>(`trace-row`).forEach((row) => {
+        row.clearMemory();
+        this.rowsEL!.removeChild(row);
+      });
+      this.rowsEL.innerHTML = ''
+    }
+    this.traceSheetEL?.clearMemory();
     this.spacerEL!.style.height = '0px';
     this.rangeSelect.rangeTraceRow = [];
-    this.collectRows = [];
+    SpSystemTrace.SDK_CONFIG_MAP = undefined;
+    SpSystemTrace.sliceRangeMark = undefined;
     this.timerShaftEL?.displayCollect(false);
     this.timerShaftEL!.collecBtn!.removeAttribute('close');
     CpuStruct.wakeupBean = undefined;
@@ -2666,6 +2686,9 @@ export class SpSystemTrace extends BaseElement {
     progress && progress('clear cache', 10);
     HeapDataInterface.getInstance().clearData();
     procedurePool.clearCache();
+    Utils.clearData();
+    procedurePool.submitWithName('logic0', 'clear', {}, undefined, (res: any) => {});
+    procedurePool.submitWithName('logic1', 'clear', {}, undefined, (res: any) => {});
   }
 
   init = async (param: { buf?: ArrayBuffer; url?: string }, wasmConfigUri: string, progress: Function) => {
@@ -2674,7 +2697,6 @@ export class SpSystemTrace extends BaseElement {
       top: 0,
       left: 0,
     });
-    this.reset(progress);
     if (param.buf) {
       let configJson = '';
       try {

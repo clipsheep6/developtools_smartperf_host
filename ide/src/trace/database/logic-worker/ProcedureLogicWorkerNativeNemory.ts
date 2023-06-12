@@ -697,7 +697,7 @@ where ts between start_ts and end_ts ${condition};
         } else if (selectionElement.memoryTap.indexOf('Mmap') != -1) {
           return item.eventType == 'MmapEvent' && item.heapSize == selectionElement.max && item.subTypeId === null;
         } else {
-          return item.subType == selectionElement.memoryTap && item.heapSize == selectionElement.max;
+          return item.subType == selectionElement.memoryTap;
         }
       }
       if (selectionElement.max === undefined && typeof selectionElement.memoryTap === 'number') {
@@ -709,18 +709,19 @@ where ts between start_ts and end_ts ${condition};
   clearAll() {
     this.DATA_DICT.clear();
     this.FILE_DICT.clear();
+    this.HEAP_FRAME_MAP.clear();
     this.splitMapData = {};
     this.currentSamples = [];
     this.allThreads = [];
     this.queryAllCallchainsSamples = [];
-    this.HEAP_FRAME_MAP.clear();
     this.NATIVE_MEMORY_DATA = [];
     this.chartComplete.clear();
     this.realTimeDif = 0;
+    this.currentTreeMapData = {};
+    this.currentTreeList.length = 0;
+    this.responseTypes.length = 0;
   }
-  getCallChainData() {
-    this.HEAP_FRAME_MAP;
-  }
+
   queryCallchainsSamples(action: string, leftNs: number, rightNs: number, types: Array<string>) {
     this.queryData(
       this.currentEventId,

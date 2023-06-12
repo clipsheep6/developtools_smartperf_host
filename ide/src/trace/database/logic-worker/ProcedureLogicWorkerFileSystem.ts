@@ -209,6 +209,17 @@ export class ProcedureLogicWorkerFileSystem extends LogicHandler {
     }
   }
 
+  clearAll() {
+    ProcedureLogicWorkerFileSystem.data_dict.clear();
+    ProcedureLogicWorkerFileSystem.callChainsMap.clear();
+    for (let key of this.handlerMap.keys()) {
+      if (this.handlerMap.get(key).clear) {
+        this.handlerMap.get(key).clear();
+      }
+    }
+    this.handlerMap.clear();
+  }
+
   queryFileSysEvents(leftNs: number, rightNs: number, typeArr: Array<number>, tab: string) {
     let types = Array.from(typeArr).join(',');
     let sql = '';
@@ -524,6 +535,14 @@ class FileSystemCallTreeHandler {
   constructor(type: string, queryData: any) {
     this.currentDataType = type;
     this.queryData = queryData;
+  }
+
+  clear() {
+    this.allProcess.length = 0;
+    this.dataSource.length = 0;
+    this.currentTreeList.length = 0;
+    this.samplesList.length = 0;
+    this.splitMapData = {};
   }
 
   setEventId(eventId: string) {

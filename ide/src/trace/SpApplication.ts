@@ -891,6 +891,9 @@ export class SpApplication extends BaseElement {
       });
       info('openTraceFile');
       spSystemTrace!.clearPointPair();
+      spSystemTrace!.reset((command: string, percent: number) => {
+        setProgress(command);
+      });
       window.clearTraceRowComplete();
       that.freshMenuDisable(true);
       SpSchedulingAnalysis.resetCpu();

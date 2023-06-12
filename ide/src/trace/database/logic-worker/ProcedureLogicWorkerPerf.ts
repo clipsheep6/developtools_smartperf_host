@@ -209,7 +209,8 @@ from (select callchain_id, s.thread_id, thread_state, process_id, count(callchai
     this.searchValue = '';
     this.dataSource = [];
     this.allProcess = [];
-    this.callChainMap = new Map<number, PerfCall>();
+    this.callChainMap.clear();
+    ProcedureLogicWorkerPerf.cmdLineResult = null;
   }
 
   initPerfCallChainBottomUp(callChains: PerfCallChain[]) {

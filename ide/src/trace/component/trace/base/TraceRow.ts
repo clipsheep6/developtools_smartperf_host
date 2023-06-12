@@ -287,24 +287,27 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     if (value === this.expansion) {
       return;
     }
+    let fragment: DocumentFragment | undefined  = document.createDocumentFragment();
     if (value) {
-      let fragment = document.createDocumentFragment();
       this.childrenList.forEach((child: any) => {
         child.rowHidden = false;
-        fragment.appendChild(child);
+        fragment!.appendChild(child);
       });
       this.insertAfter(fragment, this);
     } else {
-      let fragment = document.createDocumentFragment();
       this.childrenList.length = 0;
       this.parentElement?.querySelectorAll<any>(`[row-parent-id='${this.rowId!}']`).forEach((it) => {
         this.childrenList.push(it);
         if (it.folder) {
           it.expansion = value;
         }
-        fragment.appendChild(it);
+        fragment!.appendChild(it);
+      });
+      this.childrenList.forEach(child => {
+        fragment!.removeChild(child);
       });
     }
+    fragment = undefined;
     if (value) {
       this.setAttribute('expansion', '');
     } else {
@@ -320,6 +323,23 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         },
       })
     );
+  }
+
+  clearMemory() {
+    this.dataList2 = [];
+    this.dataList = [];
+    this.dataListCache = [];
+    if (this.rootEL) {
+      this.rootEL.innerHTML = ''
+    }
+    if (this.folder) {
+      this.childrenList.forEach(child => {
+        if (child.clearMemory !== undefined) {
+          child.clearMemory();
+        }
+      })
+      this.childrenList = [];
+    }
   }
 
   addTemplateTypes(...type: string[]) {
@@ -1173,7 +1193,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
             display: none;
         }
         :host(:not([folder])[children]) .icon{
-            visibility: hidden;
+            display: none;
             color:#fff
         }
 

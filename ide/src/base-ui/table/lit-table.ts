@@ -1168,7 +1168,12 @@ export class LitTable extends HTMLElement {
             td.insertBefore(edgeNameText, nodeText);
             let span = document.createElement('span');
             span.classList.add('span');
-            span.textContent = '\xa0' + '::' + '\xa0';
+            if (rowData.data.type === ConstructorType.RetainersType) {
+              span.textContent = '\xa0' + 'in' + '\xa0';
+              nodeIdText.textContent = ` @${rowData.data.id}`;
+            } else {
+              span.textContent = '\xa0' + '::' + '\xa0';
+            }
             edgeNameText.append(span);
           }
           if (
@@ -1502,7 +1507,12 @@ export class LitTable extends HTMLElement {
             firstElement.insertBefore(edgeNameText, nodeText);
             let span = document.createElement('span');
             span.classList.add('span');
-            span.textContent = '\xa0' + '::' + '\xa0';
+            if (rowObject.data.type === ConstructorType.RetainersType) {
+              span.textContent = '\xa0' + 'in' + '\xa0';
+              nodeIdText.textContent = ` @${rowObject.data.id}`;
+            } else {
+              span.textContent = '\xa0' + '::' + '\xa0';
+            }
             edgeNameText.append(span);
           }
           if (
