@@ -664,11 +664,11 @@ export class SpSystemTrace extends BaseElement {
     };
     // @ts-ignore
     new ResizeObserver((entries) => {
-      TraceRow.FRAME_WIDTH = this.clientWidth - 249;
+      let width = entries[0].contentRect.width - 1 - SpSystemTrace.scrollViewWidth;
       requestAnimationFrame(() => {
-        this.timerShaftEL?.updateWidth(this.clientWidth);
+        this.timerShaftEL?.updateWidth(width);
         this.shadowRoot!.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => {
-          it.updateWidth(this.clientWidth);
+          it.updateWidth(width);
         });
       });
     }).observe(this);
@@ -953,6 +953,9 @@ export class SpSystemTrace extends BaseElement {
     if (this.visibleRows.length == 0) {
       return;
     }
+    if (!cache) {
+      TraceRow.range!.refresh = true;
+    }
     //clear main canvas
     this.canvasPanelCtx?.clearRect(0, 0, this.canvasPanel!.offsetWidth, this.canvasPanel!.offsetHeight);
     //clear favorite canvas
@@ -991,14 +994,14 @@ export class SpSystemTrace extends BaseElement {
     drawFlagLineSegment(this.canvasPanelCtx, this.hoverFlag, this.selectFlag, {
       x: 0,
       y: 0,
-      width: TraceRow.FRAME_WIDTH,
+      width: this.timerShaftEL?.canvas?.clientWidth,
       height: this.canvasPanel?.clientHeight,
     });
     //draw flag line segment for favorite canvas
     drawFlagLineSegment(this.canvasFavoritePanelCtx, this.hoverFlag, this.selectFlag, {
       x: 0,
       y: 0,
-      width: TraceRow.FRAME_WIDTH,
+      width: this.timerShaftEL?.canvas?.clientWidth,
       height: this.canvasFavoritePanel?.clientHeight,
     });
     //draw wakeup for main canvas
@@ -1011,7 +1014,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: TraceRow.FRAME_WIDTH,
+        width: this.timerShaftEL!.canvas!.clientWidth,
         height: this.canvasPanel!.clientHeight!,
       } as Rect
     );
@@ -1025,7 +1028,7 @@ export class SpSystemTrace extends BaseElement {
       {
         x: 0,
         y: 0,
-        width: TraceRow.FRAME_WIDTH,
+        width: this.timerShaftEL!.canvas!.clientWidth,
         height: this.canvasFavoritePanel!.clientHeight!,
       } as Rect
     );
@@ -1034,6 +1037,7 @@ export class SpSystemTrace extends BaseElement {
       drawLinkLines(this.canvasPanelCtx!, this.linkNodes, this.timerShaftEL!, false);
       drawLinkLines(this.canvasFavoritePanelCtx!, this.linkNodes, this.timerShaftEL!, true);
     }
+    TraceRow.range!.refresh = false;
   }
 
   documentOnMouseDown = (ev: MouseEvent) => {
