@@ -263,11 +263,10 @@ export class SpSystemTrace extends BaseElement {
             `trace-row[row-id='${rowParentId}']`
           );
           parentRows?.forEach((parentRow) => {
-            if (parentRow?.name && parentRow?.name != currentRow.name && !parentRow.rowType!.startsWith('cpu') && !parentRow.rowType!.startsWith('thread') && !parentRow.rowType!.startsWith('func')) {
-              console.log(parentRow.name);
+            if (parentRow?.name && parentRow?.name != currentRow.name && !parentRow.rowType!.startsWith('cpu')
+              && !parentRow.rowType!.startsWith('thread') && !parentRow.rowType!.startsWith('func')) {
               currentRow.name += "(" + parentRow.name + ")"
             }
-            console.log(parentRow.rowType!);
           })
         }
         if (this.rowsEL!.contains(currentRow)) {
