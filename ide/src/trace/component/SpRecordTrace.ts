@@ -1282,9 +1282,7 @@ export class SpRecordTrace extends BaseElement {
   }
 
   private createNetworkPlugin() {
-    let netWorkConfig: NetworkConfig = {
-      testFile: '/data/local/tmp/',
-    };
+    let netWorkConfig: NetworkConfig = {};
     let netWorkPlugin: ProfilerPluginConfig<NetworkConfig> = {
       pluginName: 'network-plugin',
       sampleInterval: 1000,

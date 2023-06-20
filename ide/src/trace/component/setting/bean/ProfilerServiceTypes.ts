@@ -889,7 +889,6 @@ export interface DiskioConfig {
 }
 
 export interface NetworkConfig {
-  testFile: string;
 }
 
 export interface HiperfPluginConfig {
