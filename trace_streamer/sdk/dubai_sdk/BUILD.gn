@@ -112,8 +112,7 @@ source_set("trace_streamer_sdk") {
     "${OHOS_PROTO_GEN}",
     "${OHOS_PROTO_GEN}/types/plugins/mock_data",
     "${THIRD_PARTY}/protobuf/src",
-    "${THIRD_PARTY}/json-master/include",
-    "${THIRD_PARTY}/json-master/include/nlohmann",
+    "${THIRD_PARTY}/json-master/single_include/nlohmann",
   ]
   if (!use_wasm) {
     include_dirs += [
