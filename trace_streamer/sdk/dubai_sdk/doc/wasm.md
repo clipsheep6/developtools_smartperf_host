@@ -31,11 +31,11 @@ prebuilts/emsdk
 │   └── prebuilts/emsdk/emsdk/lib
 │       └── prebuilts/emsdk/emsdk/lib/clang
 └── prebuilts/emsdk/node
-    └── prebuilts/emsdk/node/14.18.2_64bit
-        ├── prebuilts/emsdk/node/14.18.2_64bit/bin
-        ├── prebuilts/emsdk/node/14.18.2_64bit/include
-        ├── prebuilts/emsdk/node/14.18.2_64bit/lib
-        └── prebuilts/emsdk/node/14.18.2_64bit/share
+    └── prebuilts/emsdk/node/16.20.0_64bit
+        ├── prebuilts/emsdk/node/16.20.0_64bit/bin
+        ├── prebuilts/emsdk/node/16.20.0_64bit/include
+        ├── prebuilts/emsdk/node/16.20.0_64bit/lib
+        └── prebuilts/emsdk/node/16.20.0_64bit/share
 ```
 之后调用
 ```
