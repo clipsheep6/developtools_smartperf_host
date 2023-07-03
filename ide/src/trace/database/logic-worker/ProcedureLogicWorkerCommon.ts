@@ -349,6 +349,7 @@ export let translateJsonString = (str: string): string => {
     .replace(/[\t|\r|\n]/g, '')
     .replace(/\\/g, '\\\\');
 };
+
 export let convertJSON = (arrBuf: ArrayBuffer | Array<any>) => {
   if (arrBuf instanceof ArrayBuffer) {
     let string = dec.decode(arrBuf);
