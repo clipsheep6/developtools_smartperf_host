@@ -595,7 +595,7 @@ export class SpProcessChart {
         threadRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
         threadRow.selectChangeHandler = this.trace.selectChangeHandler;
         threadRow.supplier = () =>
-          queryThreadData(thread.tid || 0).then((res) => {
+          queryThreadData(thread.tid || 0, it.pid || 0).then((res) => {
             if (res.length <= 0) {
               threadRow.rowDiscard = true;
               this.trace.refreshCanvas(true);
@@ -642,7 +642,7 @@ export class SpProcessChart {
           funcRow.name = `${thread.threadName || 'Thread'} ${thread.tid}`;
           funcRow.setAttribute('children', '');
           funcRow.supplier = () =>
-            getFunDataByTid(thread.tid || 0).then((funs: Array<FuncStruct>) => {
+            getFunDataByTid(thread.tid || 0, it.pid || 0).then((funs: Array<FuncStruct>) => {
               if (funs.length > 0) {
                 let isBinder = (data: FuncStruct): boolean => {
                   return (

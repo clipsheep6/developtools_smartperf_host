@@ -77,6 +77,10 @@ import {
   HeapTraceFunctionInfo,
 } from '../../js-heap/model/DatabaseStruct';
 import { FileInfo } from '../../js-heap/model/UiStruct.js';
+import {
+  initIndexedDB,
+  cacheTraceFileBuffer,
+} from './DBUtils.js';
 
 class DataWorkerThread extends Worker {
   taskMap: any = {};
@@ -172,6 +176,7 @@ class DbThread extends Worker {
 }
 
 export class DbPool {
+  static currentTraceFileID: string = '';
   static sharedBuffer: ArrayBuffer | null = null;
   maxThreadNumber: number = 0;
   works: Array<DbThread> = [];
@@ -262,14 +267,19 @@ export class DbPool {
   initServer = async (url: string, progress: Function) => {
     this.progress = progress;
     progress('database loaded', 15);
-    let buf = await fetch(url).then((res) => res.arrayBuffer());
-    DbPool.sharedBuffer = buf;
+    let db = await initIndexedDB();
+    DbPool.sharedBuffer = await fetch(url).then((res) => res.arrayBuffer());
     progress('open database', 20);
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
       let { status, msg } = await thread.dbOpen();
+      DbPool.currentTraceFileID = thread.uuid();
       if (!status) {
+        DbPool.sharedBuffer = null;
         return { status, msg };
+      } else {
+        cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
+        DbPool.sharedBuffer = null;
       }
     }
     return { status: true, msg: 'ok' };
@@ -279,16 +289,21 @@ export class DbPool {
     progress('database loaded', 15);
     DbPool.sharedBuffer = buf;
     progress('parse database', 20);
+    let db = await initIndexedDB();
     let configMap;
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
       let { status, msg, buffer, sdkConfigMap } = await thread.dbOpen(sdkWasmConfig);
+      DbPool.currentTraceFileID = thread.uuid();
       if (!status) {
+        DbPool.sharedBuffer = null;
         return { status, msg };
       } else {
         configMap = sdkConfigMap;
         DbPool.sharedBuffer = buffer;
       }
+      cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer);
+      DbPool.sharedBuffer = null;
     }
     return { status: true, msg: 'ok', sdkConfigMap: configMap };
   };
@@ -519,22 +534,21 @@ export const getFps = () =>
     {}
   );
 
-export const getFunDataByTid = (tid: number): Promise<Array<FuncStruct>> =>
+export const getFunDataByTid = (tid: number, pid: number): Promise<Array<FuncStruct>> =>
   query(
     'getFunDataByTid',
     `
     select 
-    --tid,
-    --A.name as threadName,
     c.ts-D.start_ts as startTs,
     c.dur,
     c.name as funName,
     c.argsetid,
     c.depth
 from thread A,trace_range D
+left join process P on A.ipid = P.id
 left join callstack C on A.id = C.callid
-where startTs not null and c.cookie is null and tid = $tid`,
-    { $tid: tid }
+where startTs not null and c.cookie is null and tid = $tid and pid = $pid`,
+    { $tid: tid , $pid: pid}
   );
 
 export const getMaxDepthByTid = (): Promise<Array<any>> =>
@@ -830,7 +844,7 @@ export const getTabCpuByThread = (cpus: Array<number>, leftNS: number, rightNS: 
     { $rightNS: rightNS, $leftNS: leftNS }
   );
 
-export const getTabSlices = (funTids: Array<number>, leftNS: number, rightNS: number): Promise<Array<any>> =>
+export const getTabSlices = (funTids: Array<number>, pids: Array<number>, leftNS: number, rightNS: number): Promise<Array<any>> =>
   query<SelectionData>(
     'getTabSlices',
     `
@@ -841,6 +855,7 @@ export const getTabSlices = (funTids: Array<number>, leftNS: number, rightNS: nu
       count(c.name) as occurrences
     from
       thread T, trace_range TR
+      left join process P on T.ipid = P.id
     left join
       callstack C
     on
@@ -851,6 +866,8 @@ export const getTabSlices = (funTids: Array<number>, leftNS: number, rightNS: nu
       c.dur >= 0
     and
       T.tid in (${funTids.join(',')})
+    and
+      P.pid in (${pids.join(',')})
     and
       c.name != 'binder transaction async'
     and
@@ -1234,7 +1251,7 @@ export const queryProcessThreads = (): Promise<Array<ThreadStruct>> =>
     {}
   );
 
-export const queryThreadData = (tid: number): Promise<Array<ThreadStruct>> =>
+export const queryThreadData = (tid: number, pid: number): Promise<Array<ThreadStruct>> =>
   query(
     'queryThreadData',
     `
@@ -1249,8 +1266,8 @@ export const queryThreadData = (tid: number): Promise<Array<ThreadStruct>> =>
      , B.arg_setid as argSetID
 from thread_state AS B
     left join trace_range AS TR
-where B.tid = $tid;`,
-    { $tid: tid }
+where B.tid = $tid and B.pid = $pid;`,
+    { $tid: tid, $pid: pid }
   );
 
 export const queryThreadAndProcessName = (): Promise<Array<any>> =>
@@ -1272,13 +1289,6 @@ export const queryWakeUpThread_Desc = (): Promise<Array<any>> =>
     `This is the interval from when the task became eligible to run
 (e.g.because of notifying a wait queue it was a suspended on) to when it started running.`
   );
-
-export const queryCPUWakeUpIdFromBean = (tid: number | undefined): Promise<Array<WakeupBean>> => {
-  let sql = `
-select itid from thread where tid=${tid} 
-    `;
-  return query('queryCPUWakeUpListFromBean', sql, {});
-};
 
 export const queryThreadWakeUp = (itid: number, startTime: number, dur: number): Promise<Array<WakeupBean>> =>
   query(
@@ -3969,11 +3979,10 @@ export const queryGpuDur = (id: number): Promise<any> =>
 export const queryHeapFile = (): Promise<Array<FileInfo>> =>
   query(
     'queryHeapFile',
-    `SELECT f.id, f.file_name as name, f.start_time as startTs, f.end_time as endTs, f.pid, sum(n.self_size) as size
-    FROM js_heap_files f,trace_range t LEFT JOIN js_heap_nodes n on f.id = n.file_id
-    where (t.end_ts >= f.end_time and f.file_name != 'Timeline')
-    OR f.file_name = 'Timeline'
-    GROUP BY f.id`
+    `SELECT f.id, f.file_name as name, f.start_time as startTs, f.end_time as endTs, f.pid, f.self_size as size
+    FROM js_heap_files f,trace_range t
+    WHERE (t.end_ts >= f.end_time and f.file_name != 'Timeline')
+    OR f.file_name = 'Timeline'`
   );
 
 export const queryHeapInfo = (fileId: number): Promise<Array<any>> =>

@@ -15,7 +15,7 @@
 
 import { Graph } from './Graph.js';
 import { Rect } from './Rect.js';
-import { ns2s, TimerShaftElement } from '../TimerShaftElement.js';
+import {ns2s, ns2UnitS, TimerShaftElement} from '../TimerShaftElement.js';
 import { ColorUtils } from '../base/ColorUtils.js';
 import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU.js';
 
@@ -239,19 +239,22 @@ export class RangeRuler extends Graph {
         startX += first_NodeWidth;
         tempNs += yu;
         this.range.xs.push(startX);
-        this.range.xsTxt.push(ns2s(tempNs));
+        this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
       }
       while (tempNs < this.range.endNS - this.range.startNS) {
         startX += realW;
         tempNs += this.scale;
         this.range.xs.push(startX);
-        this.range.xsTxt.push(ns2s(tempNs));
+        this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
       }
-
       if (!discardNotify) {
         this.notifyHandler(this.range);
       }
     }
+  }
+
+  getScale() {
+    return this.scale;
   }
 
   mouseDown(mouseEventDown: MouseEvent) {
@@ -497,7 +500,6 @@ export class RangeRuler extends Graph {
   keyPressW() {
     let animW = () => {
       if (this.scale === 50) {
-        this.fillX();
         this.range.refresh = true;
         this.notifyHandler(this.range);
         this.range.refresh = false;
@@ -516,7 +518,6 @@ export class RangeRuler extends Graph {
   keyPressS() {
     let animS = () => {
       if (this.range.startNS <= 0 && this.range.endNS >= this.range.totalNS) {
-        this.fillX();
         this.range.refresh = true;
         this.notifyHandler(this.range);
         this.range.refresh = false;
@@ -534,15 +535,13 @@ export class RangeRuler extends Graph {
 
   keyPressA() {
     let animA = () => {
-
-      if (this.range.startNS <= 0) {
-        this.fillX();
+      if (this.range.startNS == 0) {
         this.range.refresh = true;
         this.notifyHandler(this.range);
         this.range.refresh = false;
         return;
       }
-      let s = (this.scale / this.p) * this.currentDuration * 0.4;
+      let s = (this.scale / this.p) * this.currentDuration * 1.2;
       this.range.startNS -= s;
       this.range.endNS -= s;
       this.fillX();
@@ -556,7 +555,6 @@ export class RangeRuler extends Graph {
   keyPressD() {
     let animD = () => {
       if (this.range.endNS >= this.range.totalNS) {
-        this.fillX();
         this.range.refresh = true;
         this.notifyHandler(this.range);
         this.range.refresh = false;

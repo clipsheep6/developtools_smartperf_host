@@ -115,8 +115,6 @@ export class SpChartManager {
     progress('fps', 85);
     await this.fps.init();
     info('FPS Data initialized');
-    progress('native memory', 86);
-    await this.nativeMemory.initNativeMemory();
     progress('native memory', 87);
     await this.nativeMemory.initChart();
     info('Native Memory Data initialized');
