@@ -3671,8 +3671,8 @@ export const queryNativeMemoryRealTime = (): Promise<Array<any>> =>
 export const queryBootTime = (): Promise<Array<any>> =>
   query(
     'queryBootTime',
-    `select ts,clock_name from clock_snapshot where clock_name = 'boottime'
-`,
+    `select CS.ts -TR.start_ts as ts ,clock_name from clock_snapshot as CS ,trace_range as TR
+      where clock_name = 'boottime'`,
     {}
   );
 
