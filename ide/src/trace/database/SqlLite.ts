@@ -267,7 +267,7 @@ export class DbPool {
   initServer = async (url: string, progress: Function) => {
     this.progress = progress;
     progress('database loaded', 15);
-    let db = await initIndexedDB();
+    //let db = await initIndexedDB();
     DbPool.sharedBuffer = await fetch(url).then((res) => res.arrayBuffer());
     progress('open database', 20);
     for (let i = 0; i < this.works.length; i++) {
@@ -278,8 +278,8 @@ export class DbPool {
         DbPool.sharedBuffer = null;
         return { status, msg };
       } else {
-        cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
-        DbPool.sharedBuffer = null;
+        //cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
+        //DbPool.sharedBuffer = null;
       }
     }
     return { status: true, msg: 'ok' };
@@ -289,7 +289,7 @@ export class DbPool {
     progress('database loaded', 15);
     DbPool.sharedBuffer = buf;
     progress('parse database', 20);
-    let db = await initIndexedDB();
+    //let db = await initIndexedDB();
     let configMap;
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
@@ -302,8 +302,8 @@ export class DbPool {
         configMap = sdkConfigMap;
         DbPool.sharedBuffer = buffer;
       }
-      cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer);
-      DbPool.sharedBuffer = null;
+      //cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer);
+      //DbPool.sharedBuffer = null;
     }
     return { status: true, msg: 'ok', sdkConfigMap: configMap };
   };
@@ -3814,60 +3814,59 @@ export const queryAllActualData = (): Promise<Array<any>> =>
 export const queryActualFrameDate = (): Promise<Array<any>> =>
   query(
     'queryActualFrameDate',
-    `
-        SELECT
-               sf.id,
-               'frameTime' as frame_type,
-               fs.ipid,
-               fs.vsync as name,
-               fs.dur as app_dur,
-               (sf.ts + sf.dur - fs.ts) as dur,
-               (fs.ts - TR.start_ts) AS ts,
-               fs.type,
-               (case when (sf.flag == 1 or fs.flag == 1 ) then true else false end) as jank_tag,
-               pro.pid,
-               pro.name as cmdline,
-               (sf.ts - TR.start_ts) AS rs_ts,
-               sf.vsync AS rs_vsync,
-               sf.dur AS rs_dur,
-               sf.ipid AS rs_ipid,
-               proc.pid AS rs_pid,
-               proc.name AS rs_name
-        FROM frame_slice AS fs
-                 LEFT JOIN process AS pro ON pro.id = fs.ipid
-                 LEFT JOIN frame_slice AS sf ON fs.dst = sf.id
-                 LEFT JOIN process AS proc ON proc.id = sf.ipid
-                 LEFT JOIN trace_range TR
-        WHERE fs.dst IS NOT NULL
-          AND fs.type = 0
-          AND fs.flag <> 2
-        UNION
-        SELECT
-               -1 as id,
-               'frameTime' as frame_type,
-               fs.ipid,
-               fs.vsync  as name,
-               fs.dur as app_dur,
-               fs.dur,
-               (fs.ts - TR.start_ts) AS ts,
-               fs.type,
-               fs.flag as jank_tag,
-               pro.pid,
-               pro.name as cmdline,
-               NULL AS rs_ts,
-               NULL AS rs_vsync,
-               NULL AS rs_dur,
-               NULL AS rs_ipid,
-               NULL AS rs_pid,
-               NULL AS rs_name
-        FROM frame_slice AS fs
-                 LEFT JOIN process AS pro ON pro.id = fs.ipid
-                 LEFT JOIN trace_range TR
-        WHERE fs.dst IS NULL
-          AND pro.name NOT LIKE '%render_service%'
-          AND fs.type = 0
-          AND fs.flag <> 2
-        ORDER BY ts;`
+    `SELECT
+         sf.id,
+         'frameTime' as frame_type,
+         fs.ipid,
+         fs.vsync as name,
+         fs.dur as app_dur,
+         (sf.ts + sf.dur - fs.ts) as dur,
+         (fs.ts - TR.start_ts) AS ts,
+         fs.type,
+         (case when (sf.flag == 1 or fs.flag == 1 ) then 1  when (sf.flag == 3 or fs.flag == 3 ) then 3 else 0 end) as jank_tag,
+         pro.pid,
+         pro.name as cmdline,
+         (sf.ts - TR.start_ts) AS rs_ts,
+         sf.vsync AS rs_vsync,
+         sf.dur AS rs_dur,
+         sf.ipid AS rs_ipid,
+         proc.pid AS rs_pid,
+         proc.name AS rs_name
+     FROM frame_slice AS fs
+              LEFT JOIN process AS pro ON pro.id = fs.ipid
+              LEFT JOIN frame_slice AS sf ON fs.dst = sf.id
+              LEFT JOIN process AS proc ON proc.id = sf.ipid
+              LEFT JOIN trace_range TR
+     WHERE fs.dst IS NOT NULL
+       AND fs.type = 0
+       AND fs.flag <> 2
+     UNION
+     SELECT
+         -1 as id,
+         'frameTime' as frame_type,
+         fs.ipid,
+         fs.vsync  as name,
+         fs.dur as app_dur,
+         fs.dur,
+         (fs.ts - TR.start_ts) AS ts,
+         fs.type,
+         fs.flag as jank_tag,
+         pro.pid,
+         pro.name as cmdline,
+         NULL AS rs_ts,
+         NULL AS rs_vsync,
+         NULL AS rs_dur,
+         NULL AS rs_ipid,
+         NULL AS rs_pid,
+         NULL AS rs_name
+     FROM frame_slice AS fs
+              LEFT JOIN process AS pro ON pro.id = fs.ipid
+              LEFT JOIN trace_range TR
+     WHERE fs.dst IS NULL
+       AND pro.name NOT LIKE '%render_service%'
+       AND fs.type = 0
+       AND fs.flag <> 2
+     ORDER BY ts;`
   );
 
 export const queryExpectedFrameDate = (): Promise<Array<any>> =>

@@ -542,48 +542,14 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.setTableHeight('550px');
     this.tabCurrentSelectionInit('Slice Details');
     let list: any[] = [];
-    list.push({ name: 'Name', value: data.name });
-    list.push({ name: 'StartTime', value: getTimeString(data.ts || 0) });
-    list.push({
-      name: 'Absolute Time',
-      value: ((window as any).recordStartNS + data.ts) / 1000000000,
-    });
-    list.push({
-      name: 'Duration',
-      value: data.dur ? getTimeString(data.dur) : ' ',
-    });
-    if (data.frame_type != 'frameTime') {
-      list.push({
-        name: 'Process',
-        value: data.cmdline + ' ' + data.pid,
-      });
-    }
+    this.setJankCommonMessage(list, data);
     if (data.type == '0') {
-      if (data.jank_tag) {
-        if (data.frame_type === 'render_service') {
-          list.push({
-            name: 'Jank Type',
-            value: 'RenderService Deadline Missed',
-          });
-        } else if (data.frame_type === 'app') {
-          list.push({
-            name: 'Jank Type',
-            value: 'APP Deadline Missed',
-          });
-        } else if (data.frame_type === 'frameTime') {
-          list.push({ name: 'Jank Type', value: 'Deadline Missed' });
-        }
-      } else {
-        list.push({ name: 'Jank Type', value: 'NONE' });
-      }
+      this.setJankType(data, list);
       let jankJumperList = new Array<JankTreeNode>();
       if (data.frame_type === 'render_service') {
         queryGpuDur(data.id!).then((it) => {
           if (it.length > 0) {
-            list.push({
-              name: `<div>Gpu Duration</div>`,
-              value: getTimeString(it[0].gpu_dur),
-            });
+            list.push({ name: `<div>Gpu Duration</div>`, value: getTimeString(it[0].gpu_dur)});
           }
         });
         if (data.src_slice) {
@@ -595,12 +561,9 @@ export class TabPaneCurrentSelection extends BaseElement {
               });
               it.forEach((a: any) => {
                 let appNode = new JankTreeNode(a.name, a.pid, 'app');
-                let timeLineNode = new JankTreeNode(a.name, a.pid, 'frameTime');
-                appNode.children.push(timeLineNode);
+                appNode.children.push(new JankTreeNode(a.name, a.pid, 'frameTime'));
                 jankJumperList.push(appNode);
-                list.push({
-                  name: `<div>Slice</div>`,
-                  value:
+                list.push({name: `<div>Slice</div>`, value:
                     a.cmdline +
                     ' [' +
                     a.name +
@@ -736,21 +699,7 @@ export class TabPaneCurrentSelection extends BaseElement {
           appNode.children.push(rsNode);
           jankJumperList.push(appNode);
           this.currentSelectionTbl!.dataSource = list;
-          let all = this.currentSelectionTbl?.shadowRoot?.querySelectorAll<LitIcon>(`.jank_cla`);
-          all!.forEach((a) => {
-            a!.addEventListener('click', () => {
-              if (scrollCallback) {
-                scrollCallback({
-                  rowId: a.id,
-                  name: a.getAttribute('slice_name'),
-                  pid: a.getAttribute('pid'),
-                });
-              }
-            });
-          });
-          if (callback) {
-            callback(jankJumperList);
-          }
+          this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
         });
       }
     } else {
@@ -758,6 +707,30 @@ export class TabPaneCurrentSelection extends BaseElement {
     }
   }
 
+  private setJankType(data: JankStruct, list: any[]) {
+    if (data.jank_tag === 1) {
+      if (data.frame_type === 'render_service') {
+        list.push({ name: 'Jank Type', value: 'RenderService Deadline Missed' });
+      } else if (data.frame_type === 'app') {
+        list.push({ name: 'Jank Type', value: 'APP Deadline Missed' });
+      } else if (data.frame_type === 'frameTime') {
+        list.push({ name: 'Jank Type', value: 'Deadline Missed' });
+      }
+    } else if (data.jank_tag === 3) {
+      list.push({ name: 'Jank Type', value: 'Deadline Missed' });
+    } else {
+      list.push({ name: 'Jank Type', value: 'NONE' });
+    }
+  }
+  private setJankCommonMessage(list: any[], data: JankStruct) {
+    list.push({ name: 'Name', value: data.name });
+    list.push({ name: 'StartTime', value: getTimeString(data.ts || 0) });
+    list.push({ name: 'Absolute Time', value: ((window as any).recordStartNS + data.ts) / 1000000000 });
+    list.push({ name: 'Duration', value: data.dur ? getTimeString(data.dur) : ' ' });
+    if (data.frame_type != 'frameTime') {
+      list.push({ name: 'Process', value: data.cmdline + ' ' + data.pid });
+    }
+  }
   private setTableHeight(height: string) {
     this.scrollView!.scrollTop = 0;
     this.currentSelectionTbl!.style.height = height;

@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { info } from '../../log/Log.js';
+import { DbPool } from "./SqlLite.js";
 
 export function initIndexedDB() : Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -70,26 +70,27 @@ export function cacheTraceFileBuffer(db: IDBDatabase,fileId: string, buffer: Arr
 
 export function getTraceFileBuffer(fileId: string) : Promise<ArrayBuffer | null> {
   return new Promise(resolve => {
-    initIndexedDB().then(db => {
-      if (db) {
-        let request = db
-          .transaction(['trace_file'],'readwrite')
-          .objectStore('trace_file')
-          .index('file_id')
-          .getAll(fileId);
-        request.onsuccess = function (ev) {
-          let totalLen = 0;
-          for (let re of request.result) {
-            totalLen += re.file_buffer.byteLength;
-          }
-          let buffer = new Uint8Array(totalLen);
-          for (let i = 0; i < request.result.length; i++) {
-            let re = request.result[i];
-            buffer.set(re.file_buffer,i === 0 ? 0 : request.result[i - 1].file_buffer.byteLength);
-          }
-          resolve(buffer);
-        }
-      }
+    resolve(DbPool.sharedBuffer);
+    // initIndexedDB().then(db => {
+    //   if (db) {
+    //     let request = db
+    //       .transaction(['trace_file'],'readwrite')
+    //       .objectStore('trace_file')
+    //       .index('file_id')
+    //       .getAll(fileId);
+    //     request.onsuccess = function (ev) {
+    //       let totalLen = 0;
+    //       for (let re of request.result) {
+    //         totalLen += re.file_buffer.byteLength;
+    //       }
+    //       let buffer = new Uint8Array(totalLen);
+    //       for (let i = 0; i < request.result.length; i++) {
+    //         let re = request.result[i];
+    //         buffer.set(re.file_buffer,i === 0 ? 0 : request.result[i - 1].file_buffer.byteLength);
+    //       }
+    //       resolve(buffer);
+    //     }
+    //   }
     })
-  });
+  // });
 }
