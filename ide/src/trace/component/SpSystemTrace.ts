@@ -35,6 +35,7 @@ import {
   drawLines,
   drawLinkLines,
   drawWakeUp,
+  drawWakeUpList,
   isFrameContainPoint,
   ns2x,
   ns2xByTimeShaft,
@@ -42,7 +43,7 @@ import {
   Rect,
 } from '../database/ui-worker/ProcedureWorkerCommon.js';
 import { SpChartManager } from './chart/SpChartManager.js';
-import { CpuStruct } from '../database/ui-worker/ProcedureWorkerCPU.js';
+import { CpuStruct, WakeupBean } from '../database/ui-worker/ProcedureWorkerCPU.js';
 import { ProcessStruct } from '../database/ui-worker/ProcedureWorkerProcess.js';
 import { CpuFreqStruct } from '../database/ui-worker/ProcedureWorkerFreq.js';
 import { CpuFreqLimitsStruct } from '../database/ui-worker/ProcedureWorkerCpuFreqLimits.js';
@@ -73,6 +74,7 @@ import { LitTabs } from '../../base-ui/tabs/lit-tabs.js';
 import { SpJsMemoryChart } from './chart/SpJsMemoryChart.js';
 import { TraceRowConfig } from './trace/base/TraceRowConfig.js';
 import { HeapTimelineStruct } from '../database/ui-worker/ProcedureWorkerHeapTimeline.js';
+import { TabPaneCurrentSelection } from './trace/sheet/TabPaneCurrentSelection.js';
 
 function dpr() {
   return window.devicePixelRatio || 1;
@@ -88,6 +90,7 @@ export class SpSystemTrace extends BaseElement {
   static DATA_DICT: Map<number, string> = new Map<number, string>();
   static SDK_CONFIG_MAP: any;
   static sliceRangeMark: any;
+  static wakeupList: Array<WakeupBean> = [];
   intersectionObserver: IntersectionObserver | undefined;
   tipEL: HTMLDivElement | undefined | null;
   rowsEL: HTMLDivElement | undefined | null;
@@ -106,6 +109,7 @@ export class SpSystemTrace extends BaseElement {
       this.observerScrollHeightCallback();
     }
   });
+  static btnTimer: any = null;
   isMousePointInSheet = false;
   hoverFlag: Flag | undefined | null = undefined;
   selectFlag: Flag | undefined | null = undefined;
@@ -146,6 +150,11 @@ export class SpSystemTrace extends BaseElement {
   }
 
   initElements(): void {
+    let sideColor = document!.querySelector("body > sp-application")!.shadowRoot!.querySelector!("#main-menu")?.
+      shadowRoot?.querySelector("div.bottom > div.color");
+    let rightButton: HTMLElement | null | undefined =
+      this.shadowRoot?.querySelector("div > trace-sheet")?.shadowRoot?.
+      querySelector("#current-selection > tabpane-current-selection")?.shadowRoot?.querySelector("#rightButton")
     this.rowsEL = this.shadowRoot?.querySelector<HTMLDivElement>('.rows');
     this.tipEL = this.shadowRoot?.querySelector<HTMLDivElement>('.tip');
     this.rowsPaneEL = this.shadowRoot?.querySelector<HTMLDivElement>('.rows-pane');
@@ -155,6 +164,23 @@ export class SpSystemTrace extends BaseElement {
     this.traceSheetEL = this.shadowRoot?.querySelector('.trace-sheet');
     this.favoriteRowsEL = this.shadowRoot?.querySelector('.favorite-rows');
     this.rangeSelect = new RangeSelect(this);
+    rightButton?.addEventListener('click', (event: any) => {
+      if (SpSystemTrace.btnTimer) {
+        return;
+      }
+      this.wakeupListNull();
+      SpSystemTrace.wakeupList.unshift(CpuStruct.wakeupBean!);
+      this.queryCPUWakeUpList(CpuStruct.wakeupBean!);
+      setTimeout(() => {
+        requestAnimationFrame(() => this.refreshCanvas(false));
+      }, 300);
+      SpSystemTrace.btnTimer = setTimeout(() => {
+        SpSystemTrace.btnTimer = null; // 2.清空节流阀，方便下次开启定时器
+      }, 2000);
+    });
+    sideColor?.addEventListener('click', (event: any) => {
+      requestAnimationFrame(() => this.refreshCanvas(true));
+    });
     document?.addEventListener('triangle-flag', (event: any) => {
       let temporaryTime = this.timerShaftEL?.drawTriangle(event.detail.time, event.detail.type);
       if (event.detail.timeCallback && temporaryTime) event.detail.timeCallback(temporaryTime);
@@ -202,6 +228,18 @@ export class SpSystemTrace extends BaseElement {
         replaceRow.setAttribute('row-parent-id', currentRow.rowParentId);
         replaceRow.style.display = 'none';
         currentRow.rowHidden = !currentRow.hasAttribute('scene');
+        // 添加收藏时，在线程名前面追加父亲ID
+        let rowParentId = currentRow.rowParentId
+        if (rowParentId) {
+          let parentRows = this.shadowRoot?.querySelectorAll<TraceRow<any>>(
+            `trace-row[row-id='${rowParentId}']`
+          );
+          parentRows?.forEach((parentRow) => {
+            if (parentRow?.name && parentRow?.name != currentRow.name && !parentRow.rowType!.startsWith('cpu') && !parentRow.rowType!.startsWith('thread')) {
+              currentRow.name += "(" + parentRow.name + ")"
+            }
+          })
+        }
         if (this.rowsEL!.contains(currentRow)) {
           this.rowsEL!.replaceChild(replaceRow, currentRow);
         } else {
@@ -236,6 +274,15 @@ export class SpSystemTrace extends BaseElement {
           `div[row-id='${currentRow.rowId}-${currentRow.rowType}']`
         );
         if (replaceRow != null) {
+          // 取消收藏时，删除父亲ID
+          let rowNameArr = currentRow.name.split("(");
+          if (rowNameArr.length > 1) {
+            let tempName = "";
+            tempName += rowNameArr[0];
+            currentRow.name = tempName;
+          } else {
+            currentRow.name = rowNameArr[0];
+          }
           this.rowsEL!.replaceChild(currentRow, replaceRow);
           currentRow.style.boxShadow = `0 10px 10px #00000000`;
         }
@@ -1059,7 +1106,38 @@ export class SpSystemTrace extends BaseElement {
         height: this.canvasFavoritePanel!.clientHeight!,
       } as Rect
     );
-
+    // draw wakeuplist for main canvas
+    for (let i = 0; i < SpSystemTrace.wakeupList.length; i++) {
+      if (i + 1 == SpSystemTrace.wakeupList.length) {
+        return
+      }
+      drawWakeUpList(
+        this.canvasPanelCtx,
+        SpSystemTrace.wakeupList[i + 1],
+        TraceRow.range!.startNS,
+        TraceRow.range!.endNS,
+        TraceRow.range!.totalNS,
+        {
+          x: 0,
+          y: 0,
+          width: this.timerShaftEL!.canvas!.clientWidth,
+          height: this.canvasPanel!.clientHeight!,
+        } as Rect,
+      )
+      drawWakeUpList(
+        this.canvasFavoritePanelCtx,
+        SpSystemTrace.wakeupList[i + 1],
+        TraceRow.range!.startNS,
+        TraceRow.range!.endNS,
+        TraceRow.range!.totalNS,
+        {
+          x: 0,
+          y: 0,
+          width: this.timerShaftEL!.canvas!.clientWidth,
+          height: this.canvasFavoritePanel!.clientHeight!,
+        } as Rect,
+      )
+    };
     // Draw the connection curve
     if (this.linkNodes) {
       drawLinkLines(this.canvasPanelCtx!, this.linkNodes, this.timerShaftEL!, false);
@@ -1454,6 +1532,7 @@ export class SpSystemTrace extends BaseElement {
     this.rangeSelect.rangeTraceRow = [];
     TraceRow.rangeSelectObject = undefined;
     this.selectStructNull();
+    this.wakeupListNull();
     this.observerScrollHeightEnable = false;
     this.selectFlag = null;
     this.timerShaftEL?.removeTriangle('inverted');
@@ -1506,6 +1585,7 @@ export class SpSystemTrace extends BaseElement {
     if (!this.loadTraceCompleted) return;
     this.shadowRoot?.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => (it.rangeSelect = false));
     this.selectStructNull();
+    this.wakeupListNull();
     let threadClickHandler: any;
     let cpuClickHandler: any;
     let jankClickHandler: any;
@@ -1528,6 +1608,7 @@ export class SpSystemTrace extends BaseElement {
       }
       this.hoverStructNull();
       this.selectStructNull();
+      this.wakeupListNull();
       CpuStruct.hoverCpuStruct = findEntry;
       CpuStruct.selectCpuStruct = findEntry;
       this.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
@@ -1566,6 +1647,7 @@ export class SpSystemTrace extends BaseElement {
           }
           this.hoverStructNull();
           this.selectStructNull();
+          this.wakeupListNull();
           ThreadStruct.hoverThreadStruct = findEntry;
           ThreadStruct.selectThreadStruct = findEntry;
           this.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
@@ -1615,6 +1697,7 @@ export class SpSystemTrace extends BaseElement {
             }
             this.hoverStructNull();
             this.selectStructNull();
+            this.wakeupListNull();
             JankStruct.hoverJankStruct = findJankEntry;
             JankStruct.selectJankStruct = findJankEntry;
             this.timerShaftEL?.drawTriangle(findJankEntry!.ts || 0, 'inverted');
@@ -1652,6 +1735,7 @@ export class SpSystemTrace extends BaseElement {
           let findEntry = snapshotRow!.dataList!.find((dat) => dat.startTs === d.startTs);
           this.hoverStructNull();
           this.selectStructNull();
+          this.wakeupListNull();
           HeapSnapshotStruct.hoverSnapshotStruct = findEntry;
           HeapSnapshotStruct.selectSnapshotStruct = findEntry;
         }
@@ -2239,6 +2323,7 @@ export class SpSystemTrace extends BaseElement {
     });
     this.rangeSelect.rangeTraceRow = [];
     this.selectStructNull();
+    this.wakeupListNull();
     this.traceSheetEL?.setAttribute('mode', 'hidden');
     this.clearPointPair();
     TraceRow.range!.refresh = true;
@@ -2469,6 +2554,7 @@ export class SpSystemTrace extends BaseElement {
           let searchEntry = filterRow!.dataList!.find((dat) => dat.startTime === findEntry.startTime);
           this.hoverStructNull();
           this.selectStructNull();
+          this.wakeupListNull();
           ThreadStruct.hoverThreadStruct = searchEntry;
           ThreadStruct.selectThreadStruct = searchEntry;
           this.scrollToProcess(`${findEntry.rowId}`, `${findEntry.rowParentId}`, findEntry.rowType, true);
@@ -2489,6 +2575,7 @@ export class SpSystemTrace extends BaseElement {
       }
       this.hoverStructNull();
       this.selectStructNull();
+      this.wakeupListNull();
       this.onClickHandler(findEntry.rowType!);
       this.closeAllExpandRows(findEntry.rowParentId);
       this.scrollToProcess(`${findEntry.rowId}`, `${findEntry.rowParentId}`, findEntry.rowType, true);
@@ -2501,6 +2588,7 @@ export class SpSystemTrace extends BaseElement {
     const toTargetDepth = (entry: any) => {
       this.hoverStructNull();
       this.selectStructNull();
+      this.wakeupListNull();
       FuncStruct.hoverFuncStruct = entry;
       FuncStruct.selectFuncStruct = entry;
       this.onClickHandler(TraceRow.ROW_TYPE_FUNC);
@@ -2709,6 +2797,7 @@ export class SpSystemTrace extends BaseElement {
     CpuStruct.wakeupBean = undefined;
     this.selectStructNull();
     this.hoverStructNull();
+    this.wakeupListNull();
     this.traceSheetEL?.setAttribute('mode', 'hidden');
     progress && progress('rest timershaft', 8);
     this.timerShaftEL?.reset();
@@ -2850,6 +2939,20 @@ export class SpSystemTrace extends BaseElement {
         this.tipEL.style.transform = `translateX(${x}px) translateY(${y}px)`;
       }
     }
+  }
+
+  queryCPUWakeUpList(data: WakeupBean) {
+    TabPaneCurrentSelection.queryCPUWakeUpListFromBean(data).then((a: any) => {
+      if (a === null) {
+        return null
+      }
+      SpSystemTrace.wakeupList.push(a);
+      this.queryCPUWakeUpList(a);
+    });
+  }
+
+  wakeupListNull() {
+    SpSystemTrace.wakeupList = [];
   }
 
   initPointToEvent() {

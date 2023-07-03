@@ -28,6 +28,7 @@ import {
   queryThreadStateArgs,
   queryThreadWakeUp,
   queryThreadWakeUpFrom,
+  queryCPUWakeUpIdFromBean,
 } from '../../../database/SqlLite.js';
 import { WakeupBean } from '../../../bean/WakeupBean.js';
 import { SpApplication } from '../../../SpApplication.js';
@@ -43,6 +44,7 @@ import { BinderArgBean } from '../../../bean/BinderArgBean.js';
 import { JankStruct } from '../../../database/ui-worker/ProcedureWorkerJank.js';
 import { LitIcon } from '../../../../base-ui/icon/LitIcon.js';
 import { Utils } from '../base/Utils.js';
+import { SpSystemTrace } from '../../SpSystemTrace.js';
 
 const INPUT_WORD =
   'This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running.';
@@ -166,6 +168,7 @@ export class TabPaneCurrentSelection extends BaseElement {
       this.currentSelectionTbl!.dataSource = list;
       let rightArea: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#table-right');
       let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
+      let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton')?.shadowRoot?.querySelector("#custom-button");
       let threadClick = this.currentSelectionTbl?.shadowRoot?.querySelector('#thread-id');
       threadClick?.addEventListener('click', () => {
         //cpu点击
@@ -181,6 +184,8 @@ export class TabPaneCurrentSelection extends BaseElement {
         }
         if (rightTitle != null && rightTitle) {
           rightTitle.style.visibility = 'visible';
+          rightButton!.style.visibility = 'visible';
+          SpSystemTrace.btnTimer = null;
         }
         this.drawRight(canvas, bean);
       } else {
@@ -190,6 +195,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         }
         if (rightTitle != null && rightTitle) {
           rightTitle.style.visibility = 'hidden';
+          rightButton!.style.visibility = 'hidden';
         }
       }
     });
@@ -332,8 +338,10 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.initCanvas();
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
+    let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton')?.shadowRoot?.querySelector("#custom-button");
     if (rightTitle) {
       rightTitle.style.visibility = 'hidden';
+      rightButton!.style.visibility = 'hidden';
     }
     if (leftTitle) {
       leftTitle.innerText = leftTitleStr;
@@ -383,8 +391,10 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.setTableHeight('300px');
     this.initCanvas();
     let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
+    let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton')?.shadowRoot?.querySelector("#custom-button");
     if (rightTitle) {
       rightTitle.style.visibility = 'hidden';
+      rightButton!.style.visibility = 'hidden';
     }
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     if (leftTitle) {
@@ -417,8 +427,11 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.initCanvas();
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
+    let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton')
+                                                          ?.shadowRoot?.querySelector("#custom-button");
     if (rightTitle) {
       rightTitle.style.visibility = 'hidden';
+      rightButton!.style.visibility = 'hidden';
     }
     if (leftTitle) {
       leftTitle.innerText = 'Thread State';
@@ -783,6 +796,10 @@ export class TabPaneCurrentSelection extends BaseElement {
       if (wf && wf[0]) {
         wb = wf[0];
         if (wb != null) {
+          let wd = await queryCPUWakeUpIdFromBean(wb.tid);
+          if (wd && wd[0]) {
+            wb.itid = wd[0].itid;
+          }
           wb.wakeupTime = wakeupTs - recordStartTs;
           wb.process = Utils.PROCESS_MAP.get(wb.pid!);
           wb.thread = Utils.THREAD_MAP.get(wb.tid!);
@@ -791,6 +808,41 @@ export class TabPaneCurrentSelection extends BaseElement {
             wb.process = wb.thread;
           }
           if (wb.pid == undefined) {
+            wb.pid = wb.tid;
+          }
+          wb.schedulingDesc = INPUT_WORD;
+        }
+      }
+    }
+    return wb;
+  }
+
+  /**
+   * 查询出 线程被唤醒的 线程链信息
+   * @param data
+   */
+  static async queryCPUWakeUpListFromBean(data: WakeupBean) {
+    let wb: WakeupBean | null = null;
+    let wakeup = await queryRunnableTimeByRunning(data.tid!, data.ts!);
+    if (wakeup && wakeup[0]) {
+      let wakeupTs = wakeup[0].ts as number;
+      let recordStartTs = (window as any).recordStartNS;
+      let wf = await queryThreadWakeUpFrom(data.itid!, wakeupTs);
+      if (wf && wf[0]) {
+        wb = wf[0];
+        if (wb != null) {
+          let wd = await queryCPUWakeUpIdFromBean(wb.tid);
+          if (wd && wd[0]) {
+            wb.itid = wd[0].itid;
+          }
+          wb.wakeupTime = wakeupTs - recordStartTs;
+          wb.process = Utils.PROCESS_MAP.get(wb.pid!);
+          wb.thread = Utils.THREAD_MAP.get(wb.tid!);
+          wb.schedulingLatency = (data.ts || 0) - (wb.wakeupTime || 0);
+          if (wb.process === null) {
+            wb.process = wb.thread;
+          }
+          if (wb.pid === undefined) {
             wb.pid = wb.tid;
           }
           wb.schedulingDesc = INPUT_WORD;
@@ -945,12 +997,28 @@ export class TabPaneCurrentSelection extends BaseElement {
                 width: 100%;
                 display: flex;
             }
-            .table-title h2{
+            .table-title > h2{
                 font-size: 16px;
                 font-weight: 400;
                 visibility: visible;
                 width: 50%;
                 padding: 0 10px;
+            }
+            #rightTitle{
+                width: 50%;
+                display: flex;
+                justify-content: space-between;
+                padding: 0 10px;
+                font-size: 16px;
+                font-weight: 400;
+                visibility: visible;
+            }
+            #rightTitle > h2{
+                font-size: 16px;
+                font-weight: 400;
+            }           
+            #rightButton{
+                padding-top:12px;
             }
             .scroll-area{
                 display: flex;
@@ -970,7 +1038,13 @@ export class TabPaneCurrentSelection extends BaseElement {
             <div style="width: 100%;height: auto;position: relative">
                 <div class="table-title">
                     <h2 id="leftTitle"></h2>
-                    <h2 id="rightTitle">Scheduling Latency</h2>
+                    <div id="rightTitle" >
+                        <h2 id="rightText">Scheduling Latency</h2>
+                        <div class="right">
+                        <lit-button id="rightButton"  height="32px" width="164px" color="black" font_size="14px" border="1px solid black" 
+                        >GetWakeupList</lit-button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="scroll-area">
