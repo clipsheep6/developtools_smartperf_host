@@ -57,7 +57,7 @@ export class SpProcessChart {
   private processThreadDataCountMap: Map<number, number> = new Map();
   private processFuncDataCountMap: Map<number, number> = new Map();
   private processMemDataCountMap: Map<number, number> = new Map();
-  private threadFuncMaxDepthMap: Map<number, number> = new Map();
+  private threadFuncMaxDepthMap: Map<string, number> = new Map();
 
   constructor(trace: SpSystemTrace) {
     this.trace = trace;
@@ -151,7 +151,7 @@ export class SpProcessChart {
     let threadFuncMaxDepthArray = await getMaxDepthByTid();
     info('Gets the maximum tier per thread , tid and maxDepth');
     threadFuncMaxDepthArray.forEach((it) => {
-      this.threadFuncMaxDepthMap.set(it.tid, it.maxDepth);
+      this.threadFuncMaxDepthMap.set(`${it.ipid}-${it.tid}`, it.maxDepth);
     });
     info('convert tid and maxDepth array to map');
     let pidCountArray = await queryProcessContentCount();
@@ -174,7 +174,6 @@ export class SpProcessChart {
       return pre;
     }, {});
     this.processThreads = Utils.removeDuplicates(queryProcessThreadResult, queryProcessThreadsByTableResult, 'tid');
-
     info('The amount of initialized process threads data is : ', this.processThreads!.length);
     if (
       this.eventCountMap['print'] == 0 &&
@@ -628,8 +627,8 @@ export class SpProcessChart {
         } else {
           processRow.addChildTraceRow(threadRow);
         }
-        if (this.threadFuncMaxDepthMap.get(thread.tid!) != undefined) {
-          let max = this.threadFuncMaxDepthMap.get(thread.tid!) || 1;
+        if (this.threadFuncMaxDepthMap.get(`${thread.upid}-${thread.tid}`) != undefined) {
+          let max = this.threadFuncMaxDepthMap.get(`${thread.upid}-${thread.tid}`) || 1;
           let maxHeight = max * 20;
           let funcRow = TraceRow.skeleton<FuncStruct>();
           funcRow.rowId = `${thread.tid}`;
@@ -642,7 +641,7 @@ export class SpProcessChart {
           funcRow.name = `${thread.threadName || 'Thread'} ${thread.tid}`;
           funcRow.setAttribute('children', '');
           funcRow.supplier = () =>
-            getFunDataByTid(thread.tid || 0, it.pid || 0).then((funs: Array<FuncStruct>) => {
+            getFunDataByTid(thread.tid || 0, thread.upid || 0).then((funs: Array<FuncStruct>) => {
               if (funs.length > 0) {
                 let isBinder = (data: FuncStruct): boolean => {
                   return (

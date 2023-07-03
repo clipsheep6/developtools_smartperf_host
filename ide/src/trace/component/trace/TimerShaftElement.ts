@@ -181,7 +181,12 @@ export class TimerShaftElement extends BaseElement {
 
   reset(): void {
     this.loadComplete = false;
+    this.totalNS = 10_000_000_000;
+    this.startNS = 0;
+    this.endNS = 10_000_000_000;
     if (this.rangeRuler) {
+      this.rangeRuler.drawMark = false;
+      this.rangeRuler.range.totalNS = this.totalNS;
       this.rangeRuler.markAObj.frame.x = 0;
       this.rangeRuler.markBObj.frame.x = this.rangeRuler.frame.width;
       this.rangeRuler.cpuUsage = [];
@@ -193,7 +198,7 @@ export class TimerShaftElement extends BaseElement {
       this.setSlicesMark();
     }
     this.removeTriangle('inverted');
-    this.totalNS = 10_000_000_000;
+    this.setRangeNS(0,this.endNS);
   }
 
   initElements(): void {

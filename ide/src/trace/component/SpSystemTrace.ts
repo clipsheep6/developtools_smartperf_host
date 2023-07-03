@@ -811,7 +811,9 @@ export class SpSystemTrace extends BaseElement {
           tr.sleeping = true;
           this.visibleRows = this.visibleRows.filter((it) => !it.sleeping);
         } else {
-          this.visibleRows.push(tr);
+          if (!this.visibleRows.find( vr => vr.rowId === tr.rowId && vr.rowType === tr.rowType && vr.rowParentId === tr.rowParentId)) {
+            this.visibleRows.push(tr);
+          }
           tr.sleeping = false;
         }
         if (this.handler) clearTimeout(this.handler);
@@ -2326,33 +2328,27 @@ export class SpSystemTrace extends BaseElement {
     }
   }
 
-  scrollToFunction(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true, afterScroll: any) {
-    let row = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowParentId}'][folder]`);
-    if (row) {
-      row.expansion = true;
-    }
-    let funcRow = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowId}'][row-type='${rowType}']`);
-    if (funcRow == null) {
-      let threadRow = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowId}'][row-type='thread']`);
-      this.rowsPaneEL!.scroll({
-        top: threadRow!.offsetTop - this.canvasPanel!.offsetHeight + threadRow!.offsetHeight + threadRow!.offsetHeight,
+  scrollToFunction(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true) {
+    let condition = `trace-row[row-id='${rowId}'][row-type='${rowType}'][row-parent-id='${rowParentId}']`;
+    let rootRow = this.shadowRoot!.querySelector<TraceRow<any>>(condition);
+    if (rootRow?.collect) {
+      this.favoriteRowsEL!.scroll({
+        top: (rootRow?.offsetTop || 0) - this.canvasFavoritePanel!.offsetHeight + (rootRow?.offsetHeight || 0),
         left: 0,
-        behavior: undefined,
+        behavior: smooth ? 'smooth' : undefined,
       });
-      if (threadRow != null) {
-        if (threadRow.isComplete) {
-          afterScroll();
-        } else {
-          threadRow.onComplete = () => {
-            funcRow = this.shadowRoot!.querySelector<TraceRow<any>>(
-              `trace-row[row-id='${rowId}'][row-type='${rowType}']`
-            );
-            afterScroll();
-          };
-        }
-      }
     } else {
-      afterScroll();
+      let row = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowParentId}'][folder]`);
+      if (row && !row.expansion) {
+        row.expansion = true;
+      }
+      if (rootRow && rootRow.offsetTop >= 0 && rootRow.offsetHeight >= 0) {
+        this.rowsPaneEL!.scroll({
+          top: (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + 20,
+          left: 0,
+          behavior: smooth ? 'smooth' : undefined,
+        });
+      }
     }
   }
 
@@ -2684,6 +2680,7 @@ export class SpSystemTrace extends BaseElement {
       `trace-row[row-id='${funcRowID}'][row-type='func']`
     );
     if (targetRow) {
+      targetRow.highlight = highlight;
       //如果目标泳道图在收藏上面，则跳转至收藏
       let searchEntry = targetRow!.dataList!.find((dat) => dat.startTs === funcStract.startTime);
       toTargetDepth(searchEntry);
@@ -2715,8 +2712,11 @@ export class SpSystemTrace extends BaseElement {
     if (filterRow!.isComplete) {
       completeEntry();
     } else {
+      FuncStruct.hoverFuncStruct = funcStract;
+      FuncStruct.selectFuncStruct = funcStract;
+      this.onClickHandler(TraceRow.ROW_TYPE_FUNC);
       this.scrollToProcess(`${funcStract.tid}`, `${funcStract.pid}`, 'process', false);
-      this.scrollToProcess(`${funcStract.tid}`, `${funcStract.pid}`, 'func', false);
+      this.scrollToFunction(`${funcStract.tid}`, `${funcStract.pid}`, 'func', true);
       filterRow!.onComplete = completeEntry;
     }
   }

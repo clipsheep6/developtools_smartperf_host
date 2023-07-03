@@ -104,7 +104,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     callback: ((data: WakeupBean | null) => void) | undefined = undefined,
     scrollCallback?: (data: CpuStruct) => void
   ) {
-    this.setTableHeight('300px');
+    this.setTableHeight('550px');
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     if (leftTitle) {
       leftTitle.innerText = 'Slice Details';
@@ -388,7 +388,7 @@ export class TabPaneCurrentSelection extends BaseElement {
   }
 
   setIrqData(data: IrqStruct) {
-    this.setTableHeight('300px');
+    this.setTableHeight('550px');
     this.initCanvas();
     let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
     let rightButton: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightButton')?.shadowRoot?.querySelector("#custom-button");
@@ -423,7 +423,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     scrollWakeUp: (d: any) => void | undefined
   ) {
     //线程信息
-    this.setTableHeight('350px');
+    this.setTableHeight('550px');
     this.initCanvas();
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');

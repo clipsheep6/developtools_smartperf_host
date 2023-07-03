@@ -267,8 +267,9 @@ export class DbPool {
   initServer = async (url: string, progress: Function) => {
     this.progress = progress;
     progress('database loaded', 15);
-    //let db = await initIndexedDB();
+    let db = await initIndexedDB();
     DbPool.sharedBuffer = await fetch(url).then((res) => res.arrayBuffer());
+    let oldFileID = DbPool.currentTraceFileID;
     progress('open database', 20);
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
@@ -278,8 +279,8 @@ export class DbPool {
         DbPool.sharedBuffer = null;
         return { status, msg };
       } else {
-        //cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
-        //DbPool.sharedBuffer = null;
+        cacheTraceFileBuffer(db,oldFileID,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
+        DbPool.sharedBuffer = null;
       }
     }
     return { status: true, msg: 'ok' };
@@ -289,7 +290,8 @@ export class DbPool {
     progress('database loaded', 15);
     DbPool.sharedBuffer = buf;
     progress('parse database', 20);
-    //let db = await initIndexedDB();
+    let db = await initIndexedDB();
+    let oldFileID = DbPool.currentTraceFileID;
     let configMap;
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
@@ -302,8 +304,9 @@ export class DbPool {
         configMap = sdkConfigMap;
         DbPool.sharedBuffer = buffer;
       }
-      //cacheTraceFileBuffer(db,DbPool.currentTraceFileID,DbPool.sharedBuffer);
-      //DbPool.sharedBuffer = null;
+
+      cacheTraceFileBuffer(db,oldFileID,DbPool.currentTraceFileID,DbPool.sharedBuffer);
+      DbPool.sharedBuffer = null;
     }
     return { status: true, msg: 'ok', sdkConfigMap: configMap };
   };
@@ -534,7 +537,7 @@ export const getFps = () =>
     {}
   );
 
-export const getFunDataByTid = (tid: number, pid: number): Promise<Array<FuncStruct>> =>
+export const getFunDataByTid = (tid: number, ipid: number): Promise<Array<FuncStruct>> =>
   query(
     'getFunDataByTid',
     `
@@ -545,10 +548,9 @@ export const getFunDataByTid = (tid: number, pid: number): Promise<Array<FuncStr
     c.argsetid,
     c.depth
 from thread A,trace_range D
-left join process P on A.ipid = P.id
 left join callstack C on A.id = C.callid
-where startTs not null and c.cookie is null and tid = $tid and pid = $pid`,
-    { $tid: tid , $pid: pid}
+where startTs not null and c.cookie is null and tid = $tid and A.ipid = $ipid`,
+    { $tid: tid , $ipid: ipid}
   );
 
 export const getMaxDepthByTid = (): Promise<Array<any>> =>
@@ -557,10 +559,11 @@ export const getMaxDepthByTid = (): Promise<Array<any>> =>
     `
     select
 tid,
+ipid,
     MAX(c.depth + 1) as maxDepth
 from thread A
 left join callstack C on A.id = C.callid
-where c.ts not null and c.cookie is null group by tid`,
+where c.ts not null and c.cookie is null group by tid,ipid`,
     {}
   );
 
@@ -1216,7 +1219,7 @@ export const queryProcessThreadsByTable = (): Promise<Array<ThreadStruct>> =>
   query(
     'queryProcessThreadsByTable',
     `
-        select p.pid as pid,t.tid as tid,p.name as processName,t.name as threadName from thread t left join process  p on t.ipid = p.id where t.tid != 0;
+        select p.pid as pid,p.ipid as upid,t.tid as tid,p.name as processName,t.name as threadName from thread t left join process  p on t.ipid = p.id where t.tid != 0;
     `
   );
 export const queryVirtualMemory = (): Promise<Array<any>> =>

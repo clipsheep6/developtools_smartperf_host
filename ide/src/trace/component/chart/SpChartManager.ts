@@ -179,6 +179,8 @@ export class SpChartManager {
         endNS = startNS + 1;
       }
       this.trace.timerShaftEL.totalNS = total;
+      this.trace.timerShaftEL.getRangeRuler()!.drawMark = true;
+      this.trace.timerShaftEL.setRangeNS(0,total);
       (window as any).recordStartNS = startNS;
       (window as any).recordEndNS = endNS;
       (window as any).totalNS = total;

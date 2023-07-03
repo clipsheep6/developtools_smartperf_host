@@ -928,9 +928,6 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     const clipRect = new Path2D();
     clipRect.rect(0, 0, this.frame.width, this.frame.height);
     ctx.clip(clipRect);
-    if(this.collect){
-      ctx.clearRect(this.frame.x, this.frame.y, this.frame.width, this.frame.height);
-    }
   }
 
   canvasRestore(ctx: CanvasRenderingContext2D) {

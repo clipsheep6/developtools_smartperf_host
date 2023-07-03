@@ -49,7 +49,11 @@ import './component/trace/base/TraceRowConfig.js';
 import { TraceRowConfig } from './component/trace/base/TraceRowConfig.js';
 import { ColorUtils } from './component/trace/base/ColorUtils.js';
 import { SpStatisticsHttpUtil } from '../statistics/util/SpStatisticsHttpUtil.js';
-import { getTraceFileBuffer } from './database/DBUtils.js';
+import {
+  deleteExpireData,
+  getTraceFileBuffer,
+  initIndexedDB
+} from './database/DBUtils.js';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -394,6 +398,7 @@ export class SpApplication extends BaseElement {
   initElements() {
     SpStatisticsHttpUtil.initStatisticsServerConfig();
     SpStatisticsHttpUtil.addUserVisitAction('visit');
+    initIndexedDB().then(db => deleteExpireData(db));
     let that = this;
     this.querySql = true;
     this.rootEL = this.shadowRoot!.querySelector<HTMLDivElement>('.root');

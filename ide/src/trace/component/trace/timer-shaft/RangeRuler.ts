@@ -82,6 +82,7 @@ export class RangeRuler extends Graph {
   public rangeRect: Rect;
   public markAObj: Mark;
   public markBObj: Mark;
+  public drawMark: boolean = false;
   public range: TimeRange;
   private pressedKeys: Array<string> = [];
   mouseDownOffsetX = 0;
@@ -172,24 +173,26 @@ export class RangeRuler extends Graph {
       this.c.globalAlpha = 1;
     }
     //绘制选中区域
-    this.c.fillStyle = window.getComputedStyle(this.canvas!, null).getPropertyValue('background-color');
-    this.rangeRect.x = this.markAObj.frame.x < this.markBObj.frame.x ? this.markAObj.frame.x : this.markBObj.frame.x;
-    this.rangeRect.width = Math.abs(this.markBObj.frame.x - this.markAObj.frame.x);
-    this.c.fillRect(this.rangeRect.x, this.rangeRect.y, this.rangeRect.width, this.rangeRect.height);
-    this.c.globalAlpha = 1;
-    this.c.globalAlpha = 0.5;
-    this.c.fillStyle = '#999999';
-    this.c.fillRect(this.frame.x, this.frame.y, this.rangeRect.x, this.rangeRect.height);
-    this.c.fillRect(
-      this.rangeRect.x + this.rangeRect.width,
-      this.frame.y,
-      this.frame.width - this.rangeRect.width,
-      this.rangeRect.height
-    );
-    this.c.globalAlpha = 1;
-    this.c.closePath();
-    this.markAObj.draw();
-    this.markBObj.draw();
+    if (this.drawMark) {
+      this.c.fillStyle = window.getComputedStyle(this.canvas!, null).getPropertyValue('background-color');
+      this.rangeRect.x = this.markAObj.frame.x < this.markBObj.frame.x ? this.markAObj.frame.x : this.markBObj.frame.x;
+      this.rangeRect.width = Math.abs(this.markBObj.frame.x - this.markAObj.frame.x);
+      this.c.fillRect(this.rangeRect.x, this.rangeRect.y, this.rangeRect.width, this.rangeRect.height);
+      this.c.globalAlpha = 1;
+      this.c.globalAlpha = 0.5;
+      this.c.fillStyle = '#999999';
+      this.c.fillRect(this.frame.x, this.frame.y, this.rangeRect.x, this.rangeRect.height);
+      this.c.fillRect(
+        this.rangeRect.x + this.rangeRect.width,
+        this.frame.y,
+        this.frame.width - this.rangeRect.width,
+        this.rangeRect.height
+      );
+      this.c.globalAlpha = 1;
+      this.c.closePath();
+      this.markAObj.draw();
+      this.markBObj.draw();
+    }
     if (this.notifyHandler) {
       this.range.startX = this.rangeRect.x;
       this.range.endX = this.rangeRect.x + this.rangeRect.width;
