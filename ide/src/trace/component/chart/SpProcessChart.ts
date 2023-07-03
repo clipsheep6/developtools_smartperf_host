@@ -73,13 +73,13 @@ export class SpProcessChart {
   initDeliverInputEvent = async () => {
     let row = TraceRow.skeleton();
     row.setAttribute('disabled-check', '');
-    row.rowId = `DeliverInputEvent`;
+    row.rowId = 'DeliverInputEvent';
     row.index = 0;
     row.rowType = TraceRow.ROW_TYPE_DELIVER_INPUT_EVENT;
     row.rowParentId = '';
     row.folder = true;
     row.style.height = '40px';
-    row.name = `DeliverInputEvent`;
+    row.name = 'DeliverInputEvent';
     row.supplier = FolderSupplier();
     row.onThreadHandler = FolderThreadHandler(row, this.trace);
 
@@ -121,7 +121,7 @@ export class SpProcessChart {
         funcRow.rowType = TraceRow.ROW_TYPE_FUNC;
         funcRow.rowParentId = `${row.rowId}`;
         funcRow.rowHidden = !row.expansion;
-        funcRow.style.width = `100%`;
+        funcRow.style.width = '100%';
         funcRow.style.height = `${maxHeight}px`;
         funcRow.setAttribute('height', `${maxHeight}`);
         funcRow.name = `${asyncFuncGroups[0].funName} ${key}`;
@@ -284,11 +284,11 @@ export class SpProcessChart {
           expectedRow.rowType = TraceRow.ROW_TYPE_JANK;
           expectedRow.rowParentId = `${it.pid}`;
           expectedRow.rowHidden = !processRow.expansion;
-          expectedRow.style.width = `100%`;
+          expectedRow.style.width = '100%';
           expectedRow.style.height = `${maxHeight}px`;
           expectedRow.setAttribute('height', `${maxHeight}`);
           expectedRow.setAttribute('frame_type', expectedData[0].frame_type);
-          expectedRow.name = `Expected Timeline`;
+          expectedRow.name = 'Expected Timeline';
           expectedRow.addTemplateTypes('FrameTimeline');
           expectedRow.setAttribute('children', '');
           expectedRow.supplier = () =>
@@ -304,7 +304,7 @@ export class SpProcessChart {
               {
                 context: context,
                 useCache: useCache,
-                type: `expected_frame_timeline_slice`,
+                type: 'expected_frame_timeline_slice',
               },
               expectedRow!
             );
@@ -334,6 +334,9 @@ export class SpProcessChart {
                   if (isIntersect(depthArray[depthArray.length - 1], actualItem)) {
                     actualItem.depth = depthArray.length;
                     depthArray.push(actualItem);
+                  } else {
+                    actualItem.depth = depthArray.length - 1;
+                    depthArray[length - 1] = actualItem;
                   }
                 } else {
                   actualItem.depth = 0;
@@ -349,10 +352,10 @@ export class SpProcessChart {
             actualRow.rowType = TraceRow.ROW_TYPE_JANK;
             actualRow.rowParentId = `${it.pid}`;
             actualRow.rowHidden = !processRow.expansion;
-            actualRow.style.width = `100%`;
+            actualRow.style.width = '100%';
             actualRow.style.height = `${maxHeight}px`;
             actualRow.setAttribute('height', `${maxHeight}`);
-            actualRow.name = `Actual Timeline`;
+            actualRow.name = 'Actual Timeline';
             actualRow.addTemplateTypes('FrameTimeline');
             actualRow.setAttribute('frame_type', actualData[0].frame_type);
             actualRow.setAttribute('children', '');
@@ -367,7 +370,7 @@ export class SpProcessChart {
                 {
                   context: context,
                   useCache: useCache,
-                  type: `actual_frame_timeline_slice`,
+                  type: 'actual_frame_timeline_slice',
                 },
                 actualRow!
               );
@@ -494,7 +497,7 @@ export class SpProcessChart {
           funcRow.rowType = TraceRow.ROW_TYPE_FUNC;
           funcRow.rowParentId = `${it.pid}`;
           funcRow.rowHidden = !processRow.expansion;
-          funcRow.style.width = `100%`;
+          funcRow.style.width = '100%';
           funcRow.style.height = `${maxHeight}px`;
           funcRow.setAttribute('height', `${maxHeight}`);
           funcRow.name = `${asyncFunctions[0].funName}`;
@@ -530,7 +533,7 @@ export class SpProcessChart {
         row.rowParentId = `${it.pid}`;
         row.rowHidden = !processRow.expansion;
         row.style.height = '40px';
-        row.style.width = `100%`;
+        row.style.width = '100%';
         row.name = `${mem.trackName}`;
         row.setAttribute('children', '');
         row.favoriteChangeHandler = this.trace.favoriteChangeHandler;
@@ -588,7 +591,7 @@ export class SpProcessChart {
         threadRow.rowHidden = !processRow.expansion;
         threadRow.index = j;
         threadRow.style.height = '30px';
-        threadRow.style.width = `100%`;
+        threadRow.style.width = '100%';
         threadRow.name = `${thread.threadName || 'Thread'} ${thread.tid}`;
         threadRow.setAttribute('children', '');
         threadRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
@@ -636,7 +639,7 @@ export class SpProcessChart {
           funcRow.rowParentId = `${it.pid}`;
           funcRow.rowHidden = !processRow.expansion;
           funcRow.checkType = threadRow.checkType;
-          funcRow.style.width = `100%`;
+          funcRow.style.width = '100%';
           funcRow.style.height = `${maxHeight}px`;
           funcRow.name = `${thread.threadName || 'Thread'} ${thread.tid}`;
           funcRow.setAttribute('children', '');

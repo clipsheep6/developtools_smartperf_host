@@ -77,10 +77,6 @@ import {
   HeapTraceFunctionInfo,
 } from '../../js-heap/model/DatabaseStruct';
 import { FileInfo } from '../../js-heap/model/UiStruct.js';
-import {
-  initIndexedDB,
-  cacheTraceFileBuffer,
-} from './DBUtils.js';
 
 class DataWorkerThread extends Worker {
   taskMap: any = {};
@@ -176,7 +172,6 @@ class DbThread extends Worker {
 }
 
 export class DbPool {
-  static currentTraceFileID: string = '';
   static sharedBuffer: ArrayBuffer | null = null;
   maxThreadNumber: number = 0;
   works: Array<DbThread> = [];
@@ -267,20 +262,14 @@ export class DbPool {
   initServer = async (url: string, progress: Function) => {
     this.progress = progress;
     progress('database loaded', 15);
-    let db = await initIndexedDB();
     DbPool.sharedBuffer = await fetch(url).then((res) => res.arrayBuffer());
-    let oldFileID = DbPool.currentTraceFileID;
     progress('open database', 20);
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
       let { status, msg } = await thread.dbOpen();
-      DbPool.currentTraceFileID = thread.uuid();
       if (!status) {
         DbPool.sharedBuffer = null;
         return { status, msg };
-      } else {
-        cacheTraceFileBuffer(db,oldFileID,DbPool.currentTraceFileID,DbPool.sharedBuffer!);
-        DbPool.sharedBuffer = null;
       }
     }
     return { status: true, msg: 'ok' };
@@ -290,13 +279,10 @@ export class DbPool {
     progress('database loaded', 15);
     DbPool.sharedBuffer = buf;
     progress('parse database', 20);
-    let db = await initIndexedDB();
-    let oldFileID = DbPool.currentTraceFileID;
     let configMap;
     for (let i = 0; i < this.works.length; i++) {
       let thread = this.works[i];
       let { status, msg, buffer, sdkConfigMap } = await thread.dbOpen(sdkWasmConfig);
-      DbPool.currentTraceFileID = thread.uuid();
       if (!status) {
         DbPool.sharedBuffer = null;
         return { status, msg };
@@ -304,9 +290,6 @@ export class DbPool {
         configMap = sdkConfigMap;
         DbPool.sharedBuffer = buffer;
       }
-
-      cacheTraceFileBuffer(db,oldFileID,DbPool.currentTraceFileID,DbPool.sharedBuffer);
-      DbPool.sharedBuffer = null;
     }
     return { status: true, msg: 'ok', sdkConfigMap: configMap };
   };

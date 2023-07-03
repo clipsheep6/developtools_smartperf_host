@@ -128,6 +128,7 @@ export class TraceRowConfig extends BaseElement {
               chartRow.removeAttribute('row-hidden');
               chartRow.setAttribute('scene', '');
             } else {
+              row.expansion = true;
               chartRow.removeAttribute('scene');
               chartRow.setAttribute('row-hidden', '');
             }

@@ -49,11 +49,6 @@ import './component/trace/base/TraceRowConfig.js';
 import { TraceRowConfig } from './component/trace/base/TraceRowConfig.js';
 import { ColorUtils } from './component/trace/base/ColorUtils.js';
 import { SpStatisticsHttpUtil } from '../statistics/util/SpStatisticsHttpUtil.js';
-import {
-  deleteExpireData,
-  getTraceFileBuffer,
-  initIndexedDB
-} from './database/DBUtils.js';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -398,7 +393,6 @@ export class SpApplication extends BaseElement {
   initElements() {
     SpStatisticsHttpUtil.initStatisticsServerConfig();
     SpStatisticsHttpUtil.addUserVisitAction('visit');
-    initIndexedDB().then(db => deleteExpireData(db));
     let that = this;
     this.querySql = true;
     this.rootEL = this.shadowRoot!.querySelector<HTMLDivElement>('.root');
@@ -1272,8 +1266,7 @@ export class SpApplication extends BaseElement {
         return;
       }
     } else {
-      let buffer = await getTraceFileBuffer(DbPool.currentTraceFileID);
-      a.href = URL.createObjectURL(new Blob([buffer!]));
+      a.href = URL.createObjectURL(new Blob([DbPool.sharedBuffer!]));
     }
     a.download = fileName;
     a.click();
@@ -1339,16 +1332,14 @@ export class SpApplication extends BaseElement {
             });
           }
         } else {
-          getTraceFileBuffer(DbPool.currentTraceFileID).then(buffer => {
-            const fd = new FormData();
-            fd.append('convertType', 'download');
-            fd.append('filePath', filePath);
-            fd.append('file', new File([buffer!], fileName));
-            Cmd.uploadFile(fd, (res: Response) => {
-              if (res.ok) {
-                this.itemIconLoading(mainMenu, 'Current Trace', 'Download File', false);
-              }
-            });
+          const fd = new FormData();
+          fd.append('convertType', 'download');
+          fd.append('filePath', filePath);
+          fd.append('file', new File([DbPool.sharedBuffer!], fileName));
+          Cmd.uploadFile(fd, (res: Response) => {
+            if (res.ok) {
+              this.itemIconLoading(mainMenu, 'Current Trace', 'Download File', false);
+            }
           });
         }
       }

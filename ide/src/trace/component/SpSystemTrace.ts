@@ -527,6 +527,26 @@ export class SpSystemTrace extends BaseElement {
             selection.nativeMemory.push(it.rowId!);
           }
           info('load nativeMemory traceRow id is : ', it.rowId);
+        } else if (it.rowType == TraceRow.ROW_TYPE_MONITOR) {
+          let abilityChildRows: Array<TraceRow<any>> = [
+            ...this.shadowRoot!.querySelectorAll<TraceRow<any>>(`trace-row[row-parent-id='${it.rowId}']`),
+          ];
+          if (!it.expansion) {
+            abilityChildRows = [...it.childrenList];
+          }
+          abilityChildRows.forEach((th) => {
+            th.rangeSelect = true;
+            th.checkType = '2';
+            if (th.rowType == TraceRow.ROW_TYPE_CPU_ABILITY) {
+              selection.cpuAbilityIds.push(th.rowId!);
+            } else if (th.rowType == TraceRow.ROW_TYPE_MEMORY_ABILITY) {
+              selection.memoryAbilityIds.push(th.rowId!);
+            } else if (th.rowType == TraceRow.ROW_TYPE_DISK_ABILITY) {
+              selection.diskAbilityIds.push(th.rowId!);
+            } else if (th.rowType == TraceRow.ROW_TYPE_NETWORK_ABILITY) {
+              selection.networkAbilityIds.push(th.rowId!);
+            }
+          });
         } else if (it.rowType == TraceRow.ROW_TYPE_CPU_ABILITY) {
           selection.cpuAbilityIds.push(it.rowId!);
           info('load CPU Ability traceRow id is : ', it.rowId);
@@ -661,14 +681,27 @@ export class SpSystemTrace extends BaseElement {
               }
             }
           });
-        } else if (it.rowType == TraceRow.ROW_TYPE_JANK && it.name == 'Actual Timeline') {
+        } else if (it.rowType == TraceRow.ROW_TYPE_JANK) {
           let isIntersect = (a: JanksStruct, b: RangeSelectStruct) =>
-            Math.max(a.ts! + a.dur!, b!.endNS || 0) - Math.min(a.ts!, b!.startNS || 0) <
-            a.dur! + (b!.endNS || 0) - (b!.startNS || 0);
-          let jankDatas = it.dataList.filter((jankData: any) => {
-            return isIntersect(jankData, TraceRow.rangeSelectObject!);
-          });
-          selection.jankFramesData.push(jankDatas);
+              Math.max(a.ts! + a.dur!, b!.endNS || 0) - Math.min(a.ts!, b!.startNS || 0) <
+              a.dur! + (b!.endNS || 0) - (b!.startNS || 0);
+          if (it.name == 'Actual Timeline') {
+            selection.jankFramesData = [];
+            let jankDatas = it.dataList.filter((jankData: any) => {
+              return isIntersect(jankData, TraceRow.rangeSelectObject!);
+            });
+            selection.jankFramesData.push(jankDatas);
+          } else if (it.folder) {
+            selection.jankFramesData = [];
+            it.childrenList.forEach(child => {
+              if (child.rowType == TraceRow.ROW_TYPE_JANK && child.name == 'Actual Timeline') {
+                let jankDatas = child.dataList.filter((jankData: any) => {
+                  return isIntersect(jankData, TraceRow.rangeSelectObject!);
+                });
+                selection.jankFramesData.push(jankDatas);
+              }
+            })
+          }
         } else if (it.rowType === TraceRow.ROW_TYPE_HEAP_TIMELINE || it.rowType === TraceRow.ROW_TYPE_JS_MEMORY) {
           selection.jsMemory.push(it.rowId);
           let jsMemoryRows: Array<TraceRow<HeapTimelineStruct>> = [
@@ -2154,6 +2187,7 @@ export class SpSystemTrace extends BaseElement {
      * 监听时间轴区间变化
      */
     this.timerShaftEL!.rangeChangeHandler = this.timerShaftELRangeChange;
+    this.timerShaftEL!.rangeClickHandler = this.timerShaftELRangeClick
     this.timerShaftEL!.flagChangeHandler = this.timerShaftELFlagChange;
     this.timerShaftEL!.flagClickHandler = this.timerShaftELFlagClickHandler;
     /**

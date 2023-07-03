@@ -194,6 +194,7 @@ export class TimerShaftElement extends BaseElement {
       this.sportRuler!.slicesTimeList.length = 0;
       this.selectionList.length = 0;
       this.selectionMap.clear();
+      this.rangeRuler.rangeRect = new Rect(0, 25, this.canvas?.clientWidth || 0, 75);
       this.sportRuler!.isRangeSelect = false;
       this.setSlicesMark();
     }
