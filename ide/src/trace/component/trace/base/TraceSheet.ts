@@ -270,17 +270,24 @@ export class TraceSheet extends BaseElement {
           }
         }
         if (fileList.length > 0) {
+          importFileBt!.disabled = true;
           window.publish(window.SmartEvent.UI.Loading, true);
           threadPool.submit(
             'upload-so',
             '',
             fileList,
-            (res: any) => {
-              window.publish(window.SmartEvent.UI.UploadSOFile, {});
+            (res: string) => {
+              importFileBt!.disabled = false;
+              if (res === 'ok') {
+                window.publish(window.SmartEvent.UI.UploadSOFile, {});
+              } else {
+                window.publish(window.SmartEvent.UI.Error, 'parse so file failed!');
+              }
             },
             'upload-so'
           );
         }
+        fileList.length = 0;
       }
       importFileBt!.files = null;
       importFileBt!.value = '';
