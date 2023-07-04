@@ -32,10 +32,8 @@
     },
     "build": {
       "sub_component": [
-          "//developtools/smartperf_host/trace_streamer:trace_streamer"
+        "//developtools/smartperf_host/trace_streamer:trace_streamer"
       ]
     }
   }
 }
-
-
