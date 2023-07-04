@@ -1,0 +1,83 @@
+diff --git a/inherit/default.json b/inherit/default.json
+index 3621e9e..d894aae 100644
+--- a/inherit/default.json
++++ b/inherit/default.json
+@@ -461,7 +461,11 @@
+       {
+         "component": "packing_tool",
+         "features": []
+-      }
++      },
++          {
++            "component": "smartperf_host",
++            "features": []
++          }
+         ]
+       },
+       {
+diff --git a/inherit/ipcamera.json b/inherit/ipcamera.json
+index 4075a32..e74bfbc 100644
+--- a/inherit/ipcamera.json
++++ b/inherit/ipcamera.json
+@@ -449,6 +449,10 @@
+             {
+               "component": "hiperf",
+               "features": []
++            },
++            {
++              "component": "smartperf_host",
++              "features": []
+             }
+           ]
+         },
+diff --git a/inherit/pc.json b/inherit/pc.json
+index 89392c5..fffd9e9 100644
+--- a/inherit/pc.json
++++ b/inherit/pc.json
+@@ -461,7 +461,11 @@
+       {
+         "component": "packing_tool",
+         "features": []
+-      }
++      },
++          {
++            "component": "smartperf_host",
++            "features": []
++          }
+         ]
+       },
+       {
+diff --git a/inherit/rich.json b/inherit/rich.json
+index 5013860..09cce24 100644
+--- a/inherit/rich.json
++++ b/inherit/rich.json
+@@ -469,7 +469,11 @@
+ 	{
+ 	  "component": "packing_tool",
+ 	  "features": []
+-	}
++	},
++        {
++          "component": "smartperf_host",
++          "features": []
++        }
+       ]
+     },
+     {
+diff --git a/inherit/tablet.json b/inherit/tablet.json
+index 1e0e322..4281d5f 100644
+--- a/inherit/tablet.json
++++ b/inherit/tablet.json
+@@ -428,7 +428,11 @@
+       {
+         "component": "packing_tool",
+         "features": []
+-      }
++      },
++          {
++            "component": "smartperf_host",
++            "features": []
++          }
+         ]
+       },
+       {
