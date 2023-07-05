@@ -41,10 +41,10 @@ export class SpWelcomePage extends BaseElement {
         </style>
         <div>
             <div class="home-page">
-            <p/>黄区域名: <a href="https://smartperf.rnd.huawei.com/smartperf/">https://smartperf.rnd.huawei.com/smartperf/</a></p>
-            <p/>绿区域名: <a href="https://devecotesting.rnd.huawei.com/smartperf/">https://devecotesting.rnd.huawei.com/smartperf/</a></p>
-            <p/>3ms社区: <a href="http://3ms.huawei.com/km/groups/3956611/home?|=zh-cn">http://3ms.huawei.com/km/groups/3956611/home?|=zh-cn</a></p>
-            <p/>welink讨论群: 群1: 473395703, 群2: 485625665</p>
+                <p/>黄区域名: <a href="https://smartperf.rnd.huawei.com/smartperf/">https://smartperf.rnd.huawei.com/smartperf/</a></p>
+                <p/>绿区域名: <a href="https://devecotesting.rnd.huawei.com/smartperf/">https://devecotesting.rnd.huawei.com/smartperf/</a></p>
+                <p/>3ms社区: <a href="http://3ms.huawei.com/km/groups/3956611/home?|=zh-cn">http://3ms.huawei.com/km/groups/3956611/home?|=zh-cn</a></p>
+                <p/>welink讨论群: 群1: 473395703, 群2: 485625665</p>
             </div>
             <img class="lit-icon" >
 
