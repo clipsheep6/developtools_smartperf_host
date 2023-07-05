@@ -45,7 +45,9 @@ namespace TraceStreamer {
 using namespace SysTuning::TraceStreamer;
 using namespace SysTuning::base;
 constexpr size_t G_CHUNK_SIZE = 1024 * 1024;
+#ifndef COMPILE_WITH_OHOS
 constexpr int G_MIN_PARAM_NUM = 2;
+#endif
 constexpr size_t G_FILE_PERMISSION = 664;
 // set version info in meta.cpp please
 void ExportStatusToLog(const std::string& dbPath, TraceParserStatus status)
@@ -297,6 +299,7 @@ int CheckArgs(int argc, char** argv, TraceExportOption& traceExportOption, HttpO
 } // namespace SysTuning
 int main(int argc, char** argv)
 {
+#ifndef COMPILE_WITH_OHOS
     if (argc < G_MIN_PARAM_NUM) {
         ShowHelpInfo(argv[0]);
         return 1;
@@ -354,5 +357,6 @@ int main(int argc, char** argv)
     if (!tsOption.sqlOperatorFilePath.empty()) {
         ReadSqlFileAndPrintResult(ts, tsOption.sqlOperatorFilePath);
     }
+#endif
     return 0;
 }

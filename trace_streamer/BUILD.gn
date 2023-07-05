@@ -10,27 +10,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import("build/ts.gni")
-group("trace_streamer") {
-  if (is_test) {
-    deps = [ "test:unittest" ]
-    testonly = true
-  } else if (is_fuzz) {
-    deps = [ "test:fuzztest" ]
-    testonly = true
-  } else if (is_protoc) {
-    deps = [ "${THIRD_PARTY}/protobuf:protoc" ]
-  } else if (is_spb) {
-    deps = [ "src/proto_reader/protoc_plugin:protoreader_plugin" ]
-  } else if (is_sdkdemo) {
-    deps = [ "sdk/demo_sdk:trace_streamer_sdk_builtin" ]
-  } else if (is_dubai_sdk) {
-    deps = [ "sdk/dubai_sdk:trace_streamer_dubai_builtin" ]
-  } else if (is_sdkdemo_test) {
-    deps = [ "sdk/test:sdkunittest" ]
-  } else if (use_wasm) {
-    deps = [ "src:trace_streamer_builtin" ]
-  } else {
-    deps = [ "src:trace_streamer" ]
-  }
+import("//build/ohos.gni")
+
+ohos_executable("trace_streamer") {
+  cflags = [ "-D COMPILE_WITH_OHOS" ]
+  sources = [ "src/main.cpp" ]
+  include_dirs = [
+    "src/base",
+    "./",
+    "src/trace_streamer",
+    "src/filter",
+    "src/table",
+    "src/trace_data",
+    "src/include",
+    "src/rpc",
+    "src/",
+    "src/parser",
+    "src/cfg",
+    "src/proto_reader/include",
+    "//third_party/sqlite/include",
+    "//third_party/json-master/single_include/nlohmann",
+    "//third_party/json/single_include/nlohmann",
+    "//third_party/protobuf/src",
+    "//third_party/hiperf/include",
+  ]
 }
