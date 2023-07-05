@@ -139,7 +139,7 @@ public:
         states_.clear();
         cpus_.clear();
     }
-    const uint32_t Size() const
+    uint32_t Size() const
     {
         return itids_.size();
     }
@@ -1822,7 +1822,7 @@ public:
         names_.emplace_back(name);
         return ts_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return ts_.size();
     }
@@ -1853,7 +1853,7 @@ public:
         clockIds_.emplace_back(clockId);
         return dataSourceNames_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return dataSourceNames_.size();
     }
@@ -2225,7 +2225,7 @@ public:
     size_t AppendNew(uint32_t frameRow, uint64_t dur);
     const std::deque<uint32_t>& FrameRows() const;
     const std::deque<uint64_t>& Durs() const;
-    const size_t Size() const;
+    size_t Size() const;
 
 private:
     std::deque<uint32_t> frameRows_ = {};
