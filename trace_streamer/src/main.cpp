@@ -47,7 +47,7 @@ using namespace SysTuning::base;
 constexpr size_t G_CHUNK_SIZE = 1024 * 1024;
 constexpr int G_MIN_PARAM_NUM = 2;
 constexpr size_t G_FILE_PERMISSION = 664;
-// set version info in meta.cpp please
+// set version info in meta.cpp please.
 void ExportStatusToLog(const std::string& dbPath, TraceParserStatus status)
 {
     std::string path = dbPath + ".ohos.ts";
