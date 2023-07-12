@@ -13,6 +13,29 @@
 
 import("../build/ohos.gni")
 import("../build/ts.gni")
+if (target_os == "ohos") {
+  ohos_executable("trace_streamer") {
+    cflags = [ "-D COMPILE_WITH_OHOS" ]
+    sources = [ "src/main.cpp" ]
+    include_dirs = [
+      "trace_streamer",
+      "filter",
+      "table",
+      "trace_data",
+      "include",
+      "rpc",
+      ".",
+      "parser",
+      "cfg",
+      "src/proto_reader/include",
+      "//third_party/sqlite/include",
+      "//third_party/json-master/single_include/nlohmann",
+      "//third_party/json/single_include/nlohmann",
+      "//third_party/protobuf/src",
+      "//third_party/hiperf/include",
+    ]
+  }
+}
 if (use_wasm) {
   import("//gn/wasm.gni")
 }
