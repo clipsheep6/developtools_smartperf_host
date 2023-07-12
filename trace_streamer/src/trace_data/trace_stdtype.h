@@ -139,7 +139,7 @@ public:
         states_.clear();
         cpus_.clear();
     }
-    uint32_t Size() const
+    const uint32_t Size() const
     {
         return itids_.size();
     }
@@ -1822,7 +1822,7 @@ public:
         names_.emplace_back(name);
         return ts_.size();
     }
-    size_t Size() const
+    const size_t Size() const
     {
         return ts_.size();
     }
@@ -1853,7 +1853,7 @@ public:
         clockIds_.emplace_back(clockId);
         return dataSourceNames_.size();
     }
-    size_t Size() const
+    const size_t Size() const
     {
         return dataSourceNames_.size();
     }
@@ -1932,6 +1932,84 @@ public:
 private:
     std::deque<uint64_t> srcs_ = {};
     std::deque<uint64_t> dsts_ = {};
+};
+
+class AppStartup : public CacheBase {
+public:
+    size_t AppendNewData(uint32_t ipid,
+                         uint32_t tid,
+                         uint32_t callId,
+                         uint64_t startTime,
+                         uint64_t endTime,
+                         uint32_t startName,
+                         DataIndex packedName);
+    const std::deque<uint32_t>& Pids() const;
+    const std::deque<uint32_t>& Tids() const;
+    const std::deque<uint32_t>& CallIds() const;
+    const std::deque<uint64_t>& StartTimes() const;
+    const std::deque<uint64_t>& EndTimes() const;
+    const std::deque<uint32_t>& StartNames() const;
+    const std::deque<DataIndex>& PackedNames() const;
+
+    void Clear() override
+    {
+        CacheBase::Clear();
+        ipids_.clear();
+        tids_.clear();
+        callIds_.clear();
+        startTimes_.clear();
+        endTimes_.clear();
+        startNames_.clear();
+        packedNames_.clear();
+    }
+
+private:
+    std::deque<uint32_t> ipids_ = {};
+    std::deque<uint32_t> tids_ = {};
+    std::deque<uint32_t> callIds_ = {};
+    std::deque<uint64_t> startTimes_ = {};
+    std::deque<uint64_t> endTimes_ = {};
+    std::deque<uint32_t> startNames_ = {};
+    std::deque<DataIndex> packedNames_ = {};
+};
+
+class SoStaticInitalization : public CacheBase {
+public:
+    size_t AppendNewData(uint32_t ipid,
+                         uint32_t tid,
+                         uint32_t callId,
+                         uint64_t startTime,
+                         uint64_t endTime,
+                         DataIndex soName,
+                         uint32_t depth);
+    const std::deque<uint32_t>& Pids() const;
+    const std::deque<uint32_t>& Tids() const;
+    const std::deque<uint32_t>& CallIds() const;
+    const std::deque<uint64_t>& StartTimes() const;
+    const std::deque<uint64_t>& EndTimes() const;
+    const std::deque<DataIndex>& SoNames() const;
+    const std::deque<uint32_t> Depths() const;
+
+    void Clear() override
+    {
+        CacheBase::Clear();
+        ipids_.clear();
+        tids_.clear();
+        callIds_.clear();
+        startTimes_.clear();
+        endTimes_.clear();
+        soNames_.clear();
+        depths_.clear();
+    }
+
+private:
+    std::deque<uint32_t> ipids_ = {};
+    std::deque<uint32_t> tids_ = {};
+    std::deque<uint32_t> callIds_ = {};
+    std::deque<uint64_t> startTimes_ = {};
+    std::deque<uint64_t> endTimes_ = {};
+    std::deque<DataIndex> soNames_ = {};
+    std::deque<uint32_t> depths_ = {};
 };
 
 class JsHeapFiles : public CacheBase {
@@ -2225,7 +2303,7 @@ public:
     size_t AppendNew(uint32_t frameRow, uint64_t dur);
     const std::deque<uint32_t>& FrameRows() const;
     const std::deque<uint64_t>& Durs() const;
-    size_t Size() const;
+    const size_t Size() const;
 
 private:
     std::deque<uint32_t> frameRows_ = {};
