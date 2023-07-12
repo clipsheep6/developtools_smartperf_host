@@ -17,7 +17,6 @@ echo $PARAMS
 echo "begin to check input"
 SOURCE="${BASH_SOURCE[0]}"
 cd $(dirname ${SOURCE})
-# ./clean.sh
 ./pare_third_party.sh
 target_os="linux"
 target_dir="linux"

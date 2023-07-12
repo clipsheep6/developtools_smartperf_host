@@ -10,12 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import("//build/ohos.gni")
-
+import("build/ts.gni")
 group("trace_streamer") {
-  if (target_os == "ohos" ) {
-
-  } else if (is_test) {
+  if (is_test) {
     deps = [ "test:unittest" ]
     testonly = true
   } else if (is_fuzz) {
