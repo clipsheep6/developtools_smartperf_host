@@ -173,9 +173,11 @@ export class ProcessMemStruct extends BaseProcessMemStruct {
         let drawHeight: number = ((data.value || 0) * (data.frame.height || 0) * 1.0) / (data.maxValue || 1);
         drawHeight = drawHeight > 0 ? drawHeight : 1;
         memContext.fillRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
-        memContext.lineWidth = 1;
-        memContext.globalAlpha = 1.0;
-        memContext.strokeRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
+        if (width > 2) {
+          memContext.lineWidth = 1;
+          memContext.globalAlpha = 1.0;
+          memContext.strokeRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
+        }
       }
     }
     memContext.globalAlpha = 1.0;
