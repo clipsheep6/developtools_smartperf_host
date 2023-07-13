@@ -19,7 +19,7 @@ const childProcess = require('child_process');
 const os = require('os');
 const log4js = require('log4js');
 
-const compileServer = true;
+let compileServer = true;
 const outDir = 'dist';
 
 const sdkWams = [
@@ -116,6 +116,8 @@ function main() {
     if (!checkEnvironment()) {
       return;
     }
+  } else {
+    compileServer = false;
   }
   // clean outDir
   let outPath = path.normalize(path.join(__dirname, '/', outDir));
