@@ -12,7 +12,7 @@
 # limitations under the License.
 
 action("ts_build_sh") {
-  deps = [ "../trace_streamer:trace_streamer" ]
+  deps = [ "../trace_streamer:trace_streamer_port" ]
   script = get_path_info("./build.sh", "abspath")
   outputs = [ "$root_out_dir/developtools/smartperf_host/dist" ]
   args = [
