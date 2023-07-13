@@ -31,7 +31,6 @@
     } while (0)
 namespace SysTuning {
 namespace TraceStreamer {
-const int32_t MAX_LEN_STR = 100;
 uint32_t g_fileLen = 0;
 FILE* g_importFileFd = nullptr;
 bool RpcServer::ParseData(const uint8_t* data, size_t len, ResultCallBack resultCallBack)
@@ -71,7 +70,6 @@ int32_t RpcServer::TraceStreamer_Init_ThirdParty_Config(const uint8_t* data, int
     TS_LOGE("TraceStreamer_Init_ThirdParty_Config is comming!");
     std::string thirdPartyConfig = reinterpret_cast<const char*>(data);
     TS_LOGE("thirdPartyConfig = %s", thirdPartyConfig.c_str());
-    int32_t size = thirdPartyConfig.size();
     std::vector<std::string> comPonentStr = SplitStringToVec(thirdPartyConfig, ";");
     const int32_t EVENT_COUNT_PAIR = 2;
     if (comPonentStr.size() % EVENT_COUNT_PAIR != 0) {

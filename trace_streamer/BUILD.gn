@@ -10,15 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-if (target_os == "ohos") {
-  import("//build/ohos.gni")
-} else {
-  import("build/ts.gni")
-}
-
+import("build/ts.gni")
 group("trace_streamer") {
-  if (target_os == "ohos") {
-  } else if (is_test) {
+  if (is_test) {
     deps = [ "test:unittest" ]
     testonly = true
   } else if (is_fuzz) {
@@ -27,7 +21,9 @@ group("trace_streamer") {
   } else if (is_protoc) {
     deps = [ "${THIRD_PARTY}/protobuf:protoc" ]
   } else if (is_spb) {
-    deps = [ "src/proto_reader/protoc_plugin:protoreader_plugin" ]
+    deps = [
+      "src/proto_reader/protoc_plugin:protoreader_plugin(${host_toolchain})",
+    ]
   } else if (is_sdkdemo) {
     deps = [ "sdk/demo_sdk:trace_streamer_sdk_builtin" ]
   } else if (is_dubai_sdk) {

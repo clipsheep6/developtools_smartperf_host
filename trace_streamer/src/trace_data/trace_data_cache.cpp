@@ -63,13 +63,11 @@
 #include "native_hook_statistic_table.h"
 #include "network_table.h"
 #include "paged_memory_sample_table.h"
-#if WITH_PERF
 #include "perf_call_chain_table.h"
 #include "perf_files_table.h"
 #include "perf_report_table.h"
 #include "perf_sample_table.h"
 #include "perf_thread_table.h"
-#endif
 #include "process_filter_table.h"
 #include "process_measure_filter_table.h"
 #include "process_table.h"
@@ -180,13 +178,11 @@ void TraceDataCache::InitDB()
     TableBase::TableDeclare<AppStartupTable>(*db_, this, "app_startup");
     TableBase::TableDeclare<SoStaticInitalizationTable>(*db_, this, "static_initalize");
 
-#if WITH_PERF
     TableBase::TableDeclare<PerfReportTable>(*db_, this, "perf_report");
     TableBase::TableDeclare<PerfSampleTable>(*db_, this, "perf_sample");
     TableBase::TableDeclare<PerfCallChainTable>(*db_, this, "perf_callchain");
     TableBase::TableDeclare<PerfThreadTable>(*db_, this, "perf_thread");
     TableBase::TableDeclare<PerfFilesTable>(*db_, this, "perf_files");
-#endif
 #else
     TableBase::TableDeclare<ProcessTable>(*db_, this, "_process");
     TableBase::TableDeclare<SchedSliceTable>(*db_, this, "_sched_slice");
@@ -260,13 +256,11 @@ void TraceDataCache::InitDB()
     TableBase::TableDeclare<SysEventMeasureTable>(*db_, this, "_hisys_event_measure");
     TableBase::TableDeclare<DeviceStateTable>(*db_, this, "_device_state");
     TableBase::TableDeclare<TraceConfigTable>(*db_, this, "_trace_config");
-#if WITH_PERF
     TableBase::TableDeclare<PerfReportTable>(*db_, this, "_perf_report");
     TableBase::TableDeclare<PerfSampleTable>(*db_, this, "_perf_sample");
     TableBase::TableDeclare<PerfCallChainTable>(*db_, this, "_perf_callchain");
     TableBase::TableDeclare<PerfThreadTable>(*db_, this, "_perf_thread");
     TableBase::TableDeclare<PerfFilesTable>(*db_, this, "_perf_files");
-#endif
 #endif
     dbInited = true;
 }
