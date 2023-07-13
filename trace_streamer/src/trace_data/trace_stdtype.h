@@ -139,7 +139,7 @@ public:
         states_.clear();
         cpus_.clear();
     }
-    const uint32_t Size() const
+    uint32_t Size() const
     {
         return itids_.size();
     }
@@ -869,8 +869,6 @@ private:
     std::deque<uint64_t> symbolOffsets_ = {};
     std::deque<std::string> vaddrs_ = {};
     std::map<uint32_t, uint64_t> symbolIdToSymbolName_ = {};
-    DataIndex libcFilePathIndex_ = INVALID_UINT64;
-    DataIndex muslFilePathIndex_ = INVALID_UINT64;
 };
 
 class NativeHookStatistic : public CacheBase {
@@ -1550,7 +1548,6 @@ private:
     std::deque<uint8_t> flags_ = {};
     std::deque<DataIndex> appNames_ = {};
     std::deque<DataIndex> keyNames_ = {};
-    uint32_t rowCount_ = 0;
 };
 class SysEventMeasureData : public CacheBase {
 public:
@@ -1822,7 +1819,7 @@ public:
         names_.emplace_back(name);
         return ts_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return ts_.size();
     }
@@ -1853,7 +1850,7 @@ public:
         clockIds_.emplace_back(clockId);
         return dataSourceNames_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return dataSourceNames_.size();
     }
@@ -2303,7 +2300,7 @@ public:
     size_t AppendNew(uint32_t frameRow, uint64_t dur);
     const std::deque<uint32_t>& FrameRows() const;
     const std::deque<uint64_t>& Durs() const;
-    const size_t Size() const;
+    size_t Size() const;
 
 private:
     std::deque<uint32_t> frameRows_ = {};

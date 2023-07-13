@@ -2303,7 +2303,7 @@ const std::deque<uint64_t>& GPUSlice::Durs() const
 {
     return durs_;
 }
-const size_t GPUSlice::Size() const
+size_t GPUSlice::Size() const
 {
     return durs_.size();
 }

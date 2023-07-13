@@ -31,9 +31,7 @@
 #include "measure_filter.h"
 #include "parser/bytrace_parser/bytrace_parser.h"
 #include "parser/htrace_pbreader_parser/htrace_parser.h"
-#if WITH_PERF
 #include "perf_data_filter.h"
-#endif
 #include "process_filter.h"
 #include "slice_filter.h"
 #include "stat_filter.h"
@@ -275,7 +273,6 @@ int32_t TraceStreamerSelector::UpdateTraceRangeTime(uint8_t* data, int32_t len)
 {
     std::string traceRangeStr;
     memcpy(&traceRangeStr, data, len);
-    int32_t size = traceRangeStr.size();
     std::vector<string> vTraceRangeStr = SplitStringToVec(traceRangeStr, ";");
     uint64_t minTs = std::stoull(vTraceRangeStr.at(0));
     uint64_t maxTs = std::stoull(vTraceRangeStr.at(1));
