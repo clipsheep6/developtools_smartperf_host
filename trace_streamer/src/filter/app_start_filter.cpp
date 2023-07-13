@@ -52,7 +52,6 @@ bool APPStartupFilter::CaclRsDataByPid()
 {
     auto frameSliceData = traceDataCache_->GetFrameSliceData();
     auto sliceData = traceDataCache_->GetConstInternalSlicesData();
-    auto itor = mAPPStartupData_.begin();
     for (const auto& item : mAPPStartupData_) {
         if (item.second.empty()) {
             continue;
@@ -68,8 +67,8 @@ bool APPStartupFilter::CaclRsDataByPid()
                     auto endTime = startTime + frameSliceData->Durs()[m];
                     mAPPStartupData_[dataIndex].emplace(
                         FIRST_FRAME_APP_PHASE,
-                        std::move(std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
-                                                                   itorSecond->second->tid_, startTime, endTime)));
+                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
+                                                         startTime, endTime));
                     auto dstId = frameSliceData->Dsts()[m];
                     if (dstId == INVALID_UINT64) {
                         continue;
@@ -79,8 +78,8 @@ bool APPStartupFilter::CaclRsDataByPid()
                     endTime = startTime + frameSliceData->Durs()[dstId];
                     mAPPStartupData_[dataIndex].emplace(
                         FIRST_FRAME_RENDER_PHASE,
-                        std::move(std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
-                                                                   itorSecond->second->tid_, startTime, endTime)));
+                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
+                                                         startTime, endTime));
                     break;
                 }
             }
@@ -147,8 +146,8 @@ DataIndex APPStartupFilter::GetThreadNameAndUpdateAPPStartupData(uint32_t row,
     auto callId = sliceData.CallIds()[row];
     auto startTime = sliceData.TimeStampData()[row];
     mAPPStartupData_[dataIndex].insert(
-        std::make_pair(startIndex, std::move(std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32,
-                                                                              startTime, INVALID_UINT64))));
+        std::make_pair(startIndex, std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32, startTime,
+                                                                    INVALID_UINT64)));
     return dataIndex;
 }
 
@@ -175,8 +174,8 @@ void APPStartupFilter::ParserAppStartup()
             }
             callId = sliceData.CallIds()[i];
             mAPPStartupData_[traceDataCache_->GetDataIndex(mainThreadName.c_str())].insert(std::make_pair(
-                PROCESS_CREATING, std::move(std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32,
-                                                                             startTime, INVALID_UINT64))));
+                PROCESS_CREATING,
+                std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32, startTime, INVALID_UINT64)));
         } else if (StartWith(nameString, APP_LAUNCH)) {
             GetThreadNameAndUpdateAPPStartupData(i, nameString, APPLICATION_LAUNCHING);
         } else if (StartWith(nameString, LAUNCH)) {
@@ -193,9 +192,9 @@ void APPStartupFilter::ParserAppStartup()
             auto nameindex = threadData[callId].nameIndex_;
             auto ipid = threadData[callId].internalPid_;
             auto tid = threadData[callId].tid_;
-            mAPPStartupData_[nameindex].insert(std::make_pair(
-                UI_ABILITY_ONFOREGROUND,
-                std::move(std::make_unique<APPStartupData>(callId, ipid, tid, startTime, INVALID_UINT64))));
+            mAPPStartupData_[nameindex].insert(
+                std::make_pair(UI_ABILITY_ONFOREGROUND,
+                               std::make_unique<APPStartupData>(callId, ipid, tid, startTime, INVALID_UINT64)));
         }
     }
     UpdatePidByNameIndex();

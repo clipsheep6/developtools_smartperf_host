@@ -18,8 +18,8 @@ namespace SysTuning {
 namespace TraceStreamer {
 OfflineSymbolizationFilter::OfflineSymbolizationFilter(TraceDataCache* dataCache, const TraceStreamerFilters* filter)
     : FilterBase(dataCache, filter),
-      symbolTablePtrAndStValueToSymAddr_(nullptr),
-      filePathIdAndStValueToSymAddr_(nullptr)
+      filePathIdAndStValueToSymAddr_(nullptr),
+      symbolTablePtrAndStValueToSymAddr_(nullptr)
 {
 }
 std::shared_ptr<std::vector<std::shared_ptr<FrameInfo>>> OfflineSymbolizationFilter::OfflineSymbolization(

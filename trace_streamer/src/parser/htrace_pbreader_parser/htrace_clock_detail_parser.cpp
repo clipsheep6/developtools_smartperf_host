@@ -19,6 +19,8 @@
 #include "process_filter.h"
 #include "stat_filter.h"
 #include "symbols_filter.h"
+#include <cinttypes>
+
 namespace SysTuning {
 namespace TraceStreamer {
 HtraceClockDetailParser::HtraceClockDetailParser(TraceDataCache* dataCache, const TraceStreamerFilters* filters)
@@ -72,32 +74,32 @@ void HtraceClockDetailParser::Parse(const ProfilerTraceFileHeader* profilerTrace
     std::vector<SnapShot> snapShot;
     TS_LOGI("got clock snapshot");
 
-    TS_LOGI("clockid: TS_CLOCK_BOOTTIME, ts:%llu", profilerTraceFileHeader->data.boottime);
+    TS_LOGI("clockid: TS_CLOCK_BOOTTIME, ts:%" PRIu64"", profilerTraceFileHeader->data.boottime);
     if (profilerTraceFileHeader->data.boottime) {
         snapShot.push_back(SnapShot{TS_CLOCK_BOOTTIME, profilerTraceFileHeader->data.boottime});
     }
 
-    TS_LOGI("clockid: TS_CLOCK_REALTIME, ts:%llu", profilerTraceFileHeader->data.realtime);
+    TS_LOGI("clockid: TS_CLOCK_REALTIME, ts:%" PRIu64"", profilerTraceFileHeader->data.realtime);
     if (profilerTraceFileHeader->data.realtime) {
         snapShot.push_back(SnapShot{TS_CLOCK_REALTIME, profilerTraceFileHeader->data.realtime});
     }
 
-    TS_LOGI("clockid: TS_CLOCK_REALTIME_COARSE, ts:%llu", profilerTraceFileHeader->data.realtimeCoarse);
+    TS_LOGI("clockid: TS_CLOCK_REALTIME_COARSE, ts:%" PRIu64"", profilerTraceFileHeader->data.realtimeCoarse);
     if (profilerTraceFileHeader->data.realtimeCoarse) {
         snapShot.push_back(SnapShot{TS_CLOCK_REALTIME_COARSE, profilerTraceFileHeader->data.realtimeCoarse});
     }
 
-    TS_LOGI("clockid: TS_MONOTONIC, ts:%llu", profilerTraceFileHeader->data.monotonic);
+    TS_LOGI("clockid: TS_MONOTONIC, ts:%" PRIu64"", profilerTraceFileHeader->data.monotonic);
     if (profilerTraceFileHeader->data.monotonic) {
         snapShot.push_back(SnapShot{TS_MONOTONIC, profilerTraceFileHeader->data.monotonic});
     }
 
-    TS_LOGI("clockid: TS_MONOTONIC_COARSE, ts:%llu", profilerTraceFileHeader->data.monotonicCoarse);
+    TS_LOGI("clockid: TS_MONOTONIC_COARSE, ts:%" PRIu64"", profilerTraceFileHeader->data.monotonicCoarse);
     if (profilerTraceFileHeader->data.monotonicCoarse) {
         snapShot.push_back(SnapShot{TS_MONOTONIC_COARSE, profilerTraceFileHeader->data.monotonicCoarse});
     }
 
-    TS_LOGI("clockid: TS_MONOTONIC_RAW, ts:%llu", profilerTraceFileHeader->data.monotonicRaw);
+    TS_LOGI("clockid: TS_MONOTONIC_RAW, ts:%" PRIu64"", profilerTraceFileHeader->data.monotonicRaw);
     if (profilerTraceFileHeader->data.monotonicRaw) {
         snapShot.push_back(SnapShot{TS_MONOTONIC_RAW, profilerTraceFileHeader->data.monotonicRaw});
     }
