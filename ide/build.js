@@ -66,31 +66,35 @@ function cpFile(from, to) {
 }
 
 function checkEnvironment() {
-  let goVersion = childProcess.execSync('go version', {
-    encoding: 'utf-8',
-  });
-  log.info('go is', goVersion);
-  let nodeVersion = childProcess.execSync('node -v', {
-    encoding: 'utf-8',
-  });
-  log.info('node version is', nodeVersion);
-  let tscVersion = childProcess.execSync('tsc -v', {
-    encoding: 'utf-8',
-  });
-  log.info('tsc version is', tscVersion);
-  if (goVersion == '' || nodeVersion == '' || tscVersion == '') {
-    return false;
+  if (process.argv.slice(2)[0]) {
+    return true;
+  } else {
+    let goVersion = childProcess.execSync('go version', {
+      encoding: 'utf-8',
+    });
+    log.info('go is', goVersion);
+    let nodeVersion = childProcess.execSync('node -v', {
+      encoding: 'utf-8',
+    });
+    log.info('node version is', nodeVersion);
+    let tscVersion = childProcess.execSync('tsc -v', {
+      encoding: 'utf-8',
+    });
+    log.info('tsc version is', tscVersion);
+    if (goVersion == '' || nodeVersion == '' || tscVersion == '') {
+      return false;
+    }
+    let traceStreamer = path.normalize(path.join(__dirname, '/bin'));
+    if (!checkDirExist(traceStreamer + '/trace_streamer_builtin.js')) {
+      log.error(traceStreamer + '/trace_streamer_builtin.js' + ' Must exist');
+      return false;
+    }
+    if (!checkDirExist(traceStreamer + '/trace_streamer_builtin.wasm')) {
+      log.error(traceStreamer + '/trace_streamer_builtin.wasm' + ' Must exist');
+      return false;
+    }
+    return true;
   }
-  let traceStreamer = path.normalize(path.join(__dirname, '/bin'));
-  if (!checkDirExist(traceStreamer + '/trace_streamer_builtin.js')) {
-    log.error(traceStreamer + '/trace_streamer_builtin.js' + ' Must exist');
-    return false;
-  }
-  if (!checkDirExist(traceStreamer + '/trace_streamer_builtin.wasm')) {
-    log.error(traceStreamer + '/trace_streamer_builtin.wasm' + ' Must exist');
-    return false;
-  }
-  return true;
 }
 
 function initLog() {
@@ -107,8 +111,11 @@ function initLog() {
 
 function main() {
   log = initLog();
-  if (!checkEnvironment()) {
-    return;
+  let argv = process.argv.slice(2)[0];
+  if (!argv){
+    if (!checkEnvironment()) {
+      return;
+    }
   }
   // clean outDir
   let outPath = path.normalize(path.join(__dirname, '/', outDir));
@@ -150,27 +157,29 @@ function main() {
     let thirdDistFile = path.join(__dirname, outDir, value.distFilePath);
     cpFile(thirdFile, thirdDistFile);
   });
-  let traceStreamer = path.normalize(path.join(__dirname, '/bin'));
-  if (checkDirExist(traceStreamer)) {
-    let dest = path.normalize(path.join(__dirname, outDir, '/bin'));
-    copyDirectory(traceStreamer, dest);
-    // to mv traceStream Wasm and js
-    cpFile(
-      traceStreamer + '/trace_streamer_builtin.js',
-      rootPath + outDir + '/trace/database/trace_streamer_builtin.js'
-    );
-    cpFile(
-      traceStreamer + '/trace_streamer_builtin.wasm',
-      rootPath + outDir + '/trace/database/trace_streamer_builtin.wasm'
-    );
-    if (sdkWams.length > 0) {
-      sdkWams.forEach((fileName) => {
-        cpFile(traceStreamer + '/' + fileName, rootPath + outDir + '/trace/database/' + fileName);
-      });
+  if (!argv) {
+    let traceStreamer = path.normalize(path.join(__dirname, '/bin'));
+    if (checkDirExist(traceStreamer)) {
+      let dest = path.normalize(path.join(__dirname, outDir, '/bin'));
+      copyDirectory(traceStreamer, dest);
+      // to mv traceStream Wasm and js
+      cpFile(
+        traceStreamer + '/trace_streamer_builtin.js',
+        rootPath + outDir + '/trace/database/trace_streamer_builtin.js'
+      );
+      cpFile(
+        traceStreamer + '/trace_streamer_builtin.wasm',
+        rootPath + outDir + '/trace/database/trace_streamer_builtin.wasm'
+      );
+      if (sdkWams.length > 0) {
+        sdkWams.forEach((fileName) => {
+          cpFile(traceStreamer + '/' + fileName, rootPath + outDir + '/trace/database/' + fileName);
+        });
+      }
+    } else {
+      log.error('traceStreamer dir is not Exits');
+      return;
     }
-  } else {
-    log.error('traceStreamer dir is not Exits');
-    return;
   }
   // compile server
   if (compileServer) {
