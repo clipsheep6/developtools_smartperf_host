@@ -18,7 +18,6 @@ echo "1=$1"
 echo "2=$2"
 SOURCE="${BASH_SOURCE[0]}"
 cd $(dirname ${SOURCE})
-npm install
 npm run compile ohos
 mv $1/dist $2/dist
 mkdir -p $2/dist/bin
