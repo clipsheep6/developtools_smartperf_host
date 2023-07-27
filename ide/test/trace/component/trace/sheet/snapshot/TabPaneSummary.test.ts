@@ -13,17 +13,22 @@
  * limitations under the License.
  */
 //@ts-ignore
-import { TabPaneSummary } from '../../../../../../dist/trace/component/trace/sheet/snapshot/TabPaneSummary.js';
+import { TabPaneSummary } from '../../../../../../dist/trace/component/trace/sheet/ark-ts/TabPaneSummary.js';
 //@ts-ignore
 import { HeapDataInterface } from '../../../../../../dist/js-heap/HeapDataInterface.js';
 //@ts-ignore
-import { SpJsMemoryChart } from '../../../../../../dist/trace/component/chart/SpJsMemoryChart.js';
+import { SpArkTsChart } from '../../../../../../dist/trace/component/chart/SpArkTsChart.js';
 
 jest.mock('../../../../../../dist/js-heap/model/DatabaseStruct.js', () => {});
 
 jest.mock('../../../../../../dist/base-ui/select/LitSelect.js', () => {
     return {};
 });
+
+jest.mock('../../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+    return {};
+});
+
 // @ts-ignore
 window.ResizeObserver =
     window.ResizeObserver ||
@@ -261,8 +266,8 @@ describe('TabPaneSummary Test', () => {
         tabPaneSummary.leftTheadTable.hasAttribute = jest.fn(() => {});
         tabPaneSummary.leftTheadTable.removeAttribute = jest.fn(() => true);
 
-        SpJsMemoryChart.file = {
-            file_name: 'Timeline',
+        tabPaneSummary.file = {
+            name: 'Timeline',
             id: '',
         };
         HeapDataInterface.getInstance().getAllocationStackData = jest.fn(() => {
@@ -337,7 +342,7 @@ describe('TabPaneSummary Test', () => {
             return retainsData;
         });
 
-        expect(tabPaneSummary.initSummaryData(1, 0, 0)).toBeUndefined();
+        expect(tabPaneSummary.initSummaryData({  name: 'Timeline', id: ''}, 0, 0)).toBeUndefined();
     });
     it('TabPaneSummaryTest12', () => {
         document.body.innerHTML = `<tabpane-summary id="sss"> </tabpane-summary>`;

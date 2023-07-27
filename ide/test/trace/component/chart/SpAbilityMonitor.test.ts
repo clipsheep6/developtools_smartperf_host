@@ -17,14 +17,13 @@
 import { SpAbilityMonitorChart } from '../../../../dist/trace/component/chart/SpAbilityMonitorChart.js';
 import '../../../../dist/trace/component/chart/SpAbilityMonitorChart.js';
 // @ts-ignore
-import { SpSystemTrace } from '../../../../dist/trace/component/SpSystemTrace.js';
-import {
-  queryCPuAbilityMaxData,
-  queryMemoryMaxData,
-  queryNetWorkMaxData,
-} from '../../../../src/trace/database/SqlLite.js';
+import {SpChartManager} from "../../../../dist/trace/component/chart/SpChartManager.js";
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
+
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -97,8 +96,8 @@ describe('SpAbilityMonitorChart Test', () => {
       maxPacketOut: 1,
     },
   ]);
-  let spSystemTrace = new SpSystemTrace();
-  let trace = new SpAbilityMonitorChart(spSystemTrace);
+  let manager = new SpChartManager();
+  let trace = new SpAbilityMonitorChart(manager);
   it('SpAbilityMonitorChart01', function () {
     trace.init();
     expect(trace).toBeDefined();

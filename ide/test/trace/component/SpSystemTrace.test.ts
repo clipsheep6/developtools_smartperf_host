@@ -19,6 +19,23 @@ import { SpSystemTrace } from '../../../dist/trace/component/SpSystemTrace.js';
 import { TraceRow } from '../../../dist/trace/component/trace/base/TraceRow';
 // @ts-ignore
 import { procedurePool } from '../../../dist/trace/database/Procedure.js';
+// @ts-ignore
+import { LitTable } from '../../../dist/base-ui/table/lit-table.js';
+jest.mock('../../../dist/base-ui/table/lit-table.js', ()=>{
+  return {
+    recycleDataSource: ()=>{}
+  }
+})
+// @ts-ignore
+import { HeapLoader } from '../../../dist/js-heap/logic/HeapLoader.js';
+jest.mock('../../../dist/js-heap/logic/HeapLoader.js', ()=>{
+  return {}
+})
+// @ts-ignore
+import { NodeType } from '../../../dist/js-heap/model/DatabaseStruct.js';
+jest.mock('../../../dist/js-heap/model/DatabaseStruct.js', ()=>{
+  return {}
+})
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -34,6 +51,7 @@ window.ResizeObserver = window.ResizeObserver ||
   }));
 
 describe('SpSystemTrace Test', () => {
+  //document.body.innerHTML = `<sp-application></sp-application>`;
   let spSystemTrace = new SpSystemTrace();
   const offset = 1;
   const callback = true;
@@ -292,6 +310,7 @@ describe('SpSystemTrace Test', () => {
       isOffScreen: true,
     });
     procedurePool.clearCache = jest.fn(() => true);
+    procedurePool.clearMemory = jest.fn(() => true);
     expect(spSystemTrace.reset()).toBeUndefined();
   });
   it('SpSystemTraceTest23', function () {

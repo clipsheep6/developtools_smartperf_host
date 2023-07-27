@@ -446,46 +446,70 @@ describe('TabPaneCurrentSelection Test', () => {
                 width: 100%;
                 display: flex;
             }
-            .table-title h2{
+            .table-title > h2{
                 font-size: 16px;
                 font-weight: 400;
                 visibility: visible;
                 width: 50%;
                 padding: 0 10px;
             }
+            #rightTitle{
+                width: 50%;
+                display: flex;
+                justify-content: space-between;
+                padding: 0 10px;
+                font-size: 16px;
+                font-weight: 400;
+                visibility: visible;
+            }
+            #rightTitle > h2{
+                font-size: 16px;
+                font-weight: 400;
+            }           
+            #rightButton{
+                padding-top:12px;
+            }
             .scroll-area{
                 display: flex;
-                height: auto;
-                overflow-y: auto;
+                flex-direction: row;
+                flex: 1;
             }
             .table-left{
                 width: 50%;
+                height: auto;
                 padding: 0 10px;
             }
             .table-right{
                 width: 50%;
             }
         </style>
-        <div style="width: 100%;height: auto;position: relative">
-            <div class="table-title">
-                <h2 id="leftTitle"></h2>
-                <h2 id="rightTitle">Scheduling Latency</h2>
+        <div id="scroll_view" style="display: flex;flex-direction: column;width: 100%;height: 100%;overflow: auto">
+            <div style="width: 100%;height: auto;position: relative">
+                <div class="table-title">
+                    <h2 id="leftTitle"></h2>
+                    <div id="rightTitle" >
+                        <h2 id="rightText">Scheduling Latency</h2>
+                        <div class="right">
+                        <lit-button id="rightButton"  height="32px" width="164px" color="black" font_size="14px" border="1px solid black" 
+                        >GetWakeupList</lit-button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="scroll-area">
-                <div class="table-left">
-                    <lit-table id="selectionTbl" no-head hideDownload style="height: auto">
+                <lit-table id="selectionTbl" class="table-left" no-head hideDownload>
                         <lit-table-column title="name" data-index="name" key="name" align="flex-start"  width="180px">
                             <template><div>{{name}}</div></template>
                         </lit-table-column>
                         <lit-table-column title="value" data-index="value" key="value" align="flex-start" >
                             <template><div style="display: flex;">{{value}}</div></template>
                         </lit-table-column>
-                    </lit-table>
-                </div>
+                </lit-table>
                 <div class="table-right">
                     <canvas id="rightDraw" style="width: 100%;height: 100%;"></canvas>
                 </div>
             </div>
+        </div>
         </div>
         "
 `);

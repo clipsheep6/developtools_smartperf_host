@@ -20,6 +20,10 @@ jest.mock('../../../dist/trace/component/trace/base/TraceRow.js', () => {
 // @ts-ignore
 import { FpsStruct } from '../../../dist/trace/bean/FpsStruct.js';
 
+jest.mock('../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 describe('FpsStruct Test', () => {
   const canvas = document.createElement('canvas');
   canvas.width = 1;

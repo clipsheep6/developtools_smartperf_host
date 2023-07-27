@@ -42,6 +42,11 @@ describe('SpCpuChart Test', () => {
 
     let mockCpuSlice = sqlit.queryCpuSchedSlice;
     mockCpuSlice.mockResolvedValue([]);
+    let queryCpuData = sqlit.queryCpuDataCount;
+    queryCpuData.mockResolvedValue([{
+        count: 2,
+        cpu: 3
+    }]);
     let ss = new SpChartManager();
     let trace = new SpCpuChart(ss);
     it('SpMpsChart01', async function () {

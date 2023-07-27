@@ -71,7 +71,6 @@ trace_streamer_include = [
   "parser/hiperf_parser",
   "//developtools/hiperf/include",
   "${THIRD_PARTY}/sqlite/include",
-  "${THIRD_PARTY}/json-master/single_include/nlohmann",
   "${THIRD_PARTY}/json/single_include/nlohmann",
   "${THIRD_PARTY}/protobuf/src",
   "${THIRD_PARTY}/hiperf/include",
@@ -180,8 +179,7 @@ if (use_wasm) {
   }
 } else {
   if (!is_test && !is_fuzz) {
-    ohos_executable("trace_streamer_main") {
-      output_name = "trace_streamer"
+    ohos_executable("trace_streamer") {
       subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
       part_name = "${OHOS_PROFILER_PART_NAME}"
       sources = []

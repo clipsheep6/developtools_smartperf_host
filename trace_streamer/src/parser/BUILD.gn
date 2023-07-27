@@ -56,7 +56,6 @@ ohos_source_set("parser") {
     "${SRC}/filter",
     "${SRC}",
     ".",
-    "${THIRD_PARTY}/json-master/single_include/nlohmann",
     "${THIRD_PARTY}/json/single_include/nlohmann",
   ]
 

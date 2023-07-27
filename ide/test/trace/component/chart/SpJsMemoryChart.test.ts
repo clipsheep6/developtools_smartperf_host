@@ -25,12 +25,16 @@ window.ResizeObserver = window.ResizeObserver ||
     }));
 
 // @ts-ignore
-import { SpJsMemoryChart } from '../../../../dist/trace/component/chart/SpJsMemoryChart.js';
+import { SpArkTsChart } from '../../../../dist/trace/component/chart/SpArkTsChart.js';
 // @ts-ignore
 import { SpIrqChart } from '../../../../dist/trace/component/chart/SpIrqChart.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+    return {};
+});
+
 describe('SpIrqChart Test', () => {
-    let spJsMemoryChart = new SpJsMemoryChart();
+    let spArkTsChart = new SpArkTsChart();
     let irqList = sqlite.queryIrqList;
     let irqListData = [
         {
@@ -39,7 +43,7 @@ describe('SpIrqChart Test', () => {
         },
     ];
     irqList.mockResolvedValue(irqListData);
-    it('SpJsMemoryChart01', function () {
-        expect(spJsMemoryChart).not.toBe({"initChart": [], "loadJsDatabase": {}, "trace": undefined});
+    it('SpArkTsChart01', function () {
+        expect(spArkTsChart).not.toBe({"initChart": [], "loadJsDatabase": {}, "trace": undefined});
     });
 })

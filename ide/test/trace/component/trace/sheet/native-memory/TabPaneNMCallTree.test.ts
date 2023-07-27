@@ -187,7 +187,7 @@ describe('TabPaneNMCallTree Test', () => {
     tabPaneNMCallTree.filter.showThird = jest.fn(() => {
       false;
     });
-    expect(tabPaneNMCallTree.showButtomMenu()).toBeUndefined();
+    expect(tabPaneNMCallTree.showBottomMenu()).toBeUndefined();
   });
   it('TabPaneNMCallInfoTest08', function () {
     let isShow = 1;
@@ -198,7 +198,7 @@ describe('TabPaneNMCallTree Test', () => {
     tabPaneNMCallTree.filter.showThird = jest.fn(() => {
       false;
     });
-    expect(tabPaneNMCallTree.showButtomMenu(isShow)).toBeUndefined();
+    expect(tabPaneNMCallTree.showBottomMenu(isShow)).toBeUndefined();
   });
 
   it('TabPaneNMCallInfoTest09', function () {

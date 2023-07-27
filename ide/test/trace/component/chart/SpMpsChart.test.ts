@@ -18,6 +18,10 @@ import { SmapsChart } from '../../../../dist/trace/component/chart/SmapsChart.js
 // @ts-ignore
 import { SpChartManager } from '../../../../dist/trace/component/chart/SpChartManager.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
 

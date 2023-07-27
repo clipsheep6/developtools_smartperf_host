@@ -25,6 +25,10 @@ import { Rect } from '../../../../dist/trace/database/ui-worker/ProcedureWorkerC
 // @ts-ignore
 import { EventCenter } from '../../../../dist/trace/component/trace/base/EventCenter.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 declare global {
   interface Window {
     SmartEvent: {
@@ -83,6 +87,7 @@ describe('TimerShaftElement Test', () => {
   it('TimerShaftElementTest03', function () {
     timerShaftElement.timeRuler = jest.fn(() => false);
     timerShaftElement.rangeRuler = jest.fn(() => false);
+    timerShaftElement.rangeRuler.getScale = jest.fn(() => true);
     timerShaftElement.timeRuler.frame = jest.fn(() => {
       return document.createElement('canvas') as HTMLCanvasElement;
     });
@@ -182,7 +187,7 @@ describe('TimerShaftElement Test', () => {
                     <span class="time-total">10</span>
                     <span class="time-offset">0</span>
                     <div class="time-collect">
-                        <lit-icon class="time-collect-arrow" name="caret-down" size="23"></lit-icon>
+                        <lit-icon class="time-collect-arrow" name="caret-down" size="17"></lit-icon>
                     </div>
                 </div>
             </div>
@@ -260,7 +265,7 @@ describe('TimerShaftElement Test', () => {
   it('TimerShaftElementTest27', function () {
     timerShaftElement._sportRuler = jest.fn(() => undefined);
     timerShaftElement._sportRuler.setSlicesMark = jest.fn(() => true);
-    expect(timerShaftElement.setSlicesMark()).toBeUndefined();
+    expect(timerShaftElement.setSlicesMark()).toBe(true);
   });
 
   it('TimerShaftElementTest28', function () {

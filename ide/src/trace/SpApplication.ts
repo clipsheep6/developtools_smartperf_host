@@ -49,6 +49,8 @@ import './component/trace/base/TraceRowConfig.js';
 import { TraceRowConfig } from './component/trace/base/TraceRowConfig.js';
 import { ColorUtils } from './component/trace/base/ColorUtils.js';
 import { SpStatisticsHttpUtil } from '../statistics/util/SpStatisticsHttpUtil.js';
+import { SpFlags } from './component/SpFlags.js';
+import './component/SpFlags.js';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -384,6 +386,8 @@ export class SpApplication extends BaseElement {
                 </sp-info-and-stats>
                 <sp-help style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 103" id="sp-help">
                 </sp-help>
+                <sp-flags style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 104" id="sp-flags">
+                </sp-flags>
                 <trace-row-config class="chart-filter" style="overflow-y: clip;"></trace-row-config>
             </div>
         </div>
@@ -402,6 +406,7 @@ export class SpApplication extends BaseElement {
     let spInfoAndStats = this.shadowRoot!.querySelector<SpInfoAndStats>('#sp-info-and-stats') as SpInfoAndStats; // new SpInfoAndStats();
     let spSystemTrace = this.shadowRoot!.querySelector<SpSystemTrace>('#sp-system-trace');
     this.spHelp = this.shadowRoot!.querySelector<SpHelp>('#sp-help');
+    let spFlags = this.shadowRoot!.querySelector<SpFlags>('#sp-flags') as SpFlags;
     let spRecordTrace = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-trace');
     let spRecordTemplate = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-template');
     let spSchedulingAnalysis = this.shadowRoot!.querySelector<SpSchedulingAnalysis>(
@@ -415,6 +420,8 @@ export class SpApplication extends BaseElement {
     let litRecordSearch = this.shadowRoot?.querySelector('#lit-record-search') as LitSearch;
     let search = this.shadowRoot?.querySelector('.search-container') as HTMLElement;
     let sidebarButton: HTMLDivElement | undefined | null = this.shadowRoot?.querySelector('.sidebar-button');
+    let chartFilter = this.shadowRoot?.querySelector('.chart-filter') as TraceRowConfig;
+    chartFilter!.setAttribute('mode', '');
     let childNodes = [
       spSystemTrace,
       spRecordTrace,
@@ -425,6 +432,7 @@ export class SpApplication extends BaseElement {
       spInfoAndStats,
       this.spHelp,
       spRecordTemplate,
+      spFlags,
     ];
     let sideColor = mainMenu.shadowRoot?.querySelector('.color') as HTMLDivElement;
     //修改侧边导航栏配色
@@ -479,6 +487,9 @@ export class SpApplication extends BaseElement {
     });
     window.subscribe(window.SmartEvent.UI.Loading, (loading) => {
       litSearch.setPercent(loading ? 'Import So File' : '', loading ? -1 : 101);
+      window.publish(window.SmartEvent.UI.MouseEventEnable, {
+        mouseEnable: !loading,
+      });
       progressEL.loading = loading;
     });
     litSearch.addEventListener('focus', () => {
@@ -810,6 +821,7 @@ export class SpApplication extends BaseElement {
                     children: getTraceOptionMenus(showFileName, fileSize, fileName, true, dbName),
                   });
                   litSearch.setPercent('', 101);
+                  chartFilter!.setAttribute('mode', '');
                   progressEL.loading = false;
                   that.freshMenuDisable(false);
                 }
@@ -859,6 +871,18 @@ export class SpApplication extends BaseElement {
                       showContent(that.spHelp!);
                     },
                   },
+                  {
+                    title: 'Flags',
+                    icon: 'menu',
+                    clickHandler: function (item: MenuItem) {
+                      SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                        event: 'flags',
+                        action: 'flags',
+                      });
+                      that.search = false;
+                      showContent(spFlags);
+                    },
+                  },
                 ],
               });
               if (res.status) {
@@ -871,6 +895,7 @@ export class SpApplication extends BaseElement {
                 });
                 showContent(spSystemTrace!);
                 litSearch.setPercent('', 101);
+                chartFilter!.setAttribute('mode', '');
                 progressEL.loading = false;
                 that.freshMenuDisable(false);
               } else {
@@ -996,6 +1021,7 @@ export class SpApplication extends BaseElement {
                     children: getTraceOptionMenus(showFileName, fileSize, fileName, false),
                   });
                   litSearch.setPercent('', 101);
+                  chartFilter!.setAttribute('mode', '');
                   progressEL.loading = false;
                   that.freshMenuDisable(false);
                 }
@@ -1071,6 +1097,18 @@ export class SpApplication extends BaseElement {
               that.search = false;
               that.spHelp!.dark = that.dark;
               showContent(that.spHelp!);
+            },
+          },
+          {
+            title: 'Flags',
+            icon: 'menu',
+            clickHandler: function (item: MenuItem) {
+              SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                event: 'flags',
+                action: 'flags',
+              });
+              that.search = false;
+              showContent(spFlags);
             },
           },
         ],
@@ -1225,8 +1263,7 @@ export class SpApplication extends BaseElement {
   private getUrlParams(url: string) {
     const _url = url || window.location.href;
     const _urlParams = _url.match(/([?&])(.+?=[^&]+)/gim);
-    return _urlParams
-      ? _urlParams.reduce((a: any, b) => {
+    return _urlParams ? _urlParams.reduce((a: any, b) => {
           const value = b.slice(1).split('=');
           a[`${value[0]}`] = decodeURIComponent(value[1]);
           return a;
@@ -1377,8 +1414,6 @@ export class SpApplication extends BaseElement {
       litIcon.style.visibility = 'hidden';
     } else {
       litIcon.style.visibility = 'visible';
-      let chartFilter = this.shadowRoot?.querySelector('.chart-filter') as TraceRowConfig;
-      chartFilter!.setAttribute('mode', '');
     }
   }
 }

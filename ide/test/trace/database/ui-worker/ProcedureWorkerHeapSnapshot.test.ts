@@ -19,6 +19,10 @@ import { Rect } from '../../../../dist/trace/component/trace/timer-shaft/Rect.js
 // @ts-ignore
 import { HeapSnapshot, HeapSnapshotRender, HeapSnapshotStruct} from '../../../../dist/trace/database/ui-worker/ProcedureWorkerHeapSnapshot.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+    return {};
+});
+
 describe('ProcedureWorkerHeapTimeline Test', () => {
     it('HeapSnapshotTest', () => {
         const canvas = document.createElement('canvas');
@@ -76,6 +80,7 @@ describe('ProcedureWorkerHeapTimeline Test', () => {
             maxValue: undefined,
             startTime: 1,
             filterID: 2,
+            size: 102
         };
         const canvas = document.createElement('canvas');
         canvas.width = 1;

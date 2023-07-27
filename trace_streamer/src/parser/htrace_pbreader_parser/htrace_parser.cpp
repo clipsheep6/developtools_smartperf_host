@@ -60,7 +60,6 @@ void HtraceParser::GetSymbols(std::unique_ptr<ElfFile> elfPtr,
                               std::shared_ptr<ElfSymbolTable> symbols,
                               const std::string& filename)
 {
-
     symbols->filePathIndex = traceDataCache_->dataDict_.GetStringIndex(filename.c_str());
     symbols->textVaddr = (std::numeric_limits<uint64_t>::max)();
     for (auto& item : elfPtr->phdrs_) {
@@ -636,7 +635,7 @@ bool HtraceParser::ParseDataRecursively(std::deque<uint8_t>::iterator& packagesB
         packagesBegin += nextLength_;
         currentLength -= nextLength_;
         if (nextLength_ > htraceCurentLength_) {
-            TS_LOGE("fatal error, data length not match nextLength_:%u, htraceCurentLength_:%" PRIu64"", nextLength_,
+            TS_LOGE("fatal error, data length not match nextLength_:%u, htraceCurentLength_:%" PRIu64 "", nextLength_,
                     htraceCurentLength_);
         }
         htraceCurentLength_ -= nextLength_;
@@ -694,9 +693,9 @@ bool HtraceParser::InitProfilerTraceFileHeader()
         TS_LOGE("Profiler Trace data is truncated!!!");
         return false;
     }
-    TS_LOGI("magic = %llx, length = %" PRIu64", dataType = %x, boottime = %" PRIu64"", profilerTraceFileHeader_.data.magic,
-            profilerTraceFileHeader_.data.length, profilerTraceFileHeader_.data.dataType,
-            profilerTraceFileHeader_.data.boottime);
+    TS_LOGI("magic = %llx, length = %" PRIu64 ", dataType = %x, boottime = %" PRIu64 "",
+            profilerTraceFileHeader_.data.magic, profilerTraceFileHeader_.data.length,
+            profilerTraceFileHeader_.data.dataType, profilerTraceFileHeader_.data.boottime);
 #if IS_WASM
     const int32_t DATA_TYPE_CLOCK = 100;
     TraceStreamer_Plugin_Out_SendData(reinterpret_cast<char*>(&profilerTraceFileHeader_),

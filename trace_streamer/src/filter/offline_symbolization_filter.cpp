@@ -52,7 +52,7 @@ void OfflineSymbolizationFilter::GetSymbolStartMaybeUpdateFrameInfo(T* elfSym,
     }
 }
 
-bool OfflineSymbolizationFilter::FillFrameInfo(std::shared_ptr<FrameInfo>& frameInfo,
+bool OfflineSymbolizationFilter::FillFrameInfo(const std::shared_ptr<FrameInfo>& frameInfo,
                                                uint64_t ip,
                                                uint64_t& vmStart,
                                                uint64_t& vmOffset)

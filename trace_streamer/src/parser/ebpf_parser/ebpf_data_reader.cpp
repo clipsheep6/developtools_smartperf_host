@@ -61,7 +61,7 @@ bool EbpfDataReader::InitEbpfHeader()
         TS_LOGE("Get ebpf file header failed! headSize = %u", ebpfDataHeader_->header.headSize);
         return false;
     }
-    TS_LOGI("EBPF data header : magic = %" PRIu64", headSize = %u, clock = %u, cmdline = %s",
+    TS_LOGI("EBPF data header : magic = %" PRIu64 ", headSize = %u, clock = %u, cmdline = %s",
             ebpfDataHeader_->header.magic, ebpfDataHeader_->header.headSize, ebpfDataHeader_->header.clock,
             ebpfDataHeader_->cmdline);
     startAddr_ += EbpfDataHeader::EBPF_DATA_HEADER_SIZE;
@@ -322,7 +322,7 @@ bool EbpfDataReader::ReadItemEventStr(const uint8_t* buffer, uint32_t size)
         streamFilters_->processFilter_->GetOrCreateThreadWithPid(strFixedHeaderAddr->tid, strFixedHeaderAddr->pid);
     auto strAddr = const_cast<char*>(reinterpret_cast<const char*>(strFixedHeaderAddr + 1));
     if ((strFixedHeaderAddr->strLen > size - sizeof(StrEventFixedHeader)) || !strFixedHeaderAddr->strLen) {
-        TS_LOGE("invalid str event, strEventFixedHeader = %u, strlen = %d, size = %d", sizeof(StrEventFixedHeader),
+        TS_LOGE("invalid str event, strEventFixedHeader = %lu, strlen = %d, size = %d", sizeof(StrEventFixedHeader),
                 strFixedHeaderAddr->strLen, size);
         return true;
     }

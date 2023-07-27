@@ -16,17 +16,13 @@
 // @ts-ignore
 import { SpProcessChart } from '../../../../dist/trace/component/chart/SpProcessChart.js';
 // @ts-ignore
-import { SpSystemTrace } from '../../../../dist/trace/component/SpSystemTrace.js';
-import {
-  getMaxDepthByTid,
-  queryAllActualData,
-  queryAllExpectedData,
-  queryAllJankProcess,
-} from '../../../../src/trace/database/SqlLite.js';
-// @ts-ignore
 import { SpChartManager } from '../../../../dist/trace/component/chart/SpChartManager.js';
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
+
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -42,6 +38,8 @@ window.ResizeObserver =
   }));
 
 describe('SpProcessChart Test', () => {
+  let manager = new SpChartManager();
+  let spProcessChart = new SpProcessChart(manager);
   let MockqueryProcessAsyncFunc = sqlit.queryProcessAsyncFunc;
 
   MockqueryProcessAsyncFunc.mockResolvedValue([
@@ -200,8 +198,16 @@ describe('SpProcessChart Test', () => {
     },
   ]);
 
-  let spSystemTrace = new SpSystemTrace();
-  let spProcessChart = new SpProcessChart(spSystemTrace);
+  let queryAllTaskPoolPid = sqlit.queryAllTaskPoolPid;
+  queryAllTaskPoolPid.mockResolvedValue([
+    {
+      pid: 1,
+    },
+    {
+      id: 2,
+    },
+  ]);
+
   it('SpProcessChart01', function () {
     spProcessChart.initAsyncFuncData();
     spProcessChart.init();

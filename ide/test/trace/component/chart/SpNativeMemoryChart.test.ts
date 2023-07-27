@@ -17,7 +17,8 @@
 import { SpSystemTrace } from '../../../../dist/trace/component/SpSystemTrace.js';
 // @ts-ignore
 import { SpNativeMemoryChart } from '../../../../dist/trace/component/chart/SpNativeMemoryChart.js';
-
+// @ts-ignore
+import {SpChartManager} from "../../../../dist/trace/component/chart/SpChartManager.js";
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
 
@@ -34,7 +35,32 @@ window.ResizeObserver =
     unobserve: jest.fn(),
   }));
 describe('SpNativeMemoryChart Test', () => {
-  let spNativeMemoryChart = new SpNativeMemoryChart(new SpSystemTrace());
+  let chartManager = new SpChartManager();
+  let spNativeMemoryChart = new SpNativeMemoryChart(chartManager);
+
+  let queryNativeHookStatisticsCount = sqlit.queryNativeHookStatisticsCount;
+  queryNativeHookStatisticsCount.mockResolvedValue([
+    {
+      num: 2
+    }
+  ]);
+
+  let queryNativeMemoryRealTime = sqlit.queryNativeMemoryRealTime;
+  queryNativeMemoryRealTime.mockResolvedValue([
+    {
+      "ts": 1502013097360370200,
+      "clock_name": "realtime"
+    }
+  ]);
+
+  let queryBootTime = sqlit.queryBootTime;
+  queryBootTime.mockResolvedValue([
+    {
+      "ts": -557295431,
+      "clock_name": "boottime"
+    }
+  ]);
+
 
   let nativeHookProcess = sqlit.queryNativeHookProcess;
   nativeHookProcess.mockResolvedValue([

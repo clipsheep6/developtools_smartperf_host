@@ -16,7 +16,6 @@
 //@ts-ignore
 import {
   HeapStruct,
-  HeapTreeDataBean,
   NativeEvent,
   NativeHookCallInfo,
   NativeHookStatistics,
@@ -25,6 +24,11 @@ import {
   StatisticsSelection,
   //@ts-ignore
 } from '../../../../dist/trace/database/logic-worker/ProcedureLogicWorkerNativeNemory.js';
+
+//@ts-ignore
+import {HeapTreeDataBean,
+    //@ts-ignore
+} from '../../../../dist/trace/database/logic-worker/ProcedureLogicWorkerCommon.js';
 
 describe('ProcedureLogicWorkerNativeNemory Test', () => {
   it('ProcedureLogicWorkerNativeNemoryTest01', function () {
@@ -204,6 +208,7 @@ describe('ProcedureLogicWorkerNativeNemory Test', () => {
 
   it('procedureLogicWorkerFileSystemTest18', function () {
     let procedureLogicWorkerNativeMemory = new ProcedureLogicWorkerNativeMemory();
+    window.postMessage = jest.fn(() => true);
     let data = {
       id: 1,
       params: [
@@ -291,12 +296,7 @@ describe('ProcedureLogicWorkerNativeNemory Test', () => {
         window.postMessage = jest.fn(() => true);
         expect(procedureLogicWorkerNativeMemory.queryData()).toBeUndefined();
     });
-    it('procedureLogicWorkerFileSystemTest24', function () {
-        let procedureLogicWorkerNativeMemory =
-            new ProcedureLogicWorkerNativeMemory();
-        window.postMessage = jest.fn(() => true);
-        expect(procedureLogicWorkerNativeMemory.initDataDict()).toBeUndefined();
-    });
+
     it('procedureLogicWorkerFileSystemTest25', function () {
         let procedureLogicWorkerNativeMemory =
             new ProcedureLogicWorkerNativeMemory();
@@ -452,11 +452,7 @@ describe('ProcedureLogicWorkerNativeNemory Test', () => {
         window.postMessage = jest.fn(() => true);
         expect(procedureLogicWorkerNativeMemory.queryCallchainsSamples('',1,1,[''])).toBeUndefined();
     });
-    it('procedureLogicWorkerFileSystemTest36', function () {
-        let procedureLogicWorkerNativeMemory = new ProcedureLogicWorkerNativeMemory();
-        window.postMessage = jest.fn(() => true);
-        expect(procedureLogicWorkerNativeMemory.getCallChainData()).toBeUndefined();
-    });
+
     it('procedureLogicWorkerFileSystemTest37', function () {
         let procedureLogicWorkerNativeMemory = new ProcedureLogicWorkerNativeMemory();
         window.postMessage = jest.fn(() => true);
@@ -504,6 +500,11 @@ describe('ProcedureLogicWorkerNativeNemory Test', () => {
             symbolName:'',
             type:0,
             }
+        procedureLogicWorkerNativeMemory.dataCache.dataDict = new Map();
+        procedureLogicWorkerNativeMemory.dataCache.dataDict.set(0, '');
+        procedureLogicWorkerNativeMemory.dataCache.dataDict.set(1, 'H:RSMainThread::DoComposition');
+        procedureLogicWorkerNativeMemory.dataCache.dataDict.set(2, 'H:RSUniRender::Process:[EntryView]');
+        procedureLogicWorkerNativeMemory.dataCache.dataDict.set(3, 'iowait');
         expect(procedureLogicWorkerNativeMemory.setMerageName(params)).toBeUndefined();
     });
     it('procedureLogicWorkerFileSystemTest44', function () {

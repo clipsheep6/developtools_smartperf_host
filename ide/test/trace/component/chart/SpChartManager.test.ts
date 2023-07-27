@@ -35,8 +35,7 @@ const sqlite = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
 
 describe('SpChartManager Test', () => {
-  let chartManager = new SpChartManager(new SpSystemTrace());
-
+  let chartManager = new SpChartManager();
   let queryDataDICT = sqlite.queryDataDICT;
   let dataDICT = [
     {
@@ -50,5 +49,7 @@ describe('SpChartManager Test', () => {
   ];
   queryDataDICT.mockResolvedValue(dataDICT);
 
-  it('SpChartManager01', function () {});
+  it('SpChartManager01', function () {
+    expect(chartManager).not.toBeUndefined();
+  });
 });

@@ -262,8 +262,7 @@ uint32_t PerfDataParser::UpdatePerfCallChainData(const std::unique_ptr<PerfRecor
             continue;
         }
         auto fileId = itor->second;
-        callStackTemp.emplace_back(
-            std::make_unique<CallStackTemp>(depth, frame->vaddrInFile_, fileId, symbolId));
+        callStackTemp.emplace_back(std::make_unique<CallStackTemp>(depth, frame->vaddrInFile_, fileId, symbolId));
         depth++;
     }
     // Determine whether to write callstack data to cache

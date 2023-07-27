@@ -25,6 +25,10 @@ import { TimeRuler } from '../../../../../dist/trace/component/trace/timer-shaft
 // @ts-ignore
 import { TimerShaftElement } from '../../../../../dist/trace/component/trace/TimerShaftElement.js';
 
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 declare global {
   interface Window {
     SmartEvent: {

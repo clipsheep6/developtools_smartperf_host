@@ -19,6 +19,10 @@ import { jank, JankRender, JankStruct } from '../../../../dist/trace/database/ui
 // @ts-ignore
 import { ColorUtils } from '../../../../dist/trace/component/trace/base/ColorUtils.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 describe('ProcedureWorkerJank Test', () => {
   const jankData = {
     frame: {

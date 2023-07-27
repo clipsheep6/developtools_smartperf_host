@@ -108,7 +108,7 @@ describe('TabPanePTS Test', () => {
   ];
 
   it('TabPanePTSTest01', function () {
-    expect(tabPane.getDataBySPT(0, 0, [])).toBeUndefined();
+    expect(tabPane.getDataByPTS(0, 0, [])).toBeUndefined();
   });
 
   it('TabPanePTSTest02', function () {
@@ -127,7 +127,7 @@ describe('TabPanePTS Test', () => {
         note: '-',
       },
     ];
-    expect(tabPane.getDataBySPT(10, 100_000, source)).toBeUndefined();
+    expect(tabPane.getDataByPTS(10, 100_000, source)).toBeUndefined();
   });
 
   it('TabPaneSPTTest03', function () {

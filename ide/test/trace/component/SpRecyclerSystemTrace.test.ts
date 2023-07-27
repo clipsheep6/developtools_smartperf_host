@@ -28,6 +28,9 @@ jest.mock('../../../dist/trace/component/trace/TimerShaftElement.js', () => {
 import { TraceRow } from '../../../dist/trace/component/trace/base/TraceRow.js';
 // @ts-ignore
 import { SpRecyclerSystemTrace } from '../../../dist/trace/component/SpRecyclerSystemTrace.js';
+jest.mock('../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
 
 describe('SpRecyclerSystemTrace Test', () => {
   let spRecyclerSystemTrace = new SpRecyclerSystemTrace();
