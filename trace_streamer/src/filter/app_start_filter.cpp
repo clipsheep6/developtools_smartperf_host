@@ -46,6 +46,9 @@ bool APPStartupFilter::GetProcessCreate(uint32_t row, uint64_t& startTime, std::
             return true;
         }
         parentId = sliceData.ParentIdData()[parentId].value();
+        if (parentId == INVALID_UINT32) {
+            continue;
+        }
         name = traceDataCache_->GetDataFromDict(sliceData.NamesData()[parentId]);
     }
     return false;
@@ -55,7 +58,6 @@ bool APPStartupFilter::CaclRsDataByPid(appMap& mAPPStartupData)
 {
     auto frameSliceData = traceDataCache_->GetFrameSliceData();
     auto sliceData = traceDataCache_->GetConstInternalSlicesData();
-    auto itor = mAPPStartupData.begin();
     for (const auto& item : mAPPStartupData) {
         if (item.second.empty()) {
             continue;
@@ -74,8 +76,8 @@ bool APPStartupFilter::CaclRsDataByPid(appMap& mAPPStartupData)
                     }
                     mAPPStartupData[dataIndex].emplace(
                         FIRST_FRAME_APP_PHASE,
-                        std::move(std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
-                                                                   itorSecond->second->tid_, startTime, endTime)));
+                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
+                                                         startTime, endTime));
                     auto dstId = frameSliceData->Dsts()[m];
                     if (dstId == INVALID_UINT64) {
                         continue;
@@ -85,8 +87,8 @@ bool APPStartupFilter::CaclRsDataByPid(appMap& mAPPStartupData)
                     endTime = startTime + frameSliceData->Durs()[dstId];
                     mAPPStartupData[dataIndex].emplace(
                         FIRST_FRAME_RENDER_PHASE,
-                        std::move(std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
-                                                                   itorSecond->second->tid_, startTime, endTime)));
+                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
+                                                         startTime, endTime));
                     break;
                 }
             }
@@ -154,8 +156,8 @@ void APPStartupFilter::UpdateAPPStartupData(uint32_t row, const std::string& nam
     auto callId = sliceData.CallIds()[row];
     auto startTime = sliceData.TimeStampData()[row];
     mAPPStartupData_[dataIndex].insert(
-        std::make_pair(startIndex, std::move(std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32,
-                                                                              startTime, INVALID_UINT64))));
+        std::make_pair(startIndex, std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32, startTime,
+                                                                    INVALID_UINT64)));
 }
 
 void APPStartupFilter::ParserAppStartup()
@@ -182,8 +184,8 @@ void APPStartupFilter::ParserAppStartup()
             callId = sliceData.CallIds()[i];
             auto dataIndex = traceDataCache_->GetDataIndex(mainThreadName.c_str());
             mAPPStartupData_[dataIndex].insert(std::make_pair(
-                PROCESS_CREATING, std::move(std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32,
-                                                                             startTime, INVALID_UINT64))));
+                PROCESS_CREATING,
+                std::make_unique<APPStartupData>(callId, INVALID_UINT32, INVALID_UINT32, startTime, INVALID_UINT64)));
         } else if (StartWith(nameString, APP_LAUNCH)) {
             UpdateAPPStartupData(i, nameString, APPLICATION_LAUNCHING);
         } else if (StartWith(nameString, LAUNCH)) {
@@ -201,8 +203,8 @@ void APPStartupFilter::ParserAppStartup()
             auto thread = traceDataCache_->GetThreadData(sliceData.CallIds()[i]);
             thread->nameIndex_ = dataIndex;
             mAPPStartupData_[dataIndex].insert(std::make_pair(
-                UI_ABILITY_LAUNCHING, std::move(std::make_unique<APPStartupData>(
-                                          callId, thread->internalPid_, thread->tid_, startTime, INVALID_UINT64))));
+                UI_ABILITY_LAUNCHING, std::make_unique<APPStartupData>(callId, thread->internalPid_, thread->tid_,
+                                                                       startTime, INVALID_UINT64)));
             mAPPStartupDataWithPid_.insert(std::make_pair(thread->internalPid_, std::move(mAPPStartupData_)));
         } else if (StartWith(nameString, ONFOREGROUND)) {
             // callid is thread table->itid
@@ -214,9 +216,9 @@ void APPStartupFilter::ParserAppStartup()
             auto tid = threadData[callId].tid_;
             if (mAPPStartupDataWithPid_.count(ipid) && mAPPStartupDataWithPid_[ipid].count(nameindex) &&
                 !mAPPStartupDataWithPid_[ipid][nameindex].count(UI_ABILITY_ONFOREGROUND)) {
-                mAPPStartupDataWithPid_[ipid][nameindex].insert(std::make_pair(
-                    UI_ABILITY_ONFOREGROUND,
-                    std::move(std::make_unique<APPStartupData>(callId, ipid, tid, startTime, INVALID_UINT64))));
+                mAPPStartupDataWithPid_[ipid][nameindex].insert(
+                    std::make_pair(UI_ABILITY_ONFOREGROUND,
+                                   std::make_unique<APPStartupData>(callId, ipid, tid, startTime, INVALID_UINT64)));
             }
         }
     }

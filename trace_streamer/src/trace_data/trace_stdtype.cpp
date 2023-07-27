@@ -17,9 +17,11 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include "string_to_numerical.h"
 namespace SysTuning {
 namespace TraceStdtype {
-const int32_t MAX_SIZE_LEN = 80;
+constexpr int32_t MAX_SIZE_LEN = 80;
+constexpr uint8_t DEVICEINFO_MATCH_LAST = 2;
 #define UNUSED(expr)             \
     do {                         \
         static_cast<void>(expr); \
@@ -2304,7 +2306,7 @@ const std::deque<uint64_t>& GPUSlice::Durs() const
 {
     return durs_;
 }
-const size_t GPUSlice::Size() const
+size_t GPUSlice::Size() const
 {
     return durs_.size();
 }
@@ -2407,14 +2409,12 @@ size_t JsHeapFiles::AppendNewData(uint32_t id,
                                   std::string filePath,
                                   uint64_t startTime,
                                   uint64_t endTime,
-                                  uint32_t ipid,
                                   uint64_t selfSizeCount)
 {
     fileIds_.emplace_back(id);
     filePaths_.emplace_back(filePath);
     startTimes_.emplace_back(startTime);
     endTimes_.emplace_back(endTime);
-    ipids_.emplace_back(ipid);
     selfSizeCount_.emplace_back(selfSizeCount);
     ids_.emplace_back(Size());
     return Size() - 1;
@@ -2434,10 +2434,6 @@ const std::deque<uint64_t>& JsHeapFiles::StartTimes() const
 const std::deque<uint64_t>& JsHeapFiles::EndTimes() const
 {
     return endTimes_;
-}
-const std::deque<uint32_t>& JsHeapFiles::Pids() const
-{
-    return ipids_;
 }
 
 const std::deque<uint64_t>& JsHeapFiles::SelfSizeCount() const
@@ -2754,6 +2750,139 @@ const std::deque<int32_t>& JsHeapTraceNode::ParentIds() const
     return parentIds_;
 }
 
+size_t JsCpuProfilerNode::AppendNewData(uint32_t functionId,
+                                        uint32_t functionName,
+                                        std::string scriptId,
+                                        uint32_t url,
+                                        uint32_t lineNumber,
+                                        uint32_t columnNumber,
+                                        uint32_t hitCount,
+                                        std::string children,
+                                        uint32_t parentId)
+{
+    functionIds_.emplace_back(functionId);
+    functionNames_.emplace_back(functionName);
+    scriptIds_.emplace_back(scriptId);
+    urls_.emplace_back(url);
+    lineNumbers_.emplace_back(lineNumber);
+    columnNumbers_.emplace_back(columnNumber);
+    hitCounts_.emplace_back(hitCount);
+    children_.emplace_back(children);
+    parents_.emplace_back(parentId);
+    ids_.emplace_back(Size());
+    return Size() - 1;
+}
+
+const std::deque<uint32_t>& JsCpuProfilerNode::FunctionIds() const
+{
+    return functionIds_;
+}
+const std::deque<uint32_t>& JsCpuProfilerNode::FunctionNames() const
+{
+    return functionNames_;
+}
+const std::deque<std::string>& JsCpuProfilerNode::ScriptIds() const
+{
+    return scriptIds_;
+}
+const std::deque<uint32_t>& JsCpuProfilerNode::Urls() const
+{
+    return urls_;
+}
+const std::deque<uint32_t>& JsCpuProfilerNode::LineNumbers() const
+{
+    return lineNumbers_;
+}
+const std::deque<int32_t>& JsCpuProfilerNode::ColumnNumbers() const
+{
+    return columnNumbers_;
+}
+const std::deque<int32_t>& JsCpuProfilerNode::HitCounts() const
+{
+    return hitCounts_;
+}
+const std::deque<std::string>& JsCpuProfilerNode::Children() const
+{
+    return children_;
+}
+const std::deque<uint32_t>& JsCpuProfilerNode::Parents() const
+{
+    return parents_;
+}
+
+size_t JsCpuProfilerSample::AppendNewData(uint32_t functionId, uint64_t startTime, uint64_t endTime, uint64_t dur)
+{
+    functionIds_.emplace_back(functionId);
+    startTimes_.emplace_back(startTime);
+    endTimes_.emplace_back(endTime);
+    durs_.emplace_back(dur);
+    ids_.emplace_back(Size());
+    return Size() - 1;
+}
+const std::deque<uint32_t>& JsCpuProfilerSample::FunctionIds() const
+{
+    return functionIds_;
+}
+const std::deque<uint64_t>& JsCpuProfilerSample::StartTimes() const
+{
+    return startTimes_;
+}
+const std::deque<uint64_t>& JsCpuProfilerSample::EndTimes() const
+{
+    return endTimes_;
+}
+const std::deque<uint64_t>& JsCpuProfilerSample::Durs() const
+{
+    return durs_;
+}
+
+size_t JsConfig::AppendNewData(uint32_t pid,
+                               uint64_t type,
+                               uint32_t interval,
+                               uint32_t captureNumericValue,
+                               uint32_t trackAllocation,
+                               uint32_t cpuProfiler,
+                               uint32_t cpuProfilerInterval)
+{
+    pids_.emplace_back(pid);
+    types_.emplace_back(type);
+    intervals_.emplace_back(interval);
+    captureNumericValues_.emplace_back(captureNumericValue);
+    trackAllocations_.emplace_back(trackAllocation);
+    cpuProfilers_.emplace_back(cpuProfiler);
+    cpuProfilerIntervals_.emplace_back(cpuProfilerInterval);
+    ids_.emplace_back(Size());
+    return Size() - 1;
+}
+const std::deque<uint32_t>& JsConfig::Pids() const
+{
+    return pids_;
+}
+const std::deque<uint64_t>& JsConfig::Types() const
+{
+    return types_;
+}
+const std::deque<uint32_t>& JsConfig::Intervals() const
+{
+    return intervals_;
+}
+const std::deque<uint32_t>& JsConfig::CaptureNumericValue() const
+{
+    return captureNumericValues_;
+}
+const std::deque<uint32_t>& JsConfig::TrackAllocations() const
+{
+    return trackAllocations_;
+}
+const std::deque<uint32_t>& JsConfig::CpuProfiler() const
+{
+    return cpuProfilers_;
+}
+const std::deque<uint32_t>& JsConfig::CpuProfilerInterval() const
+{
+    return cpuProfilerIntervals_;
+}
+
 size_t TaskPoolInfo::AppendAllocationTaskData(uint32_t allocationTaskRow,
                                               uint32_t allocationTaskId,
                                               uint32_t executeId,
@@ -2936,10 +3065,13 @@ const uint32_t DeviceInfo::PhysicalFrameRate() const
 {
     return physicalFrameRate_;
 }
-void DeviceInfo::UpdateWidthAndHeight(uint32_t width, uint32_t height)
+void DeviceInfo::UpdateWidthAndHeight(const std::smatch& matcheLine)
 {
-    physicalWidth_ = width;
-    physicalHeight_ = height;
+    if (matcheLine.size() > DEVICEINFO_MATCH_LAST) {
+        uint8_t matcheIndex = 0;
+        physicalWidth_ = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
+        physicalHeight_ = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
+    }
 }
 void DeviceInfo::UpdateFrameRate(uint32_t frameRate)
 {
@@ -2969,18 +3101,14 @@ void DynamicFrame::UpdateNameIndex(TableRowId index, DataIndex nameId)
         names_[index] = nameId;
     }
 }
-void DynamicFrame::UpdatePosition(TableRowId index,
-                                  uint32_t x,
-                                  uint32_t y,
-                                  uint32_t width,
-                                  uint32_t height,
-                                  DataIndex alpha)
+void DynamicFrame::UpdatePosition(TableRowId index, const std::smatch& matcheLine, DataIndex alpha)
 {
-    if (index <= Size()) {
-        xs_[index] = x;
-        ys_[index] = y;
-        widths_[index] = width;
-        heights_[index] = height;
+    if (index <= Size() && matcheLine.size() > DYNAMICFRAME_MATCH_LAST) {
+        uint8_t matcheIndex = 0;
+        xs_[index] = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
+        ys_[index] = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
+        widths_[index] = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
+        heights_[index] = base::StrToInt<uint32_t>(matcheLine[++matcheIndex].str()).value();
         alphas_[index] = alpha;
     }
 }

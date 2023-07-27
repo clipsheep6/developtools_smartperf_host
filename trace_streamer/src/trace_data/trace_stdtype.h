@@ -22,6 +22,7 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -39,6 +40,7 @@ using namespace SysTuning::TraceCfg;
 using namespace SysTuning::TraceStreamer;
 constexpr uint32_t ONE_MILLION_NANOSECONDS = 1000000;
 constexpr uint32_t BILLION_NANOSECONDS = 1000000000;
+constexpr uint8_t DYNAMICFRAME_MATCH_LAST = 5;
 class CacheBase {
 public:
     size_t Size() const
@@ -141,7 +143,7 @@ public:
         states_.clear();
         cpus_.clear();
     }
-    const uint32_t Size() const
+    uint32_t Size() const
     {
         return itids_.size();
     }
@@ -871,8 +873,6 @@ private:
     std::deque<uint64_t> symbolOffsets_ = {};
     std::deque<std::string> vaddrs_ = {};
     std::map<uint32_t, uint64_t> symbolIdToSymbolName_ = {};
-    DataIndex libcFilePathIndex_ = INVALID_UINT64;
-    DataIndex muslFilePathIndex_ = INVALID_UINT64;
 };
 
 class NativeHookStatistic : public CacheBase {
@@ -1552,7 +1552,6 @@ private:
     std::deque<uint8_t> flags_ = {};
     std::deque<DataIndex> appNames_ = {};
     std::deque<DataIndex> keyNames_ = {};
-    uint32_t rowCount_ = 0;
 };
 class SysEventMeasureData : public CacheBase {
 public:
@@ -1824,7 +1823,7 @@ public:
         names_.emplace_back(name);
         return ts_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return ts_.size();
     }
@@ -1855,7 +1854,7 @@ public:
         clockIds_.emplace_back(clockId);
         return dataSourceNames_.size();
     }
-    const size_t Size() const
+    size_t Size() const
     {
         return dataSourceNames_.size();
     }
@@ -2016,17 +2015,12 @@ private:
 
 class JsHeapFiles : public CacheBase {
 public:
-    size_t AppendNewData(uint32_t id,
-                         std::string filePath,
-                         uint64_t startTime,
-                         uint64_t endTime,
-                         uint32_t ipid,
-                         uint64_t selfSizeCount);
+    size_t
+        AppendNewData(uint32_t id, std::string filePath, uint64_t startTime, uint64_t endTime, uint64_t selfSizeCount);
     const std::deque<uint32_t>& IDs() const;
     const std::deque<std::string>& FilePaths() const;
     const std::deque<uint64_t>& StartTimes() const;
     const std::deque<uint64_t>& EndTimes() const;
-    const std::deque<uint32_t>& Pids() const;
     const std::deque<uint64_t>& SelfSizeCount() const;
     void Clear() override
     {
@@ -2035,7 +2029,6 @@ public:
         filePaths_.clear();
         startTimes_.clear();
         endTimes_.clear();
-        ipids_.clear();
         selfSizeCount_.clear();
     }
 
@@ -2044,7 +2037,6 @@ private:
     std::deque<std::string> filePaths_ = {};
     std::deque<uint64_t> startTimes_ = {};
     std::deque<uint64_t> endTimes_ = {};
-    std::deque<uint32_t> ipids_ = {};
     std::deque<uint64_t> selfSizeCount_ = {};
 };
 
@@ -2300,12 +2292,119 @@ private:
     std::deque<int32_t> parentIds_ = {};
 };
 
+class JsConfig : public CacheBase {
+public:
+    size_t AppendNewData(uint32_t pid,
+                         uint64_t type,
+                         uint32_t interval,
+                         uint32_t captureNumericValue,
+                         uint32_t trackAllocation,
+                         uint32_t cpuProfiler,
+                         uint32_t cpuProfilerInterval);
+    const std::deque<uint32_t>& Pids() const;
+    const std::deque<uint64_t>& Types() const;
+    const std::deque<uint32_t>& Intervals() const;
+    const std::deque<uint32_t>& CaptureNumericValue() const;
+    const std::deque<uint32_t>& TrackAllocations() const;
+    const std::deque<uint32_t>& CpuProfiler() const;
+    const std::deque<uint32_t>& CpuProfilerInterval() const;
+    void Clear() override
+    {
+        CacheBase::Clear();
+        pids_.clear();
+        types_.clear();
+        intervals_.clear();
+        captureNumericValues_.clear();
+        trackAllocations_.clear();
+        cpuProfilers_.clear();
+        cpuProfilerIntervals_.clear();
+    }
+
+private:
+    std::deque<uint32_t> pids_ = {};
+    std::deque<uint64_t> types_ = {};
+    std::deque<uint32_t> intervals_ = {};
+    std::deque<uint32_t> captureNumericValues_ = {};
+    std::deque<uint32_t> trackAllocations_ = {};
+    std::deque<uint32_t> cpuProfilers_ = {};
+    std::deque<uint32_t> cpuProfilerIntervals_ = {};
+};
+
+class JsCpuProfilerNode : public CacheBase {
+public:
+    size_t AppendNewData(uint32_t functionId,
+                         uint32_t functionName,
+                         std::string scriptId,
+                         uint32_t url,
+                         uint32_t lineNumber,
+                         uint32_t columnNumber,
+                         uint32_t hitCount,
+                         std::string children,
+                         uint32_t parent);
+    const std::deque<uint32_t>& FunctionIds() const;
+    const std::deque<uint32_t>& FunctionNames() const;
+    const std::deque<std::string>& ScriptIds() const;
+    const std::deque<uint32_t>& Urls() const;
+    const std::deque<uint32_t>& LineNumbers() const;
+    const std::deque<int32_t>& ColumnNumbers() const;
+    const std::deque<int32_t>& HitCounts() const;
+    const std::deque<std::string>& Children() const;
+    const std::deque<uint32_t>& Parents() const;
+    void Clear() override
+    {
+        CacheBase::Clear();
+        functionIds_.clear();
+        functionNames_.clear();
+        scriptIds_.clear();
+        urls_.clear();
+        lineNumbers_.clear();
+        columnNumbers_.clear();
+        hitCounts_.clear();
+        children_.clear();
+        parents_.clear();
+    }
+
+private:
+    std::deque<uint32_t> functionIds_ = {};
+    std::deque<uint32_t> functionNames_ = {};
+    std::deque<std::string> scriptIds_ = {};
+    std::deque<uint32_t> urls_ = {};
+    std::deque<uint32_t> lineNumbers_ = {};
+    std::deque<int32_t> columnNumbers_ = {};
+    std::deque<int32_t> hitCounts_ = {};
+    std::deque<std::string> children_ = {};
+    std::deque<uint32_t> parents_ = {};
+};
+
+class JsCpuProfilerSample : public CacheBase {
+public:
+    size_t AppendNewData(uint32_t functionId, uint64_t startTimes, uint64_t endTimes, uint64_t durs);
+    const std::deque<uint32_t>& FunctionIds() const;
+    const std::deque<uint64_t>& StartTimes() const;
+    const std::deque<uint64_t>& EndTimes() const;
+    const std::deque<uint64_t>& Durs() const;
+    void Clear() override
+    {
+        CacheBase::Clear();
+        functionIds_.clear();
+        startTimes_.clear();
+        endTimes_.clear();
+        durs_.clear();
+    }
+
+private:
+    std::deque<uint32_t> functionIds_ = {};
+    std::deque<uint64_t> startTimes_ = {};
+    std::deque<uint64_t> endTimes_ = {};
+    std::deque<uint64_t> durs_ = {};
+};
+
 class GPUSlice {
 public:
     size_t AppendNew(uint32_t frameRow, uint64_t dur);
     const std::deque<uint32_t>& FrameRows() const;
     const std::deque<uint64_t>& Durs() const;
-    const size_t Size() const;
+    size_t Size() const;
 
 private:
     std::deque<uint32_t> frameRows_ = {};
@@ -2392,7 +2491,7 @@ public:
     const uint32_t PhysicalWidth() const;
     const uint32_t PhysicalHeight() const;
     const uint32_t PhysicalFrameRate() const;
-    void UpdateWidthAndHeight(uint32_t width, uint32_t height);
+    void UpdateWidthAndHeight(const std::smatch& matcheLine);
     void UpdateFrameRate(uint32_t frameRate);
 
     void Clear();
@@ -2406,7 +2505,7 @@ class DynamicFrame {
 public:
     TableRowId AppendDynamicFrame(DataIndex nameId);
     void UpdateNameIndex(TableRowId index, DataIndex nameId);
-    void UpdatePosition(TableRowId index, uint32_t x, uint32_t y, uint32_t width, uint32_t height, DataIndex alpha);
+    void UpdatePosition(TableRowId index, const std::smatch& matcheLine, DataIndex alpha);
     void UpdateEndTime(TableRowId index, InternalTime endTime);
 
     size_t Size() const;
