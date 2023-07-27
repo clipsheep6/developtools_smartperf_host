@@ -1299,7 +1299,9 @@ export const queryStartupPidArray = (): Promise<Array<{ pid: number }>> =>
   query(
     'queryStartupPidArray',
     `
-    select distinct pid from app_startup A left join process P on A.ipid = p.ipid;`,
+    select distinct pid 
+from app_startup A,trace_range B left join process P on A.ipid = p.ipid
+where A.start_time between B.start_ts and B.end_ts;`,
     {}
   );
 
@@ -1328,7 +1330,8 @@ export const queryProcessSoMaxDepth = (): Promise<Array<{ pid: number; maxDepth:
   query(
     'queryProcessSoMaxDepth',
     `select p.pid,max(depth) maxDepth 
-from static_initalize S left join process p on S.ipid = p.ipid 
+from static_initalize S,trace_range B left join process p on S.ipid = p.ipid 
+where S.start_time between B.start_ts and B.end_ts
 group by p.pid;`,
     {}
   );
@@ -1694,13 +1697,15 @@ export const queryNativeHookResponseTypes = (
   query(
     'queryNativeHookResponseTypes',
     `
-        select last_lib_id as lastLibId,data_dict.data as value from 
-        native_hook A ,trace_range B
-        left join data_dict on A.last_lib_id = data_dict.id 
+        select 
+          distinct last_lib_id as lastLibId,
+          data_dict.data as value 
+        from 
+          native_hook A ,trace_range B
+          left join data_dict on A.last_lib_id = data_dict.id 
         where
         A.start_ts - B.start_ts
-        between ${leftNs} and ${rightNs} and A.event_type in (${types.join(',')})
-        group by last_lib_id;
+        between ${leftNs} and ${rightNs} and A.event_type in (${types.join(',')});
     `,
     { $leftNs: leftNs, $rightNs: rightNs, $types: types }
   );
