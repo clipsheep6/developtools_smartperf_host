@@ -164,7 +164,7 @@ void HtraceEventParser::ParseDataItem(HtraceDataSegment& tracePacket, BuiltinClo
                 lastOverwrite_ = msg.overwrite();
             }
             if (lastOverwrite_ != msg.overwrite()) {
-                TS_LOGW("lost events:%llu", msg.overwrite() - lastOverwrite_);
+                TS_LOGW("lost events:%lu", msg.overwrite() - lastOverwrite_);
                 lastOverwrite_ = msg.overwrite();
             }
             streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_OTHER, STAT_EVENT_DATA_LOST);

@@ -92,10 +92,14 @@ describe('TabPerfProfile Test', () => {
   it('TabpanePerfProfileTest09 ', function () {
     tabpanePerfProfile.sortTree = jest.fn(() => true);
     tabpanePerfProfile.sortTree.sort = jest.fn(() => true);
-    expect(tabpanePerfProfile.setPerfProfilerLeftTableData()).toBeUndefined();
+    tabpanePerfProfile.perfProfilerTbl  = jest.fn(() => true);
+    tabpanePerfProfile.perfProfilerTbl.recycleDataSource  = jest.fn(() => true);
+    expect(tabpanePerfProfile.setPerfProfilerLeftTableData([])).toBeUndefined();
   });
   it('TabpanePerfProfileTest10 ', function () {
     tabpanePerfProfile.getDataByWorker = jest.fn();
+    tabpanePerfProfile.perfProfilerTbl  = jest.fn(() => true);
+    tabpanePerfProfile.perfProfilerTbl.style  = jest.fn(() => true);
     tabpanePerfProfile.data = [
       {
         leftNs: 2565,

@@ -174,11 +174,11 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64 " failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64 " failed", itid, ts);
         return false;
     }
     auto lastFrameSlice = frame->second.back();
@@ -227,11 +227,11 @@ bool FrameFilter::EndFrameQueue(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64 " failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64"  failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64 "  failed", itid, ts);
         return false;
     }
     auto firstFrameSlicePos = frame->second.begin();

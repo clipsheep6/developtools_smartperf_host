@@ -61,7 +61,7 @@ action("test_data_cpp_gen") {
   }
 }
 
-source_set("test_data_cpp") {
+ohos_source_set("test_data_cpp") {
   subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
   part_name = "${OHOS_PROFILER_PART_NAME}"
   deps = [ ":test_data_cpp_gen" ]

@@ -20,12 +20,13 @@ import {
   PerfCallChainMerageData,
   PerfStack,
   PerfCmdLine,
-  PerfCall,
   timeMsFormat2p,
   PerfFile,
   PerfThread,
   PerfCallChain,
 } from '../../../../dist/trace/database/logic-worker/ProcedureLogicWorkerPerf.js';
+//@ts-ignore
+ import {PerfCall} from '../../../../dist/trace/database/logic-worker/ProcedureLogicWorkerCommon.js';
 
 describe('ProcedureLogicWorkerPerf Test', () => {
   it('ProcedureLogicWorkerPerfTest', function () {

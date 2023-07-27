@@ -194,7 +194,6 @@ describe('TabPaneNMCallInfo Test', () => {
   });
 
   it('TabPaneNMCallInfoTest11', function () {
-    let tab = new TabPaneNMCallInfo();
     let MockqueryNativeHookEventTid = sqlit.queryNativeHookEventTid;
     MockqueryNativeHookEventTid.mockResolvedValue([
       {
@@ -208,14 +207,14 @@ describe('TabPaneNMCallInfo Test', () => {
         threadName: 'threadName',
       },
     ]);
-    tab.data = {
+    tabPaneNMCallInfo.data = {
       leftNs: 0,
       rightNs: 500,
       nativeMemory: 'All Heap & Anonymous VM',
     };
 
-    tab.startWorker = jest.fn(() => true);
-    expect(tab.data).toBeUndefined();
+    tabPaneNMCallInfo.startWorker = jest.fn(() => true);
+    expect(tabPaneNMCallInfo.data).toBeUndefined();
   });
 
   it('TabPaneNMCallInfoTest12', function () {

@@ -20,6 +20,10 @@ jest.mock('../../../dist/trace/component/trace/base/TraceRow.js', () => {
 // @ts-ignore
 import { ProcessStruct } from '../../../dist/trace/bean/ProcessStruct.js';
 
+jest.mock('../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 describe('ProcessStruct Test', () => {
   const canvas = document.createElement('canvas');
   canvas.width = 1;

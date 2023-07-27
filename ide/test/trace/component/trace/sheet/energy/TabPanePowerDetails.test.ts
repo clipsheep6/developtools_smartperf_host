@@ -20,6 +20,10 @@ import '../../../../../../dist/trace/component/trace/sheet/energy/TabPanePowerDe
 // @ts-ignore
 import { LitTable } from '../../../../../../dist/base-ui/table/lit-table.js';
 
+jest.mock('../../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+    return {};
+});
+
 window.ResizeObserver =
   window.ResizeObserver ||
   jest.fn().mockImplementation(() => ({

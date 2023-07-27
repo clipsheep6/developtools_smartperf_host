@@ -94,11 +94,11 @@ describe('TabPaneThreadStates Test', () => {
             padding: 10px 10px;
         }
         </style>
-        <div class="tread-states-table" style="display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px">
-            <stack-bar id="thread-states-stack-bar" style="flex: 1"></stack-bar>
-            <label id="thread-states-time-range"  style="width: auto;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
+        <div class="tread-states-table" style="display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px;justify-content: space-between">
+            <stack-bar id="thread-states-stack-bar" style="width: calc(100vw - 520px)"></stack-bar>
+            <label id="thread-states-time-range"  style="width: 250px;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
         </div>
-        <lit-table id="tb-thread-states" style="height: auto;overflow-x: auto">
+        <lit-table id="tb-thread-states" style="height: auto;overflow-x: auto;width: calc(100vw - 270px)">
             <lit-table-column class="tread-states-column" width="240px" title="Process" data-index="process" key="process"  align="flex-start" order>
             </lit-table-column>
             <lit-table-column class="tread-states-column" width="120px" title="PID" data-index="pid" key="pid"  align="flex-start" order >

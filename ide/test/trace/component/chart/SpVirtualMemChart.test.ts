@@ -19,6 +19,13 @@ import { SpVirtualMemChart } from '../../../../dist/trace/component/chart/SpVirt
 import { SpSystemTrace } from '../../../../dist/trace/component/SpSystemTrace.js';
 // @ts-ignore
 import { TraceRow } from '../../../../dist/trace/component/trace/base/TraceRow.js';
+// @ts-ignore
+import {SpChartManager} from "../../../../dist/trace/component/chart/SpChartManager.js";
+
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
@@ -37,7 +44,8 @@ window.ResizeObserver =
   }));
 
 describe('SpVirtualMemChart Test', () => {
-  let spVirtualMemChart = new SpVirtualMemChart(new SpSystemTrace());
+  let manager = new SpChartManager();
+  let spVirtualMemChart = new SpVirtualMemChart(manager);
   let MockVirtualMemory = sqlit.queryVirtualMemory;
   MockVirtualMemory.mockResolvedValue([
     {

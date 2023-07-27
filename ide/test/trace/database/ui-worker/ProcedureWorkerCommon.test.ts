@@ -404,13 +404,29 @@ describe('ProcedureWorkerCommon Test', () => {
       endNS: 25336,
       totalNS: 33333,
     };
+    let data = {
+      sportRuler: {
+        slicesTimeList: [
+          {
+            startTime: 11,
+            endTime: 22,
+            color: '#dadada'
+          },
+          {
+            startTime: 33,
+            endTime: 66,
+            color: '#dadada'
+          },
+        ]
+      }
+    };
     expect(
       drawFlagLineSegment(ctx, hoverFlag, selectFlag, {
         y: 5,
         height: 30,
         x: 1,
         width: 3,
-      })
+      }, data)
     ).toBeUndefined();
   });
 

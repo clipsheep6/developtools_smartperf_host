@@ -19,6 +19,7 @@
 #include <memory>
 namespace SysTuning {
 namespace TraceStreamer {
+class AnimationFilter;
 class SliceFilter;
 class ProcessFilter;
 class CpuFilter;
@@ -34,11 +35,13 @@ class SystemEventMeasureFilter;
 class HiSysEventMeasureFilter;
 class FrameFilter;
 class APPStartupFilter;
+class TaskPoolFilter;
 class PerfDataFilter;
 class TraceStreamerFilters {
 public:
     TraceStreamerFilters();
     ~TraceStreamerFilters();
+    std::unique_ptr<AnimationFilter> animationFilter_;
     std::unique_ptr<ClockFilterEx> clockFilter_;
     std::unique_ptr<FilterFilter> filterFilter_;
     std::unique_ptr<SliceFilter> sliceFilter_;
@@ -66,6 +69,7 @@ public:
     std::unique_ptr<HiSysEventMeasureFilter> hiSysEventMeasureFilter_;
     std::unique_ptr<FrameFilter> frameFilter_;
     std::unique_ptr<APPStartupFilter> appStartupFilter_;
+    std::unique_ptr<TaskPoolFilter> taskPoolFilter_;
     std::unique_ptr<PerfDataFilter> perfDataFilter_;
 };
 } // namespace TraceStreamer

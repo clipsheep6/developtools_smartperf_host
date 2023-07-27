@@ -167,9 +167,13 @@ void NativeHookFilter::ParseStatisticEvent(uint64_t timeStamp, const ProtoReader
         callChainId = reader.callstack_id();
     }
 
+    DataIndex memSubType = INVALID_UINT64;
+    if (reader.has_tag_name()) {
+        memSubType = traceDataCache_->GetDataIndex(reader.tag_name().ToStdString());
+    }
     traceDataCache_->GetNativeHookStatisticsData()->AppendNewNativeHookStatistic(
-        ipid_, timeStamp, callChainId, reader.type(), reader.apply_count(), reader.release_count(), reader.apply_size(),
-        reader.release_size());
+        ipid_, timeStamp, callChainId, reader.type(), memSubType, reader.apply_count(), reader.release_count(),
+        reader.apply_size(), reader.release_size());
 }
 void NativeHookFilter::ParseAllocEvent(uint64_t timeStamp, const ProtoReader::BytesView& bytesView)
 {
@@ -496,12 +500,12 @@ std::tuple<uint64_t, uint64_t> NativeHookFilter::GetNeedUpdateProcessMapsAddrRan
 }
 
 inline void NativeHookFilter::FillOfflineSymbolizationFrames(
-    std::map<uint32_t, std::shared_ptr<std::vector<uint64_t>>>::iterator itor)
+    std::map<uint32_t, std::shared_ptr<std::vector<uint64_t>>>::iterator mapItor)
 {
-    stackIdToCallChainIdMap_.insert(std::make_pair(itor->first, ++callChainId_));
-    auto framesInfo = OfflineSymbolization(itor->second);
+    stackIdToCallChainIdMap_.insert(std::make_pair(mapItor->first, ++callChainId_));
+    auto framesInfo = OfflineSymbolization(mapItor->second);
     uint64_t depth = 0;
-    uint64_t filePathIndex = INVALID_UINT64;
+    uint64_t filePathIndex;
     for (auto itor = framesInfo->rbegin(); itor != framesInfo->rend(); itor++) {
         // Note that the filePathId here is provided for the end side. Not a true TS internal index dictionary.
         auto frameInfo = itor->get();

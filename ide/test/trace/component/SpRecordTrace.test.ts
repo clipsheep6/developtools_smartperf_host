@@ -155,7 +155,7 @@ describe('SpRecordTrace Test', () => {
   });
   it('SpRecordTraceTest18', function () {
     expect(spRecordTrace.createNetworkPlugin()).toStrictEqual({
-      configData: { testFile: '/data/local/tmp/' },
+      configData: {},
       pluginName: 'network-plugin',
       sampleInterval: 1000,
     });
@@ -298,8 +298,10 @@ describe('SpRecordTrace Test', () => {
     );
   });
   it('SpRecordTraceTest33', function () {
-    expect(spRecordTrace.createJsHeapConfig()).toStrictEqual(
-        {"configData": {"capture_numeric_value": true, "interval": 10, "pid": 0, "track_allocations": false, "type": 0}, "pluginName": "js-memory", "sampleInterval": 5000}
+    expect(spRecordTrace.createArkTsConfig()).toStrictEqual(
+        {"configData": {"capture_numeric_value": false,'cpu_profiler_interval':1000,
+                "interval": 0,'enable_cpu_profiler': false, "pid": 0, "track_allocations": false, "type": -1},
+            "pluginName": "arkts-plugin", "sampleInterval": 5000}
     );
   });
   it('SpRecordTraceTest34', function () {

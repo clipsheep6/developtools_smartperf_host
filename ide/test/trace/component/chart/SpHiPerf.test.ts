@@ -24,6 +24,9 @@ import {
 import { SpChartManager } from '../../../../dist/trace/component/chart/SpChartManager.js';
 const sqlit = require('../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../dist/trace/database/SqlLite.js');
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
 
 window.ResizeObserver =
   window.ResizeObserver ||

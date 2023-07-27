@@ -47,9 +47,9 @@ ohos_source_set("table") {
     "ebpf:ebpf_tables",
     "ftrace:ftrace_tables",
     "hi_sysevent:hi_sysevent_tables",
+    "hiperf:hiperf_tables",
     "js_memory:js_memory_tables",
     "monitor:monitor_tables",
     "native_hook:native_hook_tables",
-    "hiperf:hiperf_tables",
   ]
 }

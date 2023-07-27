@@ -17,6 +17,10 @@
 import { TraceRow } from '../../../../../dist/trace/component/trace/base/TraceRow.js';
 // @ts-ignore
 import { Sptext } from '../../../../../dist/trace/component/Sptext.js';
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 
 describe('TraceRow Test', () => {
   beforeAll(() => {});
@@ -651,7 +655,7 @@ describe('TraceRow Test', () => {
             grid-template-rows: 100%;
             grid-template-columns: 248px 1fr;
             border-bottom: 1px solid var(--dark-border1,#dadada);
-            border-right: 15px solid var(--dark-border1,#ffffff);
+            border-right: 1px solid var(--dark-border1,#ffffff);
             box-sizing: border-box;
         }
         .root .drag{
@@ -690,7 +694,7 @@ describe('TraceRow Test', () => {
             margin-left: 10px;
             font-size: .9rem;
             font-weight: normal;
-            width: 80%;
+            flex: 1;
             max-height: 100%;
             text-align: left;
             overflow: hidden;
@@ -727,7 +731,7 @@ describe('TraceRow Test', () => {
             display: none;
         }
         :host(:not([folder])[children]) .icon{
-            visibility: hidden;
+            display: none;
             color:#fff
         }
 

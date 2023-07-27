@@ -17,6 +17,10 @@
 import { RangeSelect } from '../../../../../dist/trace/component/trace/base/RangeSelect.js';
 // @ts-ignore
 import { TraceRow } from '../../../../../dist/trace/component/trace/base/TraceRow.js';
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 
 describe('RangeSelect Test', () => {
   beforeAll(() => {});

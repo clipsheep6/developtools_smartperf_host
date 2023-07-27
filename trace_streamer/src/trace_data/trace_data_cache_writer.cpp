@@ -334,7 +334,10 @@ GPUSlice* TraceDataCacheWriter::GetGPUSliceData()
 {
     return &gpuSliceData_;
 }
-
+TaskPoolInfo* TraceDataCacheWriter::GetTaskPoolData()
+{
+    return &taskPoolInfo_;
+}
 JsHeapFiles* TraceDataCacheWriter::GetJsHeapFilesData()
 {
     return &jsHeapFilesData_;
@@ -371,6 +374,18 @@ JsHeapTraceNode* TraceDataCacheWriter::GetJsHeapTraceNodeData()
 {
     return &jsHeapTraceNodeData_;
 }
+JsCpuProfilerNode* TraceDataCacheWriter::GetJsCpuProfilerNodeData()
+{
+    return &jsCpuProfilerNodeData_;
+}
+JsCpuProfilerSample* TraceDataCacheWriter::GetJsCpuProfilerSampleData()
+{
+    return &jsCpuProfilerSampleData_;
+}
+JsConfig* TraceDataCacheWriter::GetJsConfigData()
+{
+    return &jsConfigData_;
+}
 AppStartup* TraceDataCacheWriter::GetAppStartupData()
 {
     return &appStartupData_;
@@ -378,6 +393,18 @@ AppStartup* TraceDataCacheWriter::GetAppStartupData()
 SoStaticInitalization* TraceDataCacheWriter::GetStaticInitalizationData()
 {
     return &staticInitalizationData_;
+}
+Animation* TraceDataCacheWriter::GetAnimation()
+{
+    return &animation_;
+}
+DeviceInfo* TraceDataCacheWriter::GetDeviceInfo()
+{
+    return &deviceInfo_;
+}
+DynamicFrame* TraceDataCacheWriter::GetDynamicFrame()
+{
+    return &dynamicFrame_;
 }
 void TraceDataCacheWriter::Clear()
 {
@@ -436,8 +463,14 @@ void TraceDataCacheWriter::Clear()
     jsHeapStringData_.Clear();
     jsHeapTraceFuncInfoData_.Clear();
     jsHeapTraceNodeData_.Clear();
+    jsCpuProfilerNodeData_.Clear();
+    jsCpuProfilerSampleData_.Clear();
+    jsConfigData_.Clear();
     appStartupData_.Clear();
     staticInitalizationData_.Clear();
+    animation_.Clear();
+    deviceInfo_.Clear();
+    dynamicFrame_.Clear();
 
 #if WITH_EBPF_HELP
     ebpfProcessMaps_.Clear();
@@ -449,6 +482,7 @@ void TraceDataCacheWriter::Clear()
     deviceStateData_.Clear();
     smapsData_.Clear();
     bioLatencySampleData_.Clear();
+    taskPoolInfo_.Clear();
 }
 } // namespace TraceStreamer
 } // namespace SysTuning

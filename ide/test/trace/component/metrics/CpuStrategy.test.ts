@@ -34,11 +34,7 @@ describe('CpuStrategy Test', () => {
     },
   ];
 
-  it('initTestTest01', () => {
-    expect(initTest(metricData)).toBeTruthy();
-  });
-
-  it('initCpuStrategyDataTest02', () => {
+  it('initCpuStrategyDataTest01', () => {
     expect(initCpuStrategyData(metricData)).toBeTruthy();
   });
 });

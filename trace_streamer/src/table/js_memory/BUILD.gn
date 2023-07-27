@@ -15,11 +15,17 @@ import("//build/ohos.gni")
 
 import("../../../build/ts.gni")
 ohos_source_set("js_memory_tables") {
-  subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
-  part_name = "${OHOS_PROFILER_PART_NAME}"
+  subsystem_name = "developtools"
+  part_name = "smartperf_host"
   sources = [
     "appname_table.cpp",
     "appname_table.h",
+    "js_config_table.cpp",
+    "js_config_table.h",
+    "js_cpu_profiler_node_table.cpp",
+    "js_cpu_profiler_node_table.h",
+    "js_cpu_profiler_sample_table.cpp",
+    "js_cpu_profiler_sample_table.h",
     "js_heap_edges_table.cpp",
     "js_heap_edges_table.h",
     "js_heap_files_table.cpp",

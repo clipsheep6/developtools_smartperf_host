@@ -16,6 +16,11 @@
 // @ts-ignore
 import { TraceRowRecyclerView } from '../../../../../dist/trace/component/trace/base/TraceRowRecyclerView.js';
 
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
+
 describe('TraceRow Test', () => {
   beforeAll(() => {});
 

@@ -104,7 +104,7 @@ source_set("trace_streamer_sdk") {
     "cfg",
     "${THIRD_PARTY}/sqlite/include",
     "${THIRD_PARTY}/protobuf/src",
-    "${THIRD_PARTY}/json-master/single_include/nlohmann",
+    "${THIRD_PARTY}/json/single_include/nlohmann",
   ]
   if (!use_wasm) {
     include_dirs += [

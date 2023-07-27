@@ -18,6 +18,7 @@
 #include <chrono>
 #include <functional>
 #include <regex>
+#include "animation_filter.h"
 #include "app_start_filter.h"
 #include "args_filter.h"
 #include "binder_filter.h"
@@ -29,6 +30,7 @@
 #include "hi_sysevent_measure_filter.h"
 #include "irq_filter.h"
 #include "measure_filter.h"
+#include "task_pool_filter.h"
 #include "parser/bytrace_parser/bytrace_parser.h"
 #include "parser/htrace_pbreader_parser/htrace_parser.h"
 #include "perf_data_filter.h"
@@ -101,6 +103,7 @@ void TraceStreamerSelector::InitFilter()
 {
     streamFilters_ = std::make_unique<TraceStreamerFilters>();
     traceDataCache_ = std::make_unique<TraceDataCache>();
+    streamFilters_->animationFilter_ = std::make_unique<AnimationFilter>(traceDataCache_.get(), streamFilters_.get());
     streamFilters_->cpuFilter_ = std::make_unique<CpuFilter>(traceDataCache_.get(), streamFilters_.get());
     streamFilters_->sliceFilter_ = std::make_unique<SliceFilter>(traceDataCache_.get(), streamFilters_.get());
 
@@ -146,6 +149,7 @@ void TraceStreamerSelector::InitFilter()
         traceDataCache_.get(), streamFilters_.get(), E_SYS_EVENT_SOURCE_FILTER);
     streamFilters_->hiSysEventMeasureFilter_ =
         std::make_unique<HiSysEventMeasureFilter>(traceDataCache_.get(), streamFilters_.get());
+    streamFilters_->taskPoolFilter_ = std::make_unique<TaskPoolFilter>(traceDataCache_.get(), streamFilters_.get());
 }
 
 void TraceStreamerSelector::WaitForParserEnd()
@@ -161,6 +165,9 @@ void TraceStreamerSelector::WaitForParserEnd()
         htraceParser_->WaitForParserEnd();
     }
     traceDataCache_->UpdateTraceRange();
+    if (traceDataCache_->AnimationTraceEnabled()) {
+        streamFilters_->animationFilter_->UpdateDynamicFrameInfo();
+    }
 }
 
 MetaData* TraceStreamerSelector::GetMetaData()
@@ -281,6 +288,10 @@ int32_t TraceStreamerSelector::UpdateTraceRangeTime(uint8_t* data, int32_t len)
 void TraceStreamerSelector::SetCancel(bool cancel)
 {
     traceDataCache_->SetCancel(cancel);
+}
+void TraceStreamerSelector::UpdateAnimationTraceStatus(bool status)
+{
+    traceDataCache_->UpdateAnimationTraceStatus(status);
 }
 } // namespace TraceStreamer
 } // namespace SysTuning
