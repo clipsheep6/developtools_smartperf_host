@@ -19,6 +19,7 @@ import("test_ts.gni")
 if (is_test) {
   ohos_unittest("trace_streamer_ut") {
     sources = [
+      "unittest/animation_filter_test.cpp",
       "unittest/binder_filter_test.cpp",
       "unittest/bio_parser_test.cpp",
       "unittest/bytrace_parser_test.cpp",
@@ -57,7 +58,9 @@ if (is_test) {
       "unittest/smaps_parser_test.cpp",
       "unittest/span_join_test.cpp",
       "unittest/table_test.cpp",
+      "unittest/task_pool_filter_test.cpp",
       "unittest/wasm_func_test.cpp",
+      "unittest/app_start_filter_test.cpp",
     ]
 
     deps = [
