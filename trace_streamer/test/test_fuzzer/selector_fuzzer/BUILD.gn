@@ -48,7 +48,7 @@ ohos_fuzztest("ts_selector_fuzz_test") {
   deps = [
     "${THIRD_PARTY}/protobuf:protobuf",
     "${THIRD_PARTY}/protobuf:protobuf_lite",
-    # "${THIRD_PARTY}/sqlite:sqlite",
+    "${THIRD_PARTY}/sqlite:sqlite",
     "../../../src:trace_streamer_source",
     "../../../src/proto_reader:proto_reader",
   ]

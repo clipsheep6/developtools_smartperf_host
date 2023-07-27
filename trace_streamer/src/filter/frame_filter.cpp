@@ -14,7 +14,6 @@
  */
 #include "frame_filter.h"
 #include <memory>
-#include <cinttypes>
 #include "log.h"
 #define ISINVALIDU32(value) (value == INVALID_UINT32)
 namespace SysTuning {
@@ -56,7 +55,7 @@ bool FrameFilter::MarkRSOnvsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed, ts:%" PRIu64 "", itid, ts);
+        TS_LOGW("BeginOnvsyncEvent find for itid:%u failed, ts:%llu", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
@@ -174,11 +173,11 @@ bool FrameFilter::EndVsyncEvent(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndVsyncEvent find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndVsyncEvent find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     auto lastFrameSlice = frame->second.back();
@@ -227,11 +226,11 @@ bool FrameFilter::EndFrameQueue(uint64_t ts, uint32_t itid)
 {
     auto frame = vsyncRenderSlice_.find(itid);
     if (frame == vsyncRenderSlice_.end()) {
-        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64" failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%llu failed", itid, ts);
         return false;
     }
     if (!frame->second.size()) {
-        TS_LOGW("EndFrameQueue find for itid:%u ts:%" PRIu64"  failed", itid, ts);
+        TS_LOGW("EndFrameQueue find for itid:%u ts:%llu  failed", itid, ts);
         return false;
     }
     auto firstFrameSlicePos = frame->second.begin();

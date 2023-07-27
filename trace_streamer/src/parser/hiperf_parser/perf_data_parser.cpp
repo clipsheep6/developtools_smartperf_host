@@ -73,8 +73,8 @@ bool PerfDataParser::LoadPerfData()
         fprintf(stdout, "Failed to create file: %s", tmpPerfData_.c_str());
         return false;
     }
-    (void)ftruncate(fd, 0);
-    if (bufferSize_ != (size_t)write(fd, buffer_.get(), bufferSize_)) {
+    auto ret = ftruncate(fd, 0);
+    if (bufferSize_ != write(fd, buffer_.get(), bufferSize_)) {
         close(fd);
         return false;
     }
@@ -263,7 +263,7 @@ uint32_t PerfDataParser::UpdatePerfCallChainData(const std::unique_ptr<PerfRecor
         }
         auto fileId = itor->second;
         callStackTemp.emplace_back(
-            std::make_unique<CallStackTemp>(depth, frame->vaddrInFile_, fileId, symbolId));
+            std::move(std::make_unique<CallStackTemp>(depth, frame->vaddrInFile_, fileId, symbolId)));
         depth++;
     }
     // Determine whether to write callstack data to cache

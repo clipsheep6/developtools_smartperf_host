@@ -71,6 +71,7 @@ public:
 private:
     std::string threadStateDesc_[ProtoReader::THREAD_WAITING + 1] = {"undefined", "Running", "Sleep", "Sloped",
                                                                      "Watting"};
+    uint64_t lastLineSeq_ = 0;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

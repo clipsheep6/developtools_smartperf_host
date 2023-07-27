@@ -17,7 +17,6 @@
 #include "frame_filter.h"
 #include "stat_filter.h"
 #include "string_to_numerical.h"
-#include <cinttypes>
 namespace SysTuning {
 namespace TraceStreamer {
 PrintEventParser::PrintEventParser(TraceDataCache* dataCache, const TraceStreamerFilters* filter)
@@ -62,6 +61,7 @@ bool PrintEventParser::ParsePrintEvent(const std::string& comm,
                 if (pid == point.tgid_) {
                     HandleFrameSliceBeginEvent(point.funcPrefixId_, index, point.funcArgs_, line);
                 }
+                streamFilters_->taskPoolFilter_->TaskPoolEvent(point.name_, index);
             } else {
                 streamFilters_->statFilter_->IncreaseStat(TRACE_EVENT_TRACING_MARK_WRITE, STAT_EVENT_DATA_LOST);
             }
@@ -307,10 +307,10 @@ void PrintEventParser::HandleFrameSliceEndEvent(uint64_t ts, uint64_t pid, uint6
     auto iTid = streamFilters_->processFilter_->GetInternalTid(tid);
     auto pos = std::find(vsyncSliceIds_.begin(), vsyncSliceIds_.end(), callStackRow);
     if (pos != vsyncSliceIds_.end()) {
-        TS_LOGD("ts:%" PRIu64", RenderSliceEnd:%" PRIu64", callStackRow:%zu", ts, tid, callStackRow);
+        TS_LOGD("ts:%llu, RenderSliceEnd:%llu, callStackRow:%zu", ts, tid, callStackRow);
         if (!streamFilters_->frameFilter_->EndVsyncEvent(ts, iTid)) {
             streamFilters_->statFilter_->IncreaseStat(TRACE_VSYNC, STAT_EVENT_NOTMATCH);
-            TS_LOGW("ts:%" PRIu64", RenderSliceEnd:%" PRIu64", callStackRow:%zu failed", ts, tid, callStackRow);
+            TS_LOGW("ts:%llu, RenderSliceEnd:%llu, callStackRow:%zu failed", ts, tid, callStackRow);
         }
         vsyncSliceIds_.erase(pos);
     }
@@ -323,10 +323,10 @@ void PrintEventParser::HandleFrameQueueEndEvent(uint64_t ts, uint64_t pid, uint6
     auto iTid = streamFilters_->processFilter_->GetInternalTid(tid);
     auto pos = std::find(frameCallIds_.begin(), frameCallIds_.end(), callStackRow);
     if (pos != frameCallIds_.end()) {
-        TS_LOGD("ts:%" PRIu64", frameSliceEnd:%" PRIu64"", ts, tid);
+        TS_LOGD("ts:%llu, frameSliceEnd:%u", ts, tid);
         if (!streamFilters_->frameFilter_->EndFrameQueue(ts, iTid)) {
             streamFilters_->statFilter_->IncreaseStat(TRACE_FRAMEQUEUE, STAT_EVENT_NOTMATCH);
-            TS_LOGW("ts:%" PRIu64", frameSliceEnd:%" PRIu64" failed", ts, tid);
+            TS_LOGW("ts:%llu, frameSliceEnd:%lu failed", ts, tid);
         }
         frameCallIds_.erase(pos);
     }

@@ -15,7 +15,7 @@ set -e
 ext="/clang_x64"
 target_dir="linux"
 subsys_name="developtools"
-part_name="smartperf_host"
+part_name="profiler"
 is_debug="$1"
 target="$2"
 target_os="$3"
@@ -78,7 +78,7 @@ if [ "$is_clean" == "true"  ];then
     prebuilts/$gn_path/$gn gen out/"$target_dir""$ext"/$subsys_name/$part_name --clean
     prebuilts/$gn_path/$ninja -C out/"$target_dir""$ext"/$subsys_name/$part_name -t clean
 else
-    prebuilts/$gn_path/$gn gen out/"$target_dir""$ext"/$subsys_name/$part_name --args='is_debug='"$is_debug"' target="'"$target"'" target_os="'"$target_os"'" is_independent_compile=true'
+    prebuilts/$gn_path/$gn gen out/"$target_dir""$ext"/$subsys_name/$part_name --args='is_debug='"$is_debug"' target="'"$target"'" target_os="'"$target_os"'"'
     echo "begin to build ..."
     mkdir -p out/windows
     touch out/windows/trace_streamer.exe
