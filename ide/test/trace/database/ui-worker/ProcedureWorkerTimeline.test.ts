@@ -27,6 +27,10 @@ import {
 // @ts-ignore
 import { Rect } from '../../../../dist/trace/component/trace/timer-shaft/Rect.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+    return {};
+});
+
 describe(' ProcedureWorkerTimelineTest', () => {
   it('timelineTest', () => {
     const canvas = document.createElement('canvas');

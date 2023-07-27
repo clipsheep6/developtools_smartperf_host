@@ -32,6 +32,10 @@ window.ResizeObserver =
 const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../../../dist/trace/database/SqlLite.js');
 
+jest.mock('../../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 describe('TabPanePowerBattery Test', () => {
   it('TabPaneSystemDetailsTest01', function () {
     let tabPaneSystemDetails = new TabPaneSystemDetails();

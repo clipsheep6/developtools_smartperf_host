@@ -136,7 +136,35 @@ describe('TabPaneIOTierStatisticsAnalysis Test', () => {
     });
     it('tabPaneIOTierStatisticsAnalysis03', function () {
         tabPane.processData = jest.fn(() => true);
-        tabPane.getIOTierProcess(param, processData);
+        let paras = [
+            {
+                "type": 2,
+                "callChainId": 1,
+                "dur": 4757959,
+                "pid": 237,
+                "tid": 237,
+                "threadName": "jbd2/mmcblk0p11",
+                "processName": "jbd2/mmcblk0p11(237)",
+                "libId": 263,
+                "symbolId": 12560,
+                "libName": "kallsyms",
+                "symbolName": "submit_bh"
+            },
+            {
+                "type": 2,
+                "callChainId": 1,
+                "dur": 4673084,
+                "pid": 237,
+                "tid": 237,
+                "threadName": "jbd2/mmcblk0p11",
+                "processName": "jbd2/mmcblk0p11(237)",
+                "libId": 263,
+                "symbolId": 12560,
+                "libName": "kallsyms",
+                "symbolName": "submit_bh"
+            }
+        ];
+        tabPane.getIOTierProcess(paras, processData);
         expect(tabPane.processData).not.toBeUndefined();
     });
     it('tabPaneIOTierStatisticsAnalysis04', function () {

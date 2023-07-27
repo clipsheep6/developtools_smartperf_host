@@ -218,7 +218,7 @@ describe('SpProbesConfig Test', () => {
                     </div>
                 </div>
                 <div class="memory-config">
-                    <div class="span-col-2">6有
+                    <div class="span-col-2">
                       <span>Memory Config</span>
                     </div>
                 </div>

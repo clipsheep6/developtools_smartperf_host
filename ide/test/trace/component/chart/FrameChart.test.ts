@@ -15,6 +15,17 @@
 
 // @ts-ignore
 import { FrameChart } from '../../../../dist/trace/component/chart/FrameChart.js';
+// @ts-ignore
+import {TraceRow} from '../../../../dist/trace/component/trace/base/TraceRow.js';
+
+jest.mock('../../../../dist/trace/component/SpSystemTrace.js', () => {
+    return {};
+});
+
+const intersectionObserverMock = () => ({
+    observe: () => null,
+});
+window.IntersectionObserver = jest.fn().mockImplementation(intersectionObserverMock);
 
 window.ResizeObserver =
   window.ResizeObserver ||
@@ -34,7 +45,6 @@ describe('FrameChart Test', () => {
     let selectData = [(length = 1)];
     document.body.innerHTML = '<tab-framechart id="ccc"></tab-framechart>';
     let frameChart = document.querySelector('#ccc') as FrameChart;
-
     it('FrameChartTest01', function () {
         frameChart.tabPaneScrollTop = false;
         expect(frameChart.tabPaneScrollTop).toBeFalsy();
@@ -102,7 +112,7 @@ describe('FrameChart Test', () => {
         frameChart.translationDraw = jest.fn(() => true);
         expect(frameChart.translationByScale(1)).toBe(undefined);
     });
-    it('FrameChartTest211', function () {
+    it('FrameChartTest23', function () {
         expect(frameChart.searchData([], 2, 2)).toBeNull();
     });
 

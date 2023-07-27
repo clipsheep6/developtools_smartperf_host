@@ -19,6 +19,11 @@ import { RangeRuler } from '../../../../../dist/trace/component/trace/timer-shaf
 import { Mark } from '../../../../../dist/trace/component/trace/timer-shaft/RangeRuler.js';
 import { TimerShaftElement } from '../../../../../src/trace/component/trace/TimerShaftElement';
 
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
+
 describe('RangeRuler Test', () => {
   const canvas = document.createElement('canvas');
   canvas.width = 1;
@@ -268,7 +273,7 @@ describe('RangeRuler Test', () => {
 
   it('RangeRulerTest20', function () {
     rangeRuler.setRangeNS(0, 2000);
-    expect(rangeRuler.getRange().startX).toBe(0);
+    expect(rangeRuler.getRange().scale).toBe(50);
   });
 
   it('RangeRulerTest25', function () {

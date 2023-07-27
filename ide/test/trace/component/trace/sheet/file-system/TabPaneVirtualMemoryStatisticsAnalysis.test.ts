@@ -129,7 +129,35 @@ describe('TabPaneVirtualMemoryStatisticsAnalysis Test', () => {
     });
     it('tabPaneVirtualMemoryStatisticsAnalysis03', function () {
         tabPane.vmStatisticsAnalysisProcessData = jest.fn(() => true);
-        tabPane.getVirtualMemoryProcess(param, processData);
+        let data = [
+            {
+                "type": 7,
+                "callChainId": 12,
+                "dur": 30625,
+                "pid": 1374,
+                "tid": 1374,
+                "threadName": "com.ohos.mms",
+                "processName": "com.ohos.mms(1374)",
+                "libId": 344,
+                "symbolId": 727,
+                "libName": "libmmi-util.z.so",
+                "symbolName": "OHOS::MMI::GetThisThreadIdOfString()"
+            },
+            {
+                "type": 7,
+                "callChainId": 24,
+                "dur": 42000,
+                "pid": 1818,
+                "tid": 1374,
+                "threadName": null,
+                "processName": "RSRenderThread(1818)",
+                "libId": null,
+                "symbolId": null,
+                "libName": "",
+                "symbolName": "0x7f7380e670 ()"
+            }
+        ];
+        tabPane.getVirtualMemoryProcess(data, processData);
         expect(tabPane.vmStatisticsAnalysisProcessData).not.toBeUndefined();
     });
     it('tabPaneVirtualMemoryStatisticsAnalysis04', function () {

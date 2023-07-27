@@ -37,7 +37,7 @@ describe('TabPaneFilter Test', () => {
   });
 
   it('TabPaneFilterTest05', function () {
-    expect(tabPaneFilter.icon).toBe('tree');
+    expect(tabPaneFilter.icon).toBe('block');
   });
 
   it('TabPaneFilterTest08', function () {
@@ -265,7 +265,7 @@ describe('TabPaneFilter Test', () => {
             display: flex;
         }
 </style>
-    <lit-icon name="statistics" class="spacing" id="icon" size="20"></lit-icon>
+    <lit-icon name="menu" class="spacing" id="icon" size="20"></lit-icon>
     <span class="describe left-text spacing">Input Filter</span>
     <input id="filter-input" class="spacing" placeholder="Detail Filter"/>
     <button id="mark" class="spacing">Mark Snapshot</button>

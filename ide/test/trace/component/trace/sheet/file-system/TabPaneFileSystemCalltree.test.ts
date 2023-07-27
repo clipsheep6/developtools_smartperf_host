@@ -13,27 +13,37 @@
  * limitations under the License.
  */
 
+import '../../../../../../dist/trace/component/trace/sheet/file-system/TabpaneFilesystemCalltree.js';
 // @ts-ignore
 import { TabpaneFilesystemCalltree } from '../../../../../../dist/trace/component/trace/sheet/file-system/TabpaneFilesystemCalltree.js';
-import '../../../../../../dist/trace/component/trace/sheet/file-system/TabpaneFilesystemCalltree.js';
 // @ts-ignore
 import { TabPaneFilter } from '../../../../../../dist/trace/component/trace/sheet/TabPaneFilter.js';
 // @ts-ignore
 import { FrameChart } from '../../../../../../dist/trace/component/chart/FrameChart.js';
-
-jest.mock('../../../../../../dist/trace/component/trace/base/TraceRow.js', () => {
-  return {};
+// @ts-ignore
+import { NativeHookStatisticsTableData } from '../../../../../../dist/trace/database/ui-worker/ProcedureWorkerCPU.js';
+jest.mock('../../../../../../dist/trace/database/ui-worker/ProcedureWorkerCPU.js', () => {
+  return {
+    cpuCount: 1,
+    CpuRender: Object,
+    EmptyRender: Object
+  };
 });
+
+const intersectionObserverMock = () => ({
+  observe: () => null,
+});
+window.IntersectionObserver = jest.fn().mockImplementation(intersectionObserverMock);
 
 import crypto from 'crypto';
 
 window.ResizeObserver =
-    window.ResizeObserver ||
-    jest.fn().mockImplementation(() => ({
-      disconnect: jest.fn(),
-      observe: jest.fn(),
-      unobserve: jest.fn(),
-    }));
+  window.ResizeObserver ||
+  jest.fn().mockImplementation(() => ({
+    disconnect: jest.fn(),
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+  }));
 
 Object.defineProperty(global.self, 'crypto', {
   value: {

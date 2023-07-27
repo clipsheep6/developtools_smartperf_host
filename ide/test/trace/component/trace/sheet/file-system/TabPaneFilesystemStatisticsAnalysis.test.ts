@@ -178,8 +178,37 @@ describe('TabPaneFilesystemStatisticsAnalysis Test', () => {
     });
 
     it('systemStatisticsAnalysis11', function () {
+        tabPane.fileStatisticsAnalysisProcessData = jest.fn(() => true);
         tabPane.fileStatisticsAnalysisProcessData.reMeauseHeight = jest.fn(() => true);
-        tabPane.getFilesystemProcess(param, processData);
+        let parames = [
+            {
+                "type": 0,
+                "callChainId": 13,
+                "dur": 240916,
+                "pid": 911,
+                "tid": 404,
+                "threadName": null,
+                "processName": "power_host(911)",
+                "libId": 542,
+                "symbolId": 802,
+                "libName": "libbattery_interface_service_1.0.z.so",
+                "symbolName": "OHOS::HDI::Battery::V1_0::PowerSupplyProvider::ReadBatterySysfsToBuff(char const*, char*, unsigned long) const"
+            },
+            {
+                "type": 0,
+                "callChainId": 17,
+                "dur": 42000,
+                "pid": 911,
+                "tid": 404,
+                "threadName": null,
+                "processName": "power_host(911)",
+                "libId": 542,
+                "symbolId": 802,
+                "libName": "libbattery_interface_service_1.0.z.so",
+                "symbolName": "OHOS::HDI::Battery::V1_0::PowerSupplyProvider::ReadBatterySysfsToBuff(char const*, char*, unsigned long) const"
+            }
+        ]
+        tabPane.getFilesystemProcess(parames, processData);
         expect(tabPane.fileStatisticsAnalysisProcessData).not.toBeUndefined();
     });
 });

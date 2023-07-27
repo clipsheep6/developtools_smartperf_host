@@ -154,7 +154,7 @@ describe('TabPaneCounterSample Test', () => {
         <lit-table id="tb-counter-sample" class="counter-sample-table">
             <lit-table-column class="counter-sample-column" width="20%" order data-index="counter" key="counter" align="flex-start" title="Cpu" >
             </lit-table-column>
-            <lit-table-column class="counter-sample-column" width="1fr" order data-index="timeStr" key="timeStr" align="flex-start" title="Time" >
+            <lit-table-column class="counter-sample-column" width="1fr" order data-index="timeStr" key="timeStr" align="flex-start" title="Time(ms)" >
             </lit-table-column>
             <lit-table-column class="counter-sample-column" width="1fr" order data-index="value" key="value" align="flex-start" title="Value" >
             </lit-table-column>

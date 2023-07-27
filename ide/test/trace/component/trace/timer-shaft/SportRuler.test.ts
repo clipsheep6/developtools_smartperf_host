@@ -20,6 +20,14 @@ jest.mock('../../../../../dist/trace/component/trace/base/TraceRow.js', () => {
   return {};
 });
 
+jest.mock('../../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
+jest.mock('../../../../../dist/trace/component/SpSystemTrace.js', () => {
+  return {};
+});
+
 // @ts-ignore
 import { SportRuler } from '../../../../../dist/trace/component/trace/timer-shaft/SportRuler.js';
 // @ts-ignore
@@ -28,6 +36,20 @@ import { TimerShaftElement } from '../../../../../dist/trace/component/trace/Tim
 import { Flag } from '../../../../../dist/trace/component/trace/timer-shaft/Flag.js';
 // @ts-ignore
 import { TraceRow, RangeSelectStruct } from '../../../../../dist/trace/component/trace/base/TraceRow.js';
+
+const intersectionObserverMock = () => ({
+  observe: () => null,
+});
+window.IntersectionObserver = jest.fn().mockImplementation(intersectionObserverMock);
+
+// @ts-ignore
+window.ResizeObserver = window.ResizeObserver ||
+    jest.fn().mockImplementation(() => ({
+      disconnect: jest.fn(),
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+    }));
+
 
 declare global {
   interface Window {
@@ -99,6 +121,12 @@ describe('SportRuler Test', () => {
     endNS: 20,
     xs: [],
     xsTxt: [],
+    slicesTime: {
+      startTime: 12,
+      endTime: 22,
+      startX: 32,
+      endX: 42,
+      color: '#000'}
   };
 
   it('SportRulerTest04', function () {
@@ -301,7 +329,8 @@ describe('SportRuler Test', () => {
   });
 
   it('SportRulerTest24', function () {
-    sportRuler.drawSlicesMark(null, null);
+    document.body.innerHTML = `<sp-application></sp-application>`;
+    sportRuler.drawSlicesMarks({startTime: 11, endTime: 22, startX: 33, endX: 44, color: '#fff'});
   });
 
   it('SportRulerTest25', function () {

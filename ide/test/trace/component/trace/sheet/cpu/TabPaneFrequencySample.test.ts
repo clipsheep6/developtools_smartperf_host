@@ -150,9 +150,9 @@ describe('TabPaneFrequencySample Test', () => {
         <lit-table id="tb-states" style="height: auto" >
             <lit-table-column class="freq-sample-column" width="20%" title="Cpu" data-index="counter" key="counter" align="flex-start" order>
             </lit-table-column>
-            <lit-table-column class="freq-sample-column" width="1fr" title="Time" data-index="timeStr" key="timeStr" align="flex-start" order>
+            <lit-table-column class="freq-sample-column" width="1fr" title="Time(ms)" data-index="timeStr" key="timeStr" align="flex-start" order>
             </lit-table-column>
-            <lit-table-column class="freq-sample-column" width="1fr" title="Value" data-index="valueStr" key="valueStr" align="flex-start" order>
+            <lit-table-column class="freq-sample-column" width="1fr" title="Value(kHz)" data-index="valueStr" key="valueStr" align="flex-start" order>
             </lit-table-column>
         </lit-table>
         <lit-progress-bar class="progressFre"></lit-progress-bar>

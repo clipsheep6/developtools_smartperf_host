@@ -31,6 +31,10 @@ import {
   queryConfigSysEventAppName,
 } from '../../../../src/trace/database/SqlLite.js';
 
+jest.mock('../../../../dist/trace/database/ui-worker/ProcedureWorker.js', () => {
+  return {};
+});
+
 window.ResizeObserver =
   window.ResizeObserver ||
   jest.fn().mockImplementation(() => ({

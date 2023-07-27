@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 //@ts-ignore
-import { TabPaneComparison } from '../../../../../../dist/trace/component/trace/sheet/snapshot/TabPaneComparison.js';
-import '../../../../../../dist/trace/component/trace/sheet/snapshot/TabPaneComparison.js';
+import { TabPaneComparison } from '../../../../../../dist/trace/component/trace/sheet/ark-ts/TabPaneComparison.js';
+import '../../../../../../dist/trace/component/trace/sheet/ark-ts/TabPaneComparison.js';
 
 //@ts-ignore
 import { HeapDataInterface } from '../../../../../../dist/js-heap/HeapDataInterface.js';
