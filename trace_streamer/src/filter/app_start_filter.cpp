@@ -63,34 +63,34 @@ bool APPStartupFilter::CaclRsDataByPid(appMap& mAPPStartupData)
             continue;
         }
         auto itorSecond = item.second.begin();
-        auto dataIndex = item.first;
-        if (itorSecond->second->ipid_ != INVALID_UINT32) {
-            for (int m = 0; m < frameSliceData->Ipids().size(); m++) {
-                if (itorSecond->second->ipid_ == frameSliceData->Ipids()[m] && !frameSliceData->Types()[m] &&
-                    frameSliceData->Flags()[m] != INVAILD_DATA) {
-                    auto startTime = sliceData.TimeStampData()[frameSliceData->CallStackIds()[m]];
-                    auto callId = sliceData.CallIds()[frameSliceData->CallStackIds()[m]];
-                    auto endTime = startTime + frameSliceData->Durs()[m];
-                    if (frameSliceData->Durs()[m] == INVALID_UINT64) {
-                        endTime = INVALID_UINT64;
-                    }
-                    mAPPStartupData[dataIndex].emplace(
-                        FIRST_FRAME_APP_PHASE,
-                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
-                                                         startTime, endTime));
-                    auto dstId = frameSliceData->Dsts()[m];
-                    if (dstId == INVALID_UINT64) {
-                        continue;
-                    }
-                    callId = sliceData.CallIds()[frameSliceData->CallStackIds()[dstId]];
-                    startTime = frameSliceData->TimeStampData()[dstId];
-                    endTime = startTime + frameSliceData->Durs()[dstId];
-                    mAPPStartupData[dataIndex].emplace(
-                        FIRST_FRAME_RENDER_PHASE,
-                        std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_, itorSecond->second->tid_,
-                                                         startTime, endTime));
-                    break;
+        if (itorSecond->second->ipid_ == INVALID_UINT32) {
+            continue;
+        }
+        for (int m = 0; m < frameSliceData->Ipids().size(); m++) {
+            if (itorSecond->second->ipid_ == frameSliceData->Ipids()[m] && !frameSliceData->Types()[m] &&
+                frameSliceData->Flags()[m] != INVAILD_DATA) {
+                auto startTime = sliceData.TimeStampData()[frameSliceData->CallStackIds()[m]];
+                auto callId = sliceData.CallIds()[frameSliceData->CallStackIds()[m]];
+                auto endTime = startTime + frameSliceData->Durs()[m];
+                if (frameSliceData->Durs()[m] == INVALID_UINT64) {
+                    endTime = INVALID_UINT64;
                 }
+                mAPPStartupData[item.first].emplace(FIRST_FRAME_APP_PHASE,
+                                                    std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
+                                                                                     itorSecond->second->tid_,
+                                                                                     startTime, endTime));
+                auto dstId = frameSliceData->Dsts()[m];
+                if (dstId == INVALID_UINT64) {
+                    continue;
+                }
+                callId = sliceData.CallIds()[frameSliceData->CallStackIds()[dstId]];
+                startTime = frameSliceData->TimeStampData()[dstId];
+                endTime = startTime + frameSliceData->Durs()[dstId];
+                mAPPStartupData[item.first].emplace(FIRST_FRAME_RENDER_PHASE,
+                                                    std::make_unique<APPStartupData>(callId, itorSecond->second->ipid_,
+                                                                                     itorSecond->second->tid_,
+                                                                                     startTime, endTime));
+                break;
             }
         }
     }
@@ -149,7 +149,7 @@ void APPStartupFilter::UpdateAPPStartupData(uint32_t row, const std::string& nam
 {
     auto sliceData = traceDataCache_->GetConstInternalSlicesData();
     auto vNameString = SplitStringToVec(nameString, "##");
-    if (vNameString.size() < MIN_VECTOR_SIZE_) {
+    if (vNameString.size() < MIN_VECTOR_SIZE) {
         return;
     }
     auto dataIndex = traceDataCache_->GetDataIndex(vNameString[1].c_str());
@@ -171,7 +171,7 @@ void APPStartupFilter::ParserAppStartup()
         auto& nameString = traceDataCache_->GetDataFromDict(sliceData.NamesData()[i]);
         if (StartWith(nameString, PROCESS_CREATE)) {
             auto vNameString = SplitStringToVec(nameString, "##");
-            if (vNameString.size() >= MIN_VECTOR_SIZE_) {
+            if (vNameString.size() >= MIN_VECTOR_SIZE) {
                 mainThreadName = vNameString[1];
             }
             if (!sliceData.ParentIdData()[i].has_value()) {
@@ -191,7 +191,7 @@ void APPStartupFilter::ParserAppStartup()
         } else if (StartWith(nameString, LAUNCH)) {
             auto sliceData = traceDataCache_->GetConstInternalSlicesData();
             auto vNameString = SplitStringToVec(nameString, "##");
-            if (vNameString.size() < MIN_VECTOR_SIZE_) {
+            if (vNameString.size() < MIN_VECTOR_SIZE) {
                 continue;
             }
             auto dataIndex = traceDataCache_->GetDataIndex(vNameString[1].c_str());

@@ -881,6 +881,7 @@ public:
                                         uint64_t timeStamp,
                                         uint32_t callChainId,
                                         uint32_t memoryType,
+                                        DataIndex subMemType,
                                         uint64_t applyCount,
                                         uint64_t releaseCount,
                                         uint64_t applySize,
@@ -889,6 +890,7 @@ public:
     const std::deque<uint32_t>& Ipids() const;
     const std::deque<uint32_t>& CallChainIds() const;
     const std::deque<uint32_t>& MemoryTypes() const;
+    const std::deque<DataIndex>& MemorySubTypes() const;
     const std::deque<uint64_t>& ApplyCounts() const;
     const std::deque<uint64_t>& ReleaseCounts() const;
     const std::deque<uint64_t>& ApplySizes() const;
@@ -911,6 +913,7 @@ private:
     std::deque<uint32_t> ipids_ = {};
     std::deque<uint32_t> callChainIds_ = {};
     std::deque<uint32_t> memoryTypes_ = {};
+    std::deque<DataIndex> memSubTypes_ = {};
     std::deque<uint64_t> applyCounts_ = {};
     std::deque<uint64_t> releaseCounts_ = {};
     std::deque<uint64_t> applySizes_ = {};
@@ -1905,9 +1908,12 @@ public:
     void UpdateCallStackSliceId(uint64_t row, uint64_t callStackSliceId);
     void SetEndTimeAndFlag(uint64_t row, uint64_t ts, uint64_t expectDur, uint64_t expectEnd);
     void Erase(uint64_t row);
+    static const uint32_t GetAbnormalStartEndTimeState()
+    {
+        return abnormalStartEndTimeState_;
+    }
 
 public:
-    static const uint32_t ABNORMAL_START_END_TIME = 3;
     typedef enum FrameSliceType { ACTURAL_SLICE, EXPECT_SLICE } FrameSliceType;
 
 private:
@@ -1923,6 +1929,7 @@ private:
     std::deque<uint8_t> depths_ = {};
     std::deque<uint32_t> frameNos_ = {};
     const uint32_t INVALID_ROW = 2;
+    static const uint32_t abnormalStartEndTimeState_ = 3;
 };
 class FrameMaps : public CacheBase {
 public:
@@ -2414,29 +2421,29 @@ private:
 class TaskPoolInfo : public CacheBase {
 public:
     size_t AppendAllocationTaskData(uint32_t allocationTaskRow,
-                                    uint32_t allocationTaskId,
+                                    uint32_t allocationItid,
                                     uint32_t executeId,
                                     uint32_t priority,
                                     uint32_t executeState);
-    size_t AppendExecuteTaskData(uint32_t executeTaskRow, uint32_t executeTaskId, uint32_t executeId);
+    size_t AppendExecuteTaskData(uint32_t executeTaskRow, uint32_t executeItid, uint32_t executeId);
     size_t AppendReturnTaskData(uint32_t returnTaskRow,
-                                uint32_t returnTaskId,
+                                uint32_t returnItid,
                                 uint32_t executeId,
                                 uint32_t returnState);
     void UpdateAllocationTaskData(uint32_t index,
                                   uint32_t allocationTaskRow,
-                                  uint32_t allocationTaskId,
+                                  uint32_t allocationItid,
                                   uint32_t priority,
                                   uint32_t executeState);
-    void UpdateExecuteTaskData(uint32_t index, uint32_t executeTaskRow, uint32_t executeTaskId);
-    void UpdateReturnTaskData(uint32_t index, uint32_t returnTaskRow, uint32_t returnTaskId, uint32_t returnState);
+    void UpdateExecuteTaskData(uint32_t index, uint32_t executeTaskRow, uint32_t executeItid);
+    void UpdateReturnTaskData(uint32_t index, uint32_t returnTaskRow, uint32_t returnItid, uint32_t returnState);
 
     const std::deque<uint32_t>& AllocationTaskRows() const;
     const std::deque<uint32_t>& ExecuteTaskRows() const;
     const std::deque<uint32_t>& ReturnTaskRows() const;
-    const std::deque<uint32_t>& AllocationTaskIds() const;
-    const std::deque<uint32_t>& ExecuteTaskIds() const;
-    const std::deque<uint32_t>& ReturnTaskIds() const;
+    const std::deque<uint32_t>& AllocationItids() const;
+    const std::deque<uint32_t>& ExecuteItids() const;
+    const std::deque<uint32_t>& ReturnItids() const;
     const std::deque<uint32_t>& ExecuteIds() const;
     const std::deque<uint32_t>& Prioritys() const;
     const std::deque<uint32_t>& ExecuteStates() const;
@@ -2447,9 +2454,9 @@ public:
         allocationTaskRows_.clear();
         executeTaskRows_.clear();
         returnTaskRows_.clear();
-        allocationTaskIds_.clear();
-        executeTaskIds_.clear();
-        returnTaskIds_.clear();
+        allocationItids_.clear();
+        executeItids_.clear();
+        returnItids_.clear();
         executeIds_.clear();
         prioritys_.clear();
         executeStates_.clear();
@@ -2460,9 +2467,9 @@ private:
     std::deque<uint32_t> allocationTaskRows_ = {};
     std::deque<uint32_t> executeTaskRows_ = {};
     std::deque<uint32_t> returnTaskRows_ = {};
-    std::deque<uint32_t> allocationTaskIds_ = {};
-    std::deque<uint32_t> executeTaskIds_ = {};
-    std::deque<uint32_t> returnTaskIds_ = {};
+    std::deque<uint32_t> allocationItids_ = {};
+    std::deque<uint32_t> executeItids_ = {};
+    std::deque<uint32_t> returnItids_ = {};
     std::deque<uint32_t> executeIds_ = {};
     std::deque<uint32_t> prioritys_ = {};
     std::deque<uint32_t> executeStates_ = {};

@@ -63,9 +63,6 @@ fi
 if [ "$is_debug" != "false" ];then
     ext="_debug"
 fi
-if [ ! -d "third_party/protogen" ] && [ "$target" != "spb" ] && [ "$target" != "protoc" ];then
-    ./src/protos/protogen.sh
-fi
 
 if [ "$target" == "test" ] || [ "$target" == "fuzz" ] || [ "$target"="wasm" ] || [ "$target"="sdkdemo" ] || [ "$target"="sdkdemotest" ];then
     target_dir=$target
@@ -77,7 +74,7 @@ if [ "$target" == "trace_streamer" ] || [ "$target" == "trace" ] || [ "$target" 
 fi
 echo "target_dir:" $target_dir
 echo "target:" $target
-# exit
+
 if [ "$is_clean" == "true"  ];then
     prebuilts/$gn_path/$gn gen out/"$target_dir""$ext"/$clang_dir/$subsys_name/$part_name --clean
     prebuilts/$gn_path/$ninja -C out/"$target_dir""$ext"/$clang_dir/$subsys_name/$part_name -t clean

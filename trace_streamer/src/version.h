@@ -18,6 +18,6 @@
 #include <string>
 #include <sys/types.h>
 extern size_t g_loadSize;
-extern const std::string TRACE_STREAM_VERSION;        // version
-extern const std::string TRACE_STREAM_PUBLISHVERSION; // publish datetime
+extern const std::string g_traceStreamerVersion;        // version
+extern const std::string g_traceStreamerPublishVersion; // publish datetime
 #endif

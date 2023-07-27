@@ -70,7 +70,7 @@ std::string GetExecutionDirectoryPath()
     ::GetModuleFileNameA(NULL, currPath, MAX_PATH);
     (strrchr(currPath, '\\'))[1] = 0;
 #else
-    readlink("/proc/self/exe", currPath, sizeof(currPath) - 1);
+    (void)readlink("/proc/self/exe", currPath, sizeof(currPath) - 1);
 #endif
     std::string str(currPath);
     return str.substr(0, str.find_last_of('/'));

@@ -107,8 +107,10 @@ void HtraceJsCpuProfilerParser::ParseJsCpuProfiler(std::string result)
         } else if (sample == std::numeric_limits<uint32_t>::max()) {
             sample = jMessage.at("samples")[0];
         }
-        uint32_t timeDeltas = jMessage.at("timeDeltas")[i];
-        sampleEndTime += timeDeltas;
+        if (i + 1 < jMessage.at("timeDeltas").size()) {
+            uint32_t timeDeltas = jMessage.at("timeDeltas")[i + 1];
+            sampleEndTime += timeDeltas;
+        }
     }
     dur = (sampleEndTime * TIME_SECOND_COVER) - (startTime * TIME_SECOND_COVER);
     (void)traceDataCache_->GetJsCpuProfilerSampleData()->AppendNewData(sample, startTime * TIME_SECOND_COVER,
