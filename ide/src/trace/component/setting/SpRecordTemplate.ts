@@ -113,6 +113,9 @@ export class SpRecordTemplate extends BaseElement {
           hitraceCategories.push(categories);
         }
       });
+      if (this.appStartup?.checked){
+        hitraceCategories.push('musl');
+      }
       SpRecordTemplate.FRAME_TIMELINE_EVENTS.forEach((ev) => {
         if (traceEventSet.indexOf(ev) == -1) {
           traceEventSet.push(ev);
