@@ -13,10 +13,13 @@
  * limitations under the License.
  */
 // @ts-ignore
-import { TabPanePurgPin } from '../../../../../../dist/trace/component/trace/sheet/ability/TabPanePurgPin.js';
+import { TabPanePurgPinSelection } from '../../../../../../dist/trace/component/trace/sheet/ability/TabPanePurgPinSelection.js';
 
 const sqlit = require('../../../../../../dist/trace/database/SqlLite.js');
 jest.mock('../../../../../../dist/trace/database/SqlLite.js');
+jest.mock('../../../../../../dist/trace/component/trace/base/TraceRow.js', () => {
+    return {};
+});
 // @ts-ignore
 window.ResizeObserver = window.ResizeObserver ||
     jest.fn().mockImplementation(() => ({
@@ -26,57 +29,38 @@ window.ResizeObserver = window.ResizeObserver ||
     }));
 
 describe('TabPanePurgPin Test', () => {
-    let tabPanePurgPin = new TabPanePurgPin();
-    let querySysPurgeableTab = sqlit.querySysPurgeableTab;
-    querySysPurgeableTab.mockResolvedValue([
+    let tabPanePurgPinSelection = new TabPanePurgPinSelection();
+    let querySysPurgeableSelectionTab = sqlit.querySysPurgeableSelectionTab;
+    querySysPurgeableSelectionTab.mockResolvedValue([
         {
-            avgSize: 25165824,
-            avgSizes: "24.00MB",
-            type: "allocator_host",
-            maxSize: 25165822,
-            maxSizes: "24.00MB",
-            minSize: 25165824,
-            minSizes: "24.00MB",
+            value: 25165824,
+            name: "24.00MB",
         },
         {
-            avgSize: 25165824,
-            avgSizes: "24.00MB",
-            type: "11allocator_host",
-            maxSize: 25165824,
-            maxSizes: "24.00MB",
-            minSize: 25165824,
-            minSizes: "24.00MB",
+            value: 25165824,
+            name: "24.00MB",
         },
         {
-            avgSize: 25165824,
-            avgSizes: "24.00MB",
-            type: "alloca11tor_host",
-            maxSize: 25165824,
-            maxSizes: "24.00MB",
-            minSize: 25165824,
-            minSizes: "24.00MB",
+            value: 25165824,
+            name: "24.00MB",
         },
     ]);
-    let data =  [{
-            avgSize: 25165824,
-            avgSizes: "24.00MB",
-            type: "allocator_host",
-            maxSize: 25165822,
-            maxSizes: "24.00MB",
-            minSize: 25165824,
-            minSizes: "24.00MB",
+    let queryProcessPurgeableSelectionTab = sqlit.queryProcessPurgeableSelectionTab;
+    queryProcessPurgeableSelectionTab.mockResolvedValue([
+        {
+            value: 25165824,
+            name: "24.00MB",
         },
         {
-            avgSize: 25165824,
-            avgSizes: "24.00MB",
-            type: "11allocator_host",
-            maxSize: 25165824,
-            maxSizes: "24.00MB",
-            minSize: 25165824,
-            minSizes: "24.00MB",
-        }]
-    tabPanePurgPin.init = jest.fn(() => true);
-    tabPanePurgPin.data = {
+            value: 25165824,
+            name: "24.00MB",
+        },
+        {
+            value: 25165824,
+            name: "24.00MB",
+        },
+    ]);
+    tabPanePurgPinSelection.data = {
         anomalyEnergy: [],
         clockMapData:{size: 0},
         cpuAbilityIds: [],
@@ -117,9 +101,9 @@ describe('TabPanePurgPin Test', () => {
         processIds: [],
         processTrackIds: [],
         promiseList: [],
-        purgeablePinAbility: data,
+        purgeablePinAbility: [],
         purgeablePinSelection: [],
-        purgeablePinVM: data,
+        purgeablePinVM: [],
         purgeableTotalAbility: [],
         purgeableTotalSelection: [],
         purgeableTotalVM: [],
@@ -133,11 +117,7 @@ describe('TabPanePurgPin Test', () => {
         statisticsSelectData: undefined,
     };
 
-    it('TabPanePurgPinTest01', function () {
-        expect(
-            tabPanePurgPin.sortByColumn({
-                key: 'avgSize',
-            })
-        ).toBeUndefined();
+    it('tabPanePurgPinSelectionTest01', function () {
+        expect(tabPanePurgPinSelection.data).toBeUndefined();
     });
 })
