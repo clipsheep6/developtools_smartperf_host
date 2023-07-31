@@ -33,7 +33,7 @@ import { SelectionParam } from '../bean/BoxSelection.js';
 import { procedurePool } from '../database/Procedure.js';
 import { SpApplication } from '../SpApplication.js';
 import { Flag } from './trace/timer-shaft/Flag.js';
-import { SportRuler, SlicesTime } from './trace/timer-shaft/SportRuler.js';
+import { SlicesTime, SportRuler } from './trace/timer-shaft/SportRuler.js';
 import { SpHiPerf } from './chart/SpHiPerf.js';
 import { SearchSdkBean, SearchThreadProcessBean } from '../bean/SearchFuncBean.js';
 import { error, info } from '../../log/Log.js';
@@ -115,6 +115,11 @@ function throttle(fn: any, t: number, ev: any): any {
   };
 }
 
+export class CurrentSlicesTime {
+  startTime: number | undefined;
+  endTime: number | undefined;
+}
+
 @element('sp-system-trace')
 export class SpSystemTrace extends BaseElement {
   static mouseCurrentPosition = 0;
@@ -130,6 +135,7 @@ export class SpSystemTrace extends BaseElement {
   static SDK_CONFIG_MAP: any;
   static sliceRangeMark: any;
   static wakeupList: Array<WakeupBean> = [];
+  currentSlicesTime: CurrentSlicesTime = new CurrentSlicesTime();
   intersectionObserver: IntersectionObserver | undefined;
   tipEL: HTMLDivElement | undefined | null;
   rowsEL: HTMLDivElement | undefined | null;
@@ -138,6 +144,7 @@ export class SpSystemTrace extends BaseElement {
   favoriteRowsEL: HTMLDivElement | undefined | null;
   visibleRows: Array<TraceRow<any>> = [];
   collectRows: Array<TraceRow<any>> = [];
+  currentRow: TraceRow<any> | undefined | null;
   keyboardEnable = true;
   mouseEventEnable = true;
   currentRowType = ''; /*保存当前鼠标所在行的类型*/
@@ -225,17 +232,19 @@ export class SpSystemTrace extends BaseElement {
       document!.querySelector('body > sp-application')?.shadowRoot?.querySelector!(
         '#main-menu'
       )?.shadowRoot?.querySelector('div.bottom > div.color');
-    let rightButton: HTMLElement | null | undefined = this.shadowRoot
-      ?.querySelector('div > trace-sheet')
-      ?.shadowRoot?.querySelector('#current-selection > tabpane-current-selection')
+    this.traceSheetEL = this.shadowRoot?.querySelector('.trace-sheet');
+    let rightButton: HTMLElement | null | undefined = this.traceSheetEL?.shadowRoot
+      ?.querySelector('#current-selection > tabpane-current-selection')
       ?.shadowRoot?.querySelector('#rightButton');
+    let rightStar: HTMLElement | null | undefined = this.traceSheetEL?.shadowRoot
+      ?.querySelector('#current-selection > tabpane-current-selection')
+      ?.shadowRoot?.querySelector('#right-star');
     this.rowsEL = this.shadowRoot?.querySelector<HTMLDivElement>('.rows');
     this.tipEL = this.shadowRoot?.querySelector<HTMLDivElement>('.tip');
     this.rowsPaneEL = this.shadowRoot?.querySelector<HTMLDivElement>('.rows-pane');
     this.spacerEL = this.shadowRoot?.querySelector<HTMLDivElement>('.spacer');
     this.canvasFavoritePanel = this.shadowRoot?.querySelector<HTMLCanvasElement>('.panel-canvas-favorite');
     this.timerShaftEL = this.shadowRoot?.querySelector('.timer-shaft');
-    this.traceSheetEL = this.shadowRoot?.querySelector('.trace-sheet');
     this.favoriteRowsEL = this.shadowRoot?.querySelector('.favorite-rows');
     this.rangeSelect = new RangeSelect(this);
     rightButton?.addEventListener('click', (event: any) => {
@@ -248,9 +257,76 @@ export class SpSystemTrace extends BaseElement {
       setTimeout(() => {
         requestAnimationFrame(() => this.refreshCanvas(false));
       }, 300);
+      rightStar!.style.visibility = 'visible';
+      rightStar!.style.cursor = 'pointer';
       SpSystemTrace.btnTimer = setTimeout(() => {
         SpSystemTrace.btnTimer = null; // 2.清空节流阀，方便下次开启定时器
       }, 2000);
+    });
+    rightStar?.addEventListener('click', () => {
+      let wakeupLists = [];
+      for (let i = 0; i < SpSystemTrace.wakeupList.length; i++) {
+        wakeupLists.unshift(CpuStruct.selectCpuStruct?.cpu);
+        wakeupLists.push(SpSystemTrace.wakeupList[i].cpu);
+      }
+      let wakeupCpuLists = Array.from(new Set(wakeupLists)).sort();
+      for (let i = 0; i < wakeupCpuLists.length; i++) {
+        let cpuFavoriteRow: any = this.shadowRoot?.querySelector<TraceRow<any>>(
+          `trace-row[row-type='cpu-data'][row-id='${wakeupCpuLists[i]}']`
+        );
+        cpuFavoriteRow!.setAttribute('collect-type', '');
+        let replaceRow = document.createElement('div');
+        replaceRow.setAttribute('row-id', cpuFavoriteRow.rowId + '-' + cpuFavoriteRow.rowType);
+        replaceRow.setAttribute('type', 'replaceRow');
+        replaceRow.setAttribute('row-parent-id', cpuFavoriteRow.rowParentId);
+        replaceRow.style.display = 'none';
+        cpuFavoriteRow.rowHidden = !cpuFavoriteRow.hasAttribute('scene');
+        if (this.rowsEL!.contains(cpuFavoriteRow)) {
+          this.rowsEL!.replaceChild(replaceRow, cpuFavoriteRow);
+        }
+        this.favoriteRowsEL!.append(cpuFavoriteRow);
+        this.currentClickRow = null;
+        cpuFavoriteRow.setAttribute('draggable', 'true');
+        cpuFavoriteRow.addEventListener('dragstart', () => {
+          this.currentClickRow = cpuFavoriteRow;
+        });
+        cpuFavoriteRow.addEventListener('dragover', (ev: any) => {
+          ev.preventDefault();
+          ev.dataTransfer.dropEffect = 'move';
+        });
+        cpuFavoriteRow.addEventListener('drop', (ev: any) => {
+          if (this.favoriteRowsEL != null && this.currentClickRow != null && this.currentClickRow !== cpuFavoriteRow) {
+            let rect = cpuFavoriteRow.getBoundingClientRect();
+            if (ev.clientY >= rect.top && ev.clientY < rect.top + rect.height / 2) {
+              //向上移动
+              this.favoriteRowsEL.insertBefore(this.currentClickRow, cpuFavoriteRow);
+            } else if (ev.clientY <= rect.bottom && ev.clientY > rect.top + rect.height / 2) {
+              //向下移动
+              this.favoriteRowsEL.insertBefore(this.currentClickRow, cpuFavoriteRow.nextSibling);
+            }
+            this.refreshFavoriteCanvas();
+          }
+        });
+        cpuFavoriteRow.addEventListener('dragend', () => {
+          this.linkNodes.forEach((itln) => {
+            if (itln[0].rowEL.collect) {
+              itln[0].rowEL.translateY = itln[0].rowEL.getBoundingClientRect().top - 195;
+            } else {
+              itln[0].rowEL.translateY = itln[0].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+            }
+            if (itln[1].rowEL.collect) {
+              itln[1].rowEL.translateY = itln[1].rowEL.getBoundingClientRect().top - 195;
+            } else {
+              itln[1].rowEL.translateY = itln[1].rowEL.offsetTop - this.rowsPaneEL!.scrollTop;
+            }
+            itln[0].y = itln[0].rowEL.translateY + itln[0].offsetY;
+            itln[1].y = itln[1].rowEL.translateY + itln[1].offsetY;
+          });
+          this.currentClickRow = null;
+        });
+      }
+      this.refreshFavoriteCanvas();
+      this.refreshCanvas(true);
     });
     sideColor?.addEventListener('click', (event: any) => {
       requestAnimationFrame(() => this.refreshCanvas(true));
@@ -1731,6 +1807,7 @@ export class SpSystemTrace extends BaseElement {
     ['s', false],
     ['a', false],
     ['d', false],
+    ['f', false],
   ]);
   documentOnKeyPress = (ev: KeyboardEvent) => {
     if (!this.loadTraceCompleted) return;
@@ -1761,16 +1838,67 @@ export class SpSystemTrace extends BaseElement {
           }
         });
       }
+      if (keyPress === 'f') {
+        // 设置当前的slicesTime
+        this.setCurrentSlicesTime();
+      }
       let keyPressWASD = keyPress === 'w' || keyPress === 'a' || keyPress === 's' || keyPress === 'd';
       if (keyPressWASD) {
         this.keyPressMap.set(keyPress, true);
         this.hoverFlag = null;
       }
-      this.timerShaftEL!.documentOnKeyPress(ev);
+      this.timerShaftEL!.documentOnKeyPress(ev, this.currentSlicesTime);
+      if (keyPress === 'f') {
+        this.verticalScrollToRow();
+      }
     } else {
       this.stopWASD();
     }
   };
+
+  verticalScrollToRow() {
+    if (this.currentRow) {
+      this.currentRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  setCurrentSlicesTime() {
+    if (CpuStruct.selectCpuStruct) {
+      if (CpuStruct.selectCpuStruct.startTime && CpuStruct.selectCpuStruct.dur) {
+        this.currentSlicesTime.startTime = CpuStruct.selectCpuStruct.startTime;
+        this.currentSlicesTime.endTime = CpuStruct.selectCpuStruct.startTime + CpuStruct.selectCpuStruct.dur;
+      }
+    } else if (ThreadStruct.selectThreadStruct) {
+      if (ThreadStruct.selectThreadStruct.startTime && ThreadStruct.selectThreadStruct.dur) {
+        this.currentSlicesTime.startTime = ThreadStruct.selectThreadStruct.startTime;
+        this.currentSlicesTime.endTime =
+          ThreadStruct.selectThreadStruct.startTime + ThreadStruct.selectThreadStruct.dur;
+      }
+    } else if (FuncStruct.selectFuncStruct) {
+      if (FuncStruct.selectFuncStruct.startTs && FuncStruct.selectFuncStruct.dur) {
+        this.currentSlicesTime.startTime = FuncStruct.selectFuncStruct.startTs;
+        this.currentSlicesTime.endTime = FuncStruct.selectFuncStruct.startTs + FuncStruct.selectFuncStruct.dur;
+      }
+    } else if (IrqStruct.selectIrqStruct) {
+      if (IrqStruct.selectIrqStruct.startNS && IrqStruct.selectIrqStruct.dur) {
+        this.currentSlicesTime.startTime = IrqStruct.selectIrqStruct.startNS;
+        this.currentSlicesTime.endTime = IrqStruct.selectIrqStruct.startNS + IrqStruct.selectIrqStruct.dur;
+      }
+    } else if (TraceRow.rangeSelectObject) {
+      if (TraceRow.rangeSelectObject.startNS && TraceRow.rangeSelectObject.endNS) {
+        this.currentSlicesTime.startTime = TraceRow.rangeSelectObject.startNS;
+        this.currentSlicesTime.endTime = TraceRow.rangeSelectObject.endNS;
+      }
+    } else if (JankStruct.selectJankStruct) {
+      if (JankStruct.selectJankStruct.ts && JankStruct.selectJankStruct.dur) {
+        this.currentSlicesTime.startTime = JankStruct.selectJankStruct.ts;
+        this.currentSlicesTime.endTime = JankStruct.selectJankStruct.ts + JankStruct.selectJankStruct.dur;
+      }
+    } else {
+      this.currentSlicesTime.startTime = 0;
+      this.currentSlicesTime.endTime = 0;
+    }
+  }
 
   setSLiceMark(shiftKey: boolean): SlicesTime | null | undefined {
     if (CpuStruct.selectCpuStruct) {
@@ -1890,6 +2018,9 @@ export class SpSystemTrace extends BaseElement {
     info('favoriteChangeHandler', row.frame, row.offsetTop, row.offsetHeight);
   };
 
+  verticalScrollHandler = (row: TraceRow<any>) => {
+    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
   selectChangeHandler = (rows: Array<TraceRow<any>>) => {
     this.isSelectClick = true;
     this.rangeSelect.rangeTraceRow = rows;
@@ -2220,6 +2351,7 @@ export class SpSystemTrace extends BaseElement {
 
   onClickHandler(clickRowType: string, row?: TraceRow<any>) {
     if (row) {
+      this.currentRow = row;
       this.setAttribute('clickRow', clickRowType);
       this.setAttribute('rowName', row.name!);
       this.setAttribute('rowId', row.rowId!);
@@ -2229,6 +2361,8 @@ export class SpSystemTrace extends BaseElement {
     this.selectStructNull();
     this.wakeupListNull();
     let threadClickHandler: any;
+    let threadClickPreviousHandler: any;
+    let threadClickNextHandler: any;
     let cpuClickHandler: any;
     let jankClickHandler: any;
     let snapshotClickHandler: any;
@@ -2265,6 +2399,50 @@ export class SpSystemTrace extends BaseElement {
       );
     };
 
+    threadClickPreviousHandler = (d: ThreadStruct) => {
+      this.observerScrollHeightEnable = false;
+      let threadRow = this.shadowRoot?.querySelector<TraceRow<ThreadStruct>>(
+        `trace-row[row-id='${d.tid}'][row-type='thread']`
+      );
+      threadRow?.dataList.forEach((item, index) => {
+        if (item === d && index !== 0) {
+          let findEntry = threadRow?.dataList[index - 1];
+          this.hoverStructNull();
+          this.selectStructNull();
+          this.wakeupListNull();
+          ThreadStruct.hoverThreadStruct = findEntry;
+          ThreadStruct.selectThreadStruct = findEntry;
+          this.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
+          this.traceSheetEL?.displayThreadData(
+            ThreadStruct.selectThreadStruct!,
+            threadClickHandler,
+            cpuClickHandler,
+            threadClickPreviousHandler,
+            threadClickNextHandler
+          );
+        }
+      });
+    };
+    threadClickNextHandler = (d: ThreadStruct) => {
+      this.observerScrollHeightEnable = false;
+      let threadRow = this.shadowRoot?.querySelector<TraceRow<ThreadStruct>>(
+        `trace-row[row-id='${d.tid}'][row-type='thread']`
+      );
+      let findEntry = threadRow?.dataList.find((dat: any) => dat.startTime === d.startTime! + d.dur!);
+      this.hoverStructNull();
+      this.selectStructNull();
+      this.wakeupListNull();
+      ThreadStruct.hoverThreadStruct = findEntry;
+      ThreadStruct.selectThreadStruct = findEntry;
+      this.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
+      this.traceSheetEL?.displayThreadData(
+        ThreadStruct.selectThreadStruct!,
+        threadClickHandler,
+        cpuClickHandler,
+        threadClickPreviousHandler,
+        threadClickNextHandler
+      );
+    };
     cpuClickHandler = (d: CpuStruct) => {
       let traceRow = this.shadowRoot?.querySelector<TraceRow<any>>(
         `trace-row[row-id='${d.processId}'][row-type='process']`
@@ -2294,7 +2472,13 @@ export class SpSystemTrace extends BaseElement {
           ThreadStruct.hoverThreadStruct = findEntry;
           ThreadStruct.selectThreadStruct = findEntry;
           this.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
-          this.traceSheetEL?.displayThreadData(ThreadStruct.selectThreadStruct!, threadClickHandler, cpuClickHandler);
+          this.traceSheetEL?.displayThreadData(
+            ThreadStruct.selectThreadStruct!,
+            threadClickHandler,
+            cpuClickHandler,
+            threadClickPreviousHandler,
+            threadClickNextHandler
+          );
           this.scrollToProcess(`${d.tid}`, `${d.processId}`, 'thread', true);
         }
       };
@@ -2412,7 +2596,13 @@ export class SpSystemTrace extends BaseElement {
     } else if (clickRowType === TraceRow.ROW_TYPE_THREAD && ThreadStruct.hoverThreadStruct) {
       ThreadStruct.selectThreadStruct = ThreadStruct.hoverThreadStruct;
       this.timerShaftEL?.drawTriangle(ThreadStruct.selectThreadStruct!.startTime || 0, 'inverted');
-      this.traceSheetEL?.displayThreadData(ThreadStruct.selectThreadStruct, threadClickHandler, cpuClickHandler);
+      this.traceSheetEL?.displayThreadData(
+        ThreadStruct.selectThreadStruct,
+        threadClickHandler,
+        cpuClickHandler,
+        threadClickPreviousHandler,
+        threadClickNextHandler
+      );
       this.timerShaftEL?.modifyFlagList(undefined);
     } else if (clickRowType === TraceRow.ROW_TYPE_FUNC && FuncStruct.hoverFuncStruct) {
       TabPaneTaskFrames.TaskArray = [];
@@ -2999,7 +3189,7 @@ export class SpSystemTrace extends BaseElement {
             let endRowEl = endRowStruct;
             let endOffSetY = 20 * (findJankEntry!.depth! + 0.5);
             let expansionFlag = collectionHasJank(endRowStruct);
-            if (!endParentRow.expansion &&　expansionFlag) {
+            if (!endParentRow.expansion && expansionFlag) {
               endY = endParentRow!.translateY! + 10 * (findJankEntry!.depth! + 0.5);
               endRowEl = endParentRow;
               endOffSetY = 10 * (findJankEntry!.depth! + 0.5);
@@ -3881,8 +4071,8 @@ export class SpSystemTrace extends BaseElement {
     this.rowsEL!.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => {
       if (rowId !== '' && (it.rowId?.includes(rowId) || it.name.includes(rowId))) {
         it.addTemplateTypes('Ark Ts');
-        for(let child of it.childrenList){
-            child.addTemplateTypes('Ark Ts');
+        for (let child of it.childrenList) {
+          child.addTemplateTypes('Ark Ts');
         }
       }
       if (it.folder) {

@@ -1399,13 +1399,6 @@ export const queryWakeUpThread_Desc = (): Promise<Array<any>> =>
 (e.g.because of notifying a wait queue it was a suspended on) to when it started running.`
   );
 
-export const queryCPUWakeUpIdFromBean = (tid: number | undefined): Promise<Array<WakeupBean>> => {
-  let sql = `
-select itid from thread where tid=${tid} 
-    `;
-  return query('queryCPUWakeUpListFromBean', sql, {});
-};
-
 export const queryThreadWakeUp = (itid: number, startTime: number, dur: number): Promise<Array<WakeupBean>> =>
   query(
     'queryThreadWakeUp',
@@ -1438,6 +1431,7 @@ export const queryThreadWakeUpFrom = (itid: number, startTime: number): Promise<
   let sql = `
 select (A.ts - B.start_ts) as ts,
        A.tid,
+       A.itid,
        A.pid,
        A.cpu,
        A.dur

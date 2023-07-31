@@ -31,7 +31,6 @@ export class LitTreeNode extends BaseElement {
 
   static get observedAttributes() {
     return ['icon-name', 'icon-size', 'color', 'path', 'title', 'arrow', 'checkable', 'selected', 'checked', 'missing', 'multiple', 'top-depth'];
-    //missing 有这个标记表示选中一半 checked默认为false｜没有checked
   }
 
   get checkable() {

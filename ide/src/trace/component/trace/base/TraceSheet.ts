@@ -372,9 +372,17 @@ export class TraceSheet extends BaseElement {
   displayThreadData = (
     data: ThreadStruct,
     scrollCallback: ((e: ThreadStruct) => void) | undefined,
-    scrollWakeUp: (d: any) => void | undefined
-  ): void =>
-    this.displayTab<TabPaneCurrentSelection>('current-selection').setThreadData(data, scrollCallback, scrollWakeUp);
+    scrollWakeUp: (d: any) => void | undefined,
+    scrollPreviousData: (d: ThreadStruct) => void,
+    scrollNextData: (d: ThreadStruct) => void
+  ) =>
+    this.displayTab<TabPaneCurrentSelection>('current-selection').setThreadData(
+      data,
+      scrollCallback,
+      scrollWakeUp,
+      scrollPreviousData,
+      scrollNextData
+    );
   displayMemData = (data: ProcessMemStruct): void =>
     this.displayTab<TabPaneCurrentSelection>('current-selection').setMemData(data);
   displayClockData = (data: ClockStruct): void =>
@@ -400,9 +408,9 @@ export class TraceSheet extends BaseElement {
   displayGpuSelectedData = (type: string, startTs: number) => {
     this.displayTab<TabPaneGpuClickSelect>('gpu-click-select').data = {
       type: type,
-      startTs: startTs
+      startTs: startTs,
     };
-  }
+  };
 
   displayFuncData = (names: string[], data: FuncStruct, scrollCallback: Function): void =>
     this.displayTab<TabPaneCurrentSelection>(...names).setFunctionData(data, scrollCallback);
@@ -428,8 +436,7 @@ export class TraceSheet extends BaseElement {
     val.rightNs = data.startNs;
     this.selection = val;
     val.smapsType = [];
-    this.displayTab<TabPaneSmapsStatistics>('box-smaps-statistics', 'box-smaps-record',).data =
-      val;
+    this.displayTab<TabPaneSmapsStatistics>('box-smaps-statistics', 'box-smaps-record').data = val;
   };
   displaySnapshotData = (
     data: HeapSnapshotStruct,
@@ -479,7 +486,7 @@ export class TraceSheet extends BaseElement {
       'box-js-Profiler-bottom-up'
     ).data = data;
   };
-    displayPurgTotalAbilityData = (data: SnapshotStruct) => {
+  displayPurgTotalAbilityData = (data: SnapshotStruct) => {
     data.type = 'ability';
     this.displayTab<TabPanePurgTotalSelection>('box-purgeable-total-selection').data = data;
   };

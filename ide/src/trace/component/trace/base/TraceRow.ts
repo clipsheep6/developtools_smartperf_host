@@ -1324,12 +1324,6 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         :host(:not([folder])) .describe:hover .collect{
             display: block;
         }
-        :host([row-setting='enable']) #rowSetting{
-            display: flex;
-        } 
-        :host([row-setting='enable']) .collect{
-            margin-right: 20px;
-        } 
         .popover{
             color: var(--dark-color1,#4b5766);
             display: none;
@@ -1365,6 +1359,21 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
           border-radius: 6px;
           background-color: var(--dark-background7,#e7c9c9);
         }
+        .lit-check-box{
+          margin-right: 15px;
+        }
+        :host([row-setting='enable'][check-type]) .lit-check-box{
+            margin-right: 25px;
+        }
+        :host([row-setting='enable'][check-type='-1']) .collect{
+            margin-right: 20px;
+        }
+        :host([row-setting='enable']) #rowSetting{
+            display: flex;
+        } 
+        :host([row-setting='enable']:not([check-type='-1'])) .collect{
+            margin-right: 5px;
+        } 
         </style>
         <div class="root">
             <div class="describe flash" style="position: inherit">
@@ -1382,7 +1391,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
                     </div>
                     <lit-icon name="setting" size="19" id="setting"></lit-icon>
                 </lit-popover>
-                <lit-check-box class="lit-check-box" style="margin-right: 10px;"></lit-check-box>
+                <lit-check-box class="lit-check-box"></lit-check-box>
             </div>
         </div>
         `;
