@@ -12,19 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SRC_TRACE_BASE_STRINGHELP_H
-#define SRC_TRACE_BASE_STRINGHELP_H
+#ifndef PRINTK_FORMAT_PROCESSOR_H
+#define PRINTK_FORMAT_PROCESSOR_H
 
-#include <cstdint>
-#include <cxxabi.h>
 #include <string>
-#include <vector>
-#include "securec.h"
-char* GetDemangleSymbolIndex(const char* mangled);
-std::vector<std::string> SplitStringToVec(const std::string& str, const std::string& pat);
-bool StartWith(const std::string& str, const std::string& res);
-bool EndWith(const std::string& str, const std::string& res);
-std::string FormatString(const char* p);
-std::string Strip(const std::string& str);
+#include <unordered_map>
 
-#endif // SRC_TRACE_BASE_STRINGHELP_H
+namespace SysTuning {
+namespace TraceStreamer {
+class PrintkFormatsProcessor {
+public:
+    static PrintkFormatsProcessor& GetInstance();
+    std::string GetSymbol(uint64_t addr);
+    bool HandlePrintkSyms(const std::string& printkFormats);
+    void Clear();
+
+private:
+    PrintkFormatsProcessor();
+    ~PrintkFormatsProcessor();
+    std::unordered_map<uint64_t, std::string> printkFormatsDict_ = {};
+};
+} // namespace TraceStreamer
+} // namespace SysTuning
+
+#endif // PRINTK_FORMAT_PROCESSOR_H
