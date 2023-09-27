@@ -272,9 +272,13 @@ export class SpSystemTrace extends BaseElement {
       if (SpSystemTrace.btnTimer) {
         return;
       }
-      this.wakeupListNull();
-      SpSystemTrace.wakeupList.unshift(CpuStruct.wakeupBean!);
-      this.queryCPUWakeUpList(CpuStruct.wakeupBean!);
+      // 唤醒树有值则不再重复添加
+      if (SpSystemTrace.wakeupList.length === 0) {
+        SpSystemTrace.wakeupList.unshift(CpuStruct.wakeupBean!);
+        this.queryCPUWakeUpList(CpuStruct.wakeupBean!);
+        CpuStruct.selectCpuStruct!.ts = CpuStruct.selectCpuStruct!.startTime;
+        sessionStorage.setItem('saveselectcpustruct', JSON.stringify(CpuStruct.selectCpuStruct))
+      }
       setTimeout(() => {
         requestAnimationFrame(() => this.refreshCanvas(false));
       }, 300);
@@ -2468,7 +2472,29 @@ export class SpSystemTrace extends BaseElement {
     if (!this.loadTraceCompleted) return;
     this.queryAllTraceRow().forEach((it) => (it.rangeSelect = false));
     this.selectStructNull();
-    this.wakeupListNull();
+    // 判断点击的线程是否在唤醒树内
+    setTimeout(() => {
+      if (SpSystemTrace.wakeupList.length && CpuStruct.wakeupBean) {
+        let checkHandlerKey = true;
+        for (const item of SpSystemTrace.wakeupList) {
+          if (item.ts === CpuStruct.wakeupBean.ts && item.wakeupTime === CpuStruct.wakeupBean.wakeupTime) {
+            checkHandlerKey = false;
+            if (SpSystemTrace.wakeupList[0].itid) {
+              SpSystemTrace.wakeupList.unshift(JSON.parse(sessionStorage.getItem('saveselectcpustruct')!))
+            }
+            this.refreshCanvas(true)
+            break;
+          }
+        }
+        if (checkHandlerKey) {
+          this.wakeupListNull()
+          this.refreshCanvas(true)
+        }
+      } else {
+        this.wakeupListNull();
+        this.refreshCanvas(true)
+      }
+    }, 100);
     let threadClickHandler: any;
     let threadClickPreviousHandler: any;
     let threadClickNextHandler: any;
