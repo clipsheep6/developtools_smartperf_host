@@ -511,6 +511,7 @@ export class SpProbesConfig extends BaseElement {
             text-align: left;
             line-height: 20px;
             font-weight: 400;
+            display: inline-block;
         }
         .ftrace-buff-size-result-div{
             display: grid;
