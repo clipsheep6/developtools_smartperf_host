@@ -23,66 +23,67 @@ import { resizeObserver } from '../SheetUtils.js';
 import { Utils } from '../../base/Utils.js';
 import { MemoryConfig } from '../../../../bean/MemoryConfig.js';
 
-interface GL {
+interface Graph {
   startTs: number;
   startTsStr?: string;
   size: number;
   sizeStr?: string;
 }
 
-@element('tabpane-gpu-gl')
-export class TabPaneGpuGL extends BaseElement {
-  private glTbl: LitTable | null | undefined;
+@element('tabpane-gpu-graph')
+export class TabPaneGpuGraph extends BaseElement {
+  private graphTbl: LitTable | null | undefined;
   private range: HTMLLabelElement | null | undefined;
-  private glSource: Array<GL> = [];
+  private graphSource: Array<Graph> = [];
   private currentSelectionParam: SelectionParam | undefined;
 
-  set data(glParam: SelectionParam | any) {
-    if (this.currentSelectionParam === glParam) {
+  set data(graphParam: SelectionParam | any) {
+    if (this.currentSelectionParam === graphParam) {
       return;
     }
-    this.currentSelectionParam = glParam;
+    this.currentSelectionParam = graphParam;
     //@ts-ignore
-    this.glTbl?.shadowRoot?.querySelector('.table')?.style?.height = this.parentElement!.clientHeight - 45 + 'px';
-    this.range!.textContent = 'Selected range: ' + ((glParam.rightNs - glParam.leftNs) / 1000000.0).toFixed(5) + ' ms';
-    this.glTbl!.loading = true;
+    this.graphTbl?.shadowRoot?.querySelector('.table')?.style?.height = this.parentElement!.clientHeight - 45 + 'px';
+    this.range!.textContent =
+      'Selected range: ' + ((graphParam.rightNs - graphParam.leftNs) / 1000000.0).toFixed(5) + ' ms';
+    this.graphTbl!.loading = true;
     queryGpuDataTab(
       MemoryConfig.getInstance().iPid,
-      glParam.leftNs,
-      glParam.rightNs,
+      graphParam.leftNs,
+      graphParam.rightNs,
       MemoryConfig.getInstance().snapshotDur,
-      "'mem.gl_pss'"
+      "'mem.graph_pss'"
     ).then((result) => {
-      this.glTbl!.loading = false;
+      this.graphTbl!.loading = false;
       log('queryGpuDataTab result size : ' + result.length);
       if (result.length > 0) {
-        result.forEach((it: GL) => {
+        result.forEach((it: Graph) => {
           it.startTsStr = getProbablyTime(it.startTs);
           it.sizeStr = Utils.getBinaryByteWithUnit(it.size);
         });
-        this.glSource = result;
-        this.glTbl!.recycleDataSource = this.glSource;
+        this.graphSource = result;
+        this.graphTbl!.recycleDataSource = this.graphSource;
       } else {
-        this.glSource = [];
-        this.glTbl!.recycleDataSource = [];
+        this.graphSource = [];
+        this.graphTbl!.recycleDataSource = [];
       }
     });
   }
 
   initElements(): void {
-    this.glTbl = this.shadowRoot?.querySelector<LitTable>('#tb-gl');
-    this.range = this.shadowRoot?.querySelector('#gl-time-range');
+    this.graphTbl = this.shadowRoot?.querySelector<LitTable>('#tb-graph');
+    this.range = this.shadowRoot?.querySelector('#graph-time-range');
   }
 
   connectedCallback(): void {
     super.connectedCallback();
-    resizeObserver(this.parentElement!, this.glTbl!);
+    resizeObserver(this.parentElement!, this.graphTbl!);
   }
 
   initHtml(): string {
     return `
         <style>
-        .gl-table{
+        .graph-table{
           flex-direction: row;
           margin-bottom: 5px;
         }
@@ -92,15 +93,15 @@ export class TabPaneGpuGL extends BaseElement {
             padding: 10px 10px;
         }
         </style>
-        <div class="gl-table" style="display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px">
+        <div class="graph-table" style="display: flex;height: 20px;align-items: center;flex-direction: row;margin-bottom: 5px">
             <div style="flex: 1"></div>
-            <label id="gl-time-range"  style="width: auto;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
+            <label id="graph-time-range"  style="width: auto;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
         </div>
         <div style="overflow: auto">
-            <lit-table id="tb-gl" style="height: auto" tree>
-                <lit-table-column width="600px" title="Timestamp"  data-index="startTsStr" key="startTsStr"  align="flex-start" >
+            <lit-table id="tb-graph" style="height: auto" tree>
+                <lit-table-column width="600px" title="Timestamp"  data-index="startTsStr" key="startTsStr" align="flex-start" >
                 </lit-table-column>
-                <lit-table-column width="200px" title="GL_PSS" data-index="sizeStr" key="sizeStr"  align="flex-start">
+                <lit-table-column width="200px" title="GraphPSS" data-index="sizeStr" key="sizeStr"  align="flex-start">
                 </lit-table-column>
             </lit-table>
         </div>
