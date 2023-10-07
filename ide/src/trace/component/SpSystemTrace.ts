@@ -441,9 +441,11 @@ export class SpSystemTrace extends BaseElement {
         replaceRow.setAttribute('row-parent-id', currentRow.rowParentId);
         replaceRow.style.display = 'none';
         if (!currentRow.hasAttribute('scene')) {
-          currentRow.setAttribute('row-hidden', '')
+
+          currentRow.setAttribute('row-hidden', '');
+>>>>>>> master
         } else {
-          currentRow.removeAttribute('row-hidden')
+          currentRow.removeAttribute('row-hidden');
         }
         // 添加收藏时，在线程名前面追加父亲ID
         let rowParentId = currentRow.rowParentId;
@@ -462,13 +464,8 @@ export class SpSystemTrace extends BaseElement {
             }
           });
         }
-        if (this.rowsEL!.contains(currentRow)) {
+        if (!currentRow.hasParentRowEl) {
           this.rowsEL!.replaceChild(replaceRow, currentRow);
-        } else {
-          if (currentRow.hasParentRowEl) {
-            let parent = currentRow.parentRowEl;
-            parent!.replaceTraceRow(replaceRow, currentRow);
-          }
         }
         this.favoriteChartListEL?.insertRow(currentRow, this.currentCollectGroup, event.detail.type !== 'auto-collect');
       } else {
@@ -487,24 +484,28 @@ export class SpSystemTrace extends BaseElement {
           row = parent;
         }
         for (let index: number = allowExpansionRow.length - 1; index >= 0; index--) {
-          if (!allowExpansionRow[index]?.expansion && allowExpansionRow[index]?.hasAttribute('scene')) {
-            allowExpansionRow[index].expansion = true;
+          if (allowExpansionRow[index]?.hasAttribute('scene')) {
+            if (allowExpansionRow[index]!.expansion) {
+              allowExpansionRow[index].updateChildRowStatus();
+            } else {
+              allowExpansionRow[index].expansion = true;
+            }
           }
         }
         allowExpansionRow.length = 0;
         let replaceRow = this.rowsEL!.querySelector<HTMLCanvasElement>(
           `div[row-id='${currentRow.rowId}-${currentRow.rowType}']`
         );
+        // 取消收藏时，删除父亲ID
+        let rowNameArr = currentRow.name.split('(');
+        if (rowNameArr.length > 1) {
+          let tempName = '';
+          tempName += rowNameArr[0];
+          currentRow.name = tempName;
+        } else {
+          currentRow.name = rowNameArr[0];
+        }
         if (replaceRow != null) {
-          // 取消收藏时，删除父亲ID
-          let rowNameArr = currentRow.name.split('(');
-          if (rowNameArr.length > 1) {
-            let tempName = '';
-            tempName += rowNameArr[0];
-            currentRow.name = tempName;
-          } else {
-            currentRow.name = rowNameArr[0];
-          }
           this.rowsEL!.replaceChild(currentRow, replaceRow);
           currentRow.style.boxShadow = `0 10px 10px #00000000`;
         }
@@ -958,6 +959,13 @@ export class SpSystemTrace extends BaseElement {
                         (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
                         (it.endNs >= selection.leftNs && it.endNs <= selection.rightNs)
                     ).length > 0;
+                } else if (item.rowType == TraceRow.ROW_TYPE_SYS_MEMORY_GPU_GRAPH) {
+                  selection.gpu.graph =
+                    item.dataList.filter(
+                      (it) =>
+                        (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
+                        (it.endNs >= selection.leftNs && it.endNs <= selection.rightNs)
+                    ).length > 0;
                 } else if (item.rowType == TraceRow.ROW_TYPE_SYS_MEMORY_GPU_TOTAL) {
                   selection.gpu.gpuTotal =
                     item.dataList.filter(
@@ -1013,6 +1021,13 @@ export class SpSystemTrace extends BaseElement {
                     (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
                     (it.endNs >= selection.leftNs && it.endNs <= selection.rightNs)
                 ).length > 0;
+            } else if (th.rowType == TraceRow.ROW_TYPE_SYS_MEMORY_GPU_GRAPH) {
+              selection.gpu.graph =
+                th.dataList.filter(
+                  (it) =>
+                    (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
+                    (it.endNs >= selection.leftNs && it.endNs <= selection.rightNs)
+                ).length > 0;
             } else if (th.rowType == TraceRow.ROW_TYPE_SYS_MEMORY_GPU_TOTAL) {
               selection.gpu.gpuTotal =
                 th.dataList.filter(
@@ -1035,6 +1050,13 @@ export class SpSystemTrace extends BaseElement {
           selection.dmaVmTrackerData.push(...intersectData(it)!);
         } else if (it.rowType == TraceRow.ROW_TYPE_SYS_MEMORY_GPU_GL) {
           selection.gpu.gl =
+            it.dataList.filter(
+              (it) =>
+                (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
+                (it.endNs >= selection.leftNs && it.endNs <= selection.rightNs)
+            ).length > 0;
+        } else if (it.rowType === TraceRow.ROW_TYPE_SYS_MEMORY_GPU_GRAPH) {
+          selection.gpu.graph =
             it.dataList.filter(
               (it) =>
                 (it.startNs >= selection.leftNs && it.startNs <= selection.rightNs) ||
@@ -1327,11 +1349,12 @@ export class SpSystemTrace extends BaseElement {
     window.subscribe(window.SmartEvent.UI.CollapseAllLane, (collapse: boolean) => {
       if (!collapse) {
         // 一键折叠之前，记录当前打开的泳道图
-        this.expandRowList = Array.from(this.rowsEL!.querySelectorAll<TraceRow<any>>(`trace-row[folder][expansion]`)) || [];
+        this.expandRowList =
+          Array.from(this.rowsEL!.querySelectorAll<TraceRow<any>>(`trace-row[folder][expansion]`)) || [];
       }
       this.collapseAll = true;
       this.setAttribute('disable', '');
-      this.expandRowList!.forEach((it) => it.expansion = collapse);
+      this.expandRowList!.forEach((it) => (it.expansion = collapse));
       this.collapseAll = false;
       this.removeAttribute('disable');
       this.refreshCanvas(true);
@@ -1366,7 +1389,7 @@ export class SpSystemTrace extends BaseElement {
     }
   }
 
-  getCollectRows(condition: string) {
+  getCollectRows(condition: string): Array<TraceRow<any>> {
     return this.favoriteChartListEL!.getCollectRows(condition);
   }
 
@@ -1670,8 +1693,19 @@ export class SpSystemTrace extends BaseElement {
 
     // Draw the connection curve
     if (this.linkNodes) {
-      drawLinkLines(this.canvasPanelCtx!, this.linkNodes, this.timerShaftEL!, false, this.favoriteChartListEL!.clientHeight);
-      this.favoriteChartListEL?.drawLinkLines(this.linkNodes, this.timerShaftEL!, true, this.favoriteChartListEL!.clientHeight);
+      drawLinkLines(
+        this.canvasPanelCtx!,
+        this.linkNodes,
+        this.timerShaftEL!,
+        false,
+        this.favoriteChartListEL!.clientHeight
+      );
+      this.favoriteChartListEL?.drawLinkLines(
+        this.linkNodes,
+        this.timerShaftEL!,
+        true,
+        this.favoriteChartListEL!.clientHeight
+      );
     }
   }
 
@@ -2452,6 +2486,10 @@ export class SpSystemTrace extends BaseElement {
       () => SnapshotStruct.hoverSnapshotStruct !== null && SnapshotStruct.hoverSnapshotStruct !== undefined,
     ],
     [
+      TraceRow.ROW_TYPE_GPU_RESOURCE_VMTRACKER,
+      () => SnapshotStruct.hoverSnapshotStruct !== null && SnapshotStruct.hoverSnapshotStruct !== undefined,
+    ],
+    [
       TraceRow.ROW_TYPE_VMTRACKER_SHM,
       () => SnapshotStruct.hoverSnapshotStruct !== null && SnapshotStruct.hoverSnapshotStruct !== undefined,
     ],
@@ -2992,6 +3030,9 @@ export class SpSystemTrace extends BaseElement {
         SnapshotStruct.selectSnapshotStruct.startNs,
         gpuMemoryVmTracker!.dataList
       );
+    } else if (clickRowType === TraceRow.ROW_TYPE_GPU_RESOURCE_VMTRACKER && SnapshotStruct.hoverSnapshotStruct) {
+      SnapshotStruct.selectSnapshotStruct = SnapshotStruct.hoverSnapshotStruct;
+      this.traceSheetEL?.displayGpuResourceVmTracker(SnapshotStruct.selectSnapshotStruct.startNs);
     } else {
       if (!JankStruct.hoverJankStruct && JankStruct.delJankLineFlag) {
         this.removeLinkLinesByBusinessType('janks');
