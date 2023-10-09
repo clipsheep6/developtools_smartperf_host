@@ -191,10 +191,10 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
       let arg1 = cpus.length > 0 ? `or s.cpu_id in (${cpus.join(',')}) ` : '';
       let arg2 = processes.length > 0 ? `or thread.process_id in (${processes.join(',')}) ` : '';
       let arg3 = threads.length > 0 ? `or s.thread_id in (${threads.join(',')})` : '';
-      let arg = `${arg1}${arg2}${arg3}`.substring(3);
-      sql = ` and (${arg})`;
       let eventTypeId = selectionParam.eventTypeId;
       arg4 = eventTypeId ? `and s.event_type_id = ${eventTypeId}` : '';
+      let arg = `${arg1}${arg2}${arg3}`.substring(3);
+      sql = ` ${arg4} and (${arg}) `;
     }
     console.log(sql+ ':sql')
     console.log(arg4+ ':arg4')
@@ -221,7 +221,7 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
                 where timestamp_trace between $startTime + t.start_ts
                   and $endTime + t.start_ts
                   and callchain_id != -1
-                  and s.thread_id != 0 ${arg4} ${sql}
+                  and s.thread_id != 0 ${sql}
                 group by callchain_id, s.thread_id, thread_state, process_id) p`,
       {
         $startTime: selectionParam.leftNs,
