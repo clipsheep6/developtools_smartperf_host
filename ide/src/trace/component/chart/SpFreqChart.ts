@@ -61,7 +61,7 @@ export class SpFreqChart {
         .join(',')
     );
     let jsMemory = await queryJsMemoryData();
-    if(jsMemory.length > 0 || freCpu.length > 0){
+    if( freCpu.length > 0){
       this.folderRow = TraceRow.skeleton();
       this.folderRow.rowId = 'Cpu Frequency';
       this.folderRow.rowParentId = '';
@@ -124,7 +124,7 @@ export class SpFreqChart {
       };
       this.folderRow!.addChildTraceRow(traceRow);
     }
-    if(jsMemory.length > 0 || CpuState.length>0){
+    if( CpuState.length>0){
       this.folderRowState=TraceRow.skeleton();
       this.folderRowState.rowId = 'Cpu State';
       this.folderRowState.rowType = TraceRow.ROW_TYPE_CPU_STATE_ALL;
@@ -133,7 +133,7 @@ export class SpFreqChart {
       this.folderRowState.style.width = '100%';
       this.folderRowState.rowParentId = '';
       this.folderRowState.name = 'Cpu State';
-      this.folderRowState.rowHidden=this.folderRow!.expansion;
+      this.folderRowState.rowHidden=this.folderRowState!.expansion;
       this.folderRowState.setAttribute('children','');
       this.folderRowState.supplier = FolderSupplier();
       this.folderRowState.onThreadHandler=FolderThreadHandler(this.folderRowState,this.trace);
@@ -191,7 +191,7 @@ export class SpFreqChart {
     }
     let durTime = new Date().getTime() - cpuFreqStartTime;
     info('The time to load the CpuFreq data is: ', durTime);
-    if(jsMemory.length > 0 || cpuFreqLimits.length>0){
+    if(cpuFreqLimits.length>0){
       this.folderRowLimit = TraceRow.skeleton();
       this.folderRowLimit.rowId = 'Cpu Freq Limit';
       this.folderRowLimit.rowType = TraceRow.ROW_TYPE_CPU_FREQ_LIMITALL;
@@ -199,7 +199,7 @@ export class SpFreqChart {
       this.folderRowLimit.rowParentId = '';
       this.folderRowLimit.folder = true;
       this.folderRowLimit.name = 'Cpu Freq Limit';
-      this.folderRowLimit.rowHidden=this.folderRow!.expansion;
+      this.folderRowLimit.rowHidden=this.folderRowLimit!.expansion;
       this.folderRowLimit.setAttribute('children','');
       this.folderRowLimit.supplier = FolderSupplier();
       this.folderRowLimit.onThreadHandler=FolderThreadHandler(this.folderRowLimit,this.trace);
