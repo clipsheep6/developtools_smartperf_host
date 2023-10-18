@@ -148,6 +148,7 @@ export class SpSystemTrace extends BaseElement {
   intersectionObserver: IntersectionObserver | undefined;
   tipEL: HTMLDivElement | undefined | null;
   rowsEL: HTMLDivElement | undefined | null;
+  stateRowsId: Array<object> = [];
   rowsPaneEL: HTMLDivElement | undefined | null;
   spacerEL: HTMLDivElement | undefined | null;
   visibleRows: Array<TraceRow<any>> = [];
@@ -639,9 +640,14 @@ export class SpSystemTrace extends BaseElement {
         this.rangeTraceRow = [];
       }
       let selection = new SelectionParam();
+      selection.cpuStateRowsId = this.stateRowsId;
       selection.leftNs = TraceRow.rangeSelectObject?.startNS || 0;
       selection.rightNs = TraceRow.rangeSelectObject?.endNS || 0;
       selection.recordStartNs = (window as any).recordStartNS;
+      let nodeList:any = this.shadowRoot?.querySelectorAll(`trace-row[row-type='cpu-freq']`);
+      for(let i of nodeList){
+        selection.cpuFreqList = selection.cpuFreqList.concat(i.dataList);
+      }
       rows.forEach((it) => {
         if (it.rowType == TraceRow.ROW_TYPE_CPU) {
           selection.cpus.push(parseInt(it.rowId!));
@@ -653,8 +659,12 @@ export class SpSystemTrace extends BaseElement {
           }
         } else if (it.rowType == TraceRow.ROW_TYPE_CPU_FREQ) {
           let filterId = parseInt(it.rowId!);
+          let filterName = it.name!;
           if (selection.cpuFreqFilterIds.indexOf(filterId) == -1) {
             selection.cpuFreqFilterIds.push(filterId);
+          }
+          if (selection.cpuFreqFilterNames.indexOf(filterName) == -1) {
+            selection.cpuFreqFilterNames.push(filterName)
           }
         } else if (it.rowType == TraceRow.ROW_TYPE_CPU_FREQ_LIMIT) {
           selection.cpuFreqLimitDatas.push(it.dataList!);
@@ -3914,21 +3924,25 @@ export class SpSystemTrace extends BaseElement {
     return searchResults;
   }
 
-  showStruct(previous: boolean, currentIndex: number, structs: Array<any>) {
+  showStruct(previous: boolean, currentIndex: number, structs: Array<any>, retargetIndex?: number) {
     if (structs.length == 0) {
       return 0;
     }
     let findIndex = -1;
     if (previous) {
-      for (let i = structs.length - 1; i >= 0; i--) {
-        let it = structs[i];
-        if (
-          i < currentIndex &&
-          it.startTime! >= TraceRow.range!.startNS &&
-          it.startTime! + it.dur! <= TraceRow.range!.endNS
-        ) {
-          findIndex = i;
-          break;
+      if (retargetIndex) {
+        findIndex = retargetIndex - 1
+      } else {
+        for (let i = structs.length - 1; i >= 0; i--) {
+          let it = structs[i];
+          if (
+            i < currentIndex &&
+            it.startTime! >= TraceRow.range!.startNS &&
+            it.startTime! + it.dur! <= TraceRow.range!.endNS
+          ) {
+            findIndex = i;
+            break;
+          }
         }
       }
     } else {
