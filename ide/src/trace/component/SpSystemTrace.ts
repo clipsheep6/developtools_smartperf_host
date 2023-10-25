@@ -1788,13 +1788,15 @@ export class SpSystemTrace extends BaseElement {
   };
 
   documentOnMouseUp = (ev: MouseEvent) => {
+    this.isMouseLeftDown = false;
+	
     if (!this.loadTraceCompleted || !this.mouseEventEnable) return;
     if (this.isWASDKeyPress()) {
       ev.preventDefault();
       ev.stopPropagation();
       return;
     }
-    this.isMouseLeftDown = false;
+    
     if (ev.ctrlKey) {
       ev.preventDefault();
       this.offsetMouse = 0;
