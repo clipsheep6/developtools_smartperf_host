@@ -639,7 +639,7 @@ export let tabConfig: any = {
     type: TabPaneFreqDataCut,
     require: (param: SelectionParam) => param.threadIds.length > 0 && param.threadIds.length < 2,
   }, 
-  }, //current selection
+  //current selection
   'box-perf-Binary': {
     title: 'BinaryTree',
     type: TabpanePerfBinaryTree,
