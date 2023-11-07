@@ -5517,8 +5517,7 @@ export const getTabRunningPercent = (tIds: Array<number>, leftNS: number, rightN
       and
         not ((B.ts - TR.start_ts + ifnull(B.dur,0) < ${leftNS}) or (B.ts - TR.start_ts > ${rightNS}))
       order by ts
-    `,
-    { $leftNS: leftNS, $rightNS: rightNS }
+    `
   );
 
 export const querySearchFuncData = (funcName: string, tIds: number, leftNS: number, rightNS: number): Promise<Array<SearchFuncBean>> =>
