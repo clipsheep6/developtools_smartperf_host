@@ -126,6 +126,7 @@ export class SelectionData {
   tid: string = '';
   wallDuration: number = 0;
   wallDurationFormat: string = '';
+  maxDuration: string = '';
   avgDuration: string = '';
   occurrences: number = 0;
   state: string = '';
