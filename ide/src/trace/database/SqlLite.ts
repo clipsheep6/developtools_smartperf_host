@@ -296,8 +296,8 @@ export class DbPool {
             }
           }
         };
-        thread!.onmessageerror = (e) => { };
-        thread!.onerror = (e) => { };
+        thread!.onmessageerror = (e) => {};
+        thread!.onerror = (e) => {};
         thread!.id = i;
         thread!.busy = false;
         this.works?.push(thread!);
@@ -864,7 +864,7 @@ export const getTabSlices = (
     on
       T.id = C.callid
     where
-      C.ts not null
+      C.ts > 0
     and
       c.dur >= 0
     and
@@ -908,7 +908,7 @@ export const getTabSlicesAsyncFunc = (
       A.id = C.callid
     left join process P on P.id = A.ipid
     where
-      C.ts not null
+      C.ts > 0
     and
       c.dur >= -1
     and 
@@ -1271,7 +1271,8 @@ export const queryVirtualMemory = (): Promise<Array<any>> =>
 export const queryVirtualMemoryData = (filterId: number): Promise<Array<any>> =>
   query(
     'queryVirtualMemoryData',
-    `select ts-${(window as any).recordStartNS
+    `select ts-${
+      (window as any).recordStartNS
     } as startTime,value,filter_id as filterID from sys_mem_measure where filter_id=$filter_id`,
     { $filter_id: filterId }
   );
@@ -1690,23 +1691,28 @@ export const queryAllHookData = (rightNs: number): Promise<Array<NativeHookSampl
 export const queryNativeHookResponseTypes = (
   leftNs: number,
   rightNs: number,
-  types: Array<string>
-): Promise<Array<any>> =>
-  query(
+  types: Array<string | number>,
+  isStatistic: boolean
+): Promise<Array<any>> => {
+  const table = isStatistic ? 'native_hook_statistic' : 'native_hook';
+  const tsKey = isStatistic ? 'ts' : 'start_ts';
+  const type = isStatistic ? 'type' : 'event_type';
+  return query(
     'queryNativeHookResponseTypes',
     `
-        select 
-          distinct last_lib_id as lastLibId,
-          data_dict.data as value 
-        from 
-          native_hook A ,trace_range B
-          left join data_dict on A.last_lib_id = data_dict.id 
-        where
-        A.start_ts - B.start_ts
-        between ${leftNs} and ${rightNs} and A.event_type in (${types.join(',')});
-    `,
+          select 
+            distinct last_lib_id as lastLibId,
+            data_dict.data as value 
+          from 
+            ${table} A ,trace_range B
+            left join data_dict on A.last_lib_id = data_dict.id 
+          where
+          A.${tsKey} - B.start_ts
+          between ${leftNs} and ${rightNs} and A.${type} in (${types.join(',')});
+      `,
     { $leftNs: leftNs, $rightNs: rightNs, $types: types }
   );
+};
 /**
  * HiPerf
  */
@@ -2749,7 +2755,7 @@ export const querySceneSearchFunc = (search: string, processList: Array<string>)
    select c.cookie,c.id,c.name as funName,c.ts - r.start_ts as startTime,c.dur,c.depth,t.tid,t.name as threadName
    ,p.pid ,'func' as type from callstack c left join thread t on c.callid = t.id left join process p on t.ipid = p.id
    left join trace_range r
-   where c.name like '%${search}%' and startTime > 0 and p.pid in (${processList.join(',')});
+   where c.name like '%${search}%' ESCAPE '\\' and startTime > 0 and p.pid in (${processList.join(',')});
     `,
     { $search: search }
   );
@@ -3838,9 +3844,11 @@ export const queryEbpfSamplesCount = (startTime: number, endTime: number, ipids:
     select
 fsCount,
     vmCount from
-(select count(1) as fsCount from file_system_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
+(select count(1) as fsCount from file_system_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${
+      ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
     })
-,(select count(1) as vmCount from paged_memory_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
+,(select count(1) as vmCount from paged_memory_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${
+      ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
     });
 `,
     { $startTime: startTime, $endTime: endTime }
@@ -5492,7 +5500,7 @@ export const queryTraceType = (): Promise<
 export const queryTransferList = (): Promise<Array<{ id: number; cmdStr: string }>> =>
   query('queryTransferList', `select id, report_value as cmdStr from perf_report where report_type = 'config_name'`);
 
-export const getTabRunningPercent = (tIds: Array<number>, leftNS: number, rightNS: number): Promise<Array<any>> =>
+  export const getTabRunningPercent = (tIds: Array<number>, leftNS: number, rightNS: number): Promise<Array<any>> =>
   query<SelectionData>(
     'getTabRunningPercent',
     `
@@ -5513,7 +5521,7 @@ export const getTabRunningPercent = (tIds: Array<number>, leftNS: number, rightN
     { $leftNS: leftNS, $rightNS: rightNS }
   );
 
-export const querySearchFuncData = (funcName: string, tIds: number, leftNS: number, rightNS: number): Promise<Array<SearchFuncBean>> =>
+export const querySearchFuncData = (funcName: string, tIds: Array<number>, leftNS: number, rightNS: number): Promise<Array<SearchFuncBean>> =>
   query(
     'querySearchFuncData',
     `
