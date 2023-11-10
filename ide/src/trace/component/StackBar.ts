@@ -14,8 +14,10 @@
  */
 
 import { BaseElement, element } from '../../base-ui/BaseElement.js';
-import { SelectionData } from '../bean/BoxSelection.js';
+import { SelectionData, SelectionParam } from '../bean/BoxSelection.js';
+import { getTabRunningPersent, getTabSleepingTime } from '../database/SqlLite.js';
 import { Utils } from './trace/base/Utils.js';
+import { judgement } from './trace/sheet/process/TabPaneThreadUsage.js';
 
 @element('stack-bar')
 export class StackBar extends BaseElement {
@@ -31,11 +33,11 @@ export class StackBar extends BaseElement {
       if (map.has(v.state)) {
         let sv = map.get(v.state);
         sv!.value = sv!.value + v.wallDuration;
-        sv!.state = v.state + ' : ' + sv!.value.toFixed(7) + 'ms';
+        sv!.state = v.state + ' : ' + sv!.value.toFixed(5) + 'ms';
       } else {
         let sv = new StackValue();
         sv.value = v.wallDuration;
-        sv.state = v.state + ' : ' + sv.value.toFixed(7) + 'ms';
+        sv.state = v.state + ' : ' + sv.value.toFixed(5) + 'ms';
         sv.color = Utils.getStateColor(v.stateJX);
         map.set(v.state, sv);
       }
