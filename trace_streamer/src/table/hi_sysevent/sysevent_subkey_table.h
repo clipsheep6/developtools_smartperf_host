@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef DEVICE_STATE_TABLE_H
-#define DEVICE_STATE_TABLE_H
+#ifndef SYSEVENT_SUBKEY_TABLE_H
+#define SYSEVENT_SUBKEY_TABLE_H
 
 #include "table_base.h"
 #include "trace_data_cache.h"
 
 namespace SysTuning {
 namespace TraceStreamer {
-class DeviceStateTable : public TableBase {
+class SysEventSubkeyTable : public TableBase {
 public:
-    explicit DeviceStateTable(const TraceDataCache*);
-    ~DeviceStateTable() override;
+    explicit SysEventSubkeyTable(const TraceDataCache*);
+    ~SysEventSubkeyTable() override;
     std::unique_ptr<TableBase::Cursor> CreateCursor() override;
 
 private:
@@ -35,9 +35,9 @@ private:
         int32_t Column(int32_t column) const override;
 
     private:
-        const HiSysEventDeviceStateData& deviceStateData_;
+        const HiSysEventSubkeys& sysEventSubkeys_;
     };
 };
 } // namespace TraceStreamer
 } // namespace SysTuning
-#endif // DEVICE_STATE__TABLE_H
+#endif // SYSEVENT_SUBKEY_TABLE_H

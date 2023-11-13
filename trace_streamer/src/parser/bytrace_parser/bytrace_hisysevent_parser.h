@@ -12,32 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef BYTRACE_HI_SYS_EVENT_PARSER_H
+#define BYTRACE_HI_SYS_EVENT_PARSER_H
 
-#ifndef DEVICE_STATE_TABLE_H
-#define DEVICE_STATE_TABLE_H
-
-#include "table_base.h"
+#include "common_types.h"
+#include "string_help.h"
+#include "log.h"
+#include "string_to_numerical.h"
+#include "parser_base.h"
+#include "event_parser_base.h"
 #include "trace_data_cache.h"
+#include "hi_sysevent_measure_filter.h"
 
 namespace SysTuning {
 namespace TraceStreamer {
-class DeviceStateTable : public TableBase {
+class BytraceHiSysEventParser : public EventParserBase {
 public:
-    explicit DeviceStateTable(const TraceDataCache*);
-    ~DeviceStateTable() override;
-    std::unique_ptr<TableBase::Cursor> CreateCursor() override;
-
-private:
-    class Cursor : public TableBase::Cursor {
-    public:
-        explicit Cursor(const TraceDataCache* dataCache, TableBase* table);
-        ~Cursor() override;
-        int32_t Column(int32_t column) const override;
-
-    private:
-        const HiSysEventDeviceStateData& deviceStateData_;
-    };
+    BytraceHiSysEventParser(TraceDataCache* dataCache, const TraceStreamerFilters* filters);
+    ~BytraceHiSysEventParser();
+    void ParseHiSysEventDataItem(const std::string& buffer, const uint64_t lineSeq);
+    void Finish();
 };
 } // namespace TraceStreamer
 } // namespace SysTuning
-#endif // DEVICE_STATE__TABLE_H
+
+#endif // BYTRACE_HI_SYS_EVENT_PARSER_H
