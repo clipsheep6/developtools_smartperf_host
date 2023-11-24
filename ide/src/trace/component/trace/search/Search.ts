@@ -247,7 +247,9 @@ export class LitSearch extends BaseElement {
                               shadowRoot?.querySelector<SpSystemTrace>('#sp-system-trace');
 
     let searchKeyup = (e: KeyboardEvent)=> {
-      this.clearTimes();      
+      this.clearTimes();
+      this._retarge_index!.value = ""
+      this.index = -1;
       document.removeEventListener('keyup', this.systemTrace!.documentOnKeyUp);
       document.removeEventListener('keydown', this.systemTrace!.documentOnKeyDown);
       this.searchKeyupListener(e);
