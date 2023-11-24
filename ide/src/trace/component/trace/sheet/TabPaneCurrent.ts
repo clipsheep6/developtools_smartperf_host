@@ -274,8 +274,7 @@ export class TabPaneCurrent extends BaseElement {
         ) {
           this.slicesTimeList[i - 1].hidden = true;
           this.systemTrace!.slicesList = this.slicesTimeList || [];
-          document.dispatchEvent(new CustomEvent('slices-change', { detail: this.slicesTimeList[i - 1] }));
-          this.slicesTimeList.splice(this.slicesTimeList.indexOf(this.slicesTimeList[i - 1]), 1);
+          document.dispatchEvent(new CustomEvent('slices-change', { detail: this.slicesTimeList[i - 1] }));         
           //   移除时更新表格内容
           this.setTableData();
         }
