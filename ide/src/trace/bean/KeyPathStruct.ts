@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,8 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "version.h"
-size_t g_loadSize = 0;
-size_t g_fileSize = 0;
-const std::string g_traceStreamerVersion = "3.5.8";             // version
-const std::string g_traceStreamerPublishVersion = "2023/11/24"; // publish datetime
+export class KeyPathStruct {
+  tid: number;
+  threadName: string;
+  tsArray: Array<number>;
+
+  constructor(tid: number, threadName: string, tsArray: Array<number>) {
+    this.tid = tid;
+    this.threadName = threadName;
+    this.tsArray = tsArray;
+  }
+}
