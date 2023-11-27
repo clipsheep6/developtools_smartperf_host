@@ -12,8 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "version.h"
-size_t g_loadSize = 0;
-size_t g_fileSize = 0;
-const std::string g_traceStreamerVersion = "3.5.8";             // version
-const std::string g_traceStreamerPublishVersion = "2023/11/24"; // publish datetime
+
+#ifndef EXPORT_TEST_H
+#define EXPORT_TEST_H
+
+#include <string>
+#include "trace_streamer_selector.h"
+namespace SysTuning {
+namespace TraceStreamer {
+constexpr size_t G_FILE_PERMISSION = 664;
+constexpr uint8_t RAW_TRACE_PARSE_MAX = 2;
+constexpr size_t G_CHUNK_SIZE = 1024 * 1024;
+bool ParseTraceFile(TraceStreamerSelector& ts, const std::string& tracePath);
+} // namespace TraceStreamer
+} // namespace SysTuning
+
+#endif // EXPORT_TEST_H
