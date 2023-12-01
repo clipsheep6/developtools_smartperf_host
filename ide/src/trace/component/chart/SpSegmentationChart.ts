@@ -68,6 +68,7 @@ export class SegMenTaTion {
                     value: v.count,
                     startNS: v.startNS,
                     cycle: v.cycle,
+                    type
                 }
             })
             CpuFreqExtendStruct.maxValue = currentMaxValue;
@@ -87,6 +88,7 @@ export class SegMenTaTion {
                     value: v.count,
                     startNS: Number(v.cycleStartTime) * 1000 * 1000,
                     cycle: v.cycle,
+                    type
                 }
             })
             CpuFreqExtendStruct.maxValue = currentMaxValue;
@@ -350,7 +352,7 @@ export class SegMenTaTion {
             SegMenTaTion.trace?.displayTip(
                 SegMenTaTion.schedRow!,
                 CpuFreqExtendStruct.hoverCpuFreqStruct,
-                `<span>${ColorUtils.formatNumberComma(CpuFreqExtendStruct.hoverCpuFreqStruct?.value!)} Hz·ms</span>`
+                `<span>${ColorUtils.formatNumberComma(CpuFreqExtendStruct.hoverCpuFreqStruct?.value!)} </span>`
             );
         };
         SegMenTaTion.schedRow.findHoverStruct = () => {
