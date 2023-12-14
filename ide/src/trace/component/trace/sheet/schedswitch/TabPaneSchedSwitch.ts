@@ -23,7 +23,6 @@ import { resizeObserver } from '../SheetUtils';
 import { LitChartColumn } from '../../../../../base-ui/chart/column/LitChartColumn';
 import {
     type TreeSwitchConfig,
-    InitThreadConfig,
     HistogramSourceConfig,
     ThreadInitConfig,
     SchedThreadCutConfig
@@ -48,8 +47,8 @@ export class TabPaneSchedSwitch extends BaseElement {
     private threadFlag: string = '';
     private selectionParam: SelectionParam | undefined;
     private canvansName: HTMLDivElement | null | undefined;
-    private singleSourceData: Array<InitThreadConfig> = [];
-    private loopSourceData: Array<InitThreadConfig> = [];
+    private singleSourceData: Array<ThreadInitConfig> = [];
+    private loopSourceData: Array<ThreadInitConfig> = [];
     private chartTotal: LitChartColumn | null | undefined;
     private histogramSource: Array<HistogramSourceConfig> = [];
     private rangeA: HistogramSourceConfig = new HistogramSourceConfig;
@@ -359,7 +358,7 @@ export class TabPaneSchedSwitch extends BaseElement {
     }
 
     translateIntoTreeData(data: Array<SchedThreadCutConfig>): void {
-        let group = new Object();
+        let group: { [key: number]: any } = {};
         let groupArr: Array<TreeSwitchConfig> = new Array();
         if (data !== null && data.length > 0) {
             data.forEach((slice) => {
@@ -390,45 +389,7 @@ export class TabPaneSchedSwitch extends BaseElement {
                     cycleStartTime: '',
                     children: [cycleItem]
                 };
-                //@ts-ignore
-                if (group[`${slice.pid}`]) {
-                    //@ts-ignore
-                    let process = group[`${slice.pid}`];
-                    process.count += slice.runningCnt;
-                    let thread = process.children.find((child: TreeSwitchConfig) => child.title === `${slice.thread}` + `[${slice.tid}]`);
-                    if (thread) {
-                        thread.count += slice.runningCnt;
-                        let cycle = thread.children.find((child: TreeSwitchConfig) => child.cycleStartTime === slice.leftNS);
-                        if (cycle) {
-                            cycle.count += slice.runningCnt;
-                        } else {
-                            thread.cycleNum += 1;
-                            process.cycleNum += 1;
-                            thread.duration += slice.dur;
-                            process.duration += slice.dur;
-                            thread.children.push(cycleItem);
-                        }
-                    } else {
-                        process.cycleNum += 1;
-                        process.duration += slice.dur;
-                        process.children.push(threadItem);
-                    }
-                } else {
-                    //@ts-ignore
-                    group[`${slice.pid}`] = {
-                        title: `${slice.process}` + `[${slice.pid}]`,
-                        count: slice.runningCnt,
-                        cycleNum: 1,
-                        tid: slice.tid,
-                        pid: slice.pid,
-                        thread: slice.thread,
-                        process: slice.process,
-                        duration: slice.dur,
-                        level: 'process',
-                        cycleStartTime: '',
-                        children: [threadItem],
-                    };
-                };
+                this.addChildNodes(group, cycleItem, threadItem, slice)
             });
             groupArr = Object.values(group);
             for (let i = 0; i < groupArr.length; i++) {
@@ -439,7 +400,46 @@ export class TabPaneSchedSwitch extends BaseElement {
             this.clickTreeTitleFn(this.schedSwitchTbl!.recycleDataSource);
         };
     }
+    addChildNodes(group: { [key: number]: TreeSwitchConfig }, cycleItem: TreeSwitchConfig, threadItem: TreeSwitchConfig, slice: SchedThreadCutConfig) {
+        if (group[`${slice.pid}`]) {
+            let process = group[`${slice.pid}`];
+            process.count += slice.runningCnt;
+            let thread = process.children.find((child: TreeSwitchConfig) => child.title === `${slice.thread}` + `[${slice.tid}]`);
+            if (thread) {
+                thread.count += slice.runningCnt;
+                let cycle = thread.children.find((child: TreeSwitchConfig) => child.cycleStartTime === slice.leftNS);
+                if (cycle) {
+                    cycle.count += slice.runningCnt;
+                } else {
 
+                    thread.cycleNum += 1;
+                    process.cycleNum += 1;
+                    (thread.duration as number) += (slice.dur as number);
+                    (process.duration as number) += (slice.dur as number);
+                    thread.children.push(cycleItem);
+
+                }
+            } else {
+                process.cycleNum += 1;
+                (process.duration as number) += (slice.dur as number);
+                process.children.push(threadItem);
+            }
+        } else {
+            group[`${slice.pid}`] = {
+                title: `${slice.process}` + `[${slice.pid}]`,
+                count: slice.runningCnt,
+                cycleNum: 1,
+                tid: slice.tid,
+                pid: slice.pid,
+                thread: slice.thread,
+                process: slice.process,
+                duration: slice.dur,
+                level: 'process',
+                cycleStartTime: '',
+                children: [threadItem],
+            };
+        };
+    }
     addCycleNumber(groupItem: Array<TreeSwitchConfig>): void {
         let flagNumber: number = 0;
         for (let idx = 0; idx < groupItem.length; idx++) {

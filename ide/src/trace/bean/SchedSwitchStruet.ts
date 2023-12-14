@@ -13,17 +13,6 @@
  * limitations under the License.
  */
 
-export class InitThreadConfig {
-    dur: number = 0;
-    endTs: number = 0;
-    id: number = -1;
-    pid: number = -1;
-    state: string = '';
-    tid: number = -1;
-    ts: number = -1
-    type: string = ''
-}
-
 export class TreeSwitchConfig {
     count: number = 0;
     cycleNum: number = 1;
@@ -58,7 +47,7 @@ export class ThreadInitConfig {
     endTs: number = 0;
     id: number = 0;
     pid: number = -1;
-    state?: string = '';
+    state: string = '';
     tid: number = -1;
     ts: number = -1;
     type: string = ''
