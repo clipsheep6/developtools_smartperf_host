@@ -33,7 +33,7 @@ export class SpSegmentationChart {
     private rowFolder!: TraceRow<BaseStruct>;
     static chartData: Array<Object> = [];;
     // 数据切割联动
-    static setChartData(type: string, data: Array<FreqChartDataStruct>) {
+    static setChartData(type: string, data: Array<FreqChartDataStruct>): void {
         let currentMaxValue: number = 0;
         if (type === 'CPU-FREQ') {
             setCpuData(data, currentMaxValue, type);
@@ -47,7 +47,7 @@ export class SpSegmentationChart {
     }
 
     // binder联动调用
-    static setBinderChartData(type: string, data: Array<Array<BinderDataStruct>>) {
+    static setBinderChartData(type: string, data: Array<Array<BinderDataStruct>>): void {
         BinderStruct.maxHeight = 0;
         let binderList: Array<BinderDataStruct> = [];
         let chartData: Array<BinderDataStruct> = [];
@@ -78,7 +78,7 @@ export class SpSegmentationChart {
     }
 
     // 悬浮联动
-    static tabHover(type: String, tableIsHover: boolean = false, cycle: number = -1) {
+    static tabHover(type: String, tableIsHover: boolean = false, cycle: number = -1): void {
         CpuFreqExtendStruct.isTabHover = tableIsHover;
         if (type === 'CPU-FREQ' || type === 'GPU-FREQ' || type === 'SCHED-SWITCH') {
             if (tableIsHover) {
@@ -396,7 +396,7 @@ function setCpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, t
         new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(chartData));
 }
 
-function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string) {
+function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string): void {
     let chartData = data.map((v: FreqChartDataStruct) => {
         let _count = Number(v.count)
         if (_count > currentMaxValue) {
@@ -420,7 +420,7 @@ function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, t
         new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(chartData));
 }
 
-function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string) {
+function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string): void {
     let chartData = data.map((v: any) => {
         if (v.count > currentMaxValue) {
             currentMaxValue = v.count
@@ -442,7 +442,7 @@ function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number,
         new Promise<Array<any>>((resolve) => resolve(chartData));
 }
 
-function setBinderData(data: Array<Array<BinderDataStruct>>, binderList: Array<BinderDataStruct>) {
+function setBinderData(data: Array<Array<BinderDataStruct>>, binderList: Array<BinderDataStruct>): void {
     data.map((v: Array<BinderDataStruct>) => {
         let listCount = 0
         v.map((t: BinderDataStruct) => {
