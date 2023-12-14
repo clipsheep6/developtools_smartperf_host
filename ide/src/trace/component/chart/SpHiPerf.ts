@@ -209,6 +209,7 @@ export class SpHiPerf {
     perfCallCutRow.folder = false;
     perfCallCutRow.drawType = -2;
     perfCallCutRow.name = 'CallChart [cpu0]';
+    perfCallCutRow.funcExpand = false;
     perfCallCutRow.setAttribute('children', '');
     perfCallCutRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
     perfCallCutRow.selectChangeHandler = this.trace.selectChangeHandler;
@@ -228,7 +229,7 @@ export class SpHiPerf {
           `<span style="font-weight: bold;color:'#000'">Name: </span>
         <span>${callName}</span><br>
         <span style='font-weight: bold;'>Lib: </span>
-        <span>${perfDataQuery.getLibName(hoverStruct!.fileId,hoverStruct!.symbolId)}</span><br>
+        <span>${perfDataQuery.getLibName(hoverStruct!.fileId, hoverStruct!.symbolId)}</span><br>
         <span style='font-weight: bold;'>Self Time: </span>
         <span>${Utils.getProbablyTime(selfDur || 0)}</span><br>
         <span style='font-weight: bold;'>Duration: </span>
@@ -274,16 +275,16 @@ export class SpHiPerf {
     row.rowSetting = 'enable';
     row.rowSettingList = [
       ...cpuData.reverse().map((it: any): {
-          key: string;
-          title: string;
-          checked?: boolean
-        } => {
-          return {
-            key: `${it.cpu_id}-c`,
-            checked: it.cpu_id === 0,
-            title: `cpu${it.cpu_id}`,
-          };
-        }
+        key: string;
+        title: string;
+        checked?: boolean
+      } => {
+        return {
+          key: `${it.cpu_id}-c`,
+          checked: it.cpu_id === 0,
+          title: `cpu${it.cpu_id}`,
+        };
+      }
       ),
       ...Array.from(pt.values())
     ];
@@ -569,7 +570,7 @@ export class SpHiPerf {
     row.isComplete = false;
   }
 
-  resetAllChartData() : void {
+  resetAllChartData(): void {
     this.rowList?.forEach(row => this.resetChartData(row));
   }
 
