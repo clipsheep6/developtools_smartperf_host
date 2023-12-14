@@ -122,7 +122,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   static ROW_TYPE_PURGEABLE_TOTAL_VM = 'purgeable-total-vm';
   static ROW_TYPE_PURGEABLE_PIN_VM = 'purgeable-pin-vm';
   static ROW_TYPE_LOGS = 'logs';
-  static ROW_TYPE_ALL_APPSTARTUPS = 'all-appstartups'
+  static ROW_TYPE_ALL_APPSTARTUPS = 'all-appstartups';
   static FRAME_WIDTH: number = 0;
   static range: TimeRange | undefined | null;
   static rangeSelectObject: RangeSelectStruct | undefined;
@@ -481,9 +481,9 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   addTemplateTypes(...type: string[]): void {
-    type.forEach(item => {
+    type.forEach((item) => {
       this.templateType.add(item);
-    })
+    });
     if (this.hasParentRowEl) {
       this.toParentAddTemplateType(this);
     }
@@ -492,7 +492,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   toParentAddTemplateType = (currentRowEl: TraceRow<any>): void => {
     let parentRow = currentRowEl.parentRowEl;
     if (parentRow !== undefined) {
-      currentRowEl.templateType.forEach(item => {
+      currentRowEl.templateType.forEach((item) => {
         parentRow!.templateType.add(item);
       });
       if (parentRow.parentRowEl !== undefined) {

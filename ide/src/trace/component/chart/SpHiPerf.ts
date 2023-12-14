@@ -134,10 +134,10 @@ export class SpHiPerf {
         title: 'Cpu Usage',
         checked: true,
       },
-      ...this.eventTypeList.map(et => {
+      ...this.eventTypeList.map((et) => {
         return {
           key: `${et.id}`,
-          title: et.report
+          title: et.report,
         };
       }),
     ];
@@ -155,7 +155,7 @@ export class SpHiPerf {
               child.drawType = drawType;
               child.dataList2 = [];
               child.childrenList.forEach((sz) => {
-                sz.drawType = drawType
+                sz.drawType = drawType;
                 sz.dataList2 = [];
               });
             }
@@ -218,11 +218,16 @@ export class SpHiPerf {
       let hoverStruct = HiPerfCallChartStruct.hoverPerfCallCutStruct;
       if (hoverStruct) {
         let selfDur = hoverStruct?.totalTime || 0;
-        hoverStruct?.children?.forEach(child => {
+        hoverStruct?.children?.forEach((child) => {
           selfDur -= child.totalTime;
         });
-        let callName = HiPerfCallChartStruct.hoverPerfCallCutStruct?.name || '';
-        callName = callName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        let callName = '';
+        if(typeof hoverStruct.name === 'number'){
+          callName = SpSystemTrace.DATA_DICT.get(hoverStruct.name as number) || '';
+        } else {
+          callName = HiPerfCallChartStruct.hoverPerfCallCutStruct?.name as string || '';
+        }
+        callName = callName!.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         this.trace?.displayTip(
           perfCallCutRow!,
           HiPerfCallChartStruct.hoverPerfCallCutStruct,
@@ -240,7 +245,8 @@ export class SpHiPerf {
       }
     };
     // @ts-ignore
-    perfCallCutRow.supplier = () => this.getHiPerfChartData(this.callChartType, this.callChartId, this.eventTypeId, perfCallCutRow);
+    perfCallCutRow.supplier = () =>
+      this.getHiPerfChartData(this.callChartType, this.callChartId, this.eventTypeId, perfCallCutRow);
     perfCallCutRow.findHoverStruct = () => {
       HiPerfCallChartStruct.hoverPerfCallCutStruct = perfCallCutRow.getHoverStruct();
     };
@@ -252,8 +258,8 @@ export class SpHiPerf {
       const key = `${current.processName || 'Process'}(${current.pid})`;
       const thread = {
         key: `${current.tid}-t`,
-        title: `${current.threadName || 'Thread'}(${current.tid})`
-      }
+        title: `${current.threadName || 'Thread'}(${current.tid})`,
+      };
       if (map.has(key)) {
         if (map.get(key).children) {
           map.get(key).children.push(thread);
@@ -265,7 +271,7 @@ export class SpHiPerf {
           key: `${current.pid}-p`,
           title: key,
           children: [thread],
-          disable: true
+          disable: true,
         });
       }
       return map;
@@ -274,19 +280,22 @@ export class SpHiPerf {
     row.addRowSettingPop();
     row.rowSetting = 'enable';
     row.rowSettingList = [
-      ...cpuData.reverse().map((it: any): {
-        key: string;
-        title: string;
-        checked?: boolean
-      } => {
-        return {
-          key: `${it.cpu_id}-c`,
-          checked: it.cpu_id === 0,
-          title: `cpu${it.cpu_id}`,
-        };
-      }
+      ...cpuData.reverse().map(
+        (
+          it: any
+        ): {
+          key: string;
+          title: string;
+          checked?: boolean;
+        } => {
+          return {
+            key: `${it.cpu_id}-c`,
+            checked: it.cpu_id === 0,
+            title: `cpu${it.cpu_id}`,
+          };
+        }
       ),
-      ...Array.from(pt.values())
+      ...Array.from(pt.values()),
     ];
     row.onRowSettingChangeHandler = (setting: any, nodes): void => {
       if (setting && setting.length > 0) {
@@ -527,29 +536,32 @@ export class SpHiPerf {
     let source: Array<HiPerfChartFrame> = [];
     this.stackChartMaxDepth = 1;
     await new Promise((resolve) => {
-      procedurePool.submitWithName('logic0', 'perf-callstack-chart', [type, id, eventTypeId, (window as any).totalNS], undefined, (res: any) => {
-        this.getAllCombineData(res, source);
-        let maxHeight = this.stackChartMaxDepth * 20;
-        row.funcMaxHeight = maxHeight;
-        if (row.funcExpand) {
-          row!.style.height = `${maxHeight}px`;
-          if (row.collect) {
-            window.publish(window.SmartEvent.UI.RowHeightChange, {
-              expand: true,
-              value: row.funcMaxHeight - 20,
-            });
+      procedurePool.submitWithName(
+        'logic0',
+        'perf-callstack-chart',
+        [type, id, eventTypeId, (window as any).totalNS],
+        undefined,
+        (res: any) => {
+          this.getAllCombineData(res, source);
+          let maxHeight = this.stackChartMaxDepth * 20;
+          row.funcMaxHeight = maxHeight;
+          if (row.funcExpand) {
+            row!.style.height = `${maxHeight}px`;
+            if (row.collect) {
+              window.publish(window.SmartEvent.UI.RowHeightChange, {
+                expand: true,
+                value: row.funcMaxHeight - 20,
+              });
+            }
           }
+          resolve(source);
         }
-        resolve(source);
-      });
-    })
+      );
+    });
     return source;
   }
 
-  getAllCombineData(
-    combineData: Array<HiPerfChartFrame>,
-    allCombineData: Array<HiPerfChartFrame>
-  ): void {
+  getAllCombineData(combineData: Array<HiPerfChartFrame>, allCombineData: Array<HiPerfChartFrame>): void {
     for (let data of combineData) {
       if (data.name != 'name') {
         allCombineData.push(data);
@@ -571,7 +583,7 @@ export class SpHiPerf {
   }
 
   resetAllChartData(): void {
-    this.rowList?.forEach(row => this.resetChartData(row));
+    this.rowList?.forEach((row) => this.resetChartData(row));
   }
 
   hoverTip(
