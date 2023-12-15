@@ -307,10 +307,10 @@ export class SpSegmentationChart {
         SpSegmentationChart.binderRow.favoriteChangeHandler = SpSegmentationChart.trace.favoriteChangeHandler;
         SpSegmentationChart.binderRow.selectChangeHandler = SpSegmentationChart.trace.selectChangeHandler;
         SpSegmentationChart.binderRow.findHoverStruct = () => {
-            BinderStruct.hoverCpuFreqStruct = SpSegmentationChart.binderRow!.dataListCache.find((v: any) => {
+            BinderStruct.hoverCpuFreqStruct = SpSegmentationChart.binderRow!.dataListCache.find((v: BinderStruct) => {
                 if (SpSegmentationChart.binderRow!.isHover) {
-                    if (v.frame.x < SpSegmentationChart.binderRow!.hoverX
-                        && v.frame.x + v.frame.width > SpSegmentationChart.binderRow!.hoverX
+                    if (v.frame!.x < SpSegmentationChart.binderRow!.hoverX
+                        && v.frame!.x + v.frame!.width > SpSegmentationChart.binderRow!.hoverX
                         && (BinderStruct.maxHeight * 20 - v.depth * 20 + 20) < SpSegmentationChart.binderRow!.hoverY
                         && BinderStruct.maxHeight * 20 - v.depth * 20 + v.value * 20 + 20 > SpSegmentationChart.binderRow!.hoverY) {
                         return v;
@@ -356,12 +356,14 @@ export class SpSegmentationChart {
 class FreqChartDataStruct {
     cpu?: number = 0;
     dur: number = 0;
+    duration?: number = 0;
     value: number = 0;
     startNS: number = 0;
     cycle: number = 0;
     freq?: number = 0;
     type?: string = '';
     count?: number = 0;
+    cycleStartTime?: number = 0;
 }
 
 class BinderDataStruct {
@@ -420,9 +422,9 @@ function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, t
         new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(chartData));
 }
 
-function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string): void {
-    let chartData = data.map((v: any) => {
-        if (v.count > currentMaxValue) {
+function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number | undefined, type: string): void {
+    let chartData = data.map((v: FreqChartDataStruct) => {
+        if (v.count && v.count > currentMaxValue!) {
             currentMaxValue = v.count;
         }
         return {
