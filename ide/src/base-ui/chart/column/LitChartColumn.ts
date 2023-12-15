@@ -207,11 +207,14 @@ export class LitChartColumn extends BaseElement {
       for (let i = 0; i <= 5; i++) {
         this.rowLines.push({
           y: gap * i,
-          label: `${getProbablyTime(maxValue - valGap * i)}`,
+          label: this.litChartColumnCfg.removeUnit === true ? `${maxValue - valGap * i}` : `${getProbablyTime(maxValue - valGap * i)}`,
         });
       }
+      if (!this.litChartColumnCfg.notSort) {
+        this.litChartColumnCfg?.data
+          .sort((a, b) => b[this.litChartColumnCfg!.yField] - a[this.litChartColumnCfg!.yField]);
+      }
       this.litChartColumnCfg?.data
-        .sort((a, b) => b[this.litChartColumnCfg!.yField] - a[this.litChartColumnCfg!.yField])
         .forEach((litChartColumnItem, litChartColumnIndex, array) => {
           this.data.push({
             color: this.litChartColumnCfg!.color(litChartColumnItem),
