@@ -44,6 +44,11 @@ let dragDirection: string = '';
 
 @element('trace-row')
 export class TraceRow<T extends BaseStruct> extends HTMLElement {
+  static ROW_TYPE_SPSEGNENTATION = 'spsegmentation';
+  static ROW_TYPE_CPU_COMPUTILITY = 'cpu-computility';
+  static ROW_TYPE_GPU_COMPUTILITY = 'gpu-computility';
+  static ROW_TYPE_BINDER_COUNT = 'binder-count';
+  static ROW_TYPE_SCHED_SWITCH = 'sched-switch';
   static ROW_TYPE_CPU = 'cpu-data';
   static ROW_TYPE_CPU_STATE = 'cpu-state';
   static ROW_TYPE_CPU_FREQ = 'cpu-freq';
@@ -143,6 +148,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   public collectEL: LitIcon | null | undefined;
   public onThreadHandler: ((useCache: boolean, buf: ArrayBuffer | undefined | null) => void) | undefined | null;
   public onRowSettingChangeHandler: ((keys: Array<string>, nodes: Array<any>) => void) | undefined | null;
+  public onRowCheckFileChangeHandler: ((file: string | ArrayBuffer | null) => void) | undefined | null;
   public supplier: (() => Promise<Array<T>>) | undefined | null;
   public favoriteChangeHandler: ((fav: TraceRow<any>) => void) | undefined | null;
   public selectChangeHandler: ((traceRow: TraceRow<any>) => void) | undefined | null;
@@ -161,6 +167,8 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   private nameEL: HTMLLabelElement | null | undefined;
   private rowSettingTree: LitTree | null | undefined;
   private rowSettingPop: LitPopover | null | undefined;
+  private fileEL: any;
+  private rowCheckFilePop: LitPopover | null | undefined;
   private _rangeSelect: boolean = false;
   private _drawType: number = 0;
   private folderIconEL: LitIcon | null | undefined;
@@ -188,12 +196,12 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       isOffScreen: boolean;
       skeleton?: boolean;
     } = {
-      canvasNumber: 1,
-      alpha: false,
-      contextId: '2d',
-      isOffScreen: true,
-      skeleton: false,
-    }
+        canvasNumber: 1,
+        alpha: false,
+        contextId: '2d',
+        isOffScreen: true,
+        skeleton: false,
+      }
   ) {
     super();
     this.args = args;
@@ -735,6 +743,38 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       window.publish(window.SmartEvent.UI.HoverNull, undefined);
     });
     this.describeEl?.appendChild(this.rowSettingPop);
+  }
+
+  addRowCheckFilePop(): void {
+    this.rowCheckFilePop = document.createElement('litpopover') as LitPopover;
+    this.rowCheckFilePop.innerHTML = `<div slot="content" id="jsonFile" style="display: block;height: auto;max-height:200px;overflow-y:auto">
+    </div>
+    <lit-icon name="copy-csv" size="19" id="myfolder"></lit-icon>
+    <input type="file" id="jsoninput" style="width:0px;height:0px"placeholder=''/>`;
+    this.rowCheckFilePop.id = 'rowCheckFile';
+    this.rowCheckFilePop.className = 'popover checkFile';
+    this.rowCheckFilePop.setAttribute('trigger', 'click');
+    this.rowCheckFilePop?.addEventListener('mouseenter', (e) => {
+      window.publish(window.SmartEvent.UI.HoverNull, undefined);
+    });
+    this.fileEL = this.rowCheckFilePop.querySelector('#jsoninput');
+    this.rowCheckFilePop.onclick = (): void => {
+      this.fileEL.click();
+      this.fileEL.addEventListener('change', (e: any) => {
+        let file = e.target.files[0];
+        if (file.type === 'application/json') {
+          let file_reader = new FileReader();
+          file_reader.readAsText(file, 'UTF-8');
+          file_reader.onload = () => {
+            let fc = file_reader.result;
+            this.onRowCheckFileChangeHandler?.(fc)
+          };
+        } else {
+          return
+        }
+      }, false)
+    }
+    this.describeEl?.appendChild(this.rowCheckFilePop);
   }
 
   getRowSettingKeys(): Array<string> {
@@ -1440,7 +1480,13 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         } 
         :host([row-setting='enable']:not([check-type='-1'])) .collect{
             margin-right: 5px;
-        } 
+        }  
+        :host([row-setting='checkFile']) #rowCheckFile{
+          display:flex;
+        }
+        :host([row-setting='checkFile']) #myfolder{
+          color:#4b5766;
+        }
         </style>
         <div class="root">
             <div class="describe flash" style="position: inherit">

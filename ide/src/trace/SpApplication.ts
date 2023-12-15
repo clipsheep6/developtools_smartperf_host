@@ -1113,6 +1113,7 @@ export class SpApplication extends BaseElement {
                     collapsed: false,
                     title: 'Current Trace',
                     second: false,
+                    icon:'',
                     describe: 'Actions on the current trace',
                     children: getTraceOptionMenus(showFileName, fileSize, fileName, true, dbName),
                   });
@@ -1461,6 +1462,7 @@ export class SpApplication extends BaseElement {
                   collapsed: false,
                   title: 'Convert trace',
                   second: false,
+                  icon:'',
                   describe: 'Convert to other formats',
                   children: pushConvertTrace(fileName),
                 });
@@ -1470,6 +1472,7 @@ export class SpApplication extends BaseElement {
                 collapsed: false,
                 title: 'Support',
                 second: false,
+                icon:'',
                 describe: 'Support',
                 children: [
                   {
@@ -1517,6 +1520,7 @@ export class SpApplication extends BaseElement {
                   collapsed: false,
                   title: 'Current Trace',
                   second: false,
+                  icon:'',
                   describe: 'Actions on the current trace',
                   children: getTraceOptionMenus(showFileName, fileSize, fileName, false),
                 });
@@ -1823,6 +1827,7 @@ export class SpApplication extends BaseElement {
                     collapsed: false,
                     title: 'Current Trace',
                     second: false,
+                    icon:'',
                     describe: 'Actions on the current trace',
                     children: getTraceOptionMenus(showFileName, fileSize, fileName, false),
                   });
@@ -1849,6 +1854,7 @@ export class SpApplication extends BaseElement {
         collapsed: false,
         title: 'Navigation',
         second: false,
+        icon:'',
         describe: 'Open or record a new trace',
         children: [
           {
@@ -1908,6 +1914,7 @@ export class SpApplication extends BaseElement {
         collapsed: false,
         title: 'Support',
         second: false,
+        icon:'',
         describe: 'Support',
         children: [
           {
