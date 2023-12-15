@@ -225,7 +225,7 @@ export class SpSegmentationChart {
             SpSegmentationChart.trace?.displayTip(
                 SpSegmentationChart.GpuRow!,
                 CpuFreqExtendStruct.hoverCpuFreqStruct,
-                `<span>${CpuFreqExtendStruct.hoverCpuFreqStruct === undefined ? 0 : CpuFreqExtendStruct.hoverCpuFreqStruct.value!} Hz·ms</span>`
+                `<span>${CpuFreqExtendStruct.hoverCpuFreqStruct === undefined ? 0 : CpuFreqExtendStruct.hoverCpuFreqStruct.value!}</span>`
             );
         };
         SpSegmentationChart.GpuRow.findHoverStruct = () => {
@@ -266,7 +266,7 @@ export class SpSegmentationChart {
             SpSegmentationChart.trace?.displayTip(
                 SpSegmentationChart.schedRow!,
                 CpuFreqExtendStruct.hoverCpuFreqStruct,
-                `<span>${ColorUtils.formatNumberComma(CpuFreqExtendStruct.hoverCpuFreqStruct?.value!)} Hz·ms</span>`
+                `<span>${CpuFreqExtendStruct.hoverCpuFreqStruct?.value!}</span>`
             );
         };
         SpSegmentationChart.schedRow.findHoverStruct = () => {
@@ -313,7 +313,7 @@ export class SpSegmentationChart {
                         && v.frame.x + v.frame.width > SpSegmentationChart.binderRow!.hoverX
                         && (BinderStruct.maxHeight * 20 - v.depth * 20 + 20) < SpSegmentationChart.binderRow!.hoverY
                         && BinderStruct.maxHeight * 20 - v.depth * 20 + v.value * 20 + 20 > SpSegmentationChart.binderRow!.hoverY) {
-                        return v
+                        return v;
                     }
                 }
             })
@@ -376,7 +376,7 @@ class BinderDataStruct {
 function setCpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string) {
     let chartData = data.map((v: FreqChartDataStruct) => {
         if (v.value > currentMaxValue) {
-            currentMaxValue = v.value
+            currentMaxValue = v.value;
         }
         return {
             cpu: 0,
@@ -400,7 +400,7 @@ function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, t
     let chartData = data.map((v: FreqChartDataStruct) => {
         let _count = Number(v.count)
         if (_count > currentMaxValue) {
-            currentMaxValue = _count
+            currentMaxValue = _count;
         }
         return {
             cpu: 7,
@@ -423,7 +423,7 @@ function setGpuData(data: Array<FreqChartDataStruct>, currentMaxValue: number, t
 function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number, type: string): void {
     let chartData = data.map((v: any) => {
         if (v.count > currentMaxValue) {
-            currentMaxValue = v.count
+            currentMaxValue = v.count;
         }
         return {
             cpu: 5,
@@ -444,7 +444,7 @@ function setSchedData(data: Array<FreqChartDataStruct>, currentMaxValue: number,
 
 function setBinderData(data: Array<Array<BinderDataStruct>>, binderList: Array<BinderDataStruct>): void {
     data.map((v: Array<BinderDataStruct>) => {
-        let listCount = 0
+        let listCount = 0;
         v.map((t: BinderDataStruct) => {
             listCount += t.count;
             if (t.name === 'binder transaction') {

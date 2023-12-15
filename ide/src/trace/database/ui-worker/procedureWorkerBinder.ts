@@ -80,7 +80,7 @@ export class BinderStruct extends BaseStruct {
             if (data.name === 'binder async rcv') {
                 color = '#0cbdd4';
             }
-            freqContext.fillStyle = color
+            freqContext.fillStyle = color;
             if (data === BinderStruct.hoverCpuFreqStruct || data === BinderStruct.selectCpuFreqStruct || data.cycle === BinderStruct.hoverCycle) {
                 freqContext.globalAlpha = 1;
                 freqContext.lineWidth = 1;
