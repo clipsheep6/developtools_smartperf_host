@@ -16,19 +16,21 @@
 import { BaseStruct, dataFilterHandler } from './ProcedureWorkerCommon';
 import { TraceRow } from '../../component/trace/base/TraceRow';
 
-export class LtpoRender {
+export class hitchTimeRender {
     renderMainThread(
         req: {
             appStartupContext: CanvasRenderingContext2D;
             useCache: boolean;
             type: string;
         },
-        ltpoRow: TraceRow<LtpoStruct>
+        ltpoRow: TraceRow<HitchTimeStruct>
     ): void {
         let list = ltpoRow.dataList;
-        LtpoStruct.maxVal = 0;
+        HitchTimeStruct.maxVal = 0;
         for (let i = 0; i < list.length; i++) {
-            if (Number(list[i].value) > LtpoStruct.maxVal) LtpoStruct.maxVal = Number(list[i].value);
+            if (Number(list[i].value) > HitchTimeStruct.maxVal) {
+                HitchTimeStruct.maxVal = Number(list[i].value)
+            };
         }
         let filter = ltpoRow.dataListCache;
         dataFilterHandler(list, filter, {
@@ -51,26 +53,26 @@ export class LtpoRender {
                     ltpoRow.hoverX >= re.frame.x - offset &&
                     ltpoRow.hoverX <= re.frame.x + re.frame.width + offset
                 ) {
-                    LtpoStruct.hoverLtpoStruct = re;
+                    HitchTimeStruct.hoverHitchTimeStruct = re;
                     find = true;
                 }
             }
-            if(!ltpoRow.isHover) LtpoStruct.hoverLtpoStruct = undefined
+            if (!ltpoRow.isHover) HitchTimeStruct.hoverHitchTimeStruct = undefined
             if (!find && ltpoRow.isHover) {
-                LtpoStruct.hoverLtpoStruct = undefined;
+                HitchTimeStruct.hoverHitchTimeStruct = undefined;
             }
             req.appStartupContext.beginPath()
-            LtpoStruct.draw(req.appStartupContext, re);
+            HitchTimeStruct.draw(req.appStartupContext, re);
             req.appStartupContext.closePath()
         }
     }
 }
 
 
-export class LtpoStruct extends BaseStruct {
-    static hoverLtpoStruct: LtpoStruct | undefined;
-    static selectLtpoStruct: LtpoStruct | undefined;
-    static maxVal: number | undefined;
+export class HitchTimeStruct extends BaseStruct {
+    static hoverHitchTimeStruct: HitchTimeStruct | undefined;
+    static selectHitchTimeStruct: HitchTimeStruct | undefined;
+    static maxVal: number = 0;
     dur: number | undefined;
     name: string | undefined;
     presentFance: number | undefined;
@@ -80,16 +82,16 @@ export class LtpoStruct extends BaseStruct {
     startTs: number | undefined;
     nextStartTs: string | number | undefined;
     nextDur: number | undefined;
-    value: number | undefined ;
+    value: number | undefined;
     pid: number | undefined;
     itid: number | undefined;
 
-    static draw(ctx: CanvasRenderingContext2D, data: LtpoStruct): void {
+    static draw(ctx: CanvasRenderingContext2D, data: HitchTimeStruct): void {
         if (data.frame) {
             ctx.fillStyle = '#9933FA';
-            if (data === LtpoStruct.hoverLtpoStruct || data === LtpoStruct.selectLtpoStruct) {
+            if (data === HitchTimeStruct.hoverHitchTimeStruct || data === HitchTimeStruct.selectHitchTimeStruct) {
                 let drawHeight: number = Math.floor(
-                    ((Number(data.value) || 0) * (data.frame.height || 0) * 1.0) / LtpoStruct.maxVal!
+                    ((Number(data.value) || 0) * (data.frame.height || 0) * 1.0) / HitchTimeStruct.maxVal!
                 );
                 drawHeight = drawHeight < 1 ? 1 : drawHeight
                 ctx.globalAlpha = 1.0;
@@ -99,7 +101,7 @@ export class LtpoStruct extends BaseStruct {
                 ctx.strokeRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, data.frame.width, drawHeight)
             } else {
                 ctx.globalAlpha = 0.6;
-                let drawHeight: number = Math.floor(((Number(data.value) || 0) * (data.frame.height || 0)) / LtpoStruct.maxVal!);
+                let drawHeight: number = Math.floor(((Number(data.value) || 0) * (data.frame.height || 0)) / HitchTimeStruct.maxVal!);
                 drawHeight = drawHeight < 1 ? 1 : drawHeight
                 ctx.fillRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, data.frame.width, drawHeight)
             }
