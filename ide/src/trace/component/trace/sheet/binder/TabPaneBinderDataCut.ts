@@ -58,7 +58,7 @@ export class TabPaneBinderDataCut extends BaseElement {
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
     }
 
-    dispalyQueryArea(b: boolean) {
+    dispalyQueryArea(b: boolean): void {
         if (b) {
             this.setAttribute('dispalyQueryArea', '');
         } else {
@@ -66,7 +66,7 @@ export class TabPaneBinderDataCut extends BaseElement {
         }
     }
 
-    clickSingle(b: boolean) {
+    clickSingle(b: boolean): void {
         if (b) {
             this.setAttribute('clickSingle', '');
         } else {
@@ -74,7 +74,7 @@ export class TabPaneBinderDataCut extends BaseElement {
         }
     }
 
-    clickLoop(b: boolean) {
+    clickLoop(b: boolean): void {
         if (b) {
             this.setAttribute('clickLoop', '');
         } else {
@@ -85,7 +85,8 @@ export class TabPaneBinderDataCut extends BaseElement {
     async dataLoopCut(threadId: HTMLInputElement, threadFunc: HTMLInputElement): Promise<void> {
         this.currentThreadId = '';
         let threadIds: number[] = this.currentSelectionParam.threadIds;
-        let processIds: number[] = this.currentSelectionParam.processIds;
+        //@ts-ignore
+        let processIds: number[] = [...new Set(this.currentSelectionParam.processIds)];
         let threadIdValue: string = threadId.value.trim();
         let threadFuncName: string = threadFunc.value.trim();
         let leftNS: number = this.currentSelectionParam.leftNs;
@@ -134,7 +135,8 @@ export class TabPaneBinderDataCut extends BaseElement {
     async dataSingleCut(threadId: HTMLInputElement, threadFunc: HTMLInputElement): Promise<void> {
         this.currentThreadId = '';
         let threadIds: number[] = this.currentSelectionParam.threadIds;
-        let processIds: number[] = this.currentSelectionParam.processIds;
+        //@ts-ignore
+        let processIds: number[] = [...new Set(this.currentSelectionParam.processIds)];
         let threadIdValue: string = threadId.value.trim();
         let threadFuncName: string = threadFunc.value.trim();
         let leftNS: number = this.currentSelectionParam.leftNs;
@@ -183,6 +185,9 @@ export class TabPaneBinderDataCut extends BaseElement {
         if (threadIdValue === '') {
             threadId.style.border = '1px solid rgb(255,0,0)';
             threadId.setAttribute('placeholder', 'Please input thread id');
+            this.threadBindersTbl!.recycleDataSource = [];
+            this.threadBindersTbl!.loading = false;
+            this.theadClick(this.threadBindersTbl!.recycleDataSource);
         } else {
             threadId.style.border = '1px solid rgb(151,151,151)';
         }
@@ -190,6 +195,9 @@ export class TabPaneBinderDataCut extends BaseElement {
         if (threadFuncName === '') {
             threadFunc.style.border = '1px solid rgb(255,0,0)';
             threadFunc.setAttribute('placeholder', 'Please input function name');
+            this.threadBindersTbl!.recycleDataSource = [];
+            this.threadBindersTbl!.loading = false;
+            this.theadClick(this.threadBindersTbl!.recycleDataSource);
         } else {
             threadFunc.style.border = '1px solid rgb(151,151,151)';
         }
@@ -440,8 +448,8 @@ export class TabPaneBinderDataCut extends BaseElement {
 
     findThreadByThreadId(groupArr: Array<BinderGroup>, threadId: number): BinderGroup[] {
         let currentSelectThread: BinderGroup[] = [];
-        groupArr.forEach(p => {
-            p.children?.forEach(th => {
+        groupArr.forEach((p: BinderGroup) => {
+            p.children?.forEach((th: BinderGroup) => {
                 if (th.tid === threadId) {
                     currentSelectThread = th.children!
                 }
@@ -486,9 +494,9 @@ export class TabPaneBinderDataCut extends BaseElement {
                 this.dataSource = [];
                 this.dataSource.push({
                     xName: 'Total',
-                    yAverage: totalCount !== 0 ? Math.ceil(totalCount / this.rowCycleData!.length) : 0
+                    yAverage: totalCount > 0 ? Math.ceil(totalCount / this.rowCycleData!.length) : 0
                 })
-                if (this.dataSource!.length !== 0) {
+                if (this.dataSource!.length > 0) {
                     this.drawColumn();
                 }
                 let threaId = currentData.tid;

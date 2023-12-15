@@ -17,16 +17,15 @@ import { BaseElement, element } from '../../../../../base-ui/BaseElement';
 import { LitTable, RedrawTreeForm } from '../../../../../base-ui/table/lit-table';
 import { SelectionData, SelectionParam } from '../../../../bean/BoxSelection';
 import '../../../StackBar';
-import { getTabRunningPercent, queryCpuFreqUsageData, queryCpuFreqFilterId, queryBinderByThreadId } from '../../../../database/SqlLite';
+import { queryBinderByThreadId } from '../../../../database/SqlLite';
 import { Utils } from '../../base/Utils';
 import { resizeObserver } from '../SheetUtils';
-import { SliceGroup } from '../../../../bean/StateProcessThread';
 import { BinderGroup, BinderItem } from '../../../../bean/BinderProcessThread';
 
 @element('tabpane-binders')
 export class TabPaneBinders extends BaseElement {
   private threadBindersTbl: LitTable | null | undefined;
-  private threadStatesTblSource: Array<SelectionData> = [];
+  private threadBindersTblSource: Array<SelectionData> = [];
   private currentSelectionParam: Selection | undefined;
 
   set data(threadStatesParam: SelectionParam | any) {
@@ -35,26 +34,28 @@ export class TabPaneBinders extends BaseElement {
     }
     this.threadBindersTbl!.loading = true;
     this.currentSelectionParam = threadStatesParam;
-    this.threadStatesTblSource = [];
+    this.threadBindersTblSource = [];
     this.threadBindersTbl!.recycleDataSource = [];
     this.initBinderData(threadStatesParam);
   }
-  
+
   initBinderData(threadStatesParam: SelectionParam): void {
     this.threadBindersTbl!.recycleDataSource = [];
     let binderList: BinderItem[] = [];
     let threadIds = threadStatesParam.threadIds;
     let processIds: number[] = [...new Set(threadStatesParam.processIds)];
     queryBinderByThreadId(processIds, threadIds, threadStatesParam.leftNs, threadStatesParam.rightNs).then((result) => {
-      if (result !== null && result.length > 0 && result[0].count !== 0) {
+      if (result !== null && result.length > 0) {
         binderList = result;
       }
       if (binderList.length > 0) {
         this.threadBindersTbl!.recycleDataSource = this.transferToTreeData(binderList);
+        this.threadBindersTblSource = this.threadBindersTbl!.recycleDataSource;
         this.threadBindersTbl!.loading = false;
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       } else if (binderList.length === 0) {
         this.threadBindersTbl!.recycleDataSource = [];
+        this.threadBindersTblSource = [];
         this.threadBindersTbl!.loading = false;
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       }
@@ -80,18 +81,18 @@ export class TabPaneBinders extends BaseElement {
         let thread = process.children.find((child: BinderGroup) => child.title === `T-${it.tid}`);
         if (thread) {
           thread.totalCount += it.count;
-          thread.binderTransactionCount += it.name == 'binder transaction' ? it.count : 0;
-          thread.binderAsyncRcvCount += it.name == 'binder async rcv' ? it.count : 0;
-          thread.binderReplyCount += it.name == 'binder reply' ? it.count : 0;
-          thread.binderTransactionAsyncCount += it.name == 'binder transaction async' ? it.count : 0;
+          thread.binderTransactionCount += it.name === 'binder transaction' ? it.count : 0;
+          thread.binderAsyncRcvCount += it.name === 'binder async rcv' ? it.count : 0;
+          thread.binderReplyCount += it.name === 'binder reply' ? it.count : 0;
+          thread.binderTransactionAsyncCount += it.name === 'binder transaction async' ? it.count : 0;
         } else {
           process.children.push({
             title: `T-${it.tid}`,
             totalCount: it.count,
-            binderTransactionCount: it.name == 'binder transaction' ? it.count : 0,
-            binderAsyncRcvCount: it.name == 'binder async rcv' ? it.count : 0,
-            binderReplyCount: it.name == 'binder reply' ? it.count : 0,
-            binderTransactionAsyncCount: it.name == 'binder transaction async' ? it.count : 0,
+            binderTransactionCount: it.name === 'binder transaction' ? it.count : 0,
+            binderAsyncRcvCount: it.name === 'binder async rcv' ? it.count : 0,
+            binderReplyCount: it.name === 'binder reply' ? it.count : 0,
+            binderTransactionAsyncCount: it.name === 'binder transaction async' ? it.count : 0,
             tid: it.tid,
             pid: it.pid
           })
@@ -106,10 +107,10 @@ export class TabPaneBinders extends BaseElement {
             {
               title: `T-${it.tid}`,
               totalCount: it.count,
-              binderTransactionCount: it.name == 'binder transaction' ? it.count : 0,
-              binderAsyncRcvCount: it.name == 'binder async rcv' ? it.count : 0,
-              binderReplyCount: it.name == 'binder reply' ? it.count : 0,
-              binderTransactionAsyncCount: it.name == 'binder transaction async' ? it.count : 0,
+              binderTransactionCount: it.name === 'binder transaction' ? it.count : 0,
+              binderAsyncRcvCount: it.name === 'binder async rcv' ? it.count : 0,
+              binderReplyCount: it.name === 'binder reply' ? it.count : 0,
+              binderTransactionAsyncCount: it.name === 'binder transaction async' ? it.count : 0,
               tid: it.tid,
               pid: it.pid,
             }
@@ -132,7 +133,7 @@ export class TabPaneBinders extends BaseElement {
           } else if (label.includes('Thread') && i === 1) {
             for (let item of data) {
               item.status = true;
-              if (item.children != undefined && item.children.length > 0) {
+              if (item.children !== undefined && item.children.length > 0) {
                 this.threadBindersTbl!.setStatus(item.children, false);
               }
             }
