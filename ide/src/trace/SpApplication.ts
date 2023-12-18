@@ -1501,12 +1501,12 @@ export class SpApplication extends BaseElement {
                     },
                   },
                   {
-                    title: 'Keyboard shortcuts',
+                    title: 'Keyboard Shortcuts',
                     icon: 'smart-help',
                     clickHandler: function (item: MenuItem) {
                       SpStatisticsHttpUtil.addOrdinaryVisitAction({
-                        event: 'Keyboard shortcuts',
-                        action: 'Keyboard shortcuts',
+                        event: 'Keyboard Shortcuts',
+                        action: 'Keyboard Shortcuts',
                       });
                       that.search = false;
                       showContent(SpKeyboard);
@@ -1943,14 +1943,14 @@ export class SpApplication extends BaseElement {
             },
           },
           {
-            title: 'Keyboard shortcuts',
+            title: 'Keyboard Shortcuts',
             icon: 'smart-help',
             clickHandler: function (item: MenuItem) {
               that.search = false;
               showContent(SpKeyboard);
               SpStatisticsHttpUtil.addOrdinaryVisitAction({
-                event: 'Keyboard shortcuts',
-                action: 'Keyboard shortcuts',
+                event: 'Keyboard Shortcuts',
+                action: 'Keyboard Shortcuts',
               });
             },
           },
