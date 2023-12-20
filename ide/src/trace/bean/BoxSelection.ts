@@ -114,6 +114,7 @@ export class SelectionParam {
   gpuMemoryTrackerData: Array<any> = [];
   hiLogs: Array<LogStruct> = [];
   hiSysEvents: Array<HiSysEventStruct> = [];
+  sampleData: Array<any> = [];
 }
 
 export class BoxJumpParam {
