@@ -251,7 +251,7 @@ export class TabPaneSampleInstructionTotalTime extends BaseElement {
     const interval = Math.floor((height - paddingBottom) / 6);
     for (const x in instructionData) {
       const xNum = Number(x);
-      const xPosition = xStart + ( xNum / this.xCount ) * (this.xCount * this.xSpacing) - (barWidth / 2);
+      const xPosition = xStart + ( xNum / (this.xCount * this.xAvg) ) * (this.xCount * this.xSpacing) - (barWidth / 2);
       const yNum = Number((instructionData[x].length / count).toFixed(2));
       const percent = Number((yNum / yTotal).toFixed(2));
       const barHeight = (height - paddingBottom - interval) * percent;
@@ -334,7 +334,7 @@ export class TabPaneSampleInstructionTotalTime extends BaseElement {
     this.ctx!.textAlign = "center";
     for (let i = 0; i <= this.xCount; i++) {
       const x = xStart + (i * this.xSpacing);
-      this.ctx!.fillText(`${i}`, x, height);
+      this.ctx!.fillText(`${i * this.xAvg}`, x, height);
     }
     //绘制y轴刻度
     this.ctx!.textAlign = "center";
