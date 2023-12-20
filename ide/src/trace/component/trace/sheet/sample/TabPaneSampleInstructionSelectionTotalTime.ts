@@ -318,7 +318,7 @@ export class TabPaneSampleInstructionTotalTime extends BaseElement {
     let serrateX = 50;
     let yHeight = height - paddingBottom;
     const clientWidth = width - paddingLeft - 50;
-    if (clientWidth / 2 > this.xMaxValue * 2) {
+    if (clientWidth > this.xMaxValue) {
       this.xSpacing = Math.floor(clientWidth / 20)
       this.xAvg = Math.ceil(this.xMaxValue / 20)
     } else {
