@@ -1481,7 +1481,6 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         }
         .upload {
           color: var(--dark-icon,#333333);
-          display: none;
           margin-right: 5px;
           margin-top: 4px;
         } 
