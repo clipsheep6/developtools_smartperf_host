@@ -84,6 +84,7 @@ import { LogStruct } from './ui-worker/ProcedureWorkerLog';
 import { HiSysEventStruct } from './ui-worker/ProcedureWorkerHiSysEvent';
 import { LtpoStruct } from './ui-worker/ProcedureWorkerLTPO';
 import { KeyPathStruct } from '../bean/KeyPathStruct';
+import { FuncNameCycle, BinderItem } from '../bean/BinderProcessThread';
 
 class DataWorkerThread {
   taskMap: any = {};
@@ -1409,8 +1410,7 @@ export const queryVirtualMemory = (): Promise<Array<any>> =>
 export const queryVirtualMemoryData = (filterId: number): Promise<Array<any>> =>
   query(
     'queryVirtualMemoryData',
-    `select ts-${
-      (window as any).recordStartNS
+    `select ts-${(window as any).recordStartNS
     } as startTime,value,filter_id as filterID from sys_mem_measure where filter_id=$filter_id`,
     { $filter_id: filterId }
   );
@@ -4074,11 +4074,9 @@ export const queryEbpfSamplesCount = (startTime: number, endTime: number, ipids:
     select
 fsCount,
     vmCount from
-(select count(1) as fsCount from file_system_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${
-      ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
+(select count(1) as fsCount from file_system_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
     })
-,(select count(1) as vmCount from paged_memory_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${
-      ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
+,(select count(1) as vmCount from paged_memory_sample s,trace_range t where s.end_ts between $startTime + t.start_ts and $endTime + t.start_ts ${ipids.length > 0 ? `and s.ipid in (${ipids.join(',')})` : ''
     });
 `,
     { $startTime: startTime, $endTime: endTime }
@@ -5911,3 +5909,166 @@ export const queryCpuKeyPathData = (threads: Array<KeyPathStruct>): Promise<Arra
       where ${sql}`
   );
 };
+
+export const getTabBindersCount = (pIds: number[], tIds: number[], leftNS: number, rightNS: number): Promise<Array<BinderItem>> =>
+  query<BinderItem>(
+    'getTabBindersCount',
+    `
+      SELECT 
+          c.name,
+          c.dur,
+          1 AS count,
+          c.ts,
+          c.ts - r.start_ts AS startTime, 
+          c.ts -r.start_ts + c.dur AS endTime,
+          t.tid, 
+          p.pid
+        FROM 
+            callstack c, trace_range r 
+          LEFT JOIN
+            thread t 
+          ON 
+            c.callid = t.id 
+          LEFT JOIN
+            process p 
+          ON
+            t.ipid = p.id 
+        WHERE 
+            c.name in ('binder transaction', 'binder async rcv', 'binder reply', 'binder transaction async') 
+          AND 
+            t.tid in (${tIds.join(',')})
+          AND 
+            p.pid in (${pIds.join(',')})
+          AND NOT 
+            ((startTime < ${leftNS}) 
+          OR 
+            (endTime > ${rightNS}));
+      `,
+    {
+      $pIds: pIds,
+      $tIds: tIds,
+      $leftNS: leftNS,
+      $rightNS: rightNS
+    }
+  );
+
+export const queryBinderByThreadId = (pIds: number[], tIds: Array<number>, leftNS: number, rightNS: number): Promise<Array<BinderItem>> =>
+  query<BinderItem>(
+    'queryBinderByThreadId',
+    `
+      SELECT 
+            c.name, 
+            1 AS count,
+            c.ts - r.start_ts AS ts, 
+            c.dur, 
+            c.ts - r.start_ts AS startTime, 
+            c.ts - r.start_ts + c.dur AS endTime,
+            t.tid,
+            p.pid
+          FROM 
+              callstack c, trace_range r 
+          LEFT JOIN 
+              thread t 
+          ON 
+              c.callid = t.id 
+          LEFT JOIN
+              process p 
+          ON
+              t.ipid = p.id  
+          WHERE 
+              c.name in ('binder transaction', 'binder async rcv', 'binder reply', 'binder transaction async') 
+          AND 
+              t.tid in (${tIds.join(',')})
+          AND 
+              p.pid in (${pIds.join(',')})
+          AND NOT 
+              ((startTime < ${leftNS}) 
+          OR 
+              (endTime > ${rightNS}))
+        `,
+    {
+      $pIds: pIds,
+      $tIds: tIds,
+      $leftNS: leftNS,
+      $rightNS: rightNS
+    }
+  );
+
+
+export const querySingleFuncNameCycle = (funcName: string, tIds: string, leftNS: number, rightNS: number): Promise<Array<FuncNameCycle>> =>
+  query(
+    'querySingleFuncNameCycle',
+    `
+      SELECT 
+            c.name AS funcName, 
+            c.ts - r.start_ts AS cycleStartTime, 
+            c.dur AS cycleDur,
+            c.id,
+            t.tid,
+            p.pid,
+            c.ts - r.start_ts + c.dur AS endTime
+          FROM 
+              callstack c, trace_range r 
+          LEFT JOIN 
+              thread t 
+          ON 
+              c.callid = t.id 
+          LEFT JOIN
+              process p 
+          ON
+              t.ipid = p.id  
+          WHERE 
+              c.name = '${funcName}'
+          AND 
+              t.tid = ${tIds} 
+          AND NOT 
+              ((cycleStartTime < ${leftNS}) 
+          OR 
+              (endTime > ${rightNS}))
+        `,
+    {
+      $funcName: funcName,
+      $tIds: tIds,
+      $leftNS: leftNS,
+      $rightNS: rightNS
+    }
+  );
+
+export const queryLoopFuncNameCycle = (funcName: string, tIds: string, leftNS: number, rightNS: number): Promise<Array<FuncNameCycle>> =>
+  query(
+    'queryLoopFuncNameCycle',
+    `
+      SELECT 
+          c.name AS funcName,
+          c.ts - r.start_ts AS cycleStartTime,
+          0 AS cycleDur,
+          c.id,
+          t.tid,
+          p.pid
+        FROM
+            callstack c, trace_range r 
+          LEFT JOIN 
+            thread t 
+          ON 
+            c.callid = t.id 
+          LEFT JOIN  
+            process p 
+          ON 
+            t.ipid = p.id  
+        WHERE 
+            c.name = '${funcName}' 
+          AND 
+            t.tid = ${tIds}
+          AND NOT 
+            ((cycleStartTime < ${leftNS}) 
+          OR  
+            (cycleStartTime > ${rightNS})) 
+        `,
+    {
+      $funcName: funcName,
+      $tIds: tIds,
+      $leftNS: leftNS,
+      $rightNS: rightNS
+    }
+  );
+

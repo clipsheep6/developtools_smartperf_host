@@ -122,6 +122,8 @@ import { TabPaneFreqUsage } from '../sheet/frequsage/TabPaneFreqUsage';
 import { TabPaneFreqDataCut } from '../sheet/frequsage/TabPaneFreqDataCut';
 import { TabPaneHisysEvents } from '../sheet/hisysevent/TabPaneHisysEvents';
 import { TabPaneHiSysEventSummary } from '../sheet/hisysevent/TabPaneHiSysEventSummary';
+import { TabPaneBinderDataCut } from '../sheet/binder/TabPaneBinderDataCut';
+import { TabPaneBinders } from '../sheet/binder/TabPaneBinders'
 
 export let tabConfig: any = {
   'current-selection': {
@@ -649,5 +651,15 @@ export let tabConfig: any = {
     title: 'Statistics',
     type: TabPaneHiSysEventSummary,
     require: (param: SelectionParam) => param.hiSysEvents.length > 0,
+  },
+  'tabpane-binders': {
+    title: 'Thread Binders',
+    type: TabPaneBinders,
+    require: (param: SelectionParam) => param.threadIds.length > 0,
+  },
+  'tabpane-binder-datacut': {
+    title: 'Binder DataCut',
+    type: TabPaneBinderDataCut,
+    require: (param: SelectionParam) => param.threadIds.length > 0,
   },
 };
