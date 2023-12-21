@@ -59,6 +59,8 @@ import { LogRender } from './ProcedureWorkerLog';
 import { HiPerfCallChartRender } from './ProcedureWorkerHiPerfCallChart';
 import { HiSysEventRender } from './ProcedureWorkerHiSysEvent';
 import { AllAppStartupRender } from './ProcedureWorkerAllAppStartup';
+import { FreqExtendRender } from './ProcedureWorkerFreqExtend';
+import { BinderRender } from './procedureWorkerBinder';
 import { LtpoRender } from './ProcedureWorkerLTPO';
 import { hitchTimeRender } from './ProcedureWorkerHitchTime';
 
@@ -118,6 +120,8 @@ export let renders: any = {
   snapshot: new SnapshotRender(),
   logs: new LogRender(),
   hiSysEvent: new HiSysEventRender(),
+  'freq-extend': new FreqExtendRender(),
+  'binder' : new BinderRender(),
   'hitch':new hitchTimeRender(),
 };
 
