@@ -52,6 +52,7 @@ import { SpHiSysEventChart } from './SpHiSysEventChart';
 import { SpAllAppStartupsChart } from './SpAllAppStartups';
 import {setVSyncData} from './VSync';
 import { SpLtpoChart } from './SpLTPO';
+import { SpSampleChart } from './SpSampleChart';
 
 export class SpChartManager {
   static APP_STARTUP_PID_ARR: Array<number> = [];
@@ -78,6 +79,7 @@ export class SpChartManager {
   private logChart: SpLogChart;
   private spHiSysEvent: SpHiSysEventChart;
   SegMenTaTion: any;
+  private sampleChart: SpSampleChart;
 
   constructor(trace: SpSystemTrace) {
     this.trace = trace;
@@ -101,6 +103,12 @@ export class SpChartManager {
     this.spHiSysEvent = new SpHiSysEventChart(trace);
     this.SpAllAppStartupsChart = new SpAllAppStartupsChart(trace);
     this.SpLtpoChart = new SpLtpoChart(trace)
+    this.sampleChart = new SpSampleChart(trace);
+  }
+
+  async initSample(ev: File) {
+    await this.initSampleTime();
+    await this.sampleChart.init(ev);
   }
 
   async init(progress: Function) {
@@ -125,6 +133,7 @@ export class SpChartManager {
     progress('cpu', 70);
     await this.cpu.init();
     info('cpu Data initialized');
+    await this.sampleChart.init(null);
     progress('process/thread state', 73);
     await this.cpu.initProcessThreadStateData(progress);
     if (FlagsConfig.getFlagsConfigEnableStatus('SchedulingAnalysis')) {
@@ -216,6 +225,21 @@ export class SpChartManager {
         total = 1;
         endNS = startNS + 1;
       }
+      this.trace.timerShaftEL.totalNS = total;
+      this.trace.timerShaftEL.getRangeRuler()!.drawMark = true;
+      this.trace.timerShaftEL.setRangeNS(0, total);
+      (window as any).recordStartNS = startNS;
+      (window as any).recordEndNS = endNS;
+      (window as any).totalNS = total;
+      this.trace.timerShaftEL.loadComplete = true;
+    }
+  };
+
+  initSampleTime = async () => {
+    if (this.trace.timerShaftEL) {
+      let total = 30_000_000_000;
+      let startNS = 0;
+      let endNS = 30_000_000_000;
       this.trace.timerShaftEL.totalNS = total;
       this.trace.timerShaftEL.getRangeRuler()!.drawMark = true;
       this.trace.timerShaftEL.setRangeNS(0, total);

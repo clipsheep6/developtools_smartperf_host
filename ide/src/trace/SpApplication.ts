@@ -59,6 +59,8 @@ import { type SpKeyboard } from './component/SpKeyboard';
 import './component/SpKeyboard';
 import { parseKeyPathJson } from './component/Utils';
 import { Utils } from './component/trace/base/Utils';
+import { SpThirdParty } from './component/SpThirdParty';
+import './component/SpThirdParty'
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -567,6 +569,8 @@ export class SpApplication extends BaseElement {
                 </sp-help>
                 <sp-flags style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 104" id="sp-flags">
                 </sp-flags>
+                <sp-third-party style="width:100%;height:100%;overflow:auto;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 104" id="sp-third-party">
+                </sp-third-party>
                 <trace-row-config class="chart-filter" style="height:100%;top:0px;right:0;bottom:0px;position:absolute;z-index: 999"></trace-row-config>
                 <custom-theme-color class="custom-color" style="height:100%;top:0px;right:0;bottom:0px;position:absolute;z-index: 106"></custom-theme-color>
             </div>
@@ -603,6 +607,7 @@ export class SpApplication extends BaseElement {
     let chartFilter = this.shadowRoot?.querySelector('.chart-filter') as TraceRowConfig;
     let cutTraceFile = this.shadowRoot?.querySelector('.cut-trace-file') as HTMLImageElement;
     let longTracePage = that.shadowRoot!.querySelector('.long_trace_page') as HTMLDivElement;
+    let spThirdParty = this.shadowRoot!.querySelector<SpThirdParty>('#sp-third-party') as SpThirdParty;
     cutTraceFile.addEventListener('click', () => {
       this.croppingFile(progressEL, litSearch);
     });
@@ -624,7 +629,17 @@ export class SpApplication extends BaseElement {
       spRecordTemplate,
       spFlags,
       SpKeyboard,
+      spThirdParty,
     ];
+
+    document.addEventListener('file-error', () => {
+      litSearch.setPercent('This File is Error!', -1);
+    });
+
+    document.addEventListener('file-correct', () => {
+      litSearch.setPercent('', 101);
+    });
+
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') {
         if (window.localStorage.getItem('Theme') == 'dark') {
@@ -1421,6 +1436,16 @@ export class SpApplication extends BaseElement {
 
     function handleWasmMode(ev: any, showFileName: string, fileSize: string, fileName: string) {
       litSearch.setPercent('', 1);
+      if (fileName.endsWith('.json')) {
+        progressEL.loading = true;
+        spSystemTrace!.loadSample(ev).then(() => {
+          showContent(spSystemTrace!);
+          litSearch.setPercent('', 101);
+          that.freshMenuDisable(false);
+          chartFilter!.setAttribute('mode', '');
+          progressEL.loading = false;
+        })
+      } else {
       threadPool.init('wasm').then((res) => {
         let reader: FileReader | null = new FileReader();
         reader.readAsArrayBuffer(ev as any);
@@ -1545,6 +1570,7 @@ export class SpApplication extends BaseElement {
         };
       });
     }
+  }
 
     let openFileInit = () => {
       this.clearTraceFileCache();
@@ -1945,6 +1971,14 @@ export class SpApplication extends BaseElement {
                 event: 'Keyboard Shortcuts',
                 action: 'Keyboard Shortcuts',
               });
+            },
+          },
+          {
+            title: '第三方文件',
+            icon: 'file-fill',
+            clickHandler: function (item: MenuItem) {
+              that.search = false;
+              showContent(spThirdParty!);
             },
           },
         ],

@@ -122,6 +122,11 @@ import { TabPaneFreqUsage } from '../sheet/frequsage/TabPaneFreqUsage';
 import { TabPaneFreqDataCut } from '../sheet/frequsage/TabPaneFreqDataCut';
 import { TabPaneHisysEvents } from '../sheet/hisysevent/TabPaneHisysEvents';
 import { TabPaneHiSysEventSummary } from '../sheet/hisysevent/TabPaneHiSysEventSummary';
+import { TabPaneSampleInstruction } from '../sheet/sample/TabPaneSampleInstruction';
+import { TabPaneSampleInstructionDistributions } from '../sheet/sample/TabPaneSampleInstructionDistributions';
+import { TabPaneSampleInstructionTotalTime } from '../sheet/sample/TabPaneSampleInstructionSelectionTotalTime';
+import { TabPaneSampleInstructionSelection } from '../sheet/sample/TabPaneSampleInstructionSelection';
+
 
 export let tabConfig: any = {
   'current-selection': {
@@ -649,5 +654,24 @@ export let tabConfig: any = {
     title: 'Statistics',
     type: TabPaneHiSysEventSummary,
     require: (param: SelectionParam) => param.hiSysEvents.length > 0,
+  },
+  'box-sample-instruction-selection': {
+    title: 'Instruction Selection',
+    type: TabPaneSampleInstructionSelection,
+    require: (param: SelectionParam) => param.sampleData.length > 0
+  },
+  'box-sample-instruction-distribution-selection': {
+    title: 'Instruction Distribution',
+    type: TabPaneSampleInstructionDistributions,
+    require: (param: SelectionParam) => param.sampleData.length > 0
+  },
+  'box-sample-instruction-totaltime-selection': {
+    title: 'Total Duration',
+    type: TabPaneSampleInstructionTotalTime,
+    require: (param: SelectionParam) => param.sampleData.length > 0
+  },
+  'box-sample-instruction': {
+    title: 'Instruction Flow',
+    type: TabPaneSampleInstruction,
   },
 };

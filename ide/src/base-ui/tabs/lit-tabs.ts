@@ -417,6 +417,7 @@ export class LitTabs extends HTMLElement {
                     <div class="tab-line" id="tab-line"></div>
                 </div>
                 <div id="tab-filling" style="flex: 1"></div>
+                <slot name="options" style="flex:1"></slot>
                 <slot name="right" style="flex:1"></slot>
             </div>
             <div class="tab-content">

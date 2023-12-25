@@ -61,6 +61,7 @@ import { HiSysEventRender } from './ProcedureWorkerHiSysEvent';
 import { AllAppStartupRender } from './ProcedureWorkerAllAppStartup';
 import { LtpoRender } from './ProcedureWorkerLTPO';
 import { hitchTimeRender } from './ProcedureWorkerHitchTime';
+import { SampleRender } from './ProcedureWorkerSample';
 
 let dataList: any = {};
 let dataList2: any = {};
@@ -119,6 +120,7 @@ export let renders: any = {
   logs: new LogRender(),
   hiSysEvent: new HiSysEventRender(),
   'hitch':new hitchTimeRender(),
+  sample: new SampleRender(),
 };
 
 function match(type: string, req: RequestMessage): void {

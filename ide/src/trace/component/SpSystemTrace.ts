@@ -111,6 +111,7 @@ import { type SpKeyboard } from '../component/SpKeyboard';
 import { drawVSync, enableVSync, setVSyncDisable } from './chart/VSync';
 import { LtpoStruct } from '../database/ui-worker/ProcedureWorkerLTPO';
 import { HitchTimeStruct } from '../database/ui-worker/ProcedureWorkerHitchTime'
+import { SampleStruct } from '../database/ui-worker/ProcedureWorkerSample';
 
 function dpr() {
   return window.devicePixelRatio || 1;
@@ -682,7 +683,19 @@ export class SpSystemTrace extends BaseElement {
       selection.rightNs = TraceRow.rangeSelectObject?.endNS || 0;
       selection.recordStartNs = (window as any).recordStartNS;
       rows.forEach((it) => {
-        if (it.rowType == TraceRow.ROW_TYPE_CPU) {
+        if (it.rowType == TraceRow.ROW_TYPE_SAMPLE) {
+          let dataList: SampleStruct[] = JSON.parse(JSON.stringify(it.dataList));
+          dataList.forEach(
+            SampleStruct => {
+              SampleStruct.property = SampleStruct.property!.filter((i : any) => 
+                ((i.begin! - i.startTs!) ?? 0) >= TraceRow.rangeSelectObject!.startNS! &&
+                ((i.end! - i.startTs!) ?? 0) <= TraceRow.rangeSelectObject!.endNS!)
+            }
+          )
+          if (dataList[0].property!.length !== 0) {
+            selection.sampleData.push(...dataList);
+          }
+        } else if (it.rowType == TraceRow.ROW_TYPE_CPU) {
           selection.cpus.push(parseInt(it.rowId!));
           info('load CPU traceRow id is : ', it.rowId);
         } else if (it.rowType == TraceRow.ROW_TYPE_CPU_STATE) {
@@ -2464,6 +2477,7 @@ export class SpSystemTrace extends BaseElement {
     JsCpuProfilerStruct.hoverJsCpuProfilerStruct = undefined;
     SnapshotStruct.hoverSnapshotStruct = undefined;
     HiPerfCallChartStruct.hoverPerfCallCutStruct = undefined;
+    SampleStruct.hoverSampleStruct = undefined;
     this.tipEL!.style.display = 'none';
   }
 
@@ -2492,6 +2506,7 @@ export class SpSystemTrace extends BaseElement {
     AllAppStartupStruct.selectStartupStruct = undefined;
     LtpoStruct.selectLtpoStruct = undefined;
     HitchTimeStruct.selectHitchTimeStruct = undefined;
+    SampleStruct.selectSampleStruct = undefined;
   }
 
   isWASDKeyPress() {
@@ -2682,6 +2697,7 @@ export class SpSystemTrace extends BaseElement {
       () => SnapshotStruct.hoverSnapshotStruct !== null && SnapshotStruct.hoverSnapshotStruct !== undefined,
     ],
     [TraceRow.ROW_TYPE_LOGS, () => LogStruct.hoverLogStruct !== null && LogStruct.hoverLogStruct !== undefined],
+    [TraceRow.ROW_TYPE_SAMPLE, () => SampleStruct.hoverSampleStruct !== null && SampleStruct.hoverSampleStruct !== undefined],
   ]);
 
   onClickHandler(clickRowType: string, row?: TraceRow<any>) {
@@ -3255,6 +3271,10 @@ export class SpSystemTrace extends BaseElement {
     } else if (clickRowType === TraceRow.ROW_TYPE_GPU_RESOURCE_VMTRACKER && SnapshotStruct.hoverSnapshotStruct) {
       SnapshotStruct.selectSnapshotStruct = SnapshotStruct.hoverSnapshotStruct;
       this.traceSheetEL?.displayGpuResourceVmTracker(SnapshotStruct.selectSnapshotStruct.startNs);
+    } else if (clickRowType === TraceRow.ROW_TYPE_SAMPLE && SampleStruct.hoverSampleStruct) {
+      SampleStruct.selectSampleStruct = SampleStruct.hoverSampleStruct;
+      this.traceSheetEL?.displaySampleData(SampleStruct.selectSampleStruct, SampleStruct.reqProperty);
+      this.timerShaftEL?.modifyFlagList(undefined);
     } else {
       if (!JankStruct.hoverJankStruct && JankStruct.delJankLineFlag) {
         this.removeLinkLinesByBusinessType('janks');
@@ -4075,6 +4095,28 @@ export class SpSystemTrace extends BaseElement {
     window.unsubscribe(window.SmartEvent.UI.SliceMark, this.sliceMarkEventHandler.bind(this));
   }
 
+  loadSample = async (ev: File) => {
+    this.observerScrollHeightEnable = false;
+    await this.initSample(ev);
+    this.rowsEL?.querySelectorAll('trace-row').forEach((it: any) => this.observer.observe(it));
+    window.publish(window.SmartEvent.UI.MouseEventEnable, {
+      mouseEnable: true,
+    });
+  }
+
+  initSample = async (ev: File) => {
+    this.rowsPaneEL!.scroll({
+      top: 0,
+      left: 0,
+    });
+    this.chartManager?.initSample(ev).then(() => {
+      this.loadTraceCompleted = true;
+      this.rowsEL!.querySelectorAll<TraceRow<any>>('trace-row').forEach((it) => {
+        this.intersectionObserver?.observe(it);
+      })
+    })
+  }
+
   sliceMarkEventHandler(ev: any) {
     SpSystemTrace.sliceRangeMark = ev;
     let startNS = ev.timestamp - (window as any).recordStartNS;
@@ -4281,17 +4323,13 @@ export class SpSystemTrace extends BaseElement {
         }
       }
     } else {
-      if (currentIndex == -1) {
-        findIndex = 0;
-      } else {
-        findIndex = structs.findIndex((it, idx) => {
-          return (
-            idx > currentIndex &&
-            it.startTime! >= TraceRow.range!.startNS &&
-            it.startTime! + it.dur! <= TraceRow.range!.endNS
-          );
-        });
-      }
+      findIndex = structs.findIndex((it, idx) => {
+        return (
+          idx > currentIndex &&
+          it.startTime! >= TraceRow.range!.startNS &&
+          it.startTime! + it.dur! <= TraceRow.range!.endNS
+        );
+      });
     }
     let findEntry: any;
     if (findIndex >= 0) {
@@ -4315,8 +4353,8 @@ export class SpSystemTrace extends BaseElement {
         }
       }
       findEntry = structs[findIndex];
+      this.moveRangeToCenter(findEntry.startTime!, findEntry.dur!);
     }
-    this.moveRangeToCenter(findEntry.startTime!, findEntry.dur!);
     this.queryAllTraceRow().forEach((item) => {
       item.highlight = false;
     });

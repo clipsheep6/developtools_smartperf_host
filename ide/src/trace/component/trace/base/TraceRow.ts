@@ -119,7 +119,8 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   static ROW_TYPE_LOGS = 'logs';
   static ROW_TYPE_ALL_APPSTARTUPS = 'all-appstartups';
   static ROW_TYPE_LTPO = 'ltpo';
-  static ROW_TYPE_HITCH_TIME = 'hitch-time';
+  static ROW_TYPE_HITCH_TIME = 'hitch-time';;
+  static ROW_TYPE_SAMPLE = 'sample';
   static FRAME_WIDTH: number = 0;
   static range: TimeRange | undefined | null;
   static rangeSelectObject: RangeSelectStruct | undefined;
@@ -167,6 +168,8 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   private _drawType: number = 0;
   private folderIconEL: LitIcon | null | undefined;
   private _enableCollapseChart: boolean = false;
+  private sampleUploadEl: HTMLDivElement | null | undefined;
+  public fileEl: HTMLInputElement | null | undefined;
   online: boolean = false;
   static isUserInteraction: boolean;
   asyncFuncName: string | undefined | null;
@@ -238,6 +241,11 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       'row-setting-popover-direction',
     ];
   }
+
+  get uploadEl() {
+    return this.sampleUploadEl;
+  }
+
   get docompositionList(): Array<number> | undefined {
     return this._docompositionList;
   }
@@ -708,6 +716,34 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     });
     this.funcExpand = true;
     this.checkType = '-1';
+  }
+
+  addRowSampleUpload(): void {
+    this.sampleUploadEl = document.createElement('div');
+    this.sampleUploadEl!.className = 'upload';
+    this.sampleUploadEl!.innerHTML = `
+      <input id="file" class="file" accept="application/json"  type="file" style="display:none;pointer-events:none"/>
+      <label for="file" style="cursor:pointer">
+        <lit-icon class="folder" name="folder" size="19"></lit-icon>
+      </label>
+    `
+    this.fileEl = this.sampleUploadEl!.querySelector('.file') as HTMLInputElement;
+    this.collectEL!.style.display = 'none';
+    this.sampleUploadEl!.addEventListener('change', () => {
+      let files = this.fileEl!.files;
+      if (files && files.length > 0) {
+        this.sampleUploadEl!.dispatchEvent(
+          new CustomEvent('file-change', {
+            detail: files[0]
+          })
+        )
+        if (this.fileEl) this.fileEl.value = '';
+      }
+    })
+    this.sampleUploadEl!.addEventListener('click', (e) => {
+      e.stopPropagation();
+    })
+    this.describeEl?.appendChild(this.sampleUploadEl!);
   }
 
   addRowSettingPop(): void {
@@ -1442,6 +1478,11 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         } 
         :host([row-setting='enable']:not([check-type='-1'])) .collect{
             margin-right: 5px;
+        }
+        .upload {
+          color: var(--dark-icon,#333333);
+          margin-right: 5px;
+          margin-top: 4px;
         } 
         </style>
         <div class="root">
