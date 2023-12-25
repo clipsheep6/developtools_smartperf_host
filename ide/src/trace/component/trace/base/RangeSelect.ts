@@ -19,7 +19,8 @@ import { ns2x, TimerShaftElement } from '../TimerShaftElement';
 import { info } from '../../../../log/Log';
 import './Extension';
 import { SpSystemTrace } from '../../SpSystemTrace';
-import { querySearchRowFuncData } from '../../../database/SqlLite';
+import { fuzzyQueryFuncRowData, queryFuncRowData } from '../../../database/SqlLite';
+import { SpLtpoChart } from '../../chart/SpLTPO';
 
 export class RangeSelect {
   private rowsEL: HTMLDivElement | undefined | null;
@@ -80,35 +81,106 @@ export class RangeSelect {
       if (this.selectHandler) {
         this.selectHandler(this.rangeTraceRow || [], !this.isHover);
       }
-      //如果只框选了一条泳道，查询H:RSMainThread::DoComposition数据
-      let docompositionData: Array<number> = [];
-      if (this.rangeTraceRow) {
-        this.rangeTraceRow.forEach((row) => {
-          row.docompositionList = [];
-        });
-        docompositionData = [];
+      //查询H:RSMainThread::DoComposition数据
+      if (this.rangeTraceRow?.length) {
+        let judgeRowName: boolean = this.checkProcessName(this.rangeTraceRow, 'render_service');
         if (
-          this.rangeTraceRow.length === 1 &&
-          this.rangeTraceRow[0]?.getAttribute('row-type') === 'func' &&
-          this.rangeTraceRow[0]?.getAttribute('name')?.startsWith('render_service')
+          // 如果框选的第一行和最后一行的父节点名称都以render_service开头
+          this.rangeTraceRow[0]!.parentRowEl?.getAttribute('name')?.startsWith('render_service') &&
+          this.rangeTraceRow[this.rangeTraceRow.length - 1].parentRowEl?.getAttribute('name')?.startsWith('render_service')
         ) {
-          querySearchRowFuncData(
-            'H:RSMainThread::DoComposition',
-            Number(this.rangeTraceRow[0]?.getAttribute('row-id')),
-            TraceRow.rangeSelectObject!.startNS!,
-            TraceRow.rangeSelectObject!.endNS!
-          ).then((res) => {
-            res.forEach((item) => {
-              docompositionData.push(item.startTime!);
-            });
-            this.rangeTraceRow![0].docompositionList = docompositionData;
-          });
+          this.handleFrameRateData(this.rangeTraceRow!, 'render_service', 'H:RSMainThread::DoComposition');
+          this.handleFrameRateData(this.rangeTraceRow!, 'RSHardwareThrea', 'H:Repaint');
+          this.handleFrameRateData(this.rangeTraceRow!, 'present', 'H:Waiting for present Fence');
+        } else if (judgeRowName) {
+          this.handleFrameRateData(this.rangeTraceRow[0].childrenList, 'render_service', 'H:RSMainThread::DoComposition');
+          this.handleFrameRateData(this.rangeTraceRow[0].childrenList, 'RSHardwareThrea', 'H:Repaint');
+          this.handleFrameRateData(this.rangeTraceRow[0].childrenList, 'present', 'H:Waiting for present Fence');
         }
       }
     }
     this.isMouseDown = false;
   }
+// 检查框选进程是否为render-service
+checkProcessName(selectRangeRow: Array<TraceRow<any>>, processName: string) {
+  let judgeName: boolean = false;
+  for (const item of selectRangeRow) {
+    if (
+      item.childrenList.length &&
+      item.getAttribute('name')?.startsWith(processName)
+    ) {
+      judgeName = true;
+      break;
+    }
+  }
+  return judgeName
+}
 
+// 根据框选行和方法名查询数据
+handleFrameRateData(rowList: Array<TraceRow<any>>, rowName: string, funcName: string): void {
+  let dataList: Array<number> = [];
+  for (let i = 0; i < rowList.length; i++) {
+    if (rowList[i].getAttribute('row-type') === 'func') {
+      // console.log('funcName', funcName);
+      if (rowList[i]?.getAttribute('name')?.startsWith(rowName)) {
+        queryFuncRowData(
+          funcName,
+          Number(rowList[i]?.getAttribute('row-id')),
+          TraceRow.rangeSelectObject!.startNS!,
+          TraceRow.rangeSelectObject!.endNS!,
+        ).then((res) => {
+          if (res.length >= 2) {
+            res.forEach((item) => {
+              dataList.push(item.startTime!)
+            });
+            rowList[i].frameRateList = dataList;
+          }
+        });
+      }
+      if (rowName === 'present' && rowList[i]?.getAttribute('name')?.startsWith(rowName)) {
+        this.handlePresentData(rowList[i], funcName)
+      }
+      if (dataList.length) {
+        break;
+      }
+    }
+  }
+}
+
+// 处理框选时present线程的数据
+handlePresentData(currentRow: TraceRow<any>, funcName: string): void {
+  let dataList: Array<number> = [];
+  fuzzyQueryFuncRowData(
+    funcName,
+    Number(currentRow?.getAttribute('row-id')),
+    TraceRow.rangeSelectObject!.startNS!,
+    TraceRow.rangeSelectObject!.endNS!,
+  ).then((res) => {
+    if (res.length >= 2) {
+      res.forEach((item) => {
+        dataList.push(item.endTime!)
+      });
+      currentRow.frameRateList = dataList;
+
+      if (currentRow.frameRateList.length >= 2) {
+        let hitchTimeList: Array<number> = []
+        for (let i = 0; i < SpLtpoChart.sendHitchDataArr.length; i++) {
+          if (SpLtpoChart.sendHitchDataArr[i].startTs! >= dataList[0]
+            &&
+            SpLtpoChart.sendHitchDataArr[i].startTs! < dataList[dataList.length - 1]) {
+            hitchTimeList.push(SpLtpoChart.sendHitchDataArr[i].value!)
+          }
+          if (SpLtpoChart.sendHitchDataArr[i].startTs! >= dataList[dataList.length - 1]) {
+            break;
+          }
+        }
+        let sum: number = hitchTimeList.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        let hitchRate: number = (sum / ((TraceRow.rangeSelectObject!.endNS! - TraceRow.rangeSelectObject!.startNS!) / 1000000))
+        currentRow.hitchRateData = hitchRate
+      }
+    }
+  });
+}
   isDrag(): boolean {
     return this.startPageX != this.endPageX;
   }
@@ -256,9 +328,17 @@ export class RangeSelect {
       }
     });
     if (this.rangeTraceRow && this.rangeTraceRow.length) {
-      this.rangeTraceRow!.forEach((row) => {
-        row.docompositionList = [];
-      });
+      if (this.rangeTraceRow[0].parentRowEl) {
+        for (let i = 0; i < this.rangeTraceRow[0].parentRowEl.childrenList.length; i++) {
+          this.rangeTraceRow[0].parentRowEl.childrenList[i].frameRateList = [];
+          this.rangeTraceRow[0].parentRowEl.childrenList[i].hitchRateData = null;
+        }
+      } else {
+        for (let j = 0; j < this.rangeTraceRow[0].childrenList.length; j++) {
+          this.rangeTraceRow[0].childrenList[j].frameRateList = [];
+          this.rangeTraceRow[0].childrenList[j].hitchRateData = null;
+        }
+      }
     }
     this.timerShaftEL!.sportRuler!.isRangeSelect = this.rangeTraceRow?.length > 0;
     this.timerShaftEL!.sportRuler!.draw();

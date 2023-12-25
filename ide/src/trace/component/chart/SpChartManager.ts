@@ -51,6 +51,7 @@ import { SpLogChart } from './SpLogChart';
 import { SpHiSysEventChart } from './SpHiSysEventChart';
 import { SpAllAppStartupsChart } from './SpAllAppStartups';
 import { SpSegmentationChart } from './SpSegmentationChart';
+import { SpLtpoChart } from './SpLTPO';
 
 export class SpChartManager {
   static APP_STARTUP_PID_ARR: Array<number> = [];
@@ -71,6 +72,7 @@ export class SpChartManager {
   private clockChart: SpClockChart;
   private irqChart: SpIrqChart;
   private spAllAppStartupsChart!: SpAllAppStartupsChart;
+  private SpLtpoChart!: SpLtpoChart;
   frameTimeChart: SpFrameTimeChart;
   public arkTsChart: SpArkTsChart;
   private logChart: SpLogChart;
@@ -98,6 +100,7 @@ export class SpChartManager {
     this.logChart = new SpLogChart(trace);
     this.spHiSysEvent = new SpHiSysEventChart(trace);
     this.spAllAppStartupsChart = new SpAllAppStartupsChart(trace);
+    this.SpLtpoChart = new SpLtpoChart(trace)
     this.spSegmentationChart = new SpSegmentationChart(trace);
   }
 
@@ -173,9 +176,10 @@ export class SpChartManager {
     progress('ark ts', 90);
     await this.arkTsChart.initFolder();
     info('initData ark ts initialized');
+    await this.spAllAppStartupsChart.init();
+    await this.SpLtpoChart.init();
     await this.frameTimeChart.init();
     info('initData frameTimeLine initialized');
-    await this.spAllAppStartupsChart.init();
     progress('process', 92);
     await this.process.initAsyncFuncData();
     await this.process.initDeliverInputEvent();

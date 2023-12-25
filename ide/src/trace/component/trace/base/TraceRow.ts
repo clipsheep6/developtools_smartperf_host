@@ -182,12 +182,15 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   childrenList: Array<TraceRow<any>> = [];
   parentRowEl: TraceRow<any> | undefined;
   _rowSettingList: Array<TreeItemData> | null | undefined;
-  _docompositionList: Array<number> | undefined;
+  _frameRateList: Array<number> | undefined;
+  _hitchRateData: number | undefined | null
 
   focusHandler?: (ev: MouseEvent) => void | undefined;
   findHoverStruct?: () => void | undefined;
   public funcMaxHeight: number = 0;
   currentContext: CanvasRenderingContext2D | undefined | null;
+    static ROW_TYPE_HITCH_TIME: string | null | undefined;
+    static ROW_TYPE_LTPO: string | null | undefined;
 
   constructor(
     args: {
@@ -197,12 +200,12 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       isOffScreen: boolean;
       skeleton?: boolean;
     } = {
-      canvasNumber: 1,
-      alpha: false,
-      contextId: '2d',
-      isOffScreen: true,
-      skeleton: false,
-    }
+        canvasNumber: 1,
+        alpha: false,
+        contextId: '2d',
+        isOffScreen: true,
+        skeleton: false,
+      }
   ) {
     super();
     this.args = args;
@@ -245,12 +248,21 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
       'row-setting-popover-direction',
     ];
   }
-  get docompositionList(): Array<number> | undefined {
-    return this._docompositionList;
+
+  get frameRateList(): Array<number> | undefined {
+    return this._frameRateList;
   }
 
-  set docompositionList(value: Array<number> | undefined) {
-    this._docompositionList = value;
+  set frameRateList(value: Array<number> | undefined) {
+    this._frameRateList = value;
+  }
+
+  get hitchRateData(): number | undefined | null {
+    return this._hitchRateData;
+  }
+
+  set hitchRateData(value: number | undefined | null) {
+    this._hitchRateData = value;
   }
 
   get funcExpand(): boolean {

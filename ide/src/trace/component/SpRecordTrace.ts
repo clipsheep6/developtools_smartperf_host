@@ -837,9 +837,12 @@ export class SpRecordTrace extends BaseElement {
     SpRecordTrace.supportVersions.forEach((supportVersion) => {
       let option = document.createElement('option');
       option.className = 'select';
+      option.selected = supportVersion === '4.0+'? true:false;
       option.textContent = `OpenHarmony-${supportVersion}`;
       option.setAttribute('device-version', supportVersion);
       this.deviceVersion!.append(option);
+      SpRecordTrace.selectVersion = '4.0+'
+      this.nativeMemoryHideBySelectVersion();
     });
   }
 
