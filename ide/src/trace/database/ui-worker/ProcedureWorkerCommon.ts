@@ -48,10 +48,10 @@ export class RequestMessage {
   totalNS: any;
   slicesTime:
     | {
-        startTime: number | null;
-        endTime: number | null;
-        color: string | null;
-      }
+      startTime: number | null;
+      endTime: number | null;
+      color: string | null;
+    }
     | undefined;
   range: any;
   scale: any;
@@ -64,9 +64,9 @@ export class RequestMessage {
   id: any;
   postMessage:
     | {
-        (message: any, targetOrigin: string, transfer?: Transferable[]): void;
-        (message: any, options?: WindowPostMessageOptions): void;
-      }
+      (message: any, targetOrigin: string, transfer?: Transferable[]): void;
+      (message: any, options?: WindowPostMessageOptions): void;
+    }
     | undefined;
 }
 
@@ -99,8 +99,8 @@ export function ns2Timestamp(ns: number): string {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second
     .toString()
     .padStart(2, '0')}:${millisecond.toString().padStart(3, '0')}:${microsecond
-    .toString()
-    .padStart(3, '0')}:${nanosecond.toString().padStart(3, '0')}`;
+      .toString()
+      .padStart(3, '0')}:${nanosecond.toString().padStart(3, '0')}`;
 }
 
 const offsetX = 5;
@@ -539,10 +539,10 @@ export function drawFlagLine(
   frame: any,
   slicesTime:
     | {
-        startTime: number | null | undefined;
-        endTime: number | null | undefined;
-        color: string | null | undefined;
-      }
+      startTime: number | null | undefined;
+      endTime: number | null | undefined;
+      color: string | null | undefined;
+    }
     | undefined
 ) {
   if (commonCtx) {
@@ -746,104 +746,122 @@ export function drawSelectionRange(context: any, params: TraceRow<any>) {
     }
 
     // 绘制方法H:RSMainThread::DoComposition平均帧率的箭头指示线条
-    if (params._docompositionList?.length) {
-      const rateList: Array<number> = [...new Set(params.docompositionList)];
-      if (rateList.length >= 2) {
-        // 计算平均帧率
-        let cutres: number = rateList[rateList.length - 1]! - rateList[0]!;
-        let avgFrameRate: string = (((rateList.length - 1) / cutres) * 1000000000).toFixed(1) + 'fps';
-
-        let avgRateStartX = Math.floor(
-          ns2x(
-            rateList[0]!,
-            TraceRow.range?.startNS ?? 0,
-            TraceRow.range?.endNS ?? 0,
-            TraceRow.range?.totalNS ?? 0,
-            params.frame
-          )
-        );
-        let avgRateEndX = Math.floor(
-          ns2x(
-            rateList[rateList.length - 1]!,
-            TraceRow.range?.startNS ?? 0,
-            TraceRow.range?.endNS ?? 0,
-            TraceRow.range?.totalNS ?? 0,
-            params.frame
-          )
-        );
-        const textWidth = context.measureText(avgFrameRate).width;
-        const textHeight = 25;
-        const padding = 5;
-        let textX =
-          Math.floor(
-            ns2x(
-              (rateList[0]! + rateList[rateList.length - 1]!) / 2,
-              TraceRow.range?.startNS ?? 0,
-              TraceRow.range?.endNS ?? 0,
-              TraceRow.range?.totalNS ?? 0,
-              params.frame
-            )
-          ) -
-          textWidth / 2;
-        const textY = params.frame.y + 25;
-
-        //左移到边界，不画线和文字
-        if (avgRateStartX <= 0) {
-          avgRateStartX = -100;
-        }
-        if (avgRateEndX <= 0) {
-          avgRateEndX = -100;
-        }
-        if (textX <= 0) {
-          textX = -100;
-        }
-        //右移到边界，不画线和文字
-        if (textX + textWidth / 2 >= params.frame.width) {
-          textX = params.frame.width + 100;
-        }
-        if (avgRateStartX >= params.frame.width) {
-          avgRateStartX = params.frame.width + 100;
-        }
-        if (avgRateEndX >= params.frame.width) {
-          avgRateEndX = params.frame.width + 100;
-        }
-        // 绘制文字背景矩形
-        context.fillStyle = 'red';
-        context.fillRect(
-          textX - padding,
-          textY - textHeight + padding,
-          textWidth + padding * 2,
-          textHeight - padding * 2
-        );
-
-        context.lineWidth = 2;
-        context.strokeStyle = 'yellow';
-        context.beginPath();
-        context.moveTo(avgRateStartX, textY);
-        context.lineTo(avgRateEndX, textY);
-        context.stroke();
-
-        const arrowSize = 5.5;
-        const arrowHead = (x: number, y: number, direction: 'left' | 'right') => {
-          context.beginPath();
-          const headX = x + (direction === 'left' ? arrowSize : -arrowSize);
-          const headY = y - arrowSize / 2;
-          context.moveTo(x, y);
-          context.lineTo(headX, headY);
-          context.lineTo(headX, y + arrowSize);
-          context.closePath();
-
-          context.fillStyle = 'yellow';
-          context.fill();
-        };
-        arrowHead(avgRateStartX, textY - 1, 'left');
-        arrowHead(avgRateEndX, textY - 1, 'right');
-
-        context.fillStyle = 'white';
-        context.fillText(avgFrameRate, textX, textY - 8);
-      }
-    }
+    if (params.frameRateList && params.frameRateList.length) {
+      changeFrameRatePoint(params.frameRateList, context, params);
+    };
   }
+}
+
+// 转换起始点坐标
+function changeFrameRatePoint(arrList: Array<number>, ctx: any, selectParams: TraceRow<any>): void {
+  const rateList: Array<number> = [...new Set(arrList)];
+  let avgRateStartX = Math.floor(
+    ns2x(
+      rateList[0]!,
+      TraceRow.range?.startNS ?? 0,
+      TraceRow.range?.endNS ?? 0,
+      TraceRow.range?.totalNS ?? 0,
+      selectParams.frame
+    )
+  );// 起始坐标
+
+  let avgRateEndX = Math.floor(
+    ns2x(
+      rateList[rateList.length - 1]!,
+      TraceRow.range?.startNS ?? 0,
+      TraceRow.range?.endNS ?? 0,
+      TraceRow.range?.totalNS ?? 0,
+      selectParams.frame
+    )
+  );// 结束坐标
+
+  drawavgFrameRate(rateList, ctx, selectParams, avgRateStartX, avgRateEndX); // 绘制
+}
+
+// 计算平均帧率
+function calculateAvgRate(arr: Array<number>) {
+  let cutres: number = (arr[arr.length - 1]! - arr[0]!); // 结束时间-开始时间
+  let avgRate: string = ((arr.length - 1) / cutres * 1000000000).toFixed(1); // 帧数/时间差 * 1000000000 四舍五入保留一位小数
+  return avgRate;
+}
+
+// 绘制平均帧率箭头指示线条
+function drawavgFrameRate(arrList: Array<number>, ctx: any, selectParams: TraceRow<any>, startX: number, endX: number): void {
+  // 获取平均帧率  
+  let avgFrameRate: string = calculateAvgRate(arrList) + 'fps';
+  if (selectParams.hitchRateData !== null && selectParams.hitchRateData !== undefined) {
+    let hitchRate: string = (Number(selectParams.hitchRateData) * 100).toFixed(2) + '%';
+    avgFrameRate = 'RS:' + ' ' + calculateAvgRate(arrList) + 'fps' + ' ' + ',' + ' ' + 'HitchRate:' + ' ' + hitchRate;
+  } else {
+    avgFrameRate = 'RS:' + ' ' + calculateAvgRate(arrList) + 'fps';
+  }
+
+  const textWidth = ctx.measureText(avgFrameRate).width; // 测量文本的宽度
+  const textHeight = 25; //文本的高度
+  const padding = 5; //内边距
+  let textX = Math.floor(ns2x(
+    (arrList[0]! + arrList[arrList.length - 1]!) / 2,
+    TraceRow.range?.startNS ?? 0,
+    TraceRow.range?.endNS ?? 0,
+    TraceRow.range?.totalNS ?? 0,
+    selectParams.frame
+  )) - textWidth / 2; //根据帧率范围的中间值计算文本的起始x坐标
+  const textY = selectParams.frame.y + 10;
+
+  //左移到边界，不画线和文字
+  if (startX <= 0) {
+    startX = -100;
+  }
+  if (endX <= 0) {
+    endX = -100;
+  }
+  if (textX <= 0) {
+    textX = -100;
+  }
+  //右移到边界，不画线和文字
+  if (textX + textWidth / 2 >= selectParams.frame.width) {
+    textX = selectParams.frame.width + 100;
+  }
+  if (startX >= selectParams.frame.width) {
+    startX = selectParams.frame.width + 100;
+  }
+  if (endX >= selectParams.frame.width) {
+    endX = selectParams.frame.width + 100;
+  }
+
+  // 设置横线的宽度、颜色并绘制
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'yellow';
+
+  ctx.beginPath();
+  ctx.moveTo(startX, textY);
+  ctx.lineTo(endX, textY);
+  ctx.stroke();
+
+  // 定义箭头的大小和绘制箭头的函数
+  const arrowSize = 5.5;
+  const arrowHead = (x: number, y: number, direction: 'left' | 'right') => {
+    ctx.beginPath();
+    const headX = x + (direction === 'left' ? arrowSize : -arrowSize);
+    const headY = y - arrowSize / 2;
+    ctx.moveTo(x, y);
+    ctx.lineTo(headX, headY);
+    ctx.lineTo(headX, y + arrowSize);
+    ctx.closePath();
+
+    ctx.fillStyle = 'yellow';
+    ctx.fill();
+  };
+  arrowHead(startX, textY - 1, 'left');
+  arrowHead(endX, textY - 1, 'right');
+
+  // 绘制文字背景矩形  
+  ctx.fillStyle = 'red';
+  ctx.fillRect(textX - padding, textY - textHeight / 2 + padding, textWidth + padding * 2, textHeight - padding * 2);
+
+  // 绘制文字
+  ctx.fillStyle = 'white';
+  ctx.fillText(avgFrameRate, textX, textY + 4);
 }
 
 export function drawWakeUp(
@@ -1210,7 +1228,7 @@ export function drawLoading(
   frame: any,
   left: number,
   right: number
-) {}
+) { }
 
 export function drawString(ctx: CanvasRenderingContext2D, str: string, textPadding: number, frame: Rect, data: any) {
   if (data.textMetricsWidth === undefined) {

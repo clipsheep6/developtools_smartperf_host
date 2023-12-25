@@ -21,6 +21,7 @@ export class SearchFuncBean {
   startTime: number | undefined; // 9729867000
   tid: number | undefined; //
   pid: number | undefined; // 2785
+  endTime: number | undefined; // 9729867000
   type: string | undefined;
 }
 

@@ -109,6 +109,8 @@ import { type HiSysEventStruct } from '../database/ui-worker/ProcedureWorkerHiSy
 import { InitAnalysis } from '../database/logic-worker/ProcedureLogicWorkerCommon';
 import { type SpKeyboard } from '../component/SpKeyboard';
 import { drawVSync, enableVSync, resetVSync } from './chart/VSync';
+import { LtpoStruct } from '../database/ui-worker/ProcedureWorkerLTPO';
+import { HitchTimeStruct } from '../database/ui-worker/ProcedureWorkerHitchTime'
 
 function dpr() {
   return window.devicePixelRatio || 1;
@@ -2081,6 +2083,12 @@ export class SpSystemTrace extends BaseElement {
         (AppStartupStruct.selectStartupStruct.startTs || 0) + (AppStartupStruct.selectStartupStruct.dur || 0),
         shiftKey
       );
+    }else if (AllAppStartupStruct.selectStartupStruct) {
+      this.slicestime = this.timerShaftEL?.setSlicesMark(
+        AllAppStartupStruct.selectStartupStruct.startTs || 0,
+        (AllAppStartupStruct.selectStartupStruct.startTs || 0) + (AllAppStartupStruct.selectStartupStruct.dur || 0),
+        shiftKey
+      );
     } else if (SoStruct.selectSoStruct) {
       this.slicestime = this.timerShaftEL?.setSlicesMark(
         SoStruct.selectSoStruct.startTs || 0,
@@ -2479,6 +2487,9 @@ export class SpSystemTrace extends BaseElement {
     JsCpuProfilerStruct.selectJsCpuProfilerStruct = undefined;
     SnapshotStruct.selectSnapshotStruct = undefined;
     HiPerfCallChartStruct.selectStruct = undefined;
+    AllAppStartupStruct.selectStartupStruct = undefined;
+    LtpoStruct.selectLtpoStruct = undefined;
+    HitchTimeStruct.selectHitchTimeStruct = undefined;
   }
 
   isWASDKeyPress() {

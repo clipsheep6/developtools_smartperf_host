@@ -85,6 +85,7 @@ import { HiSysEventStruct } from './ui-worker/ProcedureWorkerHiSysEvent';
 import { KeyPathStruct } from '../bean/KeyPathStruct';
 import { FuncNameCycle, BinderItem } from '../bean/BinderProcessThread';
 import { GpuCountBean, SearchGpuFuncBean } from '../bean/GpufreqBean';
+import { LtpoStruct } from './ui-worker/ProcedureWorkerLTPO';
 
 class DataWorkerThread {
   taskMap: any = {};
@@ -1545,6 +1546,94 @@ export const querySingleAppStartupsName = (pid: number): Promise<Array<any>> =>
     where pid=$pid`,
     { $pid: pid }
   );
+  export const queryPresentInfo =(): Promise <Array<LtpoStruct>> =>
+  query(
+    'queryPresentInfo',
+    `SELECT ts,dur,name FROM "callstack" WHERE callid in (SELECT id FROM "thread" WHERE name LIKE('Present%'))
+    AND name LIKE('H:Waiting for Present Fence%')`
+  )
+
+  export const queryFanceNameList = ():Promise<Array<LtpoStruct>> =>
+  query(
+    'queryFanceNameList',
+    `SELECT ts,dur,name FROM "callstack" WHERE callid in (SELECT id FROM "thread" WHERE name LIKE('RSHardwareThrea%'))
+    AND name LIKE('H:Present Fence%')`
+  )
+
+  export const queryFpsNameList = ():Promise<Array<LtpoStruct>> =>
+  query(
+    'queryFpsNameList',
+    `SELECT name FROM "callstack" WHERE callid in (SELECT id FROM "thread" WHERE name LIKE('RSHardwareThrea%'))
+    AND name LIKE('%Layers rate%')`
+  )
+  export const queryFuncRowData = (
+    funcName: string,
+    tIds: number,
+    leftNS: number,
+    rightNS: number
+  ): Promise<Array<SearchFuncBean>> =>
+    query(
+      'queryFuncRowData',
+      `
+            select 
+              c.name as funName,
+              c.ts - r.start_ts as startTime
+            from 
+              callstack c 
+            left join 
+              thread t 
+            on 
+              c.callid = t.id 
+            left join 
+              process p 
+            on 
+              t.ipid = p.id
+            left join 
+              trace_range r
+            where 
+              c.name like '${funcName}' 
+            and 
+              t.tid = ${tIds} 
+            and
+              not ((startTime < ${leftNS}) or (startTime > ${rightNS}));
+        `,
+      { $search: funcName }
+    );
+  
+  export const fuzzyQueryFuncRowData = (
+    funcName: string,
+    tIds: number,
+    leftNS: number,
+    rightNS: number
+  ): Promise<Array<SearchFuncBean>> =>
+    query(
+      'fuzzyQueryFuncRowData',
+      `
+          select 
+            c.name as funName,
+            c.ts - r.start_ts as startTime,
+            c.ts - r.start_ts + c.dur as endTime
+          from 
+            callstack c 
+          left join 
+            thread t 
+          on 
+            c.callid = t.id 
+          left join 
+            process p 
+          on 
+            t.ipid = p.id
+          left join 
+            trace_range r
+          where 
+            c.name like '%${funcName}%' 
+          and 
+            t.tid = ${tIds} 
+          and
+            not ((endTime < ${leftNS}) or (endTime > ${rightNS}));
+      `,
+      { $search: funcName }
+    );
 
 export const queryProcessSoMaxDepth = (): Promise<Array<{ pid: number; maxDepth: number }>> =>
   query(
