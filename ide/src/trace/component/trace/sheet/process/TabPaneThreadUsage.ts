@@ -75,6 +75,10 @@ export class TabPaneThreadUsage extends BaseElement {
         if (result != null && result.length > 0) {
           log('getTabThreadStates result size : ' + result.length);
           let filterArr = result.filter((it) => threadUsageParam.processIds.includes(it.pid));
+          let totalDurtion = 0;
+          filterArr.forEach((item) => {
+            totalDurtion = totalDurtion + item.wallDuration;
+          })
           let map: Map<number, any> = new Map<number, any>();
           for (let resultEl of filterArr) {
             if (threadUsageParam.processIds.includes(resultEl.pid)) {
