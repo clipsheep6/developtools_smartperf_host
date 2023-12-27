@@ -59,7 +59,6 @@ export class TabPaneThreadUsage extends BaseElement {
     // 框选区域内running的时间
     getTabRunningPersent(threadUsageParam.threadIds, threadUsageParam.leftNs, threadUsageParam.rightNs).then(
       (result) => {
-        // 数组套对象
         // 开始的时间leftStartNs
         let leftStartNs = threadUsageParam.leftNs + threadUsageParam.recordStartNs;
         // 结束的时间rightEndNs
