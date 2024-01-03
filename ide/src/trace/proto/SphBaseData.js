@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 "use strict";
 
@@ -9602,6 +9587,7 @@ $root.SphProcessJanksFramesData = (function() {
      * @property {number|null} [id] SphProcessJanksFramesData id
      * @property {number|null} [name] SphProcessJanksFramesData name
      * @property {number|null} [type] SphProcessJanksFramesData type
+     * @property {number|null} [depth] SphProcessJanksFramesData depth
      */
 
     /**
@@ -9668,6 +9654,14 @@ $root.SphProcessJanksFramesData = (function() {
     SphProcessJanksFramesData.prototype.type = 0;
 
     /**
+     * SphProcessJanksFramesData depth.
+     * @member {number} depth
+     * @memberof SphProcessJanksFramesData
+     * @instance
+     */
+    SphProcessJanksFramesData.prototype.depth = 0;
+
+    /**
      * Creates a new SphProcessJanksFramesData instance using the specified properties.
      * @function create
      * @memberof SphProcessJanksFramesData
@@ -9703,6 +9697,8 @@ $root.SphProcessJanksFramesData = (function() {
             writer.uint32(/* id 5, wireType 0 =*/40).int32(message.name);
         if (message.type != null && Object.hasOwnProperty.call(message, "type"))
             writer.uint32(/* id 6, wireType 0 =*/48).int32(message.type);
+        if (message.depth != null && Object.hasOwnProperty.call(message, "depth"))
+            writer.uint32(/* id 7, wireType 0 =*/56).int32(message.depth);
         return writer;
     };
 
@@ -9761,6 +9757,10 @@ $root.SphProcessJanksFramesData = (function() {
                     message.type = reader.int32();
                     break;
                 }
+            case 7: {
+                    message.depth = reader.int32();
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -9814,6 +9814,9 @@ $root.SphProcessJanksFramesData = (function() {
         if (message.type != null && message.hasOwnProperty("type"))
             if (!$util.isInteger(message.type))
                 return "type: integer expected";
+        if (message.depth != null && message.hasOwnProperty("depth"))
+            if (!$util.isInteger(message.depth))
+                return "depth: integer expected";
         return null;
     };
 
@@ -9855,6 +9858,8 @@ $root.SphProcessJanksFramesData = (function() {
             message.name = object.name | 0;
         if (object.type != null)
             message.type = object.type | 0;
+        if (object.depth != null)
+            message.depth = object.depth | 0;
         return message;
     };
 
@@ -9886,6 +9891,7 @@ $root.SphProcessJanksFramesData = (function() {
             object.id = 0;
             object.name = 0;
             object.type = 0;
+            object.depth = 0;
         }
         if (message.ts != null && message.hasOwnProperty("ts"))
             if (typeof message.ts === "number")
@@ -9905,6 +9911,8 @@ $root.SphProcessJanksFramesData = (function() {
             object.name = message.name;
         if (message.type != null && message.hasOwnProperty("type"))
             object.type = message.type;
+        if (message.depth != null && message.hasOwnProperty("depth"))
+            object.depth = message.depth;
         return object;
     };
 
@@ -9951,6 +9959,7 @@ $root.SphProcessJanksActualData = (function() {
      * @property {number|null} [type] SphProcessJanksActualData type
      * @property {number|null} [jankTag] SphProcessJanksActualData jankTag
      * @property {number|null} [dstSlice] SphProcessJanksActualData dstSlice
+     * @property {number|null} [depth] SphProcessJanksActualData depth
      */
 
     /**
@@ -10033,6 +10042,14 @@ $root.SphProcessJanksActualData = (function() {
     SphProcessJanksActualData.prototype.dstSlice = 0;
 
     /**
+     * SphProcessJanksActualData depth.
+     * @member {number} depth
+     * @memberof SphProcessJanksActualData
+     * @instance
+     */
+    SphProcessJanksActualData.prototype.depth = 0;
+
+    /**
      * Creates a new SphProcessJanksActualData instance using the specified properties.
      * @function create
      * @memberof SphProcessJanksActualData
@@ -10072,6 +10089,8 @@ $root.SphProcessJanksActualData = (function() {
             writer.uint32(/* id 7, wireType 0 =*/56).int32(message.jankTag);
         if (message.dstSlice != null && Object.hasOwnProperty.call(message, "dstSlice"))
             writer.uint32(/* id 8, wireType 0 =*/64).int32(message.dstSlice);
+        if (message.depth != null && Object.hasOwnProperty.call(message, "depth"))
+            writer.uint32(/* id 9, wireType 0 =*/72).int32(message.depth);
         return writer;
     };
 
@@ -10138,6 +10157,10 @@ $root.SphProcessJanksActualData = (function() {
                     message.dstSlice = reader.int32();
                     break;
                 }
+            case 9: {
+                    message.depth = reader.int32();
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -10197,6 +10220,9 @@ $root.SphProcessJanksActualData = (function() {
         if (message.dstSlice != null && message.hasOwnProperty("dstSlice"))
             if (!$util.isInteger(message.dstSlice))
                 return "dstSlice: integer expected";
+        if (message.depth != null && message.hasOwnProperty("depth"))
+            if (!$util.isInteger(message.depth))
+                return "depth: integer expected";
         return null;
     };
 
@@ -10242,6 +10268,8 @@ $root.SphProcessJanksActualData = (function() {
             message.jankTag = object.jankTag | 0;
         if (object.dstSlice != null)
             message.dstSlice = object.dstSlice | 0;
+        if (object.depth != null)
+            message.depth = object.depth | 0;
         return message;
     };
 
@@ -10275,6 +10303,7 @@ $root.SphProcessJanksActualData = (function() {
             object.type = 0;
             object.jankTag = 0;
             object.dstSlice = 0;
+            object.depth = 0;
         }
         if (message.ts != null && message.hasOwnProperty("ts"))
             if (typeof message.ts === "number")
@@ -10298,6 +10327,8 @@ $root.SphProcessJanksActualData = (function() {
             object.jankTag = message.jankTag;
         if (message.dstSlice != null && message.hasOwnProperty("dstSlice"))
             object.dstSlice = message.dstSlice;
+        if (message.depth != null && message.hasOwnProperty("depth"))
+            object.depth = message.depth;
         return object;
     };
 
