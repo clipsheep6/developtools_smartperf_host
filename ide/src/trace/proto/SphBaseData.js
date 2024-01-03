@@ -1,3 +1,16 @@
+// Copyright (c) 2021 Huawei Device Co., Ltd.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 "use strict";
 
@@ -9,7 +22,7 @@ var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.ut
 // Exported root namespace
 var $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
-$root.SphCpuData = (function() {
+$root.SphCpuData = (function () {
 
     /**
      * Properties of a SphCpuData.
@@ -76,7 +89,7 @@ $root.SphCpuData = (function() {
      * @memberof SphCpuData
      * @instance
      */
-    SphCpuData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuData startTime.
@@ -84,7 +97,7 @@ $root.SphCpuData = (function() {
      * @memberof SphCpuData
      * @instance
      */
-    SphCpuData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphCpuData instance using the specified properties.
@@ -156,33 +169,33 @@ $root.SphCpuData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.processId = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.cpu = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.id = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.startTime = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -356,7 +369,7 @@ $root.SphCpuData = (function() {
     return SphCpuData;
 })();
 
-$root.SphCpuFreqData = (function() {
+$root.SphCpuFreqData = (function () {
 
     /**
      * Properties of a SphCpuFreqData.
@@ -405,7 +418,7 @@ $root.SphCpuFreqData = (function() {
      * @memberof SphCpuFreqData
      * @instance
      */
-    SphCpuFreqData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuFreqData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuFreqData startNs.
@@ -413,7 +426,7 @@ $root.SphCpuFreqData = (function() {
      * @memberof SphCpuFreqData
      * @instance
      */
-    SphCpuFreqData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuFreqData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphCpuFreqData instance using the specified properties.
@@ -481,25 +494,25 @@ $root.SphCpuFreqData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.cpu = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.value = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.startNs = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -657,7 +670,7 @@ $root.SphCpuFreqData = (function() {
     return SphCpuFreqData;
 })();
 
-$root.SphProcessData = (function() {
+$root.SphProcessData = (function () {
 
     /**
      * Properties of a SphProcessData.
@@ -697,7 +710,7 @@ $root.SphProcessData = (function() {
      * @memberof SphProcessData
      * @instance
      */
-    SphProcessData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessData startTime.
@@ -705,7 +718,7 @@ $root.SphProcessData = (function() {
      * @memberof SphProcessData
      * @instance
      */
-    SphProcessData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphProcessData instance using the specified properties.
@@ -771,21 +784,21 @@ $root.SphProcessData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.cpu = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTime = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -935,7 +948,7 @@ $root.SphProcessData = (function() {
     return SphProcessData;
 })();
 
-$root.SphCpuFreqLimitData = (function() {
+$root.SphCpuFreqLimitData = (function () {
 
     /**
      * Properties of a SphCpuFreqLimitData.
@@ -993,7 +1006,7 @@ $root.SphCpuFreqLimitData = (function() {
      * @memberof SphCpuFreqLimitData
      * @instance
      */
-    SphCpuFreqLimitData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuFreqLimitData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuFreqLimitData startNs.
@@ -1001,7 +1014,7 @@ $root.SphCpuFreqLimitData = (function() {
      * @memberof SphCpuFreqLimitData
      * @instance
      */
-    SphCpuFreqLimitData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuFreqLimitData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphCpuFreqLimitData instance using the specified properties.
@@ -1071,29 +1084,29 @@ $root.SphCpuFreqLimitData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.max = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.min = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.value = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.startNs = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -1259,7 +1272,7 @@ $root.SphCpuFreqLimitData = (function() {
     return SphCpuFreqLimitData;
 })();
 
-$root.SphCpuStateData = (function() {
+$root.SphCpuStateData = (function () {
 
     /**
      * Properties of a SphCpuStateData.
@@ -1299,7 +1312,7 @@ $root.SphCpuStateData = (function() {
      * @memberof SphCpuStateData
      * @instance
      */
-    SphCpuStateData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuStateData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuStateData startTs.
@@ -1307,7 +1320,7 @@ $root.SphCpuStateData = (function() {
      * @memberof SphCpuStateData
      * @instance
      */
-    SphCpuStateData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuStateData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphCpuStateData instance using the specified properties.
@@ -1373,21 +1386,21 @@ $root.SphCpuStateData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.value = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTs = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -1537,7 +1550,7 @@ $root.SphCpuStateData = (function() {
     return SphCpuStateData;
 })();
 
-$root.SphProcessMemData = (function() {
+$root.SphProcessMemData = (function () {
 
     /**
      * Properties of a SphProcessMemData.
@@ -1586,7 +1599,7 @@ $root.SphProcessMemData = (function() {
      * @memberof SphProcessMemData
      * @instance
      */
-    SphProcessMemData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessMemData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessMemData ts.
@@ -1594,7 +1607,7 @@ $root.SphProcessMemData = (function() {
      * @memberof SphProcessMemData
      * @instance
      */
-    SphProcessMemData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessMemData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphProcessMemData instance using the specified properties.
@@ -1662,25 +1675,25 @@ $root.SphProcessMemData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.trackId = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.value = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.ts = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -1838,7 +1851,7 @@ $root.SphProcessMemData = (function() {
     return SphProcessMemData;
 })();
 
-$root.SphProcessSoInitData = (function() {
+$root.SphProcessSoInitData = (function () {
 
     /**
      * Properties of a SphProcessSoInitData.
@@ -1906,7 +1919,7 @@ $root.SphProcessSoInitData = (function() {
      * @memberof SphProcessSoInitData
      * @instance
      */
-    SphProcessSoInitData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessSoInitData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessSoInitData dur.
@@ -1914,7 +1927,7 @@ $root.SphProcessSoInitData = (function() {
      * @memberof SphProcessSoInitData
      * @instance
      */
-    SphProcessSoInitData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessSoInitData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessSoInitData id.
@@ -1996,37 +2009,37 @@ $root.SphProcessSoInitData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.depth = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.itid = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.id = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -2208,7 +2221,7 @@ $root.SphProcessSoInitData = (function() {
     return SphProcessSoInitData;
 })();
 
-$root.SphProcessStartupData = (function() {
+$root.SphProcessStartupData = (function () {
 
     /**
      * Properties of a SphProcessStartupData.
@@ -2267,7 +2280,7 @@ $root.SphProcessStartupData = (function() {
      * @memberof SphProcessStartupData
      * @instance
      */
-    SphProcessStartupData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessStartupData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessStartupData dur.
@@ -2275,7 +2288,7 @@ $root.SphProcessStartupData = (function() {
      * @memberof SphProcessStartupData
      * @instance
      */
-    SphProcessStartupData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessStartupData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessStartupData startName.
@@ -2355,33 +2368,33 @@ $root.SphProcessStartupData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.itid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.startName = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -2555,7 +2568,7 @@ $root.SphProcessStartupData = (function() {
     return SphProcessStartupData;
 })();
 
-$root.SphClockData = (function() {
+$root.SphClockData = (function () {
 
     /**
      * Properties of a SphClockData.
@@ -2603,7 +2616,7 @@ $root.SphClockData = (function() {
      * @memberof SphClockData
      * @instance
      */
-    SphClockData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphClockData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphClockData instance using the specified properties.
@@ -2669,21 +2682,21 @@ $root.SphClockData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.filterId = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.value = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startNs = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -2819,7 +2832,7 @@ $root.SphClockData = (function() {
     return SphClockData;
 })();
 
-$root.SphIrqData = (function() {
+$root.SphIrqData = (function () {
 
     /**
      * Properties of a SphIrqData.
@@ -2853,7 +2866,7 @@ $root.SphIrqData = (function() {
      * @memberof SphIrqData
      * @instance
      */
-    SphIrqData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphIrqData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphIrqData dur.
@@ -2861,7 +2874,7 @@ $root.SphIrqData = (function() {
      * @memberof SphIrqData
      * @instance
      */
-    SphIrqData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphIrqData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphIrqData depth.
@@ -2955,29 +2968,29 @@ $root.SphIrqData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.depth = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.argSetId = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.id = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -3143,7 +3156,7 @@ $root.SphIrqData = (function() {
     return SphIrqData;
 })();
 
-$root.SphHiSysEventData = (function() {
+$root.SphHiSysEventData = (function () {
 
     /**
      * Properties of a SphHiSysEventData.
@@ -3188,7 +3201,7 @@ $root.SphHiSysEventData = (function() {
      * @memberof SphHiSysEventData
      * @instance
      */
-    SphHiSysEventData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiSysEventData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiSysEventData pid.
@@ -3236,7 +3249,7 @@ $root.SphHiSysEventData = (function() {
      * @memberof SphHiSysEventData
      * @instance
      */
-    SphHiSysEventData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiSysEventData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphHiSysEventData instance using the specified properties.
@@ -3312,41 +3325,41 @@ $root.SphHiSysEventData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.ts = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.uid = reader.int32();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.seq = reader.string();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.depth = reader.int32();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.dur = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -3536,7 +3549,7 @@ $root.SphHiSysEventData = (function() {
     return SphHiSysEventData;
 })();
 
-$root.SphLogData = (function() {
+$root.SphLogData = (function () {
 
     /**
      * Properties of a SphLogData.
@@ -3595,7 +3608,7 @@ $root.SphLogData = (function() {
      * @memberof SphLogData
      * @instance
      */
-    SphLogData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphLogData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphLogData depth.
@@ -3611,7 +3624,7 @@ $root.SphLogData = (function() {
      * @memberof SphLogData
      * @instance
      */
-    SphLogData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphLogData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphLogData instance using the specified properties.
@@ -3683,33 +3696,33 @@ $root.SphLogData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.depth = reader.int32();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.dur = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -3883,7 +3896,7 @@ $root.SphLogData = (function() {
     return SphLogData;
 })();
 
-$root.SphVirtualMemData = (function() {
+$root.SphVirtualMemData = (function () {
 
     /**
      * Properties of a SphVirtualMemData.
@@ -3918,7 +3931,7 @@ $root.SphVirtualMemData = (function() {
      * @memberof SphVirtualMemData
      * @instance
      */
-    SphVirtualMemData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphVirtualMemData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphVirtualMemData filterId.
@@ -3934,7 +3947,7 @@ $root.SphVirtualMemData = (function() {
      * @memberof SphVirtualMemData
      * @instance
      */
-    SphVirtualMemData.prototype.value = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphVirtualMemData.prototype.value = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphVirtualMemData duration.
@@ -3950,7 +3963,7 @@ $root.SphVirtualMemData = (function() {
      * @memberof SphVirtualMemData
      * @instance
      */
-    SphVirtualMemData.prototype.maxValue = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphVirtualMemData.prototype.maxValue = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphVirtualMemData delta.
@@ -4030,33 +4043,33 @@ $root.SphVirtualMemData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.filterId = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.value = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.duration = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.maxValue = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.delta = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -4244,7 +4257,7 @@ $root.SphVirtualMemData = (function() {
     return SphVirtualMemData;
 })();
 
-$root.SphEnergyData = (function() {
+$root.SphEnergyData = (function () {
 
     /**
      * Properties of a SphEnergyData.
@@ -4286,7 +4299,7 @@ $root.SphEnergyData = (function() {
      * @memberof SphEnergyData
      * @instance
      */
-    SphEnergyData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphEnergyData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphEnergyData eventName.
@@ -4380,29 +4393,29 @@ $root.SphEnergyData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.eventName = reader.string();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.appKey = reader.string();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.eventValue = reader.string();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -4554,7 +4567,7 @@ $root.SphEnergyData = (function() {
     return SphEnergyData;
 })();
 
-$root.SphFrameData = (function() {
+$root.SphFrameData = (function () {
 
     /**
      * Properties of a SphFrameData.
@@ -4632,7 +4645,7 @@ $root.SphFrameData = (function() {
      * @memberof SphFrameData
      * @instance
      */
-    SphFrameData.prototype.appDur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameData.prototype.appDur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameData dur.
@@ -4640,7 +4653,7 @@ $root.SphFrameData = (function() {
      * @memberof SphFrameData
      * @instance
      */
-    SphFrameData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameData ts.
@@ -4648,7 +4661,7 @@ $root.SphFrameData = (function() {
      * @memberof SphFrameData
      * @instance
      */
-    SphFrameData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameData type.
@@ -4688,7 +4701,7 @@ $root.SphFrameData = (function() {
      * @memberof SphFrameData
      * @instance
      */
-    SphFrameData.prototype.rsTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameData.prototype.rsTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameData rsVsync.
@@ -4704,7 +4717,7 @@ $root.SphFrameData = (function() {
      * @memberof SphFrameData
      * @instance
      */
-    SphFrameData.prototype.rsDur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameData.prototype.rsDur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameData rsIpid.
@@ -4822,77 +4835,77 @@ $root.SphFrameData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.frameType = reader.string();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.ipid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.name = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.appDur = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.ts = reader.int64();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.type = reader.string();
                     break;
                 }
-            case 9: {
+                case 9: {
                     message.jankTag = reader.int32();
                     break;
                 }
-            case 10: {
+                case 10: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 11: {
+                case 11: {
                     message.cmdline = reader.string();
                     break;
                 }
-            case 12: {
+                case 12: {
                     message.rsTs = reader.int64();
                     break;
                 }
-            case 13: {
+                case 13: {
                     message.rsVsync = reader.int32();
                     break;
                 }
-            case 14: {
+                case 14: {
                     message.rsDur = reader.int64();
                     break;
                 }
-            case 15: {
+                case 15: {
                     message.rsIpid = reader.int32();
                     break;
                 }
-            case 16: {
+                case 16: {
                     message.rsPid = reader.int32();
                     break;
                 }
-            case 17: {
+                case 17: {
                     message.rsName = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -5196,7 +5209,7 @@ $root.SphFrameData = (function() {
     return SphFrameData;
 })();
 
-$root.SphFrameAnimationData = (function() {
+$root.SphFrameAnimationData = (function () {
 
     /**
      * Properties of a SphFrameAnimationData.
@@ -5246,7 +5259,7 @@ $root.SphFrameAnimationData = (function() {
      * @memberof SphFrameAnimationData
      * @instance
      */
-    SphFrameAnimationData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameAnimationData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameAnimationData endTs.
@@ -5254,7 +5267,7 @@ $root.SphFrameAnimationData = (function() {
      * @memberof SphFrameAnimationData
      * @instance
      */
-    SphFrameAnimationData.prototype.endTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameAnimationData.prototype.endTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameAnimationData name.
@@ -5332,29 +5345,29 @@ $root.SphFrameAnimationData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.animationId = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.status = reader.int32();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.endTs = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.name = reader.string();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -5520,7 +5533,7 @@ $root.SphFrameAnimationData = (function() {
     return SphFrameAnimationData;
 })();
 
-$root.SphFrameDynamicData = (function() {
+$root.SphFrameDynamicData = (function () {
 
     /**
      * Properties of a SphFrameDynamicData.
@@ -5605,7 +5618,7 @@ $root.SphFrameDynamicData = (function() {
      * @memberof SphFrameDynamicData
      * @instance
      */
-    SphFrameDynamicData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameDynamicData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameDynamicData appName.
@@ -5689,41 +5702,41 @@ $root.SphFrameDynamicData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.x = reader.string();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.y = reader.string();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.width = reader.string();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.height = reader.string();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.alpha = reader.string();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.ts = reader.int64();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.appName = reader.string();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -5899,7 +5912,7 @@ $root.SphFrameDynamicData = (function() {
     return SphFrameDynamicData;
 })();
 
-$root.SphFrameSpacingData = (function() {
+$root.SphFrameSpacingData = (function () {
 
     /**
      * Properties of a SphFrameSpacingData.
@@ -5975,7 +5988,7 @@ $root.SphFrameSpacingData = (function() {
      * @memberof SphFrameSpacingData
      * @instance
      */
-    SphFrameSpacingData.prototype.currentTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphFrameSpacingData.prototype.currentTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphFrameSpacingData nameId.
@@ -6057,37 +6070,37 @@ $root.SphFrameSpacingData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.x = reader.string();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.y = reader.string();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.currentFrameWidth = reader.string();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.currentFrameHeight = reader.string();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.currentTs = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.nameId = reader.string();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -6255,7 +6268,7 @@ $root.SphFrameSpacingData = (function() {
     return SphFrameSpacingData;
 })();
 
-$root.SphEbpfData = (function() {
+$root.SphEbpfData = (function () {
 
     /**
      * Properties of a SphEbpfData.
@@ -6288,7 +6301,7 @@ $root.SphEbpfData = (function() {
      * @memberof SphEbpfData
      * @instance
      */
-    SphEbpfData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphEbpfData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphEbpfData endNs.
@@ -6296,7 +6309,7 @@ $root.SphEbpfData = (function() {
      * @memberof SphEbpfData
      * @instance
      */
-    SphEbpfData.prototype.endNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphEbpfData.prototype.endNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphEbpfData dur.
@@ -6304,7 +6317,7 @@ $root.SphEbpfData = (function() {
      * @memberof SphEbpfData
      * @instance
      */
-    SphEbpfData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphEbpfData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphEbpfData size.
@@ -6312,7 +6325,7 @@ $root.SphEbpfData = (function() {
      * @memberof SphEbpfData
      * @instance
      */
-    SphEbpfData.prototype.size = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphEbpfData.prototype.size = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphEbpfData instance using the specified properties.
@@ -6380,25 +6393,25 @@ $root.SphEbpfData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.endNs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.size = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -6584,7 +6597,7 @@ $root.SphEbpfData = (function() {
     return SphEbpfData;
 })();
 
-$root.SphTrackerData = (function() {
+$root.SphTrackerData = (function () {
 
     /**
      * Properties of a SphTrackerData.
@@ -6615,7 +6628,7 @@ $root.SphTrackerData = (function() {
      * @memberof SphTrackerData
      * @instance
      */
-    SphTrackerData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphTrackerData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphTrackerData value.
@@ -6623,7 +6636,7 @@ $root.SphTrackerData = (function() {
      * @memberof SphTrackerData
      * @instance
      */
-    SphTrackerData.prototype.value = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphTrackerData.prototype.value = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphTrackerData instance using the specified properties.
@@ -6687,17 +6700,17 @@ $root.SphTrackerData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.value = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -6839,7 +6852,7 @@ $root.SphTrackerData = (function() {
     return SphTrackerData;
 })();
 
-$root.SphAbilityData = (function() {
+$root.SphAbilityData = (function () {
 
     /**
      * Properties of a SphAbilityData.
@@ -6871,7 +6884,7 @@ $root.SphAbilityData = (function() {
      * @memberof SphAbilityData
      * @instance
      */
-    SphAbilityData.prototype.value = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphAbilityData.prototype.value = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphAbilityData startNs.
@@ -6879,7 +6892,7 @@ $root.SphAbilityData = (function() {
      * @memberof SphAbilityData
      * @instance
      */
-    SphAbilityData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphAbilityData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphAbilityData dur.
@@ -6953,21 +6966,21 @@ $root.SphAbilityData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.value = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.dur = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -7117,7 +7130,7 @@ $root.SphAbilityData = (function() {
     return SphAbilityData;
 })();
 
-$root.SphHiperfData = (function() {
+$root.SphHiperfData = (function () {
 
     /**
      * Properties of a SphHiperfData.
@@ -7151,7 +7164,7 @@ $root.SphHiperfData = (function() {
      * @memberof SphHiperfData
      * @instance
      */
-    SphHiperfData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfData eventCount.
@@ -7159,7 +7172,7 @@ $root.SphHiperfData = (function() {
      * @memberof SphHiperfData
      * @instance
      */
-    SphHiperfData.prototype.eventCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfData.prototype.eventCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfData sampleCount.
@@ -7167,7 +7180,7 @@ $root.SphHiperfData = (function() {
      * @memberof SphHiperfData
      * @instance
      */
-    SphHiperfData.prototype.sampleCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfData.prototype.sampleCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfData eventTypeId.
@@ -7175,7 +7188,7 @@ $root.SphHiperfData = (function() {
      * @memberof SphHiperfData
      * @instance
      */
-    SphHiperfData.prototype.eventTypeId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfData.prototype.eventTypeId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfData callchainId.
@@ -7183,7 +7196,7 @@ $root.SphHiperfData = (function() {
      * @memberof SphHiperfData
      * @instance
      */
-    SphHiperfData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphHiperfData instance using the specified properties.
@@ -7253,29 +7266,29 @@ $root.SphHiperfData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.eventCount = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.sampleCount = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.eventTypeId = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.callchainId = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -7483,7 +7496,7 @@ $root.SphHiperfData = (function() {
     return SphHiperfData;
 })();
 
-$root.SphHiperfCallChartData = (function() {
+$root.SphHiperfCallChartData = (function () {
 
     /**
      * Properties of a SphHiperfCallChartData.
@@ -7518,7 +7531,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallChartData startTs.
@@ -7526,7 +7539,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallChartData eventCount.
@@ -7534,7 +7547,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.eventCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.eventCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallChartData threadId.
@@ -7542,7 +7555,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.threadId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.threadId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallChartData cpuId.
@@ -7550,7 +7563,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.cpuId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.cpuId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallChartData eventTypeId.
@@ -7558,7 +7571,7 @@ $root.SphHiperfCallChartData = (function() {
      * @memberof SphHiperfCallChartData
      * @instance
      */
-    SphHiperfCallChartData.prototype.eventTypeId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallChartData.prototype.eventTypeId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphHiperfCallChartData instance using the specified properties.
@@ -7630,33 +7643,33 @@ $root.SphHiperfCallChartData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.callchainId = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.eventCount = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.threadId = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.cpuId = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.eventTypeId = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -7886,7 +7899,7 @@ $root.SphHiperfCallChartData = (function() {
     return SphHiperfCallChartData;
 })();
 
-$root.SphHiperfCallStackData = (function() {
+$root.SphHiperfCallStackData = (function () {
 
     /**
      * Properties of a SphHiperfCallStackData.
@@ -7920,7 +7933,7 @@ $root.SphHiperfCallStackData = (function() {
      * @memberof SphHiperfCallStackData
      * @instance
      */
-    SphHiperfCallStackData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallStackData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallStackData fileId.
@@ -7928,7 +7941,7 @@ $root.SphHiperfCallStackData = (function() {
      * @memberof SphHiperfCallStackData
      * @instance
      */
-    SphHiperfCallStackData.prototype.fileId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallStackData.prototype.fileId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallStackData depth.
@@ -7936,7 +7949,7 @@ $root.SphHiperfCallStackData = (function() {
      * @memberof SphHiperfCallStackData
      * @instance
      */
-    SphHiperfCallStackData.prototype.depth = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallStackData.prototype.depth = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallStackData symbolId.
@@ -7944,7 +7957,7 @@ $root.SphHiperfCallStackData = (function() {
      * @memberof SphHiperfCallStackData
      * @instance
      */
-    SphHiperfCallStackData.prototype.symbolId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallStackData.prototype.symbolId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHiperfCallStackData name.
@@ -7952,7 +7965,7 @@ $root.SphHiperfCallStackData = (function() {
      * @memberof SphHiperfCallStackData
      * @instance
      */
-    SphHiperfCallStackData.prototype.name = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHiperfCallStackData.prototype.name = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphHiperfCallStackData instance using the specified properties.
@@ -8022,29 +8035,29 @@ $root.SphHiperfCallStackData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.callchainId = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.fileId = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.depth = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.symbolId = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.name = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -8252,7 +8265,7 @@ $root.SphHiperfCallStackData = (function() {
     return SphHiperfCallStackData;
 })();
 
-$root.SphProcessThreadData = (function() {
+$root.SphProcessThreadData = (function () {
 
     /**
      * Properties of a SphProcessThreadData.
@@ -8297,7 +8310,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessThreadData id.
@@ -8305,7 +8318,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.id = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.id = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessThreadData tid.
@@ -8313,7 +8326,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.tid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.tid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessThreadData state.
@@ -8329,7 +8342,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.pid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.pid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessThreadData startTime.
@@ -8337,7 +8350,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessThreadData argSetId.
@@ -8345,7 +8358,7 @@ $root.SphProcessThreadData = (function() {
      * @memberof SphProcessThreadData
      * @instance
      */
-    SphProcessThreadData.prototype.argSetId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessThreadData.prototype.argSetId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphProcessThreadData instance using the specified properties.
@@ -8421,41 +8434,41 @@ $root.SphProcessThreadData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.cpu = reader.int32();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.id = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.tid = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.state = reader.string();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.pid = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.argSetId = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -8701,7 +8714,7 @@ $root.SphProcessThreadData = (function() {
     return SphProcessThreadData;
 })();
 
-$root.SphProcessFuncData = (function() {
+$root.SphProcessFuncData = (function () {
 
     /**
      * Properties of a SphProcessFuncData.
@@ -8737,7 +8750,7 @@ $root.SphProcessFuncData = (function() {
      * @memberof SphProcessFuncData
      * @instance
      */
-    SphProcessFuncData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessFuncData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessFuncData dur.
@@ -8745,7 +8758,7 @@ $root.SphProcessFuncData = (function() {
      * @memberof SphProcessFuncData
      * @instance
      */
-    SphProcessFuncData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessFuncData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessFuncData argsetid.
@@ -8753,7 +8766,7 @@ $root.SphProcessFuncData = (function() {
      * @memberof SphProcessFuncData
      * @instance
      */
-    SphProcessFuncData.prototype.argsetid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessFuncData.prototype.argsetid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessFuncData depth.
@@ -8769,7 +8782,7 @@ $root.SphProcessFuncData = (function() {
      * @memberof SphProcessFuncData
      * @instance
      */
-    SphProcessFuncData.prototype.id = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessFuncData.prototype.id = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessFuncData itid.
@@ -8859,37 +8872,37 @@ $root.SphProcessFuncData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.argsetid = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.depth = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.id = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.itid = reader.int32();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.ipid = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -9099,7 +9112,7 @@ $root.SphProcessFuncData = (function() {
     return SphProcessFuncData;
 })();
 
-$root.SphProcessInputEventData = (function() {
+$root.SphProcessInputEventData = (function () {
 
     /**
      * Properties of a SphProcessInputEventData.
@@ -9139,7 +9152,7 @@ $root.SphProcessInputEventData = (function() {
      * @memberof SphProcessInputEventData
      * @instance
      */
-    SphProcessInputEventData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessInputEventData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessInputEventData dur.
@@ -9147,7 +9160,7 @@ $root.SphProcessInputEventData = (function() {
      * @memberof SphProcessInputEventData
      * @instance
      */
-    SphProcessInputEventData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessInputEventData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessInputEventData argsetid.
@@ -9155,7 +9168,7 @@ $root.SphProcessInputEventData = (function() {
      * @memberof SphProcessInputEventData
      * @instance
      */
-    SphProcessInputEventData.prototype.argsetid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessInputEventData.prototype.argsetid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessInputEventData tid.
@@ -9301,53 +9314,53 @@ $root.SphProcessInputEventData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.argsetid = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.tid = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.isMainThread = reader.int32();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.trackId = reader.int32();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.parentId = reader.int32();
                     break;
                 }
-            case 9: {
+                case 9: {
                     message.id = reader.int32();
                     break;
                 }
-            case 10: {
+                case 10: {
                     message.cookie = reader.int32();
                     break;
                 }
-            case 11: {
+                case 11: {
                     message.depth = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -9575,7 +9588,7 @@ $root.SphProcessInputEventData = (function() {
     return SphProcessInputEventData;
 })();
 
-$root.SphProcessJanksFramesData = (function() {
+$root.SphProcessJanksFramesData = (function () {
 
     /**
      * Properties of a SphProcessJanksFramesData.
@@ -9611,7 +9624,7 @@ $root.SphProcessJanksFramesData = (function() {
      * @memberof SphProcessJanksFramesData
      * @instance
      */
-    SphProcessJanksFramesData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessJanksFramesData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessJanksFramesData dur.
@@ -9619,7 +9632,7 @@ $root.SphProcessJanksFramesData = (function() {
      * @memberof SphProcessJanksFramesData
      * @instance
      */
-    SphProcessJanksFramesData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessJanksFramesData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessJanksFramesData pid.
@@ -9733,37 +9746,37 @@ $root.SphProcessJanksFramesData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.ts = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.id = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.name = reader.int32();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.type = reader.int32();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.depth = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -9945,7 +9958,7 @@ $root.SphProcessJanksFramesData = (function() {
     return SphProcessJanksFramesData;
 })();
 
-$root.SphProcessJanksActualData = (function() {
+$root.SphProcessJanksActualData = (function () {
 
     /**
      * Properties of a SphProcessJanksActualData.
@@ -9983,7 +9996,7 @@ $root.SphProcessJanksActualData = (function() {
      * @memberof SphProcessJanksActualData
      * @instance
      */
-    SphProcessJanksActualData.prototype.ts = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessJanksActualData.prototype.ts = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessJanksActualData dur.
@@ -9991,7 +10004,7 @@ $root.SphProcessJanksActualData = (function() {
      * @memberof SphProcessJanksActualData
      * @instance
      */
-    SphProcessJanksActualData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphProcessJanksActualData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphProcessJanksActualData pid.
@@ -10125,45 +10138,45 @@ $root.SphProcessJanksActualData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.ts = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.pid = reader.int32();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.id = reader.int32();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.name = reader.int32();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.type = reader.int32();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.jankTag = reader.int32();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.dstSlice = reader.int32();
                     break;
                 }
-            case 9: {
+                case 9: {
                     message.depth = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -10361,7 +10374,7 @@ $root.SphProcessJanksActualData = (function() {
     return SphProcessJanksActualData;
 })();
 
-$root.SphNativeMemoryNormalData = (function() {
+$root.SphNativeMemoryNormalData = (function () {
 
     /**
      * Properties of a SphNativeMemoryNormalData.
@@ -10394,7 +10407,7 @@ $root.SphNativeMemoryNormalData = (function() {
      * @memberof SphNativeMemoryNormalData
      * @instance
      */
-    SphNativeMemoryNormalData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryNormalData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryNormalData heapSize.
@@ -10402,7 +10415,7 @@ $root.SphNativeMemoryNormalData = (function() {
      * @memberof SphNativeMemoryNormalData
      * @instance
      */
-    SphNativeMemoryNormalData.prototype.heapSize = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryNormalData.prototype.heapSize = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryNormalData eventType.
@@ -10410,7 +10423,7 @@ $root.SphNativeMemoryNormalData = (function() {
      * @memberof SphNativeMemoryNormalData
      * @instance
      */
-    SphNativeMemoryNormalData.prototype.eventType = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryNormalData.prototype.eventType = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryNormalData ipid.
@@ -10418,7 +10431,7 @@ $root.SphNativeMemoryNormalData = (function() {
      * @memberof SphNativeMemoryNormalData
      * @instance
      */
-    SphNativeMemoryNormalData.prototype.ipid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryNormalData.prototype.ipid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphNativeMemoryNormalData instance using the specified properties.
@@ -10486,25 +10499,25 @@ $root.SphNativeMemoryNormalData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.heapSize = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.eventType = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.ipid = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -10690,7 +10703,7 @@ $root.SphNativeMemoryNormalData = (function() {
     return SphNativeMemoryNormalData;
 })();
 
-$root.SphNativeMemoryStatisticData = (function() {
+$root.SphNativeMemoryStatisticData = (function () {
 
     /**
      * Properties of a SphNativeMemoryStatisticData.
@@ -10727,7 +10740,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.callchainId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData startTs.
@@ -10735,7 +10748,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData applyCount.
@@ -10743,7 +10756,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.applyCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.applyCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData applySize.
@@ -10751,7 +10764,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.applySize = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.applySize = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData releaseCount.
@@ -10759,7 +10772,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.releaseCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.releaseCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData releaseSize.
@@ -10767,7 +10780,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.releaseSize = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.releaseSize = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData ipid.
@@ -10775,7 +10788,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.ipid = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.ipid = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphNativeMemoryStatisticData type.
@@ -10783,7 +10796,7 @@ $root.SphNativeMemoryStatisticData = (function() {
      * @memberof SphNativeMemoryStatisticData
      * @instance
      */
-    SphNativeMemoryStatisticData.prototype.type = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphNativeMemoryStatisticData.prototype.type = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphNativeMemoryStatisticData instance using the specified properties.
@@ -10859,41 +10872,41 @@ $root.SphNativeMemoryStatisticData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.callchainId = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.applyCount = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.applySize = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.releaseCount = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.releaseSize = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.ipid = reader.int64();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.type = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -11167,7 +11180,7 @@ $root.SphNativeMemoryStatisticData = (function() {
     return SphNativeMemoryStatisticData;
 })();
 
-$root.SphHeapFilesData = (function() {
+$root.SphHeapFilesData = (function () {
 
     /**
      * Properties of a SphHeapFilesData.
@@ -11202,7 +11215,7 @@ $root.SphHeapFilesData = (function() {
      * @memberof SphHeapFilesData
      * @instance
      */
-    SphHeapFilesData.prototype.id = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHeapFilesData.prototype.id = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHeapFilesData name.
@@ -11218,7 +11231,7 @@ $root.SphHeapFilesData = (function() {
      * @memberof SphHeapFilesData
      * @instance
      */
-    SphHeapFilesData.prototype.startTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHeapFilesData.prototype.startTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHeapFilesData endTs.
@@ -11226,7 +11239,7 @@ $root.SphHeapFilesData = (function() {
      * @memberof SphHeapFilesData
      * @instance
      */
-    SphHeapFilesData.prototype.endTs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHeapFilesData.prototype.endTs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHeapFilesData size.
@@ -11234,7 +11247,7 @@ $root.SphHeapFilesData = (function() {
      * @memberof SphHeapFilesData
      * @instance
      */
-    SphHeapFilesData.prototype.size = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphHeapFilesData.prototype.size = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphHeapFilesData pid.
@@ -11314,33 +11327,33 @@ $root.SphHeapFilesData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.name = reader.string();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTs = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.endTs = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.size = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.pid = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -11542,7 +11555,7 @@ $root.SphHeapFilesData = (function() {
     return SphHeapFilesData;
 })();
 
-$root.SphCpuProfilerData = (function() {
+$root.SphCpuProfilerData = (function () {
 
     /**
      * Properties of a SphCpuProfilerData.
@@ -11583,7 +11596,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.id = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.id = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData functionId.
@@ -11591,7 +11604,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.functionId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.functionId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData startTime.
@@ -11599,7 +11612,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.startTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.startTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData endTime.
@@ -11607,7 +11620,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.endTime = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.endTime = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData dur.
@@ -11615,7 +11628,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.dur = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.dur = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData nameId.
@@ -11623,7 +11636,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.nameId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.nameId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData urlId.
@@ -11631,7 +11644,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.urlId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.urlId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData line.
@@ -11639,7 +11652,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.line = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.line = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData column.
@@ -11647,7 +11660,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.column = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.column = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData hitCount.
@@ -11655,7 +11668,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.hitCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.hitCount = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData childrenString.
@@ -11663,7 +11676,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.childrenString = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.childrenString = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuProfilerData parentId.
@@ -11671,7 +11684,7 @@ $root.SphCpuProfilerData = (function() {
      * @memberof SphCpuProfilerData
      * @instance
      */
-    SphCpuProfilerData.prototype.parentId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuProfilerData.prototype.parentId = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * Creates a new SphCpuProfilerData instance using the specified properties.
@@ -11755,57 +11768,57 @@ $root.SphCpuProfilerData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.id = reader.int64();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.functionId = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.startTime = reader.int64();
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.endTime = reader.int64();
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.dur = reader.int64();
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.nameId = reader.int64();
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.urlId = reader.int64();
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.line = reader.int64();
                     break;
                 }
-            case 9: {
+                case 9: {
                     message.column = reader.int64();
                     break;
                 }
-            case 10: {
+                case 10: {
                     message.hitCount = reader.int64();
                     break;
                 }
-            case 11: {
+                case 11: {
                     message.childrenString = reader.int64();
                     break;
                 }
-            case 12: {
+                case 12: {
                     message.parentId = reader.int64();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -12167,7 +12180,7 @@ $root.SphCpuProfilerData = (function() {
     return SphCpuProfilerData;
 })();
 
-$root.SphCpuAbilityData = (function() {
+$root.SphCpuAbilityData = (function () {
 
     /**
      * Properties of a SphCpuAbilityData.
@@ -12207,7 +12220,7 @@ $root.SphCpuAbilityData = (function() {
      * @memberof SphCpuAbilityData
      * @instance
      */
-    SphCpuAbilityData.prototype.startNs = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    SphCpuAbilityData.prototype.startNs = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
 
     /**
      * SphCpuAbilityData dur.
@@ -12281,21 +12294,21 @@ $root.SphCpuAbilityData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.value = reader.string();
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.startNs = reader.int64();
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.dur = reader.int32();
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -12431,7 +12444,7 @@ $root.SphCpuAbilityData = (function() {
     return SphCpuAbilityData;
 })();
 
-$root.SphData = (function() {
+$root.SphData = (function () {
 
     /**
      * Properties of a SphData.
@@ -12900,145 +12913,145 @@ $root.SphData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     message.cpuData = $root.SphCpuData.decode(reader, reader.uint32());
                     break;
                 }
-            case 2: {
+                case 2: {
                     message.cpuStateData = $root.SphCpuStateData.decode(reader, reader.uint32());
                     break;
                 }
-            case 3: {
+                case 3: {
                     message.cpuFreqData = $root.SphCpuFreqData.decode(reader, reader.uint32());
                     break;
                 }
-            case 4: {
+                case 4: {
                     message.cpuFreqLimitData = $root.SphCpuFreqLimitData.decode(reader, reader.uint32());
                     break;
                 }
-            case 5: {
+                case 5: {
                     message.clockData = $root.SphClockData.decode(reader, reader.uint32());
                     break;
                 }
-            case 6: {
+                case 6: {
                     message.irqData = $root.SphIrqData.decode(reader, reader.uint32());
                     break;
                 }
-            case 7: {
+                case 7: {
                     message.processData = $root.SphProcessData.decode(reader, reader.uint32());
                     break;
                 }
-            case 8: {
+                case 8: {
                     message.processMemData = $root.SphProcessMemData.decode(reader, reader.uint32());
                     break;
                 }
-            case 9: {
+                case 9: {
                     message.processStartupData = $root.SphProcessStartupData.decode(reader, reader.uint32());
                     break;
                 }
-            case 10: {
+                case 10: {
                     message.processSoInitData = $root.SphProcessSoInitData.decode(reader, reader.uint32());
                     break;
                 }
-            case 11: {
+                case 11: {
                     message.hiSysEventData = $root.SphHiSysEventData.decode(reader, reader.uint32());
                     break;
                 }
-            case 12: {
+                case 12: {
                     message.logData = $root.SphLogData.decode(reader, reader.uint32());
                     break;
                 }
-            case 13: {
+                case 13: {
                     message.virtualMemData = $root.SphVirtualMemData.decode(reader, reader.uint32());
                     break;
                 }
-            case 14: {
+                case 14: {
                     message.energyData = $root.SphEnergyData.decode(reader, reader.uint32());
                     break;
                 }
-            case 15: {
+                case 15: {
                     message.frameData = $root.SphFrameData.decode(reader, reader.uint32());
                     break;
                 }
-            case 16: {
+                case 16: {
                     message.frameAnimationData = $root.SphFrameAnimationData.decode(reader, reader.uint32());
                     break;
                 }
-            case 17: {
+                case 17: {
                     message.frameDynamicData = $root.SphFrameDynamicData.decode(reader, reader.uint32());
                     break;
                 }
-            case 18: {
+                case 18: {
                     message.frameSpacingData = $root.SphFrameSpacingData.decode(reader, reader.uint32());
                     break;
                 }
-            case 19: {
+                case 19: {
                     message.ebpfData = $root.SphEbpfData.decode(reader, reader.uint32());
                     break;
                 }
-            case 20: {
+                case 20: {
                     message.trackerData = $root.SphTrackerData.decode(reader, reader.uint32());
                     break;
                 }
-            case 21: {
+                case 21: {
                     message.abilityData = $root.SphAbilityData.decode(reader, reader.uint32());
                     break;
                 }
-            case 22: {
+                case 22: {
                     message.processThreadData = $root.SphProcessThreadData.decode(reader, reader.uint32());
                     break;
                 }
-            case 23: {
+                case 23: {
                     message.processFuncData = $root.SphProcessFuncData.decode(reader, reader.uint32());
                     break;
                 }
-            case 24: {
+                case 24: {
                     message.hiperfData = $root.SphHiperfData.decode(reader, reader.uint32());
                     break;
                 }
-            case 25: {
+                case 25: {
                     message.hiperfCallChartData = $root.SphHiperfCallChartData.decode(reader, reader.uint32());
                     break;
                 }
-            case 26: {
+                case 26: {
                     message.hiperfCallStackData = $root.SphHiperfCallStackData.decode(reader, reader.uint32());
                     break;
                 }
-            case 27: {
+                case 27: {
                     message.processJanksFramesData = $root.SphProcessJanksFramesData.decode(reader, reader.uint32());
                     break;
                 }
-            case 28: {
+                case 28: {
                     message.processJanksActualData = $root.SphProcessJanksActualData.decode(reader, reader.uint32());
                     break;
                 }
-            case 29: {
+                case 29: {
                     message.processInputEventData = $root.SphProcessInputEventData.decode(reader, reader.uint32());
                     break;
                 }
-            case 30: {
+                case 30: {
                     message.heapFilesData = $root.SphHeapFilesData.decode(reader, reader.uint32());
                     break;
                 }
-            case 31: {
+                case 31: {
                     message.cpuProfilerData = $root.SphCpuProfilerData.decode(reader, reader.uint32());
                     break;
                 }
-            case 32: {
+                case 32: {
                     message.nativeMemoryNormal = $root.SphNativeMemoryNormalData.decode(reader, reader.uint32());
                     break;
                 }
-            case 33: {
+                case 33: {
                     message.nativeMemoryStatistic = $root.SphNativeMemoryStatisticData.decode(reader, reader.uint32());
                     break;
                 }
-            case 34: {
+                case 34: {
                     message.cpuAbilityData = $root.SphCpuAbilityData.decode(reader, reader.uint32());
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;
@@ -13813,7 +13826,7 @@ $root.SphData = (function() {
     return SphData;
 })();
 
-$root.BatchSphData = (function() {
+$root.BatchSphData = (function () {
 
     /**
      * Properties of a BatchSphData.
@@ -13907,15 +13920,15 @@ $root.BatchSphData = (function() {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-            case 1: {
+                case 1: {
                     if (!(message.values && message.values.length))
                         message.values = [];
                     message.values.push($root.SphData.decode(reader, reader.uint32()));
                     break;
                 }
-            default:
-                reader.skipType(tag & 7);
-                break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
             }
         }
         return message;

@@ -18,7 +18,7 @@
 
 #include <cstring>
 #include <iostream>
-#include <inttypes.h>
+#include <cinttypes>
 
 // namespace SysTuning {
 // namespace base {
