@@ -69,6 +69,7 @@ private:
     uint8_t generateVsyncCnt_ = 0;
     DynamicFrame* dynamicFrame_ = nullptr;
     CallStack* callStackSlice_ = nullptr;
+    const uint8_t inputTimeIndex_ = 3;
 };
 } // namespace TraceStreamer
 } // namespace SysTuning

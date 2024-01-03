@@ -145,7 +145,7 @@ bool AnimationFilter::StartAnimationEvent(const BytraceLine& line, const TracePo
     TS_CHECK_TRUE_RET(startEventIter != onAnimationStartEvents_.end() && infos.size() >= ANIMATION_INFO_NUM_MIN, false);
     auto nameIndex = traceDataCache_->GetDataIndex(infos[0] + ", " + infos[1]);
     // pop for '.': '1693876195576.'
-    auto& inputTimeStr = infos.back();
+    auto& inputTimeStr = infos[inputTimeIndex_];
     if (inputTimeStr.back() == '.') {
         inputTimeStr.pop_back();
     }
