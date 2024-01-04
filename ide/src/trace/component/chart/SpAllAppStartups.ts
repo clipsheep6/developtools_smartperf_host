@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-import { SpSystemTrace } from '../SpSystemTrace';
+import { type SpSystemTrace } from '../SpSystemTrace';
 import { TraceRow } from '../trace/base/TraceRow';
 import { renders } from '../../database/ui-worker/ProcedureWorker';
-import { CpuFreqStruct } from '../../database/ui-worker/ProcedureWorkerFreq';
+import { type CpuFreqStruct } from '../../database/ui-worker/ProcedureWorkerFreq';
 import { queryAppStartupProcessIds, queryProcessStartup, querySingleAppStartupsName } from '../../database/SqlLite';
 import { FlagsConfig } from '../SpFlags';
-import { AllAppStartupStruct, AllAppStartupRender } from '../../database/ui-worker/ProcedureWorkerAllAppStartup';
+import { type AllAppStartupStruct, type AllAppStartupRender } from '../../database/ui-worker/ProcedureWorkerAllAppStartup';
 
 export class SpAllAppStartupsChart {
   private readonly trace: SpSystemTrace | undefined;
