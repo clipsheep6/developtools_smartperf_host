@@ -43,15 +43,16 @@ export class BinderRender extends Render {
         for (let re of freqFilter) {
             if (row.isHover && re.frame && isFrameContainPoint(re.frame, row.hoverX, row.hoverY)) {
                 BinderStruct.hoverCpuFreqStruct = re;
-            }
+            };
             if (!row.isHover) {
                 BinderStruct.hoverCpuFreqStruct = undefined;
-            }
+            };
             BinderStruct.draw(freqReq.context, re);
-        }
+        };
         freqReq.context.closePath();
-    }
-}
+    };
+};
+
 export class BinderStruct extends BaseStruct {
     static hoverCpuFreqStruct: BinderStruct | undefined;
     static selectCpuFreqStruct: BinderStruct | undefined;
@@ -66,20 +67,19 @@ export class BinderStruct extends BaseStruct {
     depth: number = 0;
     static draw(freqContext: CanvasRenderingContext2D, data: BinderStruct) {
         if (data.frame) {
-            let index = data.cpu || 0;
             let color = '';
             if (data.name === 'binder transaction') {
                 color = '#e86b6a';
-            }
+            };
             if (data.name === 'binder transaction async') {
                 color = '#36baa4';
-            }
+            };
             if (data.name === 'binder reply') {
                 color = '#8770d3';
-            }
+            };
             if (data.name === 'binder async rcv') {
                 color = '#0cbdd4';
-            }
+            };
             freqContext.fillStyle = color;
             if (data === BinderStruct.hoverCpuFreqStruct || data === BinderStruct.selectCpuFreqStruct || data.cycle === BinderStruct.hoverCycle) {
                 freqContext.globalAlpha = 1;
@@ -89,7 +89,7 @@ export class BinderStruct extends BaseStruct {
                 freqContext.globalAlpha = 0.6;
                 freqContext.lineWidth = 1;
                 freqContext.fillRect(data.frame.x, BinderStruct.maxHeight * 20 - data.depth * 20 + 20, data.frame.width, data.value * 20);
-            }
+            };
             if (data.frame.width > 8) {
                 freqContext.lineWidth = 1;
                 freqContext.fillStyle = ColorUtils.funcTextColor(
@@ -97,9 +97,9 @@ export class BinderStruct extends BaseStruct {
                 );
                 freqContext.textBaseline = 'middle';
                 drawString(freqContext, `${data.name || ''}`, 6, new Rect(data.frame.x, BinderStruct.maxHeight * 20 - data.depth * 20 + 20, data.frame.width, data.value * 20), data);
-            }
+            };
             freqContext.globalAlpha = 1.0;
             freqContext.lineWidth = 1;
-        }
-    }
-}
+        };
+    };
+};
