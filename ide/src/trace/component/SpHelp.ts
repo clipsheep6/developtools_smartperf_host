@@ -14,8 +14,8 @@
  */
 
 import { BaseElement, element } from '../../base-ui/BaseElement';
-import { LitMainMenuGroup } from '../../base-ui/menu/LitMainMenuGroup';
-import { LitMainMenu, MenuItem } from '../../base-ui/menu/LitMainMenu';
+import { type LitMainMenuGroup } from '../../base-ui/menu/LitMainMenuGroup';
+import { type LitMainMenu, type MenuItem } from '../../base-ui/menu/LitMainMenu';
 import { LitMainMenuItem } from '../../base-ui/menu/LitMainMenuItem';
 import { SpStatisticsHttpUtil } from '../../statistics/util/SpStatisticsHttpUtil';
 

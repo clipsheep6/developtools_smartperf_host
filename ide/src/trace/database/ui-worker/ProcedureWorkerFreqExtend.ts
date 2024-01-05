@@ -42,18 +42,18 @@ export class FreqExtendRender extends Render {
     if (row.isHover) {
       CpuFreqExtendStruct.cycle = -1;
       CpuFreqExtendStruct.isTabHover = false;
-    }
+    };
     freqReq.context.beginPath();
     for (let re of freqFilter) {
       if (row.isHover && re.frame && isFrameContainPoint(re.frame, row.hoverX, row.hoverY)) {
         CpuFreqExtendStruct.hoverCpuFreqStruct = re;
-      }
+      };
       if (!row.isHover && !CpuFreqExtendStruct.isTabHover) CpuFreqExtendStruct.hoverCpuFreqStruct = undefined;
       CpuFreqExtendStruct.draw(freqReq.context, re);
-    }
+    };
     freqReq.context.closePath();
-  }
-}
+  };
+};
 
 export class CpuFreqExtendStruct extends BaseStruct {
   static maxValue: number = 0;
@@ -75,7 +75,7 @@ export class CpuFreqExtendStruct extends BaseStruct {
       let width = data.frame.width || 0;
       let index = data.cpu || 0;
       index += 2;
-      let color = ColorUtils.colorForTid(index)
+      let color = ColorUtils.colorForTid(index);
       freqContext.fillStyle = color;
       freqContext.strokeStyle = color;
       if (data === CpuFreqExtendStruct.hoverCpuFreqStruct
@@ -91,13 +91,13 @@ export class CpuFreqExtendStruct extends BaseStruct {
           freqContext.globalAlpha = 1;
           freqContext.fillStyle = color;
           freqContext.strokeStyle = color;
-        }
+        };
         let drawHeight: number = Math.floor(
           ((data.value || 0) * (data.frame.height || 0) * 1.0) / CpuFreqExtendStruct.maxValue
         );
         if (drawHeight < 1) {
           drawHeight = 1;
-        }
+        };
         freqContext.fillRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
         freqContext.globalAlpha = 0.8;
         freqContext.strokeRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
@@ -107,11 +107,11 @@ export class CpuFreqExtendStruct extends BaseStruct {
         let drawHeight: number = Math.floor(((data.value || 0) * (data.frame.height || 0)) / CpuFreqExtendStruct.maxValue);
         if (drawHeight < 1) {
           drawHeight = 1;
-        }
+        };
         freqContext.fillRect(data.frame.x, data.frame.y + data.frame.height - drawHeight, width, drawHeight);
-      }
-    }
+      };
+    };
     freqContext.globalAlpha = 1.0;
     freqContext.lineWidth = 1;
-  }
-}
+  };
+};
