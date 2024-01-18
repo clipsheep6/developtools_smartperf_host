@@ -38,7 +38,7 @@ export class SpLtpoChart {
   static ltpoDataArr: Array<LtpoStruct> = [];
   static sendLTPODataArr: Array<LtpoStruct> = [];
   static sendHitchDataArr: Array<LtpoStruct> = [];
-  static threadName : String = 'Present%';
+  static threadName: String = 'Present%';
   static funName: String = 'H:Waiting for Present Fence%';
   constructor(trace: SpSystemTrace) {
     SpLtpoChart.trace = trace;
@@ -65,9 +65,9 @@ export class SpLtpoChart {
       this.setRealFps();
     };
     //特殊情况：当前trace的RSHardwareThrea泳道最前面多一个单独的fence
-    if(SpLtpoChart.fpsnameList.length > 0 && SpLtpoChart.fanceNameList.length - SpLtpoChart.fpsnameList.length === 1){
-      if(Number(SpLtpoChart.fanceNameList[0].ts) < Number(SpLtpoChart.fpsnameList[0].ts)){
-        SpLtpoChart.fanceNameList.splice(0,1);
+    if (SpLtpoChart.fpsnameList.length > 0 && SpLtpoChart.fanceNameList.length - SpLtpoChart.fpsnameList.length === 1) {
+      if (Number(SpLtpoChart.fanceNameList[0].ts) < Number(SpLtpoChart.fpsnameList[0].ts)) {
+        SpLtpoChart.fanceNameList.splice(0, 1);
       }
     }
     if (SpLtpoChart.fanceNameList!.length && SpLtpoChart.fpsnameList.length === SpLtpoChart.fanceNameList.length) {
@@ -97,9 +97,9 @@ export class SpLtpoChart {
       if (Number(SpLtpoChart.realFpsList[reallIndex].ts) < itemMoreEndTs) {//此时这一帧包含了两个fps，将真实的fps赋给SpLtpoChart.fpsnameList
         SpLtpoChart.fpsnameList[moreIndex].fps = SpLtpoChart.realFpsList[reallIndex].fps;
         moreIndex++;
-        if(reallIndex < SpLtpoChart.realFpsList.length - 1){//判断SpLtpoChart.realFpsList有没有遍历完，没有就继续
+        if (reallIndex < SpLtpoChart.realFpsList.length - 1) {//判断SpLtpoChart.realFpsList有没有遍历完，没有就继续
           reallIndex++;
-        }else{//否则跳出
+        } else {//否则跳出
           return;
         }
       } else {//如果不满足的话，SpLtpoChart.fpsnameList数组往下走，而reallIndex不变
@@ -132,13 +132,13 @@ export class SpLtpoChart {
     //当有present缺失时：
     let presentIndex = 0;
     let fpsIndex = 0;
-    while(presentIndex < presentArr.length) {//遍历present，把ltpoDataArr中不包含present中presentFance的item舍弃掉
-      if(Number(presentArr[presentIndex].presentId) < Number(ltpoDataArr[fpsIndex].fanceId)){
-        presentArr.splice(presentIndex,1);
-      }else if(Number(presentArr[presentIndex].presentId) > Number(ltpoDataArr[fpsIndex].fanceId)) {
-        ltpoDataArr.splice(fpsIndex,1);
-      }else{
-        if(presentIndex === presentArr.length-1 && fpsIndex < ltpoDataArr.length-1){//此时present已经遍历到最后一项，如果ltpoDataArr还没有遍历到最后一项，就把后面的舍弃掉
+    while (presentIndex < presentArr.length) {//遍历present，把ltpoDataArr中不包含present中presentFance的item舍弃掉
+      if (Number(presentArr[presentIndex].presentId) < Number(ltpoDataArr[fpsIndex].fanceId)) {
+        presentArr.splice(presentIndex, 1);
+      } else if (Number(presentArr[presentIndex].presentId) > Number(ltpoDataArr[fpsIndex].fanceId)) {
+        ltpoDataArr.splice(fpsIndex, 1);
+      } else {
+        if (presentIndex === presentArr.length - 1 && fpsIndex < ltpoDataArr.length - 1) {//此时present已经遍历到最后一项，如果ltpoDataArr还没有遍历到最后一项，就把后面的舍弃掉
           ltpoDataArr.splice(fpsIndex);
         }
         presentIndex++;
@@ -189,15 +189,20 @@ export class SpLtpoChart {
     return sendDataArr;
   }
   //六舍七入
-  specialValue(num:number){
-    let tempNum = Number(num.toString().split('.')[1].charAt(0));
-    if(tempNum > 6){
-      return Math.ceil(num);
-    }else{
-      return Math.floor(num);
+  specialValue(num: number) {
+    if (num < 0) {
+      return 0;
+    } else {
+      let tempNum = Number(num.toString().split('.')[1].charAt(0));
+      if (tempNum > 6) {
+        return Math.ceil(num);
+      } else {
+        return Math.floor(num);
+      }
     }
+
   }
-  
+
   async initFolder() {
     SpLtpoChart.presentArr = [];
     let row: TraceRow<LtpoStruct> = TraceRow.skeleton<LtpoStruct>();
@@ -269,7 +274,7 @@ export class SpLtpoChart {
           let tmpDur = SpLtpoChart.sendLTPODataArr[i].dur! / 1000000;
           let mathValue = tmpDur * Number(SpLtpoChart.sendLTPODataArr[i].fps) / 1000 - 1;
           SpLtpoChart.sendHitchDataArr[i].value = tmpVale! < 0 ? 0 : tmpVale;
-          SpLtpoChart.sendHitchDataArr[i].name =this.specialValue(mathValue).toString();
+          SpLtpoChart.sendHitchDataArr[i].name = this.specialValue(mathValue).toString();
         }
         return SpLtpoChart.sendHitchDataArr;
       })
