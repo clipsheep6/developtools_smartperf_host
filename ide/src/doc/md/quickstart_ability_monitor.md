@@ -46,7 +46,7 @@ Ability Monitor 展开就可以看到泳道图，包括 CPU，内存，磁盘 IO
 -     Purgeable Total： 可清除总量。
 -     Purgeable Pin：可清除编码。
 -     DMA：直接内存存取。
--     Skia Gpu Memory：Skia显存。
+-     skia Gpu Memory：skia显存。
 
 ### Ability Monitor 泳道图的框选功能
 
