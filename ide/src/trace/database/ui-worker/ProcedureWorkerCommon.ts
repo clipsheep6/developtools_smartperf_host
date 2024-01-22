@@ -802,8 +802,13 @@ function handleTextCoordinate(arrList: Array<number>, selectParams: TraceRow<any
     TraceRow.range?.endNS ?? 0,
     TraceRow.range?.totalNS ?? 0,
     selectParams.frame
-  )) - textWidth / TEXT_WIDTH_HALF; //根据帧率范围的中间值计算文本的起始x坐标
-  const textY = selectParams.frame.y + 10;
+  )) - textWidth / TEXT_WIDTH_HALF; //根据帧率范围的中间值转换文本的起始x坐标
+  let textY = selectParams.frame.y + 10;
+  if (selectParams.hitchTimeData?.length) {
+    textY = selectParams.frame.y + 10;
+  } else {
+    textY = selectParams.frame.y + 28;
+  }
   return [textX, textY];
 }
 
