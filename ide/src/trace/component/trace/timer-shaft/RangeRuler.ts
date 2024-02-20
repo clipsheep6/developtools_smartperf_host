@@ -15,9 +15,9 @@
 
 import { Graph } from './Graph';
 import { Rect } from './Rect';
-import { ns2s, ns2UnitS, TimerShaftElement } from '../TimerShaftElement';
+import { ns2UnitS, TimerShaftElement } from '../TimerShaftElement';
 import { ColorUtils, interpolateColorBrightness } from '../base/ColorUtils';
-import { CpuStruct } from '../../../database/ui-worker/ProcedureWorkerCPU';
+import { CpuStruct } from '../../../database/ui-worker/cpu/ProcedureWorkerCPU';
 import { CurrentSlicesTime, SpSystemTrace } from '../../SpSystemTrace';
 
 const MarkPadding = 5;
@@ -121,6 +121,9 @@ export class RangeRuler extends Graph {
   private scale: number = 0;
   private delayTimer: any = null;
   private rulerW = 0;
+  // -----------xiugai-------------
+  _cpuCountData: number | undefined;
+  // -----------------jieshu----------------
 
   //缩放级别
   private scales: Array<number> = [
@@ -156,10 +159,28 @@ export class RangeRuler extends Graph {
     this.draw();
   }
 
-  drawCpuUsage() {
+  //-------------------xiugai--------------------
+  get cpuCountData(): number | undefined {
+    return this._cpuCountData;
+  }
+
+  set cpuCountData(value: number | undefined) {
+    this._cpuCountData = value;
+  }
+  // ----------------------jieshu----------------------
+
+  drawCpuUsage(): void {
     this.context2D.clearRect(this.frame.x, this.frame.y, this.frame.width, this.frame.height);
     let miniHeight = Math.round(this.frame.height / CpuStruct.cpuCount); //每格高度
     let miniWidth = Math.ceil(this.frame.width / 100); //每格宽度
+    // ------------xiugai----------------
+    this._cpuCountData = CpuStruct.cpuCount;
+    if (sessionStorage.getItem('expand') === 'true') {//展开
+      miniHeight = Math.round(this.frame.height / CpuStruct.cpuCount);
+    } else if (sessionStorage.getItem('expand') === 'false') {
+      miniHeight = Math.round(this.frame.height / 2);
+    }
+    // -----------------------jieshu-----------------------
     for (let index = 0; index < this._cpuUsage.length; index++) {
       let cpuUsageItem = this._cpuUsage[index];
       const color = interpolateColorBrightness(ColorUtils.MD_PALETTE[cpuUsageItem.cpu], cpuUsageItem.rate);
@@ -197,61 +218,69 @@ export class RangeRuler extends Graph {
       this.range.endX = this.rangeRect.x + this.rangeRect.width;
       this.range.startNS = (this.range.startX * this.range.totalNS) / (this.canvas?.clientWidth || 0);
       this.range.endNS = (this.range.endX * this.range.totalNS) / (this.canvas?.clientWidth || 0);
-      let l20 = (this.range.endNS - this.range.startNS) / 20;
-      let minScale = 0;
-      let maxScale = 0;
-      let weight = 0;
-      for (let scalesIndex = 0; scalesIndex < this.scales.length; scalesIndex++) {
-        if (this.scales[scalesIndex] > l20) {
-          if (scalesIndex > 0) {
-            minScale = this.scales[scalesIndex - 1];
-          } else {
-            minScale = 0;
-          }
-          maxScale = this.scales[scalesIndex];
-          weight = ((l20 - minScale) * 1.0) / (maxScale - minScale);
-          if (weight > 0.243) {
-            this.scale = maxScale;
-          } else {
-            this.scale = minScale;
-          }
-          break;
-        }
-      }
-      if (this.scale === 0) {
-        this.scale = this.scales[0];
-      }
-      let tempNs = 0;
-      let rangeStartX = 0;
-      let rangeYu = this.range.startNS % this.scale;
-      let rangeRealW = (this.scale * this.frame.width) / (this.range.endNS - this.range.startNS);
-      if (this.range.xsTxt) {
-        this.range.xsTxt.length = 0;
-      } else {
-        this.range.xsTxt = [];
-      }
-      if (this.range.xs) {
-        this.range.xs.length = 0;
-      } else {
-        this.range.xs = [];
-      }
-      this.range.scale = this.scale;
-      if (rangeYu !== 0) {
-        let first_NodeWidth = ((this.scale - rangeYu) / this.scale) * rangeRealW;
-        rangeStartX += first_NodeWidth;
-        tempNs += this.scale - rangeYu;
-        this.range.xs.push(rangeStartX);
-        this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
-      }
-      while (tempNs < this.range.endNS - this.range.startNS) {
-        rangeStartX += rangeRealW;
-        tempNs += this.scale;
-        this.range.xs.push(rangeStartX);
-        this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
-      }
+      this.calculateScale();
+      this.updateRange();
       if (!discardNotify) {
         this.notifyHandler(this.range);
       }
+    }
+  }
+
+  private updateRange(): void {
+    let tempNs = 0;
+    let rangeStartX = 0;
+    let rangeYu = this.range.startNS % this.scale;
+    let rangeRealW = (this.scale * this.frame.width) / (this.range.endNS - this.range.startNS);
+    if (this.range.xsTxt) {
+      this.range.xsTxt.length = 0;
+    } else {
+      this.range.xsTxt = [];
+    }
+    if (this.range.xs) {
+      this.range.xs.length = 0;
+    } else {
+      this.range.xs = [];
+    }
+    this.range.scale = this.scale;
+    if (rangeYu !== 0) {
+      let first_NodeWidth = ((this.scale - rangeYu) / this.scale) * rangeRealW;
+      rangeStartX += first_NodeWidth;
+      tempNs += this.scale - rangeYu;
+      this.range.xs.push(rangeStartX);
+      this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
+    }
+    while (tempNs < this.range.endNS - this.range.startNS) {
+      rangeStartX += rangeRealW;
+      tempNs += this.scale;
+      this.range.xs.push(rangeStartX);
+      this.range.xsTxt.push(ns2UnitS(tempNs + this.range.startNS, this.scale));
+    }
+  }
+
+  private calculateScale(): void {
+    let l20 = (this.range.endNS - this.range.startNS) / 20;
+    let minScale = 0;
+    let maxScale = 0;
+    let weight = 0;
+    for (let scalesIndex = 0; scalesIndex < this.scales.length; scalesIndex++) {
+      if (this.scales[scalesIndex] > l20) {
+        if (scalesIndex > 0) {
+          minScale = this.scales[scalesIndex - 1];
+        } else {
+          minScale = 0;
+        }
+        maxScale = this.scales[scalesIndex];
+        weight = ((l20 - minScale) * 1.0) / (maxScale - minScale);
+        if (weight > 0.243) {
+          this.scale = maxScale;
+        } else {
+          this.scale = minScale;
+        }
+        break;
+      }
+    }
+    if (this.scale === 0) {
+      this.scale = this.scales[0];
     }
   }
 
@@ -263,13 +292,24 @@ export class RangeRuler extends Graph {
     this.context2D.globalAlpha = 1;
     this.context2D.globalAlpha = 0.5;
     this.context2D.fillStyle = '#999999';
-    this.context2D.fillRect(this.frame.x, this.frame.y, this.rangeRect.x, this.rangeRect.height);
-    this.context2D.fillRect(
-      this.rangeRect.x + this.rangeRect.width,
-      this.frame.y,
-      this.frame.width - this.rangeRect.width,
-      this.rangeRect.height
-    );
+    // -----------------------xiugai 绘制选择的阴影高度---------------------
+    if (sessionStorage.getItem('expand') === 'true') {//展开
+      this.context2D.fillRect(this.frame.x, this.frame.y, this.rangeRect.x, this.rangeRect.height + Number(sessionStorage.getItem('foldHeight')));
+      this.context2D.fillRect(
+        this.rangeRect.x + this.rangeRect.width,
+        this.frame.y,
+        this.frame.width - this.rangeRect.width,
+        this.rangeRect.height + Number(sessionStorage.getItem('foldHeight'))
+      );
+    } else if (sessionStorage.getItem('expand') === 'false') {
+      this.context2D.fillRect(this.frame.x, this.frame.y, this.rangeRect.x, this.rangeRect.height);
+      this.context2D.fillRect(
+        this.rangeRect.x + this.rangeRect.width,
+        this.frame.y,
+        this.frame.width - this.rangeRect.width,
+        this.rangeRect.height
+      );
+    }
     this.context2D.globalAlpha = 1;
     this.context2D.closePath();
     this.markAObj.draw();
@@ -280,7 +320,7 @@ export class RangeRuler extends Graph {
     return this.scale;
   }
 
-  mouseDown(mouseEventDown: MouseEvent) {
+  mouseDown(mouseEventDown: MouseEvent): void {
     let mouseDown_x = mouseEventDown.offsetX - (this.canvas?.offsetLeft || 0);
     let mouseDown_y = mouseEventDown.offsetY - (this.canvas?.offsetTop || 0);
     this.isMouseDown = true;
@@ -314,7 +354,7 @@ export class RangeRuler extends Graph {
     this.movingMark = null;
   }
 
-  mouseMove(ev: MouseEvent, trace: SpSystemTrace) {
+  mouseMove(ev: MouseEvent, trace: SpSystemTrace): void {
     this.range.refresh = false;
     let move_x = ev.offsetX - (this.canvas?.offsetLeft || 0);
     let move_y = ev.offsetY - (this.canvas?.offsetTop || 0);
@@ -333,32 +373,11 @@ export class RangeRuler extends Graph {
       this.markAObj.isHover = false;
       this.markBObj.isHover = false;
     }
-    if (this.movingMark) {
-      let result = move_x - this.mouseDownOffsetX + this.mouseDownMovingMarkX;
-      if (result >= 0 && result <= maxX) {
-        this.movingMark.frame.x = result;
-      } else if (result < 0) {
-        this.movingMark.frame.x = 0;
-      } else {
-        this.movingMark.frame.x = maxX;
-      }
-      this.movingMark.inspectionFrame.x = this.movingMark.frame.x - MarkPadding;
-      this.recordMovingS();
-      requestAnimationFrame(() => {
-        this.draw();
-        this.range.refresh = false;
-        this.delayDraw();
-      });
-    } else if (this.rangeRect.containsWithPadding(move_x, move_y, MarkPadding, 0)) {
-      trace.style.cursor = 'move';
-      document.body.style.cursor = 'move';
-    } else if (
-      this.frame.containsWithMargin(move_x, move_y, 20, 0, 0, 0) &&
-      !this.rangeRect.containsWithMargin(move_x, move_y, 0, MarkPadding, 0, MarkPadding)
-    ) {
-      trace.style.cursor = 'crosshair';
-      document.body.style.cursor = 'crosshair';
-    }
+    this.handleMovingMark(move_x, move_y, maxX, trace);
+    this.handleMovingFresh(move_x, maxX);
+  }
+
+  private handleMovingFresh(move_x: number, maxX: number): void {
     if (this.isMovingRange && this.isMouseDown) {
       let result = move_x - this.mouseDownOffsetX;
       let mA = result + this.markAX;
@@ -405,6 +424,40 @@ export class RangeRuler extends Graph {
     }
   }
 
+  private handleMovingMark(
+    move_x: number,
+    move_y: number,
+    maxX: number,
+    trace: SpSystemTrace
+  ): void {
+    if (this.movingMark) {
+      let result = move_x - this.mouseDownOffsetX + this.mouseDownMovingMarkX;
+      if (result >= 0 && result <= maxX) {
+        this.movingMark.frame.x = result;
+      } else if (result < 0) {
+        this.movingMark.frame.x = 0;
+      } else {
+        this.movingMark.frame.x = maxX;
+      }
+      this.movingMark.inspectionFrame.x = this.movingMark.frame.x - MarkPadding;
+      this.recordMovingS();
+      requestAnimationFrame(() => {
+        this.draw();
+        this.range.refresh = false;
+        this.delayDraw();
+      });
+    } else if (this.rangeRect.containsWithPadding(move_x, move_y, MarkPadding, 0)) {
+      trace.style.cursor = 'move';
+      document.body.style.cursor = 'move';
+    } else if (
+      this.frame.containsWithMargin(move_x, move_y, 20, 0, 0, 0) &&
+      !this.rangeRect.containsWithMargin(move_x, move_y, 0, MarkPadding, 0, MarkPadding)
+    ) {
+      trace.style.cursor = 'crosshair';
+      document.body.style.cursor = 'crosshair';
+    }
+  }
+
   recordMovingS() {
     if (this.animaStartTime == undefined) {
       let dat = new Date();
@@ -437,7 +490,7 @@ export class RangeRuler extends Graph {
     }, this.cacheInterval.interval + 50);
   }
 
-  mouseOut(ev: MouseEvent) {
+  mouseOut(ev: MouseEvent): void {
     this.movingMark = null;
   }
 
@@ -494,6 +547,10 @@ export class RangeRuler extends Graph {
       if (currentSlicesTime) {
         this.currentSlicesTime = currentSlicesTime;
       }
+      this.isMouseDown = false;
+      this.isMovingRange = false;
+      this.isNewRange = false;
+      this.movingMark = null;
       this.cancelPressFrame();
       this.cancelUpFrame();
       this.pressedKeys.push(keyboardEvent.key.toLocaleLowerCase());
@@ -536,8 +593,9 @@ export class RangeRuler extends Graph {
 
   fixReg = 76; //速度上线
   f = 11; //加速度系数,值越小加速度越大
+
   keyPressW() {
-    let animW = () => {
+    let animW = (): void => {
       if (this.scale === 50) {
         this.fillX();
         this.range.refresh = true;
@@ -545,8 +603,11 @@ export class RangeRuler extends Graph {
         this.range.refresh = false;
         return;
       }
+      this.animaStartTime = this.animaStartTime || Date.now();
       this.currentDuration = (Date.now() - this.animaStartTime!) / this.f; //reg
-      if (this.currentDuration >= this.fixReg) this.currentDuration = this.fixReg;
+      if (this.currentDuration >= this.fixReg) {
+        this.currentDuration = this.fixReg;
+      }
       let bb = Math.tan((Math.PI / 180) * this.currentDuration);
       this.range.startNS += this.centerXPercentage * bb * this.scale;
       this.range.endNS -= (1 - this.centerXPercentage) * bb * this.scale;
@@ -558,8 +619,8 @@ export class RangeRuler extends Graph {
     this.pressFrameIdW = requestAnimationFrame(animW);
   }
 
-  keyPressS() {
-    let animS = () => {
+  keyPressS(): void {
+    let animS = (): void => {
       if (this.range.startNS <= 0 && this.range.endNS >= this.range.totalNS) {
         this.fillX();
         this.range.refresh = true;
@@ -567,8 +628,11 @@ export class RangeRuler extends Graph {
         this.range.refresh = false;
         return;
       }
+      this.animaStartTime = this.animaStartTime || Date.now();
       this.currentDuration = (Date.now() - this.animaStartTime!) / this.f;
-      if (this.currentDuration >= this.fixReg) this.currentDuration = this.fixReg;
+      if (this.currentDuration >= this.fixReg) {
+        this.currentDuration = this.fixReg;
+      }
       let bb = Math.tan((Math.PI / 180) * this.currentDuration);
       this.range.startNS -= this.centerXPercentage * bb * this.scale;
       this.range.endNS += (1 - this.centerXPercentage) * bb * this.scale;
@@ -580,8 +644,8 @@ export class RangeRuler extends Graph {
     this.pressFrameIdS = requestAnimationFrame(animS);
   }
 
-  keyPressA() {
-    let animA = () => {
+  keyPressA(): void {
+    let animA = (): void => {
       if (this.range.startNS <= 0) {
         this.fillX();
         this.range.refresh = true;
@@ -589,8 +653,11 @@ export class RangeRuler extends Graph {
         this.range.refresh = false;
         return;
       }
+      this.animaStartTime = this.animaStartTime || Date.now();
       this.currentDuration = (Date.now() - this.animaStartTime!) / this.f;
-      if (this.currentDuration >= this.fixReg) this.currentDuration = this.fixReg;
+      if (this.currentDuration >= this.fixReg) {
+        this.currentDuration = this.fixReg;
+      }
       let bb = Math.tan((Math.PI / 180) * this.currentDuration);
       let s = this.scale * bb;
       this.range.startNS -= s;
@@ -603,8 +670,8 @@ export class RangeRuler extends Graph {
     this.pressFrameIdA = requestAnimationFrame(animA);
   }
 
-  keyPressD() {
-    let animD = () => {
+  keyPressD(): void {
+    let animD = (): void => {
       if (this.range.endNS >= this.range.totalNS) {
         this.fillX();
         this.range.refresh = true;
@@ -612,6 +679,7 @@ export class RangeRuler extends Graph {
         this.range.refresh = false;
         return;
       }
+      this.animaStartTime = this.animaStartTime || Date.now();
       this.currentDuration = (Date.now() - this.animaStartTime!) / this.f;
       if (this.currentDuration >= this.fixReg) this.currentDuration = this.fixReg;
       let bb = Math.tan((Math.PI / 180) * this.currentDuration);
@@ -641,7 +709,7 @@ export class RangeRuler extends Graph {
     d: this.keyUpD,
   };
 
-  keyUp(ev: KeyboardEvent) {
+  keyUp(ev: KeyboardEvent): void {
     this.cacheInterval.value = 0;
     if (this.pressedKeys.length > 0) {
       let number = this.pressedKeys.findIndex((value) => value === ev.key.toLocaleLowerCase());
@@ -657,7 +725,7 @@ export class RangeRuler extends Graph {
     this.isPress = false;
   }
 
-  keyUpW() {
+  keyUpW(): void {
     let startTime = new Date().getTime();
     let animW = () => {
       if (this.scale === 50) {
@@ -684,7 +752,7 @@ export class RangeRuler extends Graph {
 
   keyUpS(): void {
     let startTime = new Date().getTime();
-    let animS = () => {
+    let animS = (): void => {
       if (this.range.startNS <= 0 && this.range.endNS >= this.range.totalNS) {
         this.fillX();
         this.keyUpEnd();
@@ -709,7 +777,7 @@ export class RangeRuler extends Graph {
 
   keyUpA(): void {
     let startTime = new Date().getTime();
-    let animA = () => {
+    let animA = (): void => {
       if (this.range.startNS <= 0) {
         this.fillX();
         this.keyUpEnd();
@@ -732,7 +800,7 @@ export class RangeRuler extends Graph {
     this.upFrameIdA = requestAnimationFrame(animA);
   }
 
-  keyUpEnd() {
+  keyUpEnd(): void {
     this.range.refresh = true;
     window.isLastFrame = true;
     this.notifyHandler(this.range);
@@ -742,7 +810,7 @@ export class RangeRuler extends Graph {
 
   keyUpD(): void {
     let startTime = new Date().getTime();
-    let animD = () => {
+    let animD = (): void => {
       if (this.range.endNS >= this.range.totalNS) {
         this.keyUpEnd();
         return;

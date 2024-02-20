@@ -29,7 +29,7 @@ import { LitProgressBar } from '../base-ui/progress-bar/LitProgressBar';
 import { SpRecordTrace } from './component/SpRecordTrace';
 import { SpWelcomePage } from './component/SpWelcomePage';
 import { LitSearch } from './component/trace/search/Search';
-import { DbPool, queryExistFtrace, queryTraceType, threadPool } from './database/SqlLite';
+import { DbPool, threadPool } from './database/SqlLite';
 import './component/trace/search/Search';
 import './component/SpWelcomePage';
 import './component/SpSystemTrace';
@@ -42,7 +42,6 @@ import { error, info, log } from '../log/Log';
 import { LitMainMenuGroup } from '../base-ui/menu/LitMainMenuGroup';
 import { LitMainMenuItem } from '../base-ui/menu/LitMainMenuItem';
 import { LitIcon } from '../base-ui/icon/LitIcon';
-import { Cmd } from '../command/Cmd';
 import { TraceRow } from './component/trace/base/TraceRow';
 import { SpSchedulingAnalysis } from './component/schedulingAnalysis/SpSchedulingAnalysis';
 import './component/trace/base/TraceRowConfig';
@@ -59,6 +58,17 @@ import { type SpKeyboard } from './component/SpKeyboard';
 import './component/SpKeyboard';
 import { parseKeyPathJson } from './component/Utils';
 import { Utils } from './component/trace/base/Utils';
+import {
+  applicationHtml,
+  clearTraceFileCache,
+  findFreeSizeAlgorithm, getCurrentDataTime,
+  indexedDataToBufferData,
+  postLog,
+  readTraceFileBuffer,
+} from './SpApplicationPublicFunc';
+import { queryExistFtrace } from './database/sql/SqlLite.sql';
+import { SpThirdParty } from './component/SpThirdParty';
+import './component/SpThirdParty';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -93,7 +103,35 @@ export class SpApplication extends BaseElement {
   static skinChange2: Function | null | undefined = null;
   skinChangeArray: Array<Function> = [];
   private rootEL: HTMLDivElement | undefined | null;
+  private spWelcomePage: SpWelcomePage | undefined | null;
+  private spMetrics: SpMetrics | undefined | null;
+  private spQuerySQL: SpQuerySQL | undefined | null;
+  private spInfoAndStats: SpInfoAndStats | undefined | null;
+  private spSystemTrace: SpSystemTrace | undefined | null;
   private spHelp: SpHelp | undefined | null;
+  private spKeyboard: SpKeyboard | undefined | null;
+  private spFlags: SpFlags | undefined | null;
+  private spRecordTrace: SpRecordTrace | undefined | null;
+  private spRecordTemplate: SpRecordTrace | undefined | null;
+  private spSchedulingAnalysis: SpSchedulingAnalysis | undefined | null;
+  private mainMenu: LitMainMenu | undefined | null;
+  private menu: HTMLDivElement | undefined | null;
+  private progressEL: LitProgressBar | undefined | null;
+  private litSearch: LitSearch | undefined | null;
+  private litRecordSearch: LitSearch | undefined | null;
+  private sidebarButton: HTMLDivElement | undefined | null;
+  private chartFilter: TraceRowConfig | undefined | null;
+  private cutTraceFile: HTMLImageElement | undefined | null;
+  private longTracePage: HTMLDivElement | undefined | null;
+  private customColor: CustomThemeColor | undefined | null;
+  private filterConfig: LitIcon | undefined | null;
+  private configClose: LitIcon | undefined | null;
+  private spThirdParty: SpThirdParty | undefined | null;
+  // 关键路径标识
+  private importConfigDiv: HTMLInputElement | undefined | null;
+  private closeKeyPath: HTMLDivElement | undefined | null;
+  private importFileBt: HTMLInputElement | undefined | null;
+  private childComponent: Array<any> | undefined | null;
   private keyCodeMap = {
     61: true,
     107: true,
@@ -110,11 +148,11 @@ export class SpApplication extends BaseElement {
   private currentPageNum: number = 1;
   private currentDataTime: string[] = [];
 
-  static get observedAttributes() {
+  static get observedAttributes(): Array<string> {
     return ['server', 'sqlite', 'wasm', 'dark', 'vs', 'query-sql', 'subsection'];
   }
 
-  get dark() {
+  get dark(): boolean {
     return this.hasAttribute('dark');
   }
 
@@ -138,16 +176,6 @@ export class SpApplication extends BaseElement {
 
     if (this.spHelp) {
       this.spHelp.dark = value;
-    }
-  }
-
-  get vs(): boolean {
-    return this.hasAttribute('vs');
-  }
-
-  set vs(isVs: boolean) {
-    if (isVs) {
-      this.setAttribute('vs', '');
     }
   }
 
@@ -199,11 +227,11 @@ export class SpApplication extends BaseElement {
     return this.hasAttribute('search');
   }
 
-  addSkinListener(handler: Function) {
+  addSkinListener(handler: Function): void {
     this.skinChangeArray.push(handler);
   }
 
-  removeSkinListener(handler: Function) {
+  removeSkinListener(handler: Function): void {
     this.skinChangeArray.splice(this.skinChangeArray.indexOf(handler), 1);
   }
 
