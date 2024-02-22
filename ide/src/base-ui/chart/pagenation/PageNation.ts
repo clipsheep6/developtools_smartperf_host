@@ -14,7 +14,7 @@
  */
 
 export class PageNation {
-  element: any;
+  element: any; 
   pageInfo: any;
   first: any;
   prev: any;
