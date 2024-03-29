@@ -2037,28 +2037,195 @@ export class SpApplication extends BaseElement {
       { passive: false }
     );
 
-    const openMenu = (open: boolean) => {
-      if (mainMenu) {
-        mainMenu.style.width = open ? `248px` : '0px';
-        mainMenu.style.zIndex = open ? '2000' : '0';
-      }
-      if (sidebarButton) {
-        sidebarButton.style.width = open ? `0px` : '48px';
-        importConfigDiv!.style.left = open ? '5px' : '45px';
-        closeKeyPath!.style.left = open ? '25px' : '65px';
-      }
-    };
-    let urlParams = new URL(window.location.href).searchParams;
-    if (urlParams && urlParams.get('trace') && urlParams.get('link')) {
+  private initMenus(): void {
+    this.mainMenu!.menus = [
+      {
+        collapsed: false,
+        title: 'Navigation',
+        second: false,
+        icon: '',
+        describe: 'Open or record a new trace',
+        children: [
+          {
+            title: 'Open trace file',
+            icon: 'folder',
+            fileChoose: true,
+            fileHandler: (ev: InputEvent): void => {
+              this.openTraceFile(ev.detail as any);
+            },
+            clickHandler: (hand: any) => {
+              this.openTraceFile(hand, true);
+            },
+          },
+          {
+            title: 'Open long trace file',
+            icon: 'folder',
+            fileChoose: true,
+            fileHandler: (ev: InputEvent): void => {
+              this.openLongTraceFile(ev);
+            },
+            clickHandler: (hand: any): void => {
+              this.openLongTraceFile(hand, true);
+            },
+          },
+          {
+            title: 'Record new trace',
+            icon: 'copyhovered',
+            clickHandler: (item: MenuItem): void => {
+              this.spRecordTrace!.synchronizeDeviceList();
+              this.spRecordTemplate!.record_template = false;
+              this.spRecordTrace!.refreshConfig(true);
+              this.showContent(this.spRecordTrace!);
+            },
+          },
+          {
+            title: 'Record template',
+            icon: 'copyhovered',
+            clickHandler: (item: MenuItem): void => {
+              this.spRecordTemplate!.refreshHint();
+              this.spRecordTemplate!.record_template = true;
+              this.spRecordTemplate!.refreshConfig(false);
+              this.spRecordTemplate!.synchronizeDeviceList();
+              this.showContent(this.spRecordTemplate!);
+            },
+          },
+        ],
+      },
+      {
+        collapsed: false,
+        title: 'Support',
+        second: false,
+        icon: '',
+        describe: 'Support',
+        children: [
+          {
+            title: 'Help Documents',
+            icon: 'smart-help',
+            clickHandler: (item: MenuItem): void => {
+              this.spHelp!.dark = this.dark;
+              this.search = false;
+              this.showContent(this.spHelp!);
+              SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                event: 'help_page',
+                action: 'help_doc',
+              });
+            },
+          },
+          {
+            title: 'Flags',
+            icon: 'menu',
+            clickHandler: (item: MenuItem): void => {
+              this.search = false;
+              this.showContent(this.spFlags!);
+              SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                event: 'flags',
+                action: 'flags',
+              });
+            },
+          },
+          {
+            title: 'Keyboard Shortcuts',
+            icon: 'smart-help',
+            clickHandler: (item: MenuItem): void => {
+              document.querySelector('body > sp-application')!.shadowRoot!.querySelector<HTMLDivElement>('#sp-keyboard')!.style.visibility = 'visible';
+              SpSystemTrace.keyboardFlar = false;
+              SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                event: 'Keyboard Shortcuts',
+                action: 'Keyboard Shortcuts',
+              });
+            },
+          },
+          {
+            title: '第三方文件',
+            icon: 'file-fill',
+            clickHandler: (item: MenuItem): void => {
+              this.search = false;
+              this.showContent(this.spThirdParty!);
+            },
+          },
+        ],
+      },
+    ];
+  }
+
+  private handleSqliteMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
+    let that = this;
+    let fileSizeStr = (fileSize / 1048576).toFixed(1);
+    postLog(fileName, fileSizeStr);
+    document.title = `${showFileName} (${fileSizeStr}M)`;
+    this.litSearch!.setPercent('', 0);
+    threadPool.init('sqlite').then((res) => {
+      let reader = new FileReader();
+      reader.readAsArrayBuffer(ev as any);
+      reader.onloadend = function (ev): void {
+        SpApplication.loadingProgress = 0;
+        SpApplication.progressStep = 3;
+        that.spSystemTrace!.loadDatabaseArrayBuffer(
+          this.result as ArrayBuffer,
+          '',
+          (command: string, _: number) => {
+            that.setProgress(command);
+          },
+          () => {
+            that.mainMenu!.menus!.splice(1, that.mainMenu!.menus!.length > 2 ? 1 : 0, {
+              collapsed: false,
+              title: 'Current Trace',
+              second: false,
+              icon: '',
+              describe: 'Actions on the current trace',
+              children: that.getTraceOptionMenus(showFileName, fileSizeStr, fileName, false),
+            });
+            that.litSearch!.setPercent('', 101);
+            that.chartFilter!.setAttribute('mode', '');
+            that.progressEL!.loading = false;
+            that.freshMenuDisable(false);
+          }
+        );
+      };
+    });
+  }
       openFileInit();
-      openMenu(false);
-      litSearch.clear();
-      showContent(spSystemTrace!);
-      that.search = true;
-      progressEL.loading = true;
-      let downloadLineFile = false;
-      if (urlParams.get('local')) {
-        downloadLineFile = false;
+  private handleWasmMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
+    let that = this;
+    this.litSearch!.setPercent('', 1);
+    if (fileName.endsWith('.json')) {
+      that.progressEL!.loading = true;
+      that.spSystemTrace!.loadSample(ev).then(() => {
+        that.showContent(that.spSystemTrace!);
+        that.litSearch!.setPercent('', 101);
+        that.freshMenuDisable(false);
+        that.chartFilter!.setAttribute('mode', '');
+        that.progressEL!.loading = false;
+      })
+    } else {
+      let fileSizeStr = (fileSize / 1048576).toFixed(1);
+      postLog(fileName, fileSizeStr);
+      document.title = `${showFileName} (${fileSizeStr}M)`;
+      info('Parse trace using wasm mode ');
+      let completeHandler = async (res: any): Promise<void> => {
+        await this.traceLoadCompleteHandler(res, fileSizeStr, showFileName, fileName);
+      };
+      threadPool.init('wasm').then((res) => {
+        let reader: FileReader | null = new FileReader();
+        reader.readAsArrayBuffer(ev as any);
+        reader.onloadend = function (ev): void {
+          info('read file onloadend');
+          that.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
+          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+          SpApplication.loadingProgress = 0;
+          SpApplication.progressStep = 3;
+          let data = this.result as ArrayBuffer;
+          info('initData start Parse Data');
+          that.spSystemTrace!.loadDatabaseArrayBuffer(
+            data,
+            wasmUrl,
+            (command: string, _: number) => that.setProgress(command),
+            completeHandler
+          );
+        };
+      });
+    }
+  }
       } else {
         downloadLineFile = true;
       }
@@ -2076,37 +2243,490 @@ export class SpApplication extends BaseElement {
           if (urlParams.get('local')) {
             openMenu(true);
             fileName = urlParams.get('traceName') as string;
-          } else {
-            fileName = path.split('/').reverse()[0];
-          }
-          that.traceFileName = fileName;
-          showFileName = fileName.lastIndexOf('.') == -1 ? fileName : fileName.substring(0, fileName.lastIndexOf('.'));
-          TraceRow.rangeSelectObject = undefined;
-          let localUrl = downloadLineFile ? `${window.location.origin}${localPath}` : urlParams.get('trace')!;
-          fetch(localUrl)
-            .then((res) => {
-              res.arrayBuffer().then((arrayBuf) => {
-                if (urlParams.get('local')) {
-                  URL.revokeObjectURL(localUrl);
-                }
-                let fileSize = (arrayBuf.byteLength / 1048576).toFixed(1);
-                postLog(fileName, fileSize);
-                document.title = `${showFileName} (${fileSize}M)`;
-                info('Parse trace using wasm mode ');
-                handleWasmMode(new File([arrayBuf], fileName), showFileName, fileSize, fileName);
-              });
-            })
-            .catch((e) => {
-              if (!downloadLineFile) {
-                const firstQuestionMarkIndex = window.location.href.indexOf('?');
-                location.replace(window.location.href.substring(0, firstQuestionMarkIndex));
-              }
-            });
+  private initCutFileNextOrPreEvents(
+    previewButton: HTMLDivElement,
+    nextButton: HTMLDivElement,
+    pageListDiv: HTMLDivElement,
+    pageInput: HTMLInputElement
+  ): void {
+    if (previewButton) {
+      previewButton.addEventListener('click', () => {
+        if (this.progressEL!.loading || this.currentPageNum === 1) {
+          return;
         }
-      );
-    } else {
-      openMenu(true);
+        if (this.currentPageNum > 1) {
+          this.currentPageNum--;
+          this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+        }
+      });
     }
+    nextButton!.addEventListener('click', () => {
+      if (this.progressEL!.loading || this.currentPageNum === this.longTraceHeadMessageList.length) {
+        return;
+      }
+      if (this.currentPageNum < this.longTraceHeadMessageList.length) {
+        this.currentPageNum++;
+        this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+      }
+    });
+  }
+  private initCustomColorHandler(): void {
+    let customColorShow = this.shadowRoot
+      ?.querySelector('lit-main-menu')!
+      .shadowRoot!.querySelector('.customColor') as HTMLDivElement;
+    customColorShow.addEventListener('click', (ev) => {
+      if (this!.hasAttribute('custom-color')) {
+        this!.removeAttribute('custom-color');
+        this.customColor!.setAttribute('hidden', '');
+        this.customColor!.cancelOperate();
+      } else {
+        this!.removeAttribute('chart_filter');
+        this.chartFilter!.setAttribute('hidden', '');
+        this!.setAttribute('custom-color', '');
+        this.customColor!.removeAttribute('hidden');
+      }
+    });
+  }
+  private openFileInit(): void {
+    clearTraceFileCache();
+    this.litSearch!.clear();
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'open_trace',
+      action: 'open_trace',
+    });
+    info('openTraceFile');
+    this.spSystemTrace!.clearPointPair();
+    this.spSystemTrace!.reset((command: string, percent: number) => {
+      this.setProgress(command);
+    });
+    window.publish(window.SmartEvent.UI.MouseEventEnable, {
+      mouseEnable: false,
+    });
+    window.clearTraceRowComplete();
+    this.freshMenuDisable(true);
+    SpSchedulingAnalysis.resetCpu();
+    if (this.mainMenu!.menus!.length > 3) {
+      this.mainMenu!.menus!.splice(1, 2);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    } else if (this.mainMenu!.menus!.length > 2) {
+      this.mainMenu!.menus!.splice(1, 1);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    }
+    this.showContent(this.spSystemTrace!);
+    this.progressEL!.loading = true;
+  }
+  private restoreDownLoadIcons() {
+    let querySelectorAll = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+    querySelectorAll!.forEach((menuGroup) => {
+      let attribute = menuGroup.getAttribute('title');
+      if (attribute === 'Convert trace') {
+        let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+        querySelectors.forEach((item) => {
+          if (item.getAttribute('title') === 'Convert to .systrace') {
+            item!.setAttribute('icon', 'download');
+            let querySelector = item!.shadowRoot?.querySelector('.icon') as LitIcon;
+            querySelector.removeAttribute('spin');
+          }
+        });
+      }
+    });
+  }
+  private postConvert(fileName: string): void {
+    let newFileName = fileName.substring(0, fileName.lastIndexOf('.')) + '.systrace';
+    let aElement = document.createElement('a');
+    convertPool.submitWithName('getConvertData', (status: boolean, msg: string, results: Blob) => {
+      aElement.href = URL.createObjectURL(results);
+      aElement.download = newFileName;
+      let timeoutId = 0;
+      aElement.addEventListener('click', (ev) => {
+        clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => {
+          this.restoreDownLoadIcons();
+        }, 2000);
+      });
+      aElement.click();
+      window.URL.revokeObjectURL(aElement.href);
+    });
+  }
+  private pushConvertTrace(fileName: string): Array<any> {
+    let instance = this;
+    let menus = [];
+    menus.push({
+      title: 'Convert to .systrace',
+      icon: 'download',
+      clickHandler: function () {
+        convertPool.init('convert').then((item) => {
+          let querySelectorAll =
+            instance.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+          querySelectorAll!.forEach((menuGroup) => {
+            let attribute = menuGroup.getAttribute('title');
+            if (attribute === 'Convert trace') {
+              let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+              querySelectors.forEach((item) => {
+                if (item.getAttribute('title') === 'Convert to .systrace') {
+                  item!.setAttribute('icon', 'convert-loading');
+                  item!.classList.add('pending');
+                  item!.style.fontKerning = '';
+                  let querySelector = item!.shadowRoot?.querySelector('.icon') as LitIcon;
+                  querySelector.setAttribute('spin', '');
+                }
+              });
+            }
+          });
+          instance.postConvert(fileName);
+        });
+      },
+    });
+    return menus;
+  }
+  private setProgress(command: string): void {
+    if (command === 'database ready' && SpApplication.loadingProgress < 50) {
+      SpApplication.progressStep = 6;
+    }
+    if (command === 'process' && SpApplication.loadingProgress < 92) {
+      SpApplication.loadingProgress = 92 + Math.round(Math.random() * SpApplication.progressStep);
+    } else {
+      SpApplication.loadingProgress += Math.round(Math.random() * SpApplication.progressStep + Math.random());
+    }
+    if (SpApplication.loadingProgress > 99) {
+      SpApplication.loadingProgress = 99;
+    }
+    info('setPercent :' + command + 'percent :' + SpApplication.loadingProgress);
+    this.litSearch!.setPercent(command + '  ', SpApplication.loadingProgress);
+  }
+  private getTraceOptionMenus(
+    showFileName: string,
+    fileSize: string,
+    fileName: string,
+    isServer: boolean,
+    dbName?: string
+  ): Array<any> {
+    let menus = [
+      {
+        title: `${showFileName} (${fileSize}M)`,
+        icon: 'file-fill',
+        clickHandler: (): void => {
+          this.search = true;
+          this.showContent(this.spSystemTrace!);
+        },
+      },
+      {
+        title: 'Scheduling Analysis',
+        icon: 'piechart-circle-fil',
+        clickHandler: (): void => {
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'Scheduling Analysis',
+            action: 'scheduling_analysis',
+          });
+          this.showContent(this.spSchedulingAnalysis!);
+          this.spSchedulingAnalysis!.init();
+        },
+      },
+      {
+        title: 'Download File',
+        icon: 'download',
+        clickHandler: (): void => {
+          this.download(this.mainMenu!, fileName, isServer, dbName);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'download',
+            action: 'download',
+          });
+        },
+      },
+      {
+        title: 'Download Database',
+        icon: 'download',
+        clickHandler: (): void => {
+          this.downloadDB(this.mainMenu!, fileName);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'download_db',
+            action: 'download',
+          });
+        },
+      },
+    ];
+    this.getTraceQuerySqlMenus(menus);
+    if ((window as any).cpuCount === 0 || !FlagsConfig.getFlagsConfigEnableStatus('SchedulingAnalysis')) {
+      menus.splice(1, 1);
+    }
+    return menus;
+  }
+  private getTraceQuerySqlMenus(menus: Array<any>): void {
+    if (this.querySql) {
+      if (this.spQuerySQL) {
+        this.spQuerySQL!.reset();
+        menus.push({
+          title: 'Query (SQL)',
+          icon: 'filesearch',
+          clickHandler: () => {
+            this.showContent(this.spQuerySQL!);
+          },
+        });
+      }
+      if (this.spMetrics) {
+        this.spMetrics!.reset();
+        menus.push({
+          title: 'Metrics',
+          icon: 'metric',
+          clickHandler: () => {
+            this.showContent(this.spMetrics!);
+          },
+        });
+      }
+      if (this.spInfoAndStats) {
+        menus.push({
+          title: 'Info and stats',
+          icon: 'info',
+          clickHandler: () => {
+            SpStatisticsHttpUtil.addOrdinaryVisitAction({
+              event: 'info',
+              action: 'info_stats',
+            });
+            this.showContent(this.spInfoAndStats!);
+          },
+        });
+      }
+    }
+  }
+  private initSlideMenuEvents(): void {
+    //打开侧边栏
+    this.sidebarButton!.onclick = (e): void => {
+      if (this.sidebarButton) {
+        this.sidebarButton.style.width = '0px';
+        this.importConfigDiv!.style.left = '5px';
+        this.closeKeyPath!.style.left = '25px';
+      }
+      if (this.mainMenu) {
+        this.mainMenu.style.width = '248px';
+        this.mainMenu.style.zIndex = '2000';
+        this.mainMenu.style.display = 'flex';
+      }
+    };
+    let icon: HTMLDivElement | undefined | null = this.mainMenu?.shadowRoot?.querySelector('div.header > div');
+    icon!.style.pointerEvents = 'none';
+    icon!.onclick = (e): void => {
+      if (this.mainMenu) {
+        this.mainMenu.style.width = '0px';
+        this.mainMenu.style.display = 'flex';
+        this.mainMenu.style.zIndex = '0';
+      }
+      if (this.sidebarButton) {
+        this.sidebarButton.style.width = '48px';
+        this.importConfigDiv!.style.left = '45px';
+        this.closeKeyPath!.style.left = '65px';
+      }
+    };
+  }
+  private initImportConfigEvent(): void {
+    this.importFileBt?.addEventListener('change', (): void => {
+      let files = this.importFileBt!.files;
+      if (files && files.length === 1) {
+        const reader = new FileReader();
+        reader.readAsText(files[0], 'UTF-8');
+        reader.onload = (e): void => {
+          if (e.target?.result) {
+            try {
+              const result = parseKeyPathJson(e.target.result as string);
+              window.publish(window.SmartEvent.UI.KeyPath, result);
+              this.closeKeyPath!.style.display = 'block';
+            } catch {
+              error('json Parse Failed');
+              this.litSearch!.setPercent('Json Parse Failed!', -1);
+              window.setTimeout(() => {
+                this.litSearch!.setPercent('Json Parse Failed!', 101);
+              }, 1000);
+            }
+          } else {
+            window.publish(window.SmartEvent.UI.KeyPath, []);
+            this.closeKeyPath!.style.display = 'none';
+          }
+        };
+      }
+      this.importFileBt!.files = null;
+      this.importFileBt!.value = '';
+    });
+    if (this.closeKeyPath) {
+      this.closeKeyPath.addEventListener('click', (): void => {
+        window.publish(window.SmartEvent.UI.KeyPath, []);
+        this.closeKeyPath!.style.display = 'none';
+      });
+    }
+  }
+  private initCustomEvents(): void {
+    window.subscribe(window.SmartEvent.UI.MenuTrace, () => this.showContent(this.spSystemTrace!));
+    window.subscribe(window.SmartEvent.UI.Error, (err) => {
+      this.litSearch!.setPercent(err, -1);
+      this.progressEL!.loading = false;
+      this.freshMenuDisable(false);
+    });
+    window.subscribe(window.SmartEvent.UI.Loading, (arg: { loading: boolean; text?: string }) => {
+      if (arg.text) {
+        this.litSearch!.setPercent(arg.text || '', arg.loading ? -1 : 101);
+      }
+      window.publish(window.SmartEvent.UI.MouseEventEnable, {
+        mouseEnable: !arg.loading,
+      });
+      this.progressEL!.loading = arg.loading;
+    });
+  }
+  private initEvents(): void {
+    this.addEventListener('copy', function (event) {          
+      SpSystemTrace.isMouseLeftDown = false;
+      let clipdata = event.clipboardData;
+      let value = clipdata!.getData('text/plain');
+      let searchValue = value.toString().trim();
+      clipdata!.setData('text/plain', searchValue);
+    });
+    this.initSearchEvents();
+    this.initSystemTraceEvents();
+    this.filterConfig!.addEventListener('click', (ev) => {    
+      SpSystemTrace.isMouseLeftDown = false;
+      if (this!.hasAttribute('chart_filter')) {
+        this!.removeAttribute('chart_filter');
+        this.chartFilter!.setAttribute('hidden', '');
+      } else {
+        this!.removeAttribute('custom-color');
+        this.customColor!.setAttribute('hidden', '');
+        this.customColor!.cancelOperate();
+        this!.setAttribute('chart_filter', '');
+        this.chartFilter!.removeAttribute('hidden');
+      }
+    });
+    this.configClose!.addEventListener('click', (ev) => {     
+      if (this.hasAttribute('chart_filter')) {
+        this!.removeAttribute('chart_filter');
+      }
+    });
+    this.cutTraceFile!.addEventListener('click', (ev) => {     
+      SpSystemTrace.isMouseLeftDown = false;
+      this.croppingFile(this.progressEL!, this.litSearch!);
+    });
+  }
+  private initSearchChangeEvents(): void {
+    this.litSearch!.valueChangeHandler = (value: string): void => {
+      this.litSearch!.isClearValue = false;
+      if (value.length > 0) {
+        let list: any[] = [];
+        this.progressEL!.loading = true;
+        this.spSystemTrace!.searchCPU(value).then((cpus) => {
+          list = cpus;
+          this.spSystemTrace!.searchFunction(list, value).then((mixedResults) => {
+            if (this.litSearch!.searchValue !== '') {
+              this.litSearch!.list = this.spSystemTrace!.searchSdk(mixedResults, value);
+              this.litSearch!.index = this.spSystemTrace!.showStruct(false, -1, this.litSearch!.list);
+            }
+            this.progressEL!.loading = false;
+          });
+        });
+      } else {
+        let indexEL = this.litSearch!.shadowRoot!.querySelector<HTMLSpanElement>('#index');
+        indexEL!.textContent = '0';
+        this.litSearch!.list = [];
+        this.spSystemTrace?.visibleRows.forEach((it) => {
+          it.highlight = false;
+          it.draw();
+        });
+        this.spSystemTrace?.timerShaftEL?.removeTriangle('inverted');
+      }
+    };
+        }
+  private initSearchEvents(): void {
+    this.litSearch!.addEventListener('focus', () => {
+      window.publish(window.SmartEvent.UI.KeyboardEnable, {
+        enable: false,
+      });
+    });
+    this.litSearch!.addEventListener('blur', () => {
+      window.publish(window.SmartEvent.UI.KeyboardEnable, {
+        enable: true,
+      });
+    });
+    this.litSearch!.addEventListener('previous-data', (ev: any) => {
+      this.litSearch!.index = this.spSystemTrace!.showStruct(true, this.litSearch!.index, this.litSearch!.list);
+      this.litSearch!.blur();
+    });
+    this.litSearch!.addEventListener('next-data', (ev: any) => {
+      this.litSearch!.index = this.spSystemTrace!.showStruct(false, this.litSearch!.index, this.litSearch!.list);
+      this.litSearch!.blur();
+    });
+    // 翻页事件
+    this.litSearch!.addEventListener('retarget-data', (ev: any) => {
+      this.litSearch!.index = this.spSystemTrace!.showStruct(
+        true,
+        ev.detail.value,
+        this.litSearch!.list,
+        ev.detail.value
+      );
+      this.litSearch!.blur();
+    });
+    this.initSearchChangeEvents();
+  }
+
+  private initSystemTraceEvents(): void {
+    this.spSystemTrace?.addEventListener('trace-previous-data', (ev: any) => {
+      this.litSearch!.index = this.spSystemTrace!.showStruct(true, this.litSearch!.index, this.litSearch!.list);
+    });
+    this.spSystemTrace?.addEventListener('trace-next-data', (ev: any) => {
+      this.litSearch!.index = this.spSystemTrace!.showStruct(false, this.litSearch!.index, this.litSearch!.list);
+    });
+  }
+  private showContent(showNode: HTMLElement): void {
+    if (showNode === this.spSystemTrace) {
+      this.menu!.style.pointerEvents = 'auto';
+      this.sidebarButton!.style.pointerEvents = 'auto';
+      this.search = true;
+      this.litRecordSearch!.style.display = 'none';
+      this.litSearch!.style.display = 'block';
+      window.publish(window.SmartEvent.UI.KeyboardEnable, {
+        enable: true,
+      });
+      this.filterConfig!.style.visibility = 'visible';
+    } else {
+      this.removeAttribute('custom-color');
+      this.customColor!.setAttribute('hidden', '');
+      this.customColor!.cancelOperate();
+      this.menu!.style.pointerEvents = 'none';
+      this.sidebarButton!.style.pointerEvents = 'none';
+      this.search = this.litSearch!.isLoading;
+      if (!this.search) {
+        this.litSearch!.style.display = 'none';
+        this.litRecordSearch!.style.display = 'block';
+      }
+      window.publish(window.SmartEvent.UI.KeyboardEnable, {
+        enable: false,
+      });
+      this.filterConfig!.style.visibility = 'hidden';
+    }
+    this.childComponent!.forEach((node) => {
+      if (this.hasAttribute('chart_filter')) {
+        this.removeAttribute('chart_filter');
+      }
+      if (this.hasAttribute('custom-color')) {
+        this.removeAttribute('custom-color');
+        this.customColor!.setAttribute('hidden', '');
+        this.customColor!.cancelOperate();
+      }
+      if (node === showNode) {
+        showNode.style.visibility = 'visible';
+      } else {
+        (node! as HTMLElement).style.visibility = 'hidden';
+      }
+    });
+  }
+  private validateFileCacheLost(): void {
+    caches.has(DbPool.fileCacheKey).then((exist) => {
+      if (!exist) {
+        this.mainMenu!.menus?.forEach((mg) => {
+          mg.children.forEach((mi: any) => {
+            if (mi.title === 'Download File') {
+              mi.disabled = true;
+            }
+          });
+        });
+        this.cutTraceFile!.style.display = 'none';
+        this.mainMenu!.menus = this.mainMenu!.menus;
+      }
+    });
   }
 
   private refreshPageList(
@@ -2168,6 +2788,21 @@ export class SpApplication extends BaseElement {
         pageText.push((index + 1).toString());
       }
     }
+    this.pageNodeHandler(pageListDiv, pageText, currentPageNum);
+    nextButton.style.pointerEvents = 'auto';
+    nextButton.style.opacity = '1';
+    previewButton.style.pointerEvents = 'auto';
+    previewButton.style.opacity = '1';
+    if (currentPageNum === 1) {
+      previewButton.style.pointerEvents = 'none';
+      previewButton.style.opacity = '0.7';
+    } else if (currentPageNum === maxPageNumber) {
+      nextButton.style.pointerEvents = 'none';
+      nextButton.style.opacity = '0.7';
+    }
+  }
+
+  private pageNodeHandler(pageListDiv: HTMLDivElement, pageText: Array<string>, currentPageNum: number): void {
     let pageNodeList = pageListDiv.querySelectorAll<HTMLDivElement>('div');
     if (pageNodeList.length > 0) {
       pageNodeList.forEach((page, index) => {
@@ -2194,16 +2829,49 @@ export class SpApplication extends BaseElement {
         pageListDiv.appendChild(element);
       });
     }
-    nextButton.style.pointerEvents = 'auto';
-    nextButton.style.opacity = '1';
-    previewButton.style.pointerEvents = 'auto';
-    previewButton.style.opacity = '1';
-    if (currentPageNum === 1) {
-      previewButton.style.pointerEvents = 'none';
-      previewButton.style.opacity = '0.7';
-    } else if (currentPageNum === maxPageNumber) {
-      nextButton.style.pointerEvents = 'none';
-      nextButton.style.opacity = '0.7';
+  }
+
+  private largePageHandler(
+    currentPageNum: number,
+    maxPageNumber: number,
+    previewButton: HTMLDivElement,
+    nextButton: HTMLDivElement
+  ): Array<string> {
+    switch (currentPageNum) {
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        return ['1', '2', '3', '4', '5', '...', maxPageNumber.toString()];
+      case maxPageNumber:
+      case maxPageNumber - 1:
+      case maxPageNumber - 2:
+      case maxPageNumber - 3:
+      case maxPageNumber - 4:
+        return [
+          '1',
+          '...',
+          (maxPageNumber - 4).toString(),
+          (maxPageNumber - 3).toString(),
+          (maxPageNumber - 2).toString(),
+          (maxPageNumber - 1).toString(),
+          maxPageNumber.toString(),
+        ];
+      default:
+        nextButton.style.pointerEvents = 'auto';
+        previewButton!.style.pointerEvents = 'auto';
+        nextButton.style.opacity = '1';
+        previewButton!.style.opacity = '1';
+        return [
+          '1',
+          '...',
+          (currentPageNum - 1).toString(),
+          currentPageNum.toString(),
+          (currentPageNum + 1).toString(),
+          '...',
+          maxPageNumber.toString(),
+        ];
     }
   }
 
@@ -2222,65 +2890,75 @@ export class SpApplication extends BaseElement {
       customColor.setRadioChecked(theme);
     }
     if (theme === Theme.DARK) {
-      menu!.style.backgroundColor = '#262f3c';
-      menu!.style.transition = '1s';
-      menuGroup!.forEach((item) => {
-        let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
-        let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
-        groupName.style.color = 'white';
-        groupDescribe.style.color = 'white';
-      });
-      menuItem!.forEach((item) => {
-        item.style.color = 'white';
-      });
-      if (
-        !colorsArray &&
-        window.localStorage.getItem('DarkThemeColors') &&
-        ColorUtils.FUNC_COLOR_B !== JSON.parse(window.localStorage.getItem('DarkThemeColors')!)
-      ) {
-        ColorUtils.MD_PALETTE = JSON.parse(window.localStorage.getItem('DarkThemeColors')!);
-        ColorUtils.FUNC_COLOR = JSON.parse(window.localStorage.getItem('DarkThemeColors')!);
-      } else if (colorsArray) {
-        ColorUtils.MD_PALETTE = colorsArray;
-        ColorUtils.FUNC_COLOR = colorsArray;
-      } else {
-        ColorUtils.MD_PALETTE = ColorUtils.FUNC_COLOR_B;
-        ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_B;
-      }
+      this.changeDarkTheme(colorsArray);
     } else {
-      menu!.style.backgroundColor = 'white';
-      menu!.style.transition = '1s';
-      menuGroup!.forEach((item) => {
-        let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
-        let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
-        groupName.style.color = 'black';
-        groupDescribe.style.color = '#92959b';
-      });
-      menuItem!.forEach((item) => {
-        item.style.color = 'black';
-      });
-      if (
-        !colorsArray &&
-        window.localStorage.getItem('LightThemeColors') &&
-        ColorUtils.FUNC_COLOR_A !== JSON.parse(window.localStorage.getItem('LightThemeColors')!)
-      ) {
-        ColorUtils.MD_PALETTE = JSON.parse(window.localStorage.getItem('LightThemeColors')!);
-        ColorUtils.FUNC_COLOR = JSON.parse(window.localStorage.getItem('LightThemeColors')!);
-      } else if (colorsArray) {
-        ColorUtils.MD_PALETTE = colorsArray;
-        ColorUtils.FUNC_COLOR = colorsArray;
-      } else {
-        ColorUtils.MD_PALETTE = ColorUtils.FUNC_COLOR_A;
-        ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_A;
-      }
+      this.changeLightTheme(colorsArray);
     }
-    systemTrace!.timerShaftEL!.rangeRuler!.draw();
+    this.spSystemTrace!.timerShaftEL!.rangeRuler!.draw();
     if (this.colorTransiton) {
       clearTimeout(this.colorTransiton);
     }
-    this.colorTransiton = setTimeout(() => {
-      menu!.style.transition = '0s';
-    }, 1000);
+    this.colorTransiton = setTimeout(() => (this.mainMenu!.style.transition = '0s'), 1000);
+  }
+
+  private changeDarkTheme(colorsArray?: Array<string>): void {
+    let menuGroup = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+    let menuItem = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+    this.mainMenu!.style.backgroundColor = '#262f3c';
+    this.mainMenu!.style.transition = '1s';
+    menuGroup!.forEach((item) => {
+      let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
+      let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
+      groupName.style.color = 'white';
+      groupDescribe.style.color = 'white';
+    });
+    menuItem!.forEach((item) => {
+      item.style.color = 'white';
+    });
+    if (
+      !colorsArray &&
+      window.localStorage.getItem('DarkThemeColors') &&
+      ColorUtils.FUNC_COLOR_B !== JSON.parse(window.localStorage.getItem('DarkThemeColors')!)
+    ) {
+      ColorUtils.MD_PALETTE = JSON.parse(window.localStorage.getItem('DarkThemeColors')!);
+      ColorUtils.FUNC_COLOR = JSON.parse(window.localStorage.getItem('DarkThemeColors')!);
+    } else if (colorsArray) {
+      ColorUtils.MD_PALETTE = colorsArray;
+      ColorUtils.FUNC_COLOR = colorsArray;
+    } else {
+      ColorUtils.MD_PALETTE = ColorUtils.FUNC_COLOR_B;
+      ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_B;
+    }
+  }
+
+  private changeLightTheme(colorsArray?: Array<string>): void {
+    let menuGroup = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+    let menuItem = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+    this.mainMenu!.style.backgroundColor = 'white';
+    this.mainMenu!.style.transition = '1s';
+    menuGroup!.forEach((item) => {
+      let groupName = item!.shadowRoot!.querySelector('.group-name') as LitMainMenuGroup;
+      let groupDescribe = item!.shadowRoot!.querySelector('.group-describe') as LitMainMenuGroup;
+      groupName.style.color = 'black';
+      groupDescribe.style.color = '#92959b';
+    });
+    menuItem!.forEach((item) => {
+      item.style.color = 'black';
+    });
+    if (
+      !colorsArray &&
+      window.localStorage.getItem('LightThemeColors') &&
+      ColorUtils.FUNC_COLOR_A !== JSON.parse(window.localStorage.getItem('LightThemeColors')!)
+    ) {
+      ColorUtils.MD_PALETTE = JSON.parse(window.localStorage.getItem('LightThemeColors')!);
+      ColorUtils.FUNC_COLOR = JSON.parse(window.localStorage.getItem('LightThemeColors')!);
+    } else if (colorsArray) {
+      ColorUtils.MD_PALETTE = colorsArray;
+      ColorUtils.FUNC_COLOR = colorsArray;
+    } else {
+      ColorUtils.MD_PALETTE = ColorUtils.FUNC_COLOR_A;
+      ColorUtils.FUNC_COLOR = ColorUtils.FUNC_COLOR_A;
+    }
   }
 
   private downloadOnLineFile(
@@ -2353,8 +3031,14 @@ export class SpApplication extends BaseElement {
         let cutIndex = traceFileName.indexOf('_cut_');
         let fileType = traceFileName.substring(traceFileName.lastIndexOf('.'));
         let traceName = document.title.replace(/\s*\([^)]*\)/g, '').trim();
-        if (cutIndex != -1) {
+        if (cutIndex !== -1) {
           traceName = traceName.substring(0, cutIndex);
+        }
+        if (cutBuffer !== undefined && cutBuffer.byteLength <= 12) {
+          this.litSearch!.setPercent('The cut is empty data. Select a time range for valid data!', -1);
+          this.progressEL!.loading = false;
+          this.freshMenuDisable(false);
+          return;
         }
         let blobUrl = URL.createObjectURL(new Blob([cutBuffer!]));
         window.open(
