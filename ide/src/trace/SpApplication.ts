@@ -2243,32 +2243,392 @@ export class SpApplication extends BaseElement {
           if (urlParams.get('local')) {
             openMenu(true);
             fileName = urlParams.get('traceName') as string;
-          } else {
-            fileName = path.split('/').reverse()[0];
+  private initCutFileNextOrPreEvents(
+    previewButton: HTMLDivElement,
+    nextButton: HTMLDivElement,
+    pageListDiv: HTMLDivElement,
+    pageInput: HTMLInputElement
+  ): void {
+    if (previewButton) {
+      previewButton.addEventListener('click', () => {
+        if (this.progressEL!.loading || this.currentPageNum === 1) {
+          return;
+        }
+        if (this.currentPageNum > 1) {
+          this.currentPageNum--;
+          this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+        }
+      });
+    }
+    nextButton!.addEventListener('click', () => {
+      if (this.progressEL!.loading || this.currentPageNum === this.longTraceHeadMessageList.length) {
+        return;
+      }
+      if (this.currentPageNum < this.longTraceHeadMessageList.length) {
+        this.currentPageNum++;
+        this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+      }
+    });
+  }
+  private initCustomColorHandler(): void {
+    let customColorShow = this.shadowRoot
+      ?.querySelector('lit-main-menu')!
+      .shadowRoot!.querySelector('.customColor') as HTMLDivElement;
+    customColorShow.addEventListener('click', (ev) => {
+      if (this!.hasAttribute('custom-color')) {
+        this!.removeAttribute('custom-color');
+        this.customColor!.setAttribute('hidden', '');
+        this.customColor!.cancelOperate();
+      } else {
+        this!.removeAttribute('chart_filter');
+        this.chartFilter!.setAttribute('hidden', '');
+        this!.setAttribute('custom-color', '');
+        this.customColor!.removeAttribute('hidden');
+      }
+    });
+  }
+  private openFileInit(): void {
+    clearTraceFileCache();
+    this.litSearch!.clear();
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'open_trace',
+      action: 'open_trace',
+    });
+    info('openTraceFile');
+    this.spSystemTrace!.clearPointPair();
+    this.spSystemTrace!.reset((command: string, percent: number) => {
+      this.setProgress(command);
+    });
+    window.publish(window.SmartEvent.UI.MouseEventEnable, {
+      mouseEnable: false,
+    });
+    window.clearTraceRowComplete();
+    this.freshMenuDisable(true);
+    SpSchedulingAnalysis.resetCpu();
+    if (this.mainMenu!.menus!.length > 3) {
+      this.mainMenu!.menus!.splice(1, 2);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    } else if (this.mainMenu!.menus!.length > 2) {
+      this.mainMenu!.menus!.splice(1, 1);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    }
+    this.showContent(this.spSystemTrace!);
+    this.progressEL!.loading = true;
+  }
+  private restoreDownLoadIcons() {
+    let querySelectorAll = this.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+    querySelectorAll!.forEach((menuGroup) => {
+      let attribute = menuGroup.getAttribute('title');
+      if (attribute === 'Convert trace') {
+        let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+        querySelectors.forEach((item) => {
+          if (item.getAttribute('title') === 'Convert to .systrace') {
+            item!.setAttribute('icon', 'download');
+            let querySelector = item!.shadowRoot?.querySelector('.icon') as LitIcon;
+            querySelector.removeAttribute('spin');
           }
-          that.traceFileName = fileName;
-          showFileName = fileName.lastIndexOf('.') == -1 ? fileName : fileName.substring(0, fileName.lastIndexOf('.'));
-          TraceRow.rangeSelectObject = undefined;
-          let localUrl = downloadLineFile ? `${window.location.origin}${localPath}` : urlParams.get('trace')!;
-          fetch(localUrl)
-            .then((res) => {
-              res.arrayBuffer().then((arrayBuf) => {
-                if (urlParams.get('local')) {
-                  URL.revokeObjectURL(localUrl);
+        });
+      }
+    });
+  }
+  private postConvert(fileName: string): void {
+    let newFileName = fileName.substring(0, fileName.lastIndexOf('.')) + '.systrace';
+    let aElement = document.createElement('a');
+    convertPool.submitWithName('getConvertData', (status: boolean, msg: string, results: Blob) => {
+      aElement.href = URL.createObjectURL(results);
+      aElement.download = newFileName;
+      let timeoutId = 0;
+      aElement.addEventListener('click', (ev) => {
+        clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => {
+          this.restoreDownLoadIcons();
+        }, 2000);
+      });
+      aElement.click();
+      window.URL.revokeObjectURL(aElement.href);
+    });
+  }
+  private pushConvertTrace(fileName: string): Array<any> {
+    let instance = this;
+    let menus = [];
+    menus.push({
+      title: 'Convert to .systrace',
+      icon: 'download',
+      clickHandler: function () {
+        convertPool.init('convert').then((item) => {
+          let querySelectorAll =
+            instance.mainMenu!.shadowRoot?.querySelectorAll<LitMainMenuGroup>('lit-main-menu-group');
+          querySelectorAll!.forEach((menuGroup) => {
+            let attribute = menuGroup.getAttribute('title');
+            if (attribute === 'Convert trace') {
+              let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
+              querySelectors.forEach((item) => {
+                if (item.getAttribute('title') === 'Convert to .systrace') {
+                  item!.setAttribute('icon', 'convert-loading');
+                  item!.classList.add('pending');
+                  item!.style.fontKerning = '';
+                  let querySelector = item!.shadowRoot?.querySelector('.icon') as LitIcon;
+                  querySelector.setAttribute('spin', '');
                 }
-                let fileSize = (arrayBuf.byteLength / 1048576).toFixed(1);
-                postLog(fileName, fileSize);
-                document.title = `${showFileName} (${fileSize}M)`;
-                info('Parse trace using wasm mode ');
-                handleWasmMode(new File([arrayBuf], fileName), showFileName, fileSize, fileName);
               });
-            })
-            .catch((e) => {
-              if (!downloadLineFile) {
-                const firstQuestionMarkIndex = window.location.href.indexOf('?');
-                location.replace(window.location.href.substring(0, firstQuestionMarkIndex));
-              }
+            }
+          });
+          instance.postConvert(fileName);
+        });
+      },
+    });
+    return menus;
+  }
+  private setProgress(command: string): void {
+    if (command === 'database ready' && SpApplication.loadingProgress < 50) {
+      SpApplication.progressStep = 6;
+    }
+    if (command === 'process' && SpApplication.loadingProgress < 92) {
+      SpApplication.loadingProgress = 92 + Math.round(Math.random() * SpApplication.progressStep);
+    } else {
+      SpApplication.loadingProgress += Math.round(Math.random() * SpApplication.progressStep + Math.random());
+    }
+    if (SpApplication.loadingProgress > 99) {
+      SpApplication.loadingProgress = 99;
+    }
+    info('setPercent :' + command + 'percent :' + SpApplication.loadingProgress);
+    this.litSearch!.setPercent(command + '  ', SpApplication.loadingProgress);
+  }
+  private getTraceOptionMenus(
+    showFileName: string,
+    fileSize: string,
+    fileName: string,
+    isServer: boolean,
+    dbName?: string
+  ): Array<any> {
+    let menus = [
+      {
+        title: `${showFileName} (${fileSize}M)`,
+        icon: 'file-fill',
+        clickHandler: (): void => {
+          this.search = true;
+          this.showContent(this.spSystemTrace!);
+        },
+      },
+      {
+        title: 'Scheduling Analysis',
+        icon: 'piechart-circle-fil',
+        clickHandler: (): void => {
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'Scheduling Analysis',
+            action: 'scheduling_analysis',
+          });
+          this.showContent(this.spSchedulingAnalysis!);
+          this.spSchedulingAnalysis!.init();
+        },
+      },
+      {
+        title: 'Download File',
+        icon: 'download',
+        clickHandler: (): void => {
+          this.download(this.mainMenu!, fileName, isServer, dbName);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'download',
+            action: 'download',
+          });
+        },
+      },
+      {
+        title: 'Download Database',
+        icon: 'download',
+        clickHandler: (): void => {
+          this.downloadDB(this.mainMenu!, fileName);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'download_db',
+            action: 'download',
+          });
+        },
+      },
+    ];
+    this.getTraceQuerySqlMenus(menus);
+    if ((window as any).cpuCount === 0 || !FlagsConfig.getFlagsConfigEnableStatus('SchedulingAnalysis')) {
+      menus.splice(1, 1);
+    }
+    return menus;
+  }
+  private getTraceQuerySqlMenus(menus: Array<any>): void {
+    if (this.querySql) {
+      if (this.spQuerySQL) {
+        this.spQuerySQL!.reset();
+        menus.push({
+          title: 'Query (SQL)',
+          icon: 'filesearch',
+          clickHandler: () => {
+            this.showContent(this.spQuerySQL!);
+          },
+        });
+      }
+      if (this.spMetrics) {
+        this.spMetrics!.reset();
+        menus.push({
+          title: 'Metrics',
+          icon: 'metric',
+          clickHandler: () => {
+            this.showContent(this.spMetrics!);
+          },
+        });
+      }
+      if (this.spInfoAndStats) {
+        menus.push({
+          title: 'Info and stats',
+          icon: 'info',
+          clickHandler: () => {
+            SpStatisticsHttpUtil.addOrdinaryVisitAction({
+              event: 'info',
+              action: 'info_stats',
             });
+            this.showContent(this.spInfoAndStats!);
+          },
+        });
+      }
+    }
+  }
+  private initSlideMenuEvents(): void {
+    //打开侧边栏
+    this.sidebarButton!.onclick = (e): void => {
+      if (this.sidebarButton) {
+        this.sidebarButton.style.width = '0px';
+        this.importConfigDiv!.style.left = '5px';
+        this.closeKeyPath!.style.left = '25px';
+      }
+      if (this.mainMenu) {
+        this.mainMenu.style.width = '248px';
+        this.mainMenu.style.zIndex = '2000';
+        this.mainMenu.style.display = 'flex';
+      }
+    };
+    let icon: HTMLDivElement | undefined | null = this.mainMenu?.shadowRoot?.querySelector('div.header > div');
+    icon!.style.pointerEvents = 'none';
+    icon!.onclick = (e): void => {
+      if (this.mainMenu) {
+        this.mainMenu.style.width = '0px';
+        this.mainMenu.style.display = 'flex';
+        this.mainMenu.style.zIndex = '0';
+      }
+      if (this.sidebarButton) {
+        this.sidebarButton.style.width = '48px';
+        this.importConfigDiv!.style.left = '45px';
+        this.closeKeyPath!.style.left = '65px';
+      }
+    };
+  }
+  private initImportConfigEvent(): void {
+    this.importFileBt?.addEventListener('change', (): void => {
+      let files = this.importFileBt!.files;
+      if (files && files.length === 1) {
+        const reader = new FileReader();
+        reader.readAsText(files[0], 'UTF-8');
+        reader.onload = (e): void => {
+          if (e.target?.result) {
+            try {
+              const result = parseKeyPathJson(e.target.result as string);
+              window.publish(window.SmartEvent.UI.KeyPath, result);
+              this.closeKeyPath!.style.display = 'block';
+            } catch {
+              error('json Parse Failed');
+              this.litSearch!.setPercent('Json Parse Failed!', -1);
+              window.setTimeout(() => {
+                this.litSearch!.setPercent('Json Parse Failed!', 101);
+              }, 1000);
+            }
+          } else {
+            window.publish(window.SmartEvent.UI.KeyPath, []);
+            this.closeKeyPath!.style.display = 'none';
+          }
+        };
+      }
+      this.importFileBt!.files = null;
+      this.importFileBt!.value = '';
+    });
+    if (this.closeKeyPath) {
+      this.closeKeyPath.addEventListener('click', (): void => {
+        window.publish(window.SmartEvent.UI.KeyPath, []);
+        this.closeKeyPath!.style.display = 'none';
+      });
+    }
+  }
+  private initCustomEvents(): void {
+    window.subscribe(window.SmartEvent.UI.MenuTrace, () => this.showContent(this.spSystemTrace!));
+    window.subscribe(window.SmartEvent.UI.Error, (err) => {
+      this.litSearch!.setPercent(err, -1);
+      this.progressEL!.loading = false;
+      this.freshMenuDisable(false);
+    });
+    window.subscribe(window.SmartEvent.UI.Loading, (arg: { loading: boolean; text?: string }) => {
+      if (arg.text) {
+        this.litSearch!.setPercent(arg.text || '', arg.loading ? -1 : 101);
+      }
+      window.publish(window.SmartEvent.UI.MouseEventEnable, {
+        mouseEnable: !arg.loading,
+      });
+      this.progressEL!.loading = arg.loading;
+    });
+  }
+  private initEvents(): void {
+    this.addEventListener('copy', function (event) {          
+      SpSystemTrace.isMouseLeftDown = false;
+      let clipdata = event.clipboardData;
+      let value = clipdata!.getData('text/plain');
+      let searchValue = value.toString().trim();
+      clipdata!.setData('text/plain', searchValue);
+    });
+    this.initSearchEvents();
+    this.initSystemTraceEvents();
+    this.filterConfig!.addEventListener('click', (ev) => {    
+      SpSystemTrace.isMouseLeftDown = false;
+      if (this!.hasAttribute('chart_filter')) {
+        this!.removeAttribute('chart_filter');
+        this.chartFilter!.setAttribute('hidden', '');
+      } else {
+        this!.removeAttribute('custom-color');
+        this.customColor!.setAttribute('hidden', '');
+        this.customColor!.cancelOperate();
+        this!.setAttribute('chart_filter', '');
+        this.chartFilter!.removeAttribute('hidden');
+      }
+    });
+    this.configClose!.addEventListener('click', (ev) => {     
+      if (this.hasAttribute('chart_filter')) {
+        this!.removeAttribute('chart_filter');
+      }
+    });
+    this.cutTraceFile!.addEventListener('click', (ev) => {     
+      SpSystemTrace.isMouseLeftDown = false;
+      this.croppingFile(this.progressEL!, this.litSearch!);
+    });
+  }
+  private initSearchChangeEvents(): void {
+    this.litSearch!.valueChangeHandler = (value: string): void => {
+      this.litSearch!.isClearValue = false;
+      if (value.length > 0) {
+        let list: any[] = [];
+        this.progressEL!.loading = true;
+        this.spSystemTrace!.searchCPU(value).then((cpus) => {
+          list = cpus;
+          this.spSystemTrace!.searchFunction(list, value).then((mixedResults) => {
+            if (this.litSearch!.searchValue !== '') {
+              this.litSearch!.list = this.spSystemTrace!.searchSdk(mixedResults, value);
+              this.litSearch!.index = this.spSystemTrace!.showStruct(false, -1, this.litSearch!.list);
+            }
+            this.progressEL!.loading = false;
+          });
+        });
+      } else {
+        let indexEL = this.litSearch!.shadowRoot!.querySelector<HTMLSpanElement>('#index');
+        indexEL!.textContent = '0';
+        this.litSearch!.list = [];
+        this.spSystemTrace?.visibleRows.forEach((it) => {
+          it.highlight = false;
+          it.draw();
+        });
+        this.spSystemTrace?.timerShaftEL?.removeTriangle('inverted');
+      }
+    };
         }
   private initSearchEvents(): void {
     this.litSearch!.addEventListener('focus', () => {
