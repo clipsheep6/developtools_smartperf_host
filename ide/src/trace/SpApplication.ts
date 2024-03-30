@@ -2235,14 +2235,112 @@ export class SpApplication extends BaseElement {
         downloadLineFile,
         (arrayBuf, fileName, showFileName, fileSize) => {
           handleWasmMode(new File([arrayBuf], fileName), showFileName, fileSize, fileName);
+  private refreshPageListHandler(
+    pageListDiv: HTMLDivElement,
+    previewButton: HTMLDivElement,
+    nextButton: HTMLDivElement,
+    pageInput: HTMLInputElement
+  ): void {
+    this.progressEL!.loading = true;
+    this.refreshPageList(
+      pageListDiv,
+      previewButton!,
+      nextButton!,
+      pageInput!,
+      this.currentPageNum,
+      this.longTraceHeadMessageList.length
+    );
+    this.getTraceFileByPage(this.currentPageNum);
+  }
+  private sendCutFileMessage(timStamp: number): void {
+    this.pageTimStamp = timStamp;
+    threadPool.init('wasm').then(() => {
+      let headUintArray = new Uint8Array(this.longTraceHeadMessageList.length * 1024);
+      let headOffset = 0;
+      this.longTraceHeadMessageList = this.longTraceHeadMessageList.sort(
+        (leftMessage, rightMessage) => leftMessage.pageNum - rightMessage.pageNum
+      );
+      for (let index = 0; index < this.longTraceHeadMessageList.length; index++) {
+        let currentUintArray = new Uint8Array(this.longTraceHeadMessageList[index].data);
+        headUintArray.set(currentUintArray, headOffset);
+        headOffset += currentUintArray.length;
+      }
+      threadPool.submit(
+        'ts-cut-file',
+        '',
+        {
+          headArray: headUintArray,
+          timeStamp: timStamp,
+          splitFileInfo: this.longTraceTypeMessageMap?.get(0),
+          splitDataList: this.longTraceDataList,
         },
-        (localPath) => {
-          let path = urlParams.get('trace') as string;
-          let fileName: string = '';
-          let showFileName: string = '';
-          if (urlParams.get('local')) {
-            openMenu(true);
-            fileName = urlParams.get('traceName') as string;
+        (res: Array<any>) => {
+          this.litSearch!.setPercent('Cut in file ', 100);
+          this.currentDataTime = getCurrentDataTime();
+          if (this.longTraceHeadMessageList.length > 0) {
+            this.getTraceFileByPage(this.currentPageNum);
+            this.litSearch!.style.marginLeft = '80px';
+            this.longTracePage!.style.display = 'flex';
+            this.initCutFileEvent();
+          } else {
+            this.progressEL!.loading = false;
+            this.litSearch!.setPercent('Missing basic trace in the large-file scenario!', -1);
+            this.freshMenuDisable(false);
+            return;
+          }
+        },
+        'long_trace'
+      );
+    });
+  }
+  private initCutFileEvent(): void {
+    let pageListDiv = this.shadowRoot?.querySelector('.page-number-list') as HTMLDivElement;
+    let previewButton: HTMLDivElement | null | undefined =
+      this.shadowRoot?.querySelector<HTMLDivElement>('#preview-button');
+    let nextButton: HTMLDivElement | null | undefined = this.shadowRoot?.querySelector<HTMLDivElement>('#next-button');
+    let pageInput = this.shadowRoot?.querySelector<HTMLInputElement>('.page-input');
+    pageListDiv.innerHTML = '';
+    this.refreshPageList(
+      pageListDiv,
+      previewButton!,
+      nextButton!,
+      pageInput!,
+      this.currentPageNum,
+      this.longTraceHeadMessageList.length
+    );
+    this.initCutFileNextOrPreEvents(previewButton!, nextButton!, pageListDiv, pageInput!);
+    let nodeListOf = pageListDiv.querySelectorAll<HTMLDivElement>('div');
+    nodeListOf.forEach((divEL, index) => {
+      divEL.addEventListener('click', () => {
+        if (this.progressEL!.loading) {
+          return;
+        }
+        if (divEL.textContent === '...') {
+          let freeSize = Number(nodeListOf[index + 1].textContent) - Number(nodeListOf[index - 1].textContent);
+          this.currentPageNum = Math.floor(freeSize / 2 + Number(nodeListOf[index - 1].textContent));
+        } else {
+          this.currentPageNum = Number(divEL.textContent);
+        }
+        this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+      });
+    });
+    pageInput!.addEventListener('input', () => {
+      let value = pageInput!.value;
+      value = value.replace(/\D/g, '');
+      if (value) {
+        value = Math.min(this.longTraceHeadMessageList.length, parseInt(value)).toString();
+      }
+      pageInput!.value = value;
+    });
+    let pageConfirmEl = this.shadowRoot?.querySelector<HTMLDivElement>('.confirm-button');
+    pageConfirmEl!.addEventListener('click', () => {
+      if (this.progressEL!.loading) {
+        return;
+      }
+      this.currentPageNum = Number(pageInput!.value);
+      this.refreshPageListHandler(pageListDiv, previewButton!, nextButton!, pageInput!);
+    });
+  }
   private initCutFileNextOrPreEvents(
     previewButton: HTMLDivElement,
     nextButton: HTMLDivElement,
