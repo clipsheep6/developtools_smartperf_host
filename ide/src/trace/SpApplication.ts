@@ -2148,6 +2148,23 @@ export class SpApplication extends BaseElement {
     ];
   }
 
+  private changeUrl() {
+    let url = new URL(window.location.href);
+    let actionParam = url.searchParams.get("action");
+    let newActionValue = "help";
+    if (actionParam) {
+      url.searchParams.set("action", newActionValue);
+    } else {
+      url.searchParams.append("action", newActionValue);
+    }
+    let newURL = url.href;
+    history.pushState({}, "", newURL);
+  }
+
+  private returnOriginalUrl(){
+    history.pushState({}, "", window.location.origin + window.location.pathname);
+  }
+
   private handleSqliteMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
     let that = this;
     let fileSizeStr = (fileSize / 1048576).toFixed(1);
@@ -2226,15 +2243,213 @@ export class SpApplication extends BaseElement {
       });
     }
   }
-      } else {
-        downloadLineFile = true;
+
+  private async traceLoadCompleteHandler(
+    res: any,
+    fileSize: string,
+    showFileName: string,
+    fileName: string
+  ): Promise<void> {
+    let existFtrace = await queryExistFtrace();
+    let isAllowTrace = true;
+    if (DbPool.sharedBuffer) {
+      let traceHeadData = new Uint8Array(DbPool.sharedBuffer!.slice(0, 10));
+      let enc = new TextDecoder();
+      let headerStr = enc.decode(traceHeadData);
+      let rowTraceStr = Array.from(new Uint8Array(DbPool.sharedBuffer!.slice(0, 2)))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+      if (headerStr.indexOf('OHOSPROF') !== 0 && rowTraceStr.indexOf('49df') !== 0) {
+        isAllowTrace = false;
       }
-      setProgress(downloadLineFile ? 'download trace file' : 'open trace file');
-      this.downloadOnLineFile(
-        urlParams.get('trace') as string,
-        downloadLineFile,
-        (arrayBuf, fileName, showFileName, fileSize) => {
-          handleWasmMode(new File([arrayBuf], fileName), showFileName, fileSize, fileName);
+      this.cutTraceFile!.style.display = 'block';
+      DbPool.sharedBuffer = null;
+    }
+    let index = 2;
+    if (existFtrace.length > 0 && isAllowTrace) {
+      this.showConvertTraceMenu(fileName);
+      index = 3;
+    }
+    this.loadTraceCompleteMenuHandler(index);
+    if (res.status) {
+      info('loadDatabaseArrayBuffer success');
+      this.showCurrentTraceMenu(fileSize, showFileName, fileName);
+      this.importConfigDiv!.style.display = Utils.SCHED_SLICE_MAP.size > 0 ? 'block' : 'none';
+      this.showContent(this.spSystemTrace!);
+      this.litSearch!.setPercent('', 101);
+      this.chartFilter!.setAttribute('mode', '');
+      this.freshMenuDisable(false);
+    } else {
+      info('loadDatabaseArrayBuffer failed');
+      this.litSearch!.setPercent(res.msg || 'This File is not supported!', -1);
+      this.freshMenuDisable(false);
+      this.mainMenu!.menus!.splice(1, 1);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    }
+    this.progressEL!.loading = false;
+    this.spInfoAndStats!.initInfoAndStatsData();
+  }
+
+  private showConvertTraceMenu(fileName: string): void {
+    this.mainMenu!.menus!.splice(2, 1, {
+      collapsed: false,
+      title: 'Convert trace',
+      second: false,
+      icon: '',
+      describe: 'Convert to other formats',
+      children: this.pushConvertTrace(fileName),
+    });
+  }
+
+  private showCurrentTraceMenu(fileSize: string, showFileName: string, fileName: string): void {
+    this.mainMenu!.menus!.splice(1, this.mainMenu!.menus!.length > 2 ? 1 : 0, {
+      collapsed: false,
+      title: 'Current Trace',
+      second: false,
+      icon: '',
+      describe: 'Actions on the current trace',
+      children: this.getTraceOptionMenus(showFileName, fileSize, fileName, false),
+    });
+  }
+
+  private loadTraceCompleteMenuHandler(index: number): void {
+    let that = this;
+    this.mainMenu!.menus!.splice(index, 1, {
+      collapsed: false,
+      title: 'Support',
+      second: false,
+      icon: '',
+      describe: 'Support',
+      children: [
+        {
+          title: 'Help Documents',
+          icon: 'smart-help',
+          clickHandler: function (item: MenuItem) {
+            SpStatisticsHttpUtil.addOrdinaryVisitAction({
+              event: 'help_page',
+              action: 'help_doc',
+            });
+            that.search = false;
+            that.spHelp!.dark = that.dark;
+            that.showContent(that.spHelp!);
+          },
+        },
+        {
+          title: 'Flags',
+          icon: 'menu',
+          clickHandler: function (item: MenuItem): void {
+            SpStatisticsHttpUtil.addOrdinaryVisitAction({
+              event: 'flags',
+              action: 'flags',
+            });
+            that.search = false;
+            that.showContent(that.spFlags!);
+          },
+        },
+        {
+          title: 'Keyboard Shortcuts',
+          icon: 'smart-help',
+          clickHandler: function (item: MenuItem): void {
+            document.querySelector('body > sp-application')!.shadowRoot!.querySelector<HTMLDivElement>('#sp-keyboard')!.style.visibility = 'visible';
+            SpSystemTrace.keyboardFlar = false;
+            SpStatisticsHttpUtil.addOrdinaryVisitAction({
+              event: 'Keyboard Shortcuts',
+              action: 'Keyboard Shortcuts',
+            });
+          },
+        },
+      ],
+    });
+  }
+
+  private validateGetTraceFileByPage(): boolean {
+    if (!this.wasm) {
+      this.progressEL!.loading = false;
+      return false;
+    }
+    return this.pageTimStamp !== 0;
+  }
+
+  private queryFileByPage(
+    instance: LongTraceDBUtils,
+    indexedDbPageNum: number,
+    maxTraceFileLength: number,
+    traceRange: IDBKeyRange
+  ) {
+    instance.indexedDBHelp.get(instance.tableName, traceRange, 'QueryFileByPage').then((result) => {
+      let traceData = indexedDataToBufferData(result);
+      let ebpfRange = this.getIDBKeyRange(indexedDbPageNum, 'ebpf_new');
+      let arkTsRange = this.getIDBKeyRange(indexedDbPageNum, 'arkts_new');
+      let hiperfRange = this.getIDBKeyRange(indexedDbPageNum, 'hiperf_new');
+      Promise.all([
+        instance.getByRange(ebpfRange),
+        instance.getByRange(arkTsRange),
+        instance.getByRange(hiperfRange),
+      ]).then((otherResult) => {
+        let ebpfData = indexedDataToBufferData(otherResult[0]);
+        let arkTsData = indexedDataToBufferData(otherResult[1]);
+        let hiperfData = indexedDataToBufferData(otherResult[2]);
+        let traceArray = new Uint8Array(traceData);
+        let ebpfArray = new Uint8Array(ebpfData);
+        let arkTsArray = new Uint8Array(arkTsData);
+        let hiPerfArray = new Uint8Array(hiperfData);
+        let allOtherData = [ebpfData, arkTsData, hiperfData];
+        let otherDataLength = traceData.byteLength + ebpfData.byteLength + arkTsData.byteLength + hiperfData.byteLength;
+        let timeStamp = this.currentDataTime[0] + this.currentDataTime[1] + this.currentDataTime[2] + '_' +
+          this.currentDataTime[3] + this.currentDataTime[4] + this.currentDataTime[5];
+        this.traceFileName = `hiprofiler_long_${timeStamp}_${indexedDbPageNum}.htrace`;
+        if (otherDataLength > maxTraceFileLength) {
+          if (traceData.byteLength > maxTraceFileLength) {
+            this.traceFileLoadFailedHandler('hitrace file too big!');
+          } else {
+            let freeDataLength = maxTraceFileLength - traceData.byteLength;
+            let freeDataIndex = findFreeSizeAlgorithm(
+              [ebpfData.byteLength, arkTsData.byteLength, hiperfData.byteLength],
+              freeDataLength
+            );
+            let finalData = [traceData];
+            freeDataIndex.forEach((dataIndex) => {
+              finalData.push(allOtherData[dataIndex]);
+            });
+            const file = new File([new Blob(finalData)], this.traceFileName);
+            this.handleWasmMode(file, file.name, file.size, this.traceFileName);
+          }
+        } else {
+          let fileBlob = new Blob([traceArray, ebpfArray, arkTsArray, hiPerfArray]);
+          const file = new File([fileBlob], this.traceFileName);
+          this.handleWasmMode(file, file.name, file.size, file.name);
+        }
+      });
+    });
+  }
+
+  private getTraceFileByPage(pageNumber: number): void {
+    this.openFileInit();
+    if (this.validateGetTraceFileByPage()) {
+      let indexedDbPageNum = pageNumber - 1;
+      let maxTraceFileLength = 400 * 1024 * 1024;
+      let traceRange = this.getIDBKeyRange(indexedDbPageNum, 'trace');
+      let instance = LongTraceDBUtils.getInstance();
+      this.queryFileByPage(instance, indexedDbPageNum, maxTraceFileLength, traceRange);
+    }
+  }
+
+  private traceFileLoadFailedHandler(reason: string): void {
+    this.litSearch!.isLoading = false;
+    this.litSearch!.setPercent(reason, -1);
+    this.progressEL!.loading = false;
+    this.freshMenuDisable(false);
+  }
+
+  private getIDBKeyRange(indexedDbPageNum: number, key: string): IDBKeyRange {
+    return IDBKeyRange.bound(
+      [this.pageTimStamp, key, indexedDbPageNum],
+      [this.pageTimStamp, key, indexedDbPageNum],
+      false,
+      false
+    );
+  }
+
   private refreshPageListHandler(
     pageListDiv: HTMLDivElement,
     previewButton: HTMLDivElement,
@@ -2701,33 +2916,37 @@ export class SpApplication extends BaseElement {
     });
   }
   private initSearchChangeEvents(): void {
-    this.litSearch!.valueChangeHandler = (value: string): void => {
-      this.litSearch!.isClearValue = false;
-      if (value.length > 0) {
-        let list: any[] = [];
-        this.progressEL!.loading = true;
-        this.spSystemTrace!.searchCPU(value).then((cpus) => {
-          list = cpus;
-          this.spSystemTrace!.searchFunction(list, value).then((mixedResults) => {
-            if (this.litSearch!.searchValue !== '') {
-              this.litSearch!.list = this.spSystemTrace!.searchSdk(mixedResults, value);
-              this.litSearch!.index = this.spSystemTrace!.showStruct(false, -1, this.litSearch!.list);
-            }
-            this.progressEL!.loading = false;
+    let timer: any = null;
+    this.litSearch!.valueChangeHandler = (value: string) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        this.litSearch!.isClearValue = false;
+        if (value.length > 0) {
+          let list: any[] = [];
+          this.progressEL!.loading = true;
+          this.spSystemTrace!.searchCPU(value).then((cpus) => {
+            list = cpus;
+            this.spSystemTrace!.searchFunction(list, value).then((mixedResults) => {
+              if (this.litSearch!.searchValue !== '') {
+                this.litSearch!.list = this.spSystemTrace!.searchSdk(mixedResults, value);
+                this.litSearch!.index = this.spSystemTrace!.showStruct(false, -1, this.litSearch!.list);
+              }
+              this.progressEL!.loading = false;
+            });
           });
-        });
-      } else {
-        let indexEL = this.litSearch!.shadowRoot!.querySelector<HTMLSpanElement>('#index');
-        indexEL!.textContent = '0';
-        this.litSearch!.list = [];
-        this.spSystemTrace?.visibleRows.forEach((it) => {
-          it.highlight = false;
-          it.draw();
-        });
-        this.spSystemTrace?.timerShaftEL?.removeTriangle('inverted');
-      }
-    };
+        } else {
+          let indexEL = this.litSearch!.shadowRoot!.querySelector<HTMLSpanElement>('#index');
+          indexEL!.textContent = '0';
+          this.litSearch!.list = [];
+          this.spSystemTrace?.visibleRows.forEach((it) => {
+            it.highlight = false;
+            it.draw();
+          });
+          this.spSystemTrace?.timerShaftEL?.removeTriangle('inverted');
         }
+      }, 1000)
+    }
+  }
   private initSearchEvents(): void {
     this.litSearch!.addEventListener('focus', () => {
       window.publish(window.SmartEvent.UI.KeyboardEnable, {
