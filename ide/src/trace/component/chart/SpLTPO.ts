@@ -16,6 +16,7 @@
 import { SpSystemTrace } from '../SpSystemTrace';
 import { TraceRow } from '../trace/base/TraceRow';
 import { renders } from '../../database/ui-worker/ProcedureWorker';
+import { FlagsConfig } from '../SpFlags';
 import { CpuFreqStruct } from '../../database/ui-worker/ProcedureWorkerFreq';
 import {
   queryFanceNameList,
@@ -28,6 +29,7 @@ import {
 import { LtpoRender, LtpoStruct } from '../../database/ui-worker/ProcedureWorkerLTPO'
 import { HitchTimeStruct, hitchTimeRender } from '../../database/ui-worker/ProcedureWorkerHitchTime';
 import { lostFrameSender } from '../../database/data-trafic/LostFrameSender';
+import { fps } from '../../database/ui-worker/ProcedureWorkerFPS';
 
 export class SpLtpoChart {
   private readonly trace: SpSystemTrace | undefined;
@@ -53,6 +55,10 @@ export class SpLtpoChart {
   }
 
   async init() {
+    let loadLtpo: boolean = FlagsConfig.getFlagsConfigEnableStatus('LTPO');
+    if (!loadLtpo) {
+      return;
+    }
     SpLtpoChart.ltpoDataArr = [];
     SpLtpoChart.fanceNameList = await queryFanceNameList();
     SpLtpoChart.fpsnameList = await queryFpsNameList();
@@ -77,7 +83,7 @@ export class SpLtpoChart {
       let fanceIndex = 0;
       while (fpsIndex < SpLtpoChart.fpsnameList!.length) {
         if (SpLtpoChart.fanceNameList[fanceIndex] && SpLtpoChart.fpsnameList[fpsIndex]) {
-          if (SpLtpoChart.fanceNameList[fanceIndex].ts! > SpLtpoChart.fpsnameList[fpsIndex].ts! && 
+          if (SpLtpoChart.fanceNameList[fanceIndex].ts! > SpLtpoChart.fpsnameList[fpsIndex].ts! &&
             SpLtpoChart.fanceNameList[fanceIndex].ts! < SpLtpoChart.fpsnameList[fpsIndex].ts! + SpLtpoChart.fpsnameList[fpsIndex].dur!) {
             fpsIndex++;
             fanceIndex++;
@@ -253,12 +259,12 @@ export class SpLtpoChart {
             cutTimeSum += 1000 / tempFps;
             SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
             SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
-          } else if (!SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
+          } else {
             nowTimeIndex++;
             cutTimeSum = 0;
             tempFps = 0;
           }
-        } else if (SpLtpoChart.skipDataList[skipIndex].ts! < SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
+        } else if (SpLtpoChart.skipDataList[skipIndex].ts! <= SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
           if (nowTimeIndex > 0) {
             cutTimeSum += tempFps ? (1000 / tempFps) : (1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].fps!);
           }
@@ -295,17 +301,30 @@ export class SpLtpoChart {
     let sendDataArr: LtpoStruct[] = [];
     let ltpoDataIndex = 0;
     let tempRsNowTimeIndex = 0;
+    let presentIndex = 0;
+    let ltpoIndex = 0;
     //当有present缺失时：
     this.deleteUselessFence(presentArr, ltpoDataArr);
-    if (presentArr!.length && presentArr!.length === ltpoDataArr!.length) {
-      for (let i = 0; i < presentArr!.length; i++) {
-        ltpoDataArr[i].startTs = Number(presentArr[i].startTime) - (window as any).recordStartNS;
-        ltpoDataArr[i].dur = presentArr[i].dur;
-        ltpoDataArr[i].nextStartTs = presentArr[i + 1] ? Number(presentArr[i + 1].startTime) - (window as any).recordStartNS : '';
-        ltpoDataArr[i].nextDur = presentArr[i + 1] ? presentArr[i + 1].dur : 0;
+    while (presentIndex < presentArr.length) {
+      if (presentArr[presentIndex] && ltpoDataArr[ltpoIndex]) {
+        if ((presentArr[presentIndex].startTime! + presentArr[presentIndex].dur! - (window as any).recordStartNS) === TraceRow.range!.totalNS) {
+          presentArr.splice(presentIndex, 1)
+        }
+        if (presentArr[presentIndex].presentId === ltpoDataArr[ltpoIndex].fanceId) {
+          ltpoDataArr[ltpoIndex].startTs = Number(presentArr[presentIndex].startTime) - (window as any).recordStartNS;
+          ltpoDataArr[ltpoIndex].dur = presentArr[presentIndex].dur;
+          ltpoDataArr[ltpoIndex].nextStartTs = presentArr[presentIndex + 1] ? Number(presentArr[presentIndex + 1].startTime) - (window as any).recordStartNS : '';
+          ltpoDataArr[ltpoIndex].nextDur = presentArr[presentIndex + 1] ? presentArr[presentIndex + 1].dur : 0;
+          presentIndex++;
+          ltpoIndex++;
+        } else if (presentArr[presentIndex].presentId! < ltpoDataArr[ltpoIndex].fanceId!) {
+          presentArr.splice(presentIndex, 1);
+        } else if (presentArr[presentIndex].presentId! > ltpoDataArr[ltpoIndex].fanceId!) {
+          ltpoDataArr.splice(ltpoIndex, 1);
+        }
+      } else {
+        break;
       }
-    } else {
-      return sendDataArr;
     }
     while (ltpoDataIndex < ltpoDataArr.length) {
       let sendStartTs: number | undefined = 0;
@@ -363,66 +382,56 @@ export class SpLtpoChart {
     //当有present缺失时：
     let presentIndex = 0;
     let fpsIndex = 0;
-    while (presentIndex < presentArr.length) {//遍历present，把ltpoDataArr中不包含present中presentFance的item舍弃掉
-      if (Number(presentArr[presentIndex].presentId) < Number(ltpoDataArr[fpsIndex].fanceId)) {
-        presentArr.splice(presentIndex, 1);
-      } else if (Number(presentArr[presentIndex].presentId) > Number(ltpoDataArr[fpsIndex].fanceId)) {
-        ltpoDataArr.splice(fpsIndex, 1);
-      } else {
-        if (presentIndex === presentArr.length - 1 && fpsIndex < ltpoDataArr.length - 1) {//此时present已经遍历到最后一项，如果ltpoDataArr还没有遍历到最后一项，就把后面的舍弃掉
-          ltpoDataArr.splice(fpsIndex);
+    while (fpsIndex < ltpoDataArr.length) {//遍历present，把ltpoDataArr中不包含present中presentFance的item舍弃掉
+      if (presentArr[presentIndex] && ltpoDataArr[fpsIndex]) {
+        if (Number(presentArr[presentIndex].presentId) < Number(ltpoDataArr[fpsIndex].fanceId)) {
+          presentArr.splice(presentIndex, 1);
+        } else if (Number(presentArr[presentIndex].presentId) > Number(ltpoDataArr[fpsIndex].fanceId)) {
+          ltpoDataArr.splice(fpsIndex, 1);
+        } else {
+          if (presentIndex === presentArr.length - 1 && fpsIndex < ltpoDataArr.length - 1) {//此时present已经遍历到最后一项，如果ltpoDataArr还没有遍历到最后一项，就把后面的舍弃掉
+            ltpoDataArr.splice(fpsIndex);
+          }
+          presentIndex++;
+          fpsIndex++;
         }
-        presentIndex++;
-        fpsIndex++;
+      } else {
+        return;
       }
     };
   }
   //六舍七入
-  specialValue(num: number) {
+  specialValue(valueType: string, num: number) {
     if (num < 0) {
       return 0;
     } else {
-      let tempNum = Number(num.toString().split('.')[1].charAt(0));
-      if (tempNum > 6) {
-        return Math.ceil(num);
+      if (!num.toString().split('.')[1]) {
+        return num;
       } else {
-        return Math.floor(num);
+        if (valueType === 'hitchTimes') {
+          if(num.toString().split('.')[1].split('').length > 1){//当hitchTime小数点后多于两位
+            let tempNum = num * 10;
+            let singleNumber = Number(tempNum.toString().split('.')[1].charAt(0));
+            if(singleNumber > 6) {
+              return (Math.ceil(tempNum) / 10);
+            }else {
+              return (Math.floor(tempNum) / 10);
+            }
+          }else{//当hitchTime只有一位小数
+            return num
+          }
+        } else {
+          let tempNum = Number(num.toString().split('.')[1].charAt(0));
+          if (tempNum > 6) {
+            return Math.ceil(num);
+          } else {
+            return Math.floor(num);
+          }
+        }
       }
+
     }
 
-  }
-  //补齐present中已上屏的部分
-  supPresent(presentArr: LtpoStruct[], signaledFence: LtpoStruct[]) {
-    let presIndex = 0;
-    let signaleIndex = 0;
-    while (presIndex < presentArr.length && signaleIndex <  signaledFence.length) {
-      if (Number(presentArr[presIndex].presentId) > Number(signaledFence[signaleIndex].fanceId) && presIndex > 0 &&
-        Number(presentArr[presIndex - 1].presentId) < Number(signaledFence[signaleIndex].fanceId)) {
-        presentArr.splice(presIndex, 0, {
-          dur: signaledFence[signaleIndex].dur,
-          presentId: Number(signaledFence[signaleIndex].fanceId),
-          startTime: signaledFence[signaleIndex].ts,
-          name: undefined,
-          ts: undefined,
-          fanceId: undefined,
-          fps: undefined,
-          startTs: undefined,
-          nextStartTs: undefined,
-          nextDur: undefined,
-          value: undefined,
-          pid: undefined,
-          itid: undefined,
-          signaled: undefined,
-          translateY: undefined,
-          frame: undefined,
-          isHover: false
-        });
-        presIndex++;
-        signaleIndex++;
-      } else {
-        presIndex++;
-      }
-    }
   }
 
   async initFolder() {
@@ -443,7 +452,7 @@ export class SpLtpoChart {
         for (let i = 0; i < SpLtpoChart.sendLTPODataArr.length; i++) {
           let tmpDur = SpLtpoChart.sendLTPODataArr[i].cutSendDur ? (SpLtpoChart.sendLTPODataArr[i].cutSendDur! / 1000000) : (SpLtpoChart.sendLTPODataArr[i].dur! / 1000000);
           let mathValue = tmpDur * Number(SpLtpoChart.sendLTPODataArr[i].fps) / 1000 - 1;
-          SpLtpoChart.sendLTPODataArr[i].value = this.specialValue(mathValue);
+          SpLtpoChart.sendLTPODataArr[i].value = this.specialValue('lostFrames', mathValue);
         }
         return SpLtpoChart.sendLTPODataArr;
       })
@@ -481,24 +490,25 @@ export class SpLtpoChart {
           let tmpVale = 0;
           let tmpDur = 0;
           if (SpLtpoChart.sendHitchDataArr[i].cutSendDur) {
-            tmpVale = (Math.ceil(((SpLtpoChart.sendHitchDataArr[i].cutSendDur! / 1000000) - (1000 / SpLtpoChart.sendHitchDataArr[i].fps!)) * 10)) / 10;
+            tmpVale = (SpLtpoChart.sendHitchDataArr[i].cutSendDur! / 1000000) - (1000 / SpLtpoChart.sendHitchDataArr[i].fps!);
             tmpDur = SpLtpoChart.sendHitchDataArr[i].cutSendDur! / 1000000;
           } else {
-            tmpVale = (Math.ceil(((SpLtpoChart.sendHitchDataArr[i].dur! / 1000000) - (1000 / SpLtpoChart.sendHitchDataArr[i].fps!)) * 10)) / 10;
+            tmpVale = (SpLtpoChart.sendHitchDataArr[i].dur! / 1000000) - (1000 / SpLtpoChart.sendHitchDataArr[i].fps!);
             tmpDur = SpLtpoChart.sendHitchDataArr[i].dur! / 1000000;
           }
 
           let mathValue = tmpDur * Number(SpLtpoChart.sendHitchDataArr[i].fps) / 1000 - 1;
-          SpLtpoChart.sendHitchDataArr[i].value = tmpVale! < 0 ? 0 : tmpVale;
-          SpLtpoChart.sendHitchDataArr[i].name = this.specialValue(mathValue).toString();
+          let finalValue = tmpVale! < 0 ? 0 : tmpVale;
+          SpLtpoChart.sendHitchDataArr[i].value = this.specialValue('hitchTimes', finalValue)
+          SpLtpoChart.sendHitchDataArr[i].name = this.specialValue('lostFrames', mathValue)!.toString();
         }
         return SpLtpoChart.sendHitchDataArr;
       })
     }
     row.focusHandler = () => {
-      let viewValue = (HitchTimeStruct.hoverHitchTimeStruct?.value!)!+'';
+      let viewValue = (HitchTimeStruct.hoverHitchTimeStruct?.value!)! + '';
       let rep = /[\.]/;
-      if(!rep.test(viewValue) && viewValue !== '0') {
+      if (!rep.test(viewValue) && viewValue !== '0') {
         viewValue += '.0';
       }
       SpLtpoChart.trace?.displayTip(row!, HitchTimeStruct.hoverHitchTimeStruct, `<span>${viewValue}</span>`)
