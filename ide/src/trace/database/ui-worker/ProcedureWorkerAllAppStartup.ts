@@ -60,21 +60,31 @@ export class AllAppStartupRender {
     }
   }
 }
-
-const padding = 3;
+export function AllAppStartupStructOnClick(clickRowType: string, sp: SpSystemTrace,scrollToFuncHandler:any) {
+  return new Promise((resolve,reject) => {
+    if (clickRowType === TraceRow.ROW_TYPE_ALL_APPSTARTUPS && AllAppStartupStruct.hoverStartupStruct) {
+      AllAppStartupStruct.selectStartupStruct = AllAppStartupStruct.hoverStartupStruct;
+      sp.traceSheetEL?.displayAllStartupData(AllAppStartupStruct.selectStartupStruct, scrollToFuncHandler);
+      sp.timerShaftEL?.modifyFlagList(undefined);
+      reject(new Error());
+    }else{
+      resolve(null);
+    }
+  });
+}
 
 export class AllAppStartupStruct extends BaseStruct {
   static hoverStartupStruct: AllAppStartupStruct | undefined;
   static selectStartupStruct: AllAppStartupStruct | undefined;
+  startTs: number | undefined;
+  startName: number | undefined;
   dur: number | undefined;
   value: string | undefined;
-  startTs: number | undefined;
   pid: number | undefined;
   process: string | undefined;
+  tid: number | undefined;
   itid: number | undefined;
   endItid: number | undefined;
-  tid: number | undefined;
-  startName: number | undefined;
   stepName: string | undefined;
 
   static draw(ctx: CanvasRenderingContext2D, data: AllAppStartupStruct): void {
