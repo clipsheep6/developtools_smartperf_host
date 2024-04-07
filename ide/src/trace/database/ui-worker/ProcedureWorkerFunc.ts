@@ -124,12 +124,40 @@ export function func(
     });
   }
 }
-
+export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any>|undefined, scrollToFuncHandler: any, entry?: any) {
+  return new Promise((resolve, reject) => {
+    if (clickRowType === TraceRow.ROW_TYPE_FUNC && (FuncStruct.hoverFuncStruct || entry)) {
+      if (FuncStruct.funcSelect) {
+        TabPaneTaskFrames.TaskArray = [];
+        sp.removeLinkLinesByBusinessType('task');
+        let hoverFuncStruct = entry || FuncStruct.hoverFuncStruct;
+        FuncStruct.selectFuncStruct = hoverFuncStruct;
+        sp.timerShaftEL?.drawTriangle(FuncStruct.selectFuncStruct!.startTs || 0, 'inverted');
+        let flagConfig = FlagsConfig.getFlagsConfig('TaskPool');
+        let showTabArray: Array<string> = ['current-selection'];
+        if (flagConfig!.TaskPool === 'Enabled') {
+          if (FuncStruct.selectFuncStruct?.funName) {
+            if (FuncStruct.selectFuncStruct.funName.indexOf('H:Task ') >= 0) {
+              showTabArray.push('box-task-frames');
+              sp.drawTaskPollLine(row);
+            }
+          }
+        }
+        sp.traceSheetEL?.displayFuncData(showTabArray, FuncStruct.selectFuncStruct, scrollToFuncHandler);
+        sp.timerShaftEL?.modifyFlagList(undefined);
+      }
+      reject(new Error());
+    } else {
+      resolve(null);
+    }
+  });
+}
 export class FuncStruct extends BaseFuncStruct {
   static hoverFuncStruct: FuncStruct | undefined;
   static selectFuncStruct: FuncStruct | undefined;
   flag: string | undefined; // 570000
   textMetricsWidth: number | undefined;
+  static funcSelect: boolean = true;
   static setFuncFrame(funcNode: any, padding: number, startNS: number, endNS: number, totalNS: number, frame: any) {
     let x1: number, x2: number;
     if ((funcNode.startTs || 0) > startNS && (funcNode.startTs || 0) <= endNS) {
@@ -150,9 +178,9 @@ export class FuncStruct extends BaseFuncStruct {
     }
     let getV: number = x2 - x1 < 1 ? 1 : x2 - x1;
     funcNode.frame.x = Math.floor(x1);
-    funcNode.frame.y = funcNode.depth * 20;
+    funcNode.frame.y = funcNode.depth * 18 + 3;
     funcNode.frame.width = Math.ceil(getV);
-    funcNode.frame.height = 20;
+    funcNode.frame.height = 18;
   }
 
   static draw(ctx: CanvasRenderingContext2D, data: FuncStruct) {
@@ -163,24 +191,21 @@ export class FuncStruct extends BaseFuncStruct {
         ctx.globalAlpha = 1;
         ctx.fillStyle = ColorUtils.FUNC_COLOR[ColorUtils.hashFunc(data.funName || '', 0, ColorUtils.FUNC_COLOR.length)];
         let textColor = ColorUtils.FUNC_COLOR[ColorUtils.hashFunc(data.funName || '', 0, ColorUtils.FUNC_COLOR.length)];
-        let miniHeight = 20;
         if (FuncStruct.hoverFuncStruct && data.funName == FuncStruct.hoverFuncStruct.funName) {
           ctx.globalAlpha = 0.7;
         }
-        ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, miniHeight - padding * 2);
+        ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, data.frame.height);
         if (data.frame.width > 10) {
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(data.frame.x, data.frame.y, data.frame.width, miniHeight - padding * 2);
           ctx.fillStyle = ColorUtils.funcTextColor(textColor);
-          drawString(ctx, `${data.funName || ''}`, 5, data.frame, data);
+          ctx.textBaseline = 'middle';
+          drawFunString(ctx, `${data.funName || ''}`, 5, data.frame, data);
         }
         if (data.callid == FuncStruct.selectFuncStruct?.callid&&
           data.startTs == FuncStruct.selectFuncStruct?.startTs&&
           data.depth == FuncStruct.selectFuncStruct?.depth) {
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
-          ctx.strokeRect(data.frame.x, data.frame.y + 1, data.frame.width, miniHeight - padding * 2 - 2);
+          ctx.strokeRect(data.frame.x, data.frame.y + 1, data.frame.width, data.frame.height - 2);
         }
         let flagConfig = FlagsConfig.getFlagsConfig('TaskPool');
         if (
@@ -189,16 +214,44 @@ export class FuncStruct extends BaseFuncStruct {
           data.funName!.indexOf('Successful') < 0
         ) {
           if (data.frame!.width < 10) {
-            FuncStruct.drawTaskPoolUnSuccessFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 20, 3, data!);
+            FuncStruct.drawTaskPoolUnSuccessFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 18, 3, data!);
           } else {
-            FuncStruct.drawTaskPoolUnSuccessFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 20, 6, data!);
+            FuncStruct.drawTaskPoolUnSuccessFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 18, 6, data!);
           }
         }
         if (flagConfig!.TaskPool === 'Enabled' && data.funName!.indexOf('H:Thread Timeout Exit') >= 0) {
-          FuncStruct.drawTaskPoolTimeOutFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 20, 10, data!);
+          FuncStruct.drawTaskPoolTimeOutFlag(ctx, data.frame!.x, (data.depth! + 0.5) * 18, 10, data!);
+        }
+        // 如果该函数没有结束时间，则绘制锯齿。
+        if (data.nofinish && data.frame!.width > 4) {
+          FuncStruct.drawRupture(ctx, data.frame.x, data.frame.y , data.frame.width, data.frame.height );
         }
       }
     }
+  }
+
+  /**
+   * 绘制锯齿
+   * @param ctx 绘图上下文环境
+   * @param x 水平坐标
+   * @param y 垂直坐标
+   * @param width 函数矩形框的宽度
+   * @param height 函数矩形框的高度
+   */
+  static drawRupture(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
+    ctx.fillStyle = '#fff'; // 白色: '#fff' , 红色: '#FF0000';
+    let ruptureWidth = 5;
+    let ruptureNode = height / ruptureWidth;
+    let len = height / ruptureNode;
+    ctx.moveTo(x + width - 1, y);
+    for (let i = 1; i <= ruptureNode; i++) {
+      ctx.lineTo(
+        x + width - 1 - (i % 2 == 0 ? 0 : ruptureWidth),
+        y + len * i - 2
+      );
+    }
+    ctx.closePath();
+    ctx.fill();
   }
 
   static drawTaskPoolUnSuccessFlag(
