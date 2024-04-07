@@ -269,9 +269,66 @@ export class SpProcessChart {
     if (FlagsConfig.getFlagsConfigEnableStatus('TaskPool')) {
       allTaskPoolPid = await queryTaskPoolProcessIds();
     }
+    let renderServiceProcess = await queryRsProcess();
     info('ProcessList Data size is: ', processList!.length);
-    for (let i = 0; i < processList.length; i++) {
-      const it = processList[i];
+    await this.initProcessRow(processList, allTaskPoolPid, allJankProcess, renderServiceProcess);
+    let durTime = new Date().getTime() - time;
+    info('The time to load the Process data is: ', durTime);
+  }
+
+  private async prepareData(): Promise<void> {
+    let maxValues = await queryMemFilterIdMaxValue();
+    maxValues.forEach((it) => {
+      this.filterIdMaxValue.set(it.filterId, it.maxValue);
+    });
+    let funcNamesArray = await queryAllFuncNames();
+    funcNamesArray.forEach((it) => {
+      this.funcNameMap.set(it.id, it.name);
+    });
+    let soInitNamesArray = await queryAllSoInitNames();
+    soInitNamesArray.forEach((it) => {
+      this.soInitNameMap.set(it.id, it.name);
+    });
+    let processSrcSliceArray = await queryAllSrcSlices();
+    processSrcSliceArray.forEach((it) => {
+      this.processSrcSliceMap.set(it.id, it.src);
+    });
+    let threadFuncMaxDepthArray = await getMaxDepthByTid();
+    info('Gets the maximum tier per thread , tid and maxDepth');
+    threadFuncMaxDepthArray.forEach((it) => {
+      this.threadFuncMaxDepthMap.set(`${it.ipid}-${it.tid}`, it.maxDepth);
+    });
+    info('convert tid and maxDepth array to map');
+    let pidCountArray = await queryProcessContentCount();
+    info('fetch per process  pid,switch_count,thread_count,slice_count,mem_count');
+    pidCountArray.forEach((it) => {
+      this.processThreadDataCountMap.set(it.pid, it.switch_count);
+      this.processThreadCountMap.set(it.pid, it.thread_count);
+      this.processFuncDataCountMap.set(it.pid, it.slice_count);
+      this.processMemDataCountMap.set(it.pid, it.mem_count);
+    });
+    this.processMem = await queryProcessMem();
+    info('The amount of initialized process memory data is : ', this.processMem!.length);
+    this.loadAppStartup = FlagsConfig.getFlagsConfigEnableStatus('AppStartup');
+    info('Prepare App startup data ');
+    if (this.loadAppStartup) {
+      this.startupProcessArr = await queryStartupPidArray();
+      this.processSoMaxDepth = await queryProcessSoMaxDepth();
+    }
+    let eventCountList: Array<any> = await queryEventCountMap();
+    this.eventCountMap = eventCountList.reduce((pre, current) => {
+      pre[`${current.eventName}`] = current.count;
+      return pre;
+    }, {});
+    let queryProcessThreadResult = await queryProcessThreads();
+    let queryProcessThreadsByTableResult = await queryProcessThreadsByTable();
+    this.processThreads = Utils.removeDuplicates(queryProcessThreadResult, queryProcessThreadsByTableResult, 'tid');
+    info('The amount of initialized process threads data is : ', this.processThreads!.length);
+  }
+
+  private async initProcessRow(pArr: Array<any>, allTaskPoolPid: Array<{ pid: number }>, jankArr: Array<number>, rsProcess: Array<any>) {
+    for (let i = 0; i < pArr.length; i++) {
+      const it = pArr[i];
       if (
         (this.processThreadDataCountMap.get(it.pid) || 0) == 0 &&
         (this.processThreadCountMap.get(it.pid) || 0) == 0 &&

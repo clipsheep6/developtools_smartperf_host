@@ -1525,6 +1525,22 @@ export class SpSystemTrace extends BaseElement {
     }
   }
 
+  private handleFileSystemType(it: TraceRow<any>, event: any): void {
+    if (it.rowId === 'FileSystemLogicalWrite') {
+      event = 'FileSystem Logical Write';
+    } else if (it.rowId === 'FileSystemLogicalRead') {
+      event = 'FileSystem Logical Read';
+    } else if (it.rowId === 'FileSystemVirtualMemory') {
+      event = 'Page Fault Trace';
+    } else if (it.rowId!.startsWith('FileSystemDiskIOLatency')) {
+      event = 'Disk I/O Latency';
+      if (it.rowId!.startsWith('FileSystemDiskIOLatency-')) {
+        event = 'Bio Process';
+      }
+    }
+    return event;
+  }
+
   refreshFavoriteCanvas(): void {
     this.favoriteChartListEL!.refreshFavoriteCanvas();
   }
@@ -1758,6 +1774,24 @@ export class SpSystemTrace extends BaseElement {
       );
       this.favoriteChartListEL?.drawWakeUpList(SpSystemTrace.wakeupList[i + 1]);
     }
+  }
+
+  drawAllLines(): void {
+    // draw flag line segment for canvas
+    drawFlagLineSegment(
+      this.canvasPanelCtx,
+      this.hoverFlag,
+      this.selectFlag,
+      {
+        x: 0,
+        y: 0,
+        width: this.timerShaftEL?.canvas?.clientWidth,
+        height: this.canvasPanel?.clientHeight,
+      },
+      this.timerShaftEL!
+    );
+    this.favoriteChartListEL?.drawFlagLineSegment(this.hoverFlag, this.selectFlag, this.timerShaftEL!);
+    this.drawWakeUpLine();
     //draw system logs line segment for canvas
     drawLogsLineSegment(
       this.canvasPanelCtx,
