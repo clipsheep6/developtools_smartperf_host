@@ -102,3 +102,100 @@ export function func1(
   }
   return arr;
 }
+
+export function func2(
+  list: any[],
+  startKey: string,
+  durKey: string,
+  startNS: number,
+  endNS: number,
+  width: number,
+  valueKey?: string,
+  filter?: (a: any) => boolean
+) {
+  let arr: any[] = [];
+  // 标志位，判定何时进行新一轮数据统计处理
+  let flag: number = -1;
+  // 最大durKey值对应的数组角标
+  let durIndex: number = -1;
+  // 最大valueKey值对应的数组角标
+  let valueIndex: number = -1;
+  // filter需要截取数组的起始角标
+  let pxIndex: number = -1;
+  for (let i = 0; i < list.length; i++) {
+    // 筛选符合判断条件的数据，作进一步处理
+    if (list[i][startKey] + list[i][durKey] >= startNS && list[i][startKey] <= endNS) {
+      // 获取当前数据的像素值
+      const px: number = Math.floor(list[i][startKey] / ((endNS - startNS) / width));
+      list[i].px = px;
+      if (flag === px) {
+        if (list[i][durKey] > arr[durIndex][durKey]) {
+          arr[durIndex] = list[i];
+        }
+        if (valueKey && list[i][valueKey] > arr[valueIndex][valueKey]) {
+          arr.push(list[i]);
+          valueIndex = arr.length - 1;
+        }
+      }
+      if (flag !== px) {
+        if (filter && pxIndex >= 0) {
+          let filterArr = list.slice(pxIndex, i).filter(a => filter(a));
+          if (filterArr && filterArr.length > 0) {
+            arr.push(filterArr.reduce((p, c) => (p[durKey] > c[durKey]) ? p : c));
+          }
+        }
+        flag = px;
+        arr.push(list[i]);
+        durIndex = arr.length - 1;
+        valueIndex = arr.length - 1;
+        pxIndex = i;
+      }
+    }
+  }
+  return [...new Set([...arr])];
+}
+
+
+export function func3(
+  list: any[],
+  startKey: string,
+  durKey: string,
+  startNS: number,
+  endNS: number,
+  width: number,
+  valueKey?: string,
+  filter?: (a: any) => boolean
+) {
+  let dataMap: Map<number, Array<any>> = new Map();
+  for (let i = 0; i < list.length; i++) {
+    // 筛选符合判断条件的数据，作进一步处理
+    if (list[i][startKey] + list[i][durKey] >= startNS && list[i][startKey] <= endNS) {
+      // 获取当前数据的像素值
+      const px: number = Math.floor(list[i][startKey] / ((endNS - startNS) / width));
+      list[i].px = px;
+      if (!dataMap.has(px)) {
+        dataMap.set(px, []);
+      }
+      dataMap.get(px)?.push(list[i]);
+    }
+  }
+  let res: Set<any> = new Set();
+  // Reflect.ownKeys(group)将group的键转成数组去循环
+  dataMap.forEach(item => {
+    // 将每组数据进行处理，取出相同px值中的dur最大的那一个数据，作为该像素值下的显示数据
+    if (item.length > 0) {
+      res.add(item.reduce((p, c) => (p[durKey] > c[durKey]) ? p : c));
+      if (valueKey) {
+        res.add(item.reduce((p, c) => (p[valueKey] > c[valueKey]) ? p : c));
+      }
+      if (filter) {
+        let filterArr = item.filter(a => filter(a));
+        if (filterArr && filterArr.length > 0) {
+          res.add(filterArr.reduce((p, c) => (p[durKey] > c[durKey]) ? p : c));
+        }
+      }
+    }
+  });
+  // 扩展运算符进行去重解构操作成数组
+  return [...res];
+}
