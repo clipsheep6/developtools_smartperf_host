@@ -610,143 +610,39 @@ export class SpApplication extends BaseElement {
     SpStatisticsHttpUtil.initStatisticsServerConfig();
     SpStatisticsHttpUtil.addUserVisitAction('visit');
     LongTraceDBUtils.getInstance().createDBAndTable().then();
-    let that = this;
+  }
+
+  initElements(): void {
+    this.wasm = true;
+    this.initPlugin();
     this.querySql = true;
     this.rootEL = this.shadowRoot!.querySelector<HTMLDivElement>('.root');
-    let spWelcomePage = this.shadowRoot!.querySelector('#sp-welcome') as SpWelcomePage;
-    let spMetrics = this.shadowRoot!.querySelector<SpMetrics>('#sp-metrics') as SpMetrics; // new SpMetrics();
-    let spQuerySQL = this.shadowRoot!.querySelector<SpQuerySQL>('#sp-query-sql') as SpQuerySQL; // new SpQuerySQL();
-    let spInfoAndStats = this.shadowRoot!.querySelector<SpInfoAndStats>('#sp-info-and-stats') as SpInfoAndStats; // new SpInfoAndStats();
-    let spSystemTrace = this.shadowRoot!.querySelector<SpSystemTrace>('#sp-system-trace');
+    this.headerDiv = this.shadowRoot!.querySelector<HTMLDivElement>('.search-vessel');
+    this.spWelcomePage = this.shadowRoot!.querySelector('#sp-welcome') as SpWelcomePage;
+    this.spMetrics = this.shadowRoot!.querySelector<SpMetrics>('#sp-metrics') as SpMetrics; // new SpMetrics();
+    this.spQuerySQL = this.shadowRoot!.querySelector<SpQuerySQL>('#sp-query-sql') as SpQuerySQL; // new SpQuerySQL();
+    this.spInfoAndStats = this.shadowRoot!.querySelector<SpInfoAndStats>('#sp-info-and-stats'); // new SpInfoAndStats();
+    this.spSystemTrace = this.shadowRoot!.querySelector<SpSystemTrace>('#sp-system-trace');
     this.spHelp = this.shadowRoot!.querySelector<SpHelp>('#sp-help');
-    let SpKeyboard = this.shadowRoot!.querySelector<SpKeyboard>('#sp-keyboard') as SpKeyboard;
-    let spFlags = this.shadowRoot!.querySelector<SpFlags>('#sp-flags') as SpFlags;
-    let spRecordTrace = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-trace');
-    let spRecordTemplate = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-template');
-    let spSchedulingAnalysis = this.shadowRoot!.querySelector<SpSchedulingAnalysis>(
-      '#sp-scheduling-analysis'
-    ) as SpSchedulingAnalysis;
-    let mainMenu = this.shadowRoot?.querySelector('#main-menu') as LitMainMenu;
-    let menu = mainMenu.shadowRoot?.querySelector('.menu-button') as HTMLDivElement;
-    let progressEL = this.shadowRoot?.querySelector('.progress') as LitProgressBar;
-    let litSearch = this.shadowRoot?.querySelector('#lit-search') as LitSearch;
-    let litRecordSearch = this.shadowRoot?.querySelector('#lit-record-search') as LitSearch;
-    let sidebarButton: HTMLDivElement | undefined | null = this.shadowRoot?.querySelector('.sidebar-button');
-    let chartFilter = this.shadowRoot?.querySelector('.chart-filter') as TraceRowConfig;
-    let cutTraceFile = this.shadowRoot?.querySelector('.cut-trace-file') as HTMLImageElement;
-    let longTracePage = that.shadowRoot!.querySelector('.long_trace_page') as HTMLDivElement;
-    cutTraceFile.addEventListener('click', () => {
-      this.croppingFile(progressEL, litSearch);
-    });
-    let customColor = this.shadowRoot?.querySelector('.custom-color') as CustomThemeColor;
-    mainMenu!.setAttribute('main_menu', '1');
-    chartFilter!.setAttribute('mode', '');
-    chartFilter!.setAttribute('hidden', '');
-    customColor!.setAttribute('mode', '');
-    customColor!.setAttribute('hidden', '');
-    let childNodes = [
-      spSystemTrace,
-      spRecordTrace,
-      spWelcomePage,
-      spMetrics,
-      spQuerySQL,
-      spSchedulingAnalysis,
-      spInfoAndStats,
-      this.spHelp,
-      spRecordTemplate,
-      spFlags,
-      SpKeyboard,
-    ];
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible') {
-        validateFileCacheLost();
-        if (window.localStorage.getItem('Theme') == 'dark') {
-          that.changeTheme(Theme.DARK);
-        } else {
-          that.changeTheme(Theme.LIGHT);
-        }
-      }
-    });
-    this.addEventListener('copy', function (event) {
-      let clipdata = event.clipboardData;
-      let value = clipdata!.getData('text/plain');
-      let searchValue = value.toString().trim();
-      clipdata!.setData('text/plain', searchValue);
-    });
-    window.subscribe(window.SmartEvent.UI.MenuTrace, () => showContent(spSystemTrace!));
-    window.subscribe(window.SmartEvent.UI.Error, (err) => {
-      litSearch.setPercent(err, -1);
-      progressEL.loading = false;
-      that.freshMenuDisable(false);
-    });
-    window.subscribe(window.SmartEvent.UI.Loading, (arg: { loading: boolean; text?: string }) => {
-      if (arg.text) {
-        litSearch.setPercent(arg.text || '', arg.loading ? -1 : 101);
-      }
-      window.publish(window.SmartEvent.UI.MouseEventEnable, {
-        mouseEnable: !arg.loading,
-      });
-      progressEL.loading = arg.loading;
-    });
-
-    litSearch.addEventListener('focus', () => {
-      window.publish(window.SmartEvent.UI.KeyboardEnable, {
-        enable: false,
-      });
-    });
-    litSearch.addEventListener('blur', () => {
-      window.publish(window.SmartEvent.UI.KeyboardEnable, {
-        enable: true,
-      });
-    });
-    litSearch.addEventListener('previous-data', (ev: any) => {
-      litSearch.index = spSystemTrace!.showStruct(true, litSearch.index, litSearch.list);
-      litSearch.blur();
-    });
-    litSearch.addEventListener('next-data', (ev: any) => {
-      litSearch.index = spSystemTrace!.showStruct(false, litSearch.index, litSearch.list);
-      litSearch.blur();
-    });
-    // 翻页事件
-    litSearch.addEventListener('retarget-data', (ev: any) => {
-      litSearch.index = spSystemTrace!.showStruct(true, ev.detail.value, litSearch.list, ev.detail.value);
-      litSearch.blur();
-    });
-    litSearch.valueChangeHandler = (value: string) => {
-      litSearch!.isClearValue = false;
-      if (value.length > 0) {
-        let list: any[] = [];
-        progressEL.loading = true;
-        spSystemTrace!.searchCPU(value).then((cpus) => {
-          list = cpus;
-          spSystemTrace!.searchFunction(list, value).then((mixedResults) => {
-            if (litSearch.searchValue != '') {
-              litSearch.list = spSystemTrace!.searchSdk(mixedResults, value);
-              litSearch.index = spSystemTrace!.showStruct(false, -1, litSearch.list);
-            }
-            progressEL.loading = false;
-          });
-        });
-      } else {
-        let indexEL = litSearch.shadowRoot!.querySelector<HTMLSpanElement>('#index');
-        indexEL!.textContent = '0';
-        litSearch.list = [];
-        spSystemTrace?.visibleRows.forEach((it) => {
-          it.highlight = false;
-          it.draw();
-        });
-        spSystemTrace?.timerShaftEL?.removeTriangle('inverted');
-      }
-    };
-    spSystemTrace?.addEventListener('trace-previous-data', (ev: any) => {
-      litSearch.index = spSystemTrace!.showStruct(true, litSearch.index, litSearch.list);
-    });
-    spSystemTrace?.addEventListener('trace-next-data', (ev: any) => {
-      litSearch.index = spSystemTrace!.showStruct(false, litSearch.index, litSearch.list);
-    });
-
-    let filterConfig = this.shadowRoot?.querySelector('.filter-config') as LitIcon;
-    let configClose = this.shadowRoot
+    this.spKeyboard = this.shadowRoot!.querySelector<SpKeyboard>('#sp-keyboard') as SpKeyboard;
+    this.spFlags = this.shadowRoot!.querySelector<SpFlags>('#sp-flags') as SpFlags;
+    this.spRecordTrace = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-trace');
+    this.spRecordTemplate = this.shadowRoot!.querySelector<SpRecordTrace>('#sp-record-template');
+    this.spSchedulingAnalysis = this.shadowRoot!.querySelector<SpSchedulingAnalysis>('#sp-scheduling-analysis');
+    this.mainMenu = this.shadowRoot?.querySelector('#main-menu') as LitMainMenu;
+    this.menu = this.mainMenu.shadowRoot?.querySelector('.menu-button') as HTMLDivElement;
+    this.progressEL = this.shadowRoot?.querySelector('.progress') as LitProgressBar;
+    this.litSearch = this.shadowRoot?.querySelector('#lit-search') as LitSearch;
+    this.litRecordSearch = this.shadowRoot?.querySelector('#lit-record-search') as LitSearch;
+    this.sidebarButton = this.shadowRoot?.querySelector('.sidebar-button');
+    this.chartFilter = this.shadowRoot?.querySelector('.chart-filter') as TraceRowConfig;
+    this.cutTraceFile = this.shadowRoot?.querySelector('.cut-trace-file') as HTMLImageElement;
+    this.exportRecord = this.shadowRoot?.querySelector('.export-record') as LitIcon;
+    this.longTracePage = this.shadowRoot!.querySelector('.long_trace_page') as HTMLDivElement;
+    this.customColor = this.shadowRoot?.querySelector('.custom-color') as CustomThemeColor;
+    this.filterConfig = this.shadowRoot?.querySelector('.filter-config') as LitIcon;
+    this.spThirdParty = this.shadowRoot!.querySelector('#sp-third-party') as SpThirdParty;
+    this.configClose = this.shadowRoot
       ?.querySelector<HTMLElement>('.chart-filter')!
       .shadowRoot?.querySelector<LitIcon>('.config-close');
     filterConfig.addEventListener('click', (ev) => {
@@ -2244,6 +2140,22 @@ export class SpApplication extends BaseElement {
     }
   }
 
+  private markPositionHandler(buf: ArrayBuffer): ArrayBuffer {
+    const decoder = new TextDecoder('utf-8');
+    const headText = decoder.decode(buf.slice(0, 100));
+    let hasMark = headText.includes('MarkPositionJSON');
+    if (hasMark) {
+      let markLength = headText.split('->')[0].replace('MarkPositionJSON', '');
+      let mark = decoder.decode(buf.slice(0, markLength.length + parseInt(markLength)));
+      if (mark.includes('->')) {
+        this.markJson = mark.split('->')[1];
+      }
+      return buf.slice(markLength.length + parseInt(markLength));
+    } else {
+      return buf;
+    }
+  }
+
   private async traceLoadCompleteHandler(
     res: any,
     fileSize: string,
@@ -2349,13 +2261,16 @@ export class SpApplication extends BaseElement {
         {
           title: 'Keyboard Shortcuts',
           icon: 'smart-help',
-          clickHandler: function (item: MenuItem): void {
-            document.querySelector('body > sp-application')!.shadowRoot!.querySelector<HTMLDivElement>('#sp-keyboard')!.style.visibility = 'visible';
-            SpSystemTrace.keyboardFlar = false;
-            SpStatisticsHttpUtil.addOrdinaryVisitAction({
-              event: 'Keyboard Shortcuts',
-              action: 'Keyboard Shortcuts',
-            });
+          clickHandler: (item: MenuItem): void => this.clickHandleByKeyboardShortcuts(),
+        },
+        {
+          title: 'Third File',
+          icon: 'file-fill',
+          fileModel: this.wasm ? 'wasm' : 'db',
+          clickHandler: (item: MenuItem): void => {
+            this.returnOriginalUrl();
+            this.search = false;
+            this.showContent(this.spThirdParty!);
           },
         },
       ],
@@ -2395,8 +2310,14 @@ export class SpApplication extends BaseElement {
         let hiPerfArray = new Uint8Array(hiperfData);
         let allOtherData = [ebpfData, arkTsData, hiperfData];
         let otherDataLength = traceData.byteLength + ebpfData.byteLength + arkTsData.byteLength + hiperfData.byteLength;
-        let timeStamp = this.currentDataTime[0] + this.currentDataTime[1] + this.currentDataTime[2] + '_' +
-          this.currentDataTime[3] + this.currentDataTime[4] + this.currentDataTime[5];
+        let timeStamp =
+          this.currentDataTime[0] +
+          this.currentDataTime[1] +
+          this.currentDataTime[2] +
+          '_' +
+          this.currentDataTime[3] +
+          this.currentDataTime[4] +
+          this.currentDataTime[5];
         this.traceFileName = `hiprofiler_long_${timeStamp}_${indexedDbPageNum}.htrace`;
         if (otherDataLength > maxTraceFileLength) {
           if (traceData.byteLength > maxTraceFileLength) {
@@ -2749,6 +2670,7 @@ export class SpApplication extends BaseElement {
       {
         title: 'Download Database',
         icon: 'download',
+        fileModel: this.wasm ? 'wasm' : 'db',
         clickHandler: (): void => {
           this.downloadDB(this.mainMenu!, fileName);
           SpStatisticsHttpUtil.addOrdinaryVisitAction({
@@ -2764,6 +2686,60 @@ export class SpApplication extends BaseElement {
     }
     return menus;
   }
+
+  private getTraceSupportMenus(): Array<any> {
+    return [
+      {
+        title: 'Help Documents',
+        icon: 'smart-help',
+        clickHandler: (item: MenuItem): void => {
+          this.spHelp!.dark = this.dark;
+          this.search = false;
+          this.showContent(this.spHelp!);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'help_page',
+            action: 'help_doc',
+          });
+        },
+      },
+      {
+        title: 'Flags',
+        icon: 'menu',
+        fileModel: this.wasm ? 'wasm' : 'db',
+        clickHandler: (item: MenuItem): void => {
+          this.search = false;
+          this.showContent(this.spFlags!);
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'flags',
+            action: 'flags',
+          });
+        },
+      },
+      {
+        title: 'Keyboard Shortcuts',
+        icon: 'smart-help',
+        clickHandler: (item: MenuItem): void => {
+          document
+            .querySelector('body > sp-application')!
+            .shadowRoot!.querySelector<HTMLDivElement>('#sp-keyboard')!.style.visibility = 'visible';
+          SpStatisticsHttpUtil.addOrdinaryVisitAction({
+            event: 'Keyboard Shortcuts',
+            action: 'Keyboard Shortcuts',
+          });
+        },
+      },
+      {
+        title: '第三方文件',
+        icon: 'file-fill',
+        fileModel: this.wasm ? 'wasm' : 'db',
+        clickHandler: (item: MenuItem): void => {
+          this.search = false;
+          this.showContent(this.spThirdParty!);
+        },
+      },
+    ];
+  }
+
   private getTraceQuerySqlMenus(menus: Array<any>): void {
     if (this.querySql) {
       if (this.spQuerySQL) {
@@ -2781,6 +2757,7 @@ export class SpApplication extends BaseElement {
         menus.push({
           title: 'Metrics',
           icon: 'metric',
+          fileModel: this.wasm ? 'wasm' : 'db',
           clickHandler: () => {
             this.showContent(this.spMetrics!);
           },
@@ -2876,6 +2853,9 @@ export class SpApplication extends BaseElement {
       if (arg.text) {
         this.litSearch!.setPercent(arg.text || '', arg.loading ? -1 : 101);
       }
+      if (this.headerDiv) {
+        this.headerDiv.style.pointerEvents = arg.loading ? 'none' : 'auto';
+      }
       window.publish(window.SmartEvent.UI.MouseEventEnable, {
         mouseEnable: !arg.loading,
       });
@@ -2915,6 +2895,15 @@ export class SpApplication extends BaseElement {
       this.croppingFile(this.progressEL!, this.litSearch!);
     });
   }
+
+  private initRecordEvents(): void {
+    this.exportRecord?.addEventListener('click', () => {
+      this.headerDiv!.style.pointerEvents = 'none';
+      window.publish(window.SmartEvent.UI.Loading, { loading: true, text: 'Downloading trace file with mark' });
+      window.publish(window.SmartEvent.UI.ExportRecord, { bt: this.exportRecord });
+    });
+  }
+
   private initSearchChangeEvents(): void {
     let timer: any = null;
     this.litSearch!.valueChangeHandler = (value: string) => {
