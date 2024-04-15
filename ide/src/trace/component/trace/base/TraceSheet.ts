@@ -97,6 +97,18 @@ export class TraceSheet extends BaseElement {
   private fragment: DocumentFragment | undefined;
   private lastSelectIPid: number = -1;
   private lastProcessSet: Set<number> = new Set<number>();
+  // 统一微观功耗模型功能按钮元素对象
+  private addTabBt: LitIcon | undefined | null;
+  // 用来存放标签页数据的map对象  键为标签页序号，值为标签页的选项卡标题及面板对象
+  private tabInfo: Map<string, {
+    pane: LitTabpane; 
+    nav?: HTMLDivElement;
+    key: string;
+  }> = new Map();
+  // 按钮点击后展示的表单数据
+  private rowSettingTree: LitTree | null | undefined;
+  // 弹窗组件
+  private switchTabDiv: LitPopover | undefined | null;
 
   static get observedAttributes(): string[] {
     return ['mode'];
@@ -162,6 +174,21 @@ export class TraceSheet extends BaseElement {
 
     this.buildTabs(this.litTabs);
     this.litTabs!.onTabClick = (e: any): void => this.loadTabPaneData(e.detail.key);
+    // 绑定元素对象
+    this.switchTabDiv = this.shadowRoot?.querySelector('#tabSetting');
+    this.rowSettingTree = this.shadowRoot?.querySelector('#rowSettingTree') as LitTree;
+    this.tableCloseHandler();
+    // 重新绑定元素
+    this.addTabBt = this.shadowRoot?.querySelector<LitIcon>('#addTab');
+    // 单选框元素，后续用于更新控制表单显隐
+    let checkbox: any = this.switchTabDiv!.shadowRoot!.querySelector('.trigger-click');
+    // 重写点击事件
+    this.addTabBt!.onclick = (e):void => {
+      // 阻止冒泡
+      e.stopPropagation();
+      checkbox.checked = !checkbox.checked;
+      this.switchTabDiv!.visible = checkbox.checked;
+    };
     this.litTabs!.addEventListener('close-handler', () => {
       Reflect.ownKeys(tabConfig)
         .reverse()
@@ -259,6 +286,119 @@ export class TraceSheet extends BaseElement {
       }
     });
   }
+
+  /**
+   * 
+   * @param tabInfo 标签页数据的map对象
+   */
+  addRowSettingPop(): void {
+    // 面板打开前先更新面板展示内容
+    this.setTreeValue(this.tabInfo);
+    // 设置选项切换事件
+    this.rowSettingTree!.onChange = (): void => {
+      // 获取用户选择展示的是哪一个标签页
+      const select: string = this.rowSettingTree!.getCheckdKeys()[0];
+      // 拿到面板对象，控制其显示，并将当前选中标签页切换为用户刚刚选择的标签页
+      let item: {key: string, pane: BaseElement} = this.tabInfo.get(select)!;
+      if (item) {
+        item.pane.hidden = false;
+        this.litTabs!.activeByKey(item.key);
+        this.loadTabPaneData(item.key);
+        // 当某个标签页展示后即从表单中删除
+        this.tabInfo.delete(select);
+        // 隐藏表单
+        this.switchTabDiv!.visible = '';
+      }
+      // 更新表单内容
+      this.setTreeValue(this.tabInfo);
+    };
+  }
+
+  /**
+   * 
+   * @param tabInfo 标签页数据的map对象
+   */
+  setTreeValue(
+    tabInfo: Map<string, {
+      pane: LitTabpane; 
+      nav?: HTMLDivElement | undefined;
+      key: string;
+    }>) {
+    let itemArr: Array<TreeItemData> = [];
+    tabInfo?.forEach((item, key) => {
+      itemArr.push({key: key, title: key});
+    });
+    if (itemArr.length > 0) {
+      this.rowSettingTree!.treeData = itemArr;
+      // @ts-ignore
+      this.addTabBt?.style.display = 'block';
+    } else {
+      // @ts-ignore
+      this.addTabBt?.style.display = 'none';
+    }
+  }
+
+      /**
+   * 自定义标签页关闭事件
+   */
+      private tableCloseHandler(): void {
+        // lit-tabs标签页中关闭图标的点击事件通过dispatchEvent触发自定义事件。被tab组件的'close-handler'监听事件捕获
+        this.litTabs!.addEventListener('close-handler', (e) => {
+          // 创建数组,存放当前选项卡区域内所有展示的标签页
+          let keyValue: Array<{key: string, name: string}> = [];
+          // 标志位，注明此次点击关闭的标签是上面数组中的第几个
+          let flagId: number = -1;
+          // 循环所有的选项卡节点，将所有未被隐藏掉，即展示的标签存储起来
+          this.nav!.querySelectorAll(`.nav-item`).forEach(item => {
+            // @ts-ignore
+            if (!item.attributes['data-hidden']) {
+              // @ts-ignore
+              keyValue.push({key: item.dataset.key, name: item.children[0].innerText});
+            }
+          })
+          // 只有当前标签页大于一个时才会执行关闭操作，需保证最后至少剩余一个标签展示在面板中
+          if (keyValue.length > 1) {
+            // 将标签页注册文件TraceSheetConfig中的对象键取出构成键数组
+            let tabConfigArr: Array<string> = Object.keys(tabConfig);
+            // 循环该数组,找到当前点击的对应该数组中的哪一个标签页
+            for (let i = 0; i < tabConfigArr.length; i++) {
+              let element = tabConfig[tabConfigArr[i]];
+              // 只有当选项卡标题与自定义事件传入参数的name值相同时，且索引号相等时，进入判断条件  后续可以通过调整标签页title字段值不重复来取缔索引值判断条件
+              // @ts-ignore
+              if (element.title === e.detail.name && i === Number(e.detail.key)) {
+                // 找到对应的标签页后,拿到标签页头节点及标签页面板节点,然后设置隐藏
+                let pane = this.shadowRoot!.querySelector<LitTabpane>(`#${tabConfigArr[i] as string}`);
+                // @ts-ignore
+                let childTab = this.nav!.querySelector<HTMLDivElement>(`.nav-item[data-key='${e.detail.key}']`);
+                pane!.hidden = true;
+                // @ts-ignore
+                childTab.setAttribute('data-hidden', '');
+                // 同时找到当前隐藏的标签页是当前展示区域的第几个
+                keyValue.find((item, index) => {
+                  // @ts-ignore
+                  if (item.key === e.detail.key) {
+                    flagId = index;
+                  }
+                })
+                // @ts-ignore
+                this.tabInfo.set(element.title, {pane: pane!, nav: childTab!, key: e.detail.key});
+                // 找到后就没有必要继续循环,提高性能
+                break;
+              }
+            }
+          }
+          // 如果当前要关闭的标签页不是第一个,则关闭当前标签页后默认选中第一个标签页。如果是第一个，则默认选中第二个标签页
+          if (flagId > 0) {
+            this.litTabs!.activeByKey(keyValue[0].key);
+            this.loadTabPaneData(keyValue[0].key);
+          } else {
+            this.litTabs!.activeByKey(keyValue[flagId + 1].key);
+            this.loadTabPaneData(keyValue[flagId + 1].key);
+          }
+          // 关闭标签页后更新表单内容
+          this.setTreeValue(this.tabInfo);
+        });
+      }
 
   connectedCallback(): void {
     this.nav = this.shadowRoot?.querySelector('#tabs')?.shadowRoot?.querySelector('.tab-nav-vessel');
@@ -460,6 +600,12 @@ export class TraceSheet extends BaseElement {
             <div id="vessel" style="border-top: 1px solid var(--dark-border1,#D5D5D5);">
                 <lit-tabs id="tabs" position="top-left" activekey="1" mode="card" >
                     <div slot="right" style="margin: 0 10px; color: var(--dark-icon,#606060);display: flex;align-items: center;">
+                        <lit-popover placement="leftTop" class="popover" haveRadio="true" trigger="click" id="tabSetting">
+                              <div slot="content">
+                                <lit-tree id="rowSettingTree" checkable="true"></lit-tree>
+                              </div>
+                              <lit-icon name="add" size="20" id="addTab" style="cursor: pointer;" title="Add Tab""></lit-icon>
+                        </lit-popover>
                         <lit-popover placement="bottomRight" class="popover" haveRadio="true" trigger="click" id="select-process">
                               <div slot="content">
                                 <lit-tree id="processTree" checkable="true"></lit-tree>
@@ -718,15 +864,41 @@ export class TraceSheet extends BaseElement {
     this.exportBt!.style.display = 'flex';
     this.showUploadSoBt(selection);
     this.showSwitchProcessBt(selection);
-    Reflect.ownKeys(tabConfig)
-      .reverse()
-      .forEach((id) => {
-        let element = tabConfig[id];
-        let pane = this.shadowRoot!.querySelector<LitTabpane>(`#${id as string}`);
-        if (pane) {
-          pane.hidden = !(element.require && element.require(selection));
+    // 统一微观功耗模型标签页id
+    let idClosablePane: Array<string> = [
+      // 'tabpane-frequsage', 
+      'tabpane-freqdatacut', 
+      'tabpane-schedswitch', 
+      'tabpane-binders',
+      'tabpane-binder-datacut',
+      'tabpane-gpufreq',
+      'tabpane-freqDataCut',
+      'tabpane-states-datacut'
+    ];
+    // 每次框选后都清空上次缓存值
+    this.tabInfo = new Map();
+    // 将标签页注册文件TraceSheetConfig中的对象键取出构成键数组
+    let tabConfigArr: Array<string> = Object.keys(tabConfig);
+    // 循环该数组,找到当前点击的对应该数组中的哪一个标签页
+    for (let i = 0; i < tabConfigArr.length; i++) {
+      let element = tabConfig[tabConfigArr[i]];
+      // 找到对应的标签页后,拿到标签页头节点及标签页面板节点,然后设置隐藏
+      let pane = this.shadowRoot!.querySelector<LitTabpane>(`#${tabConfigArr[i] as string}`);
+      if (pane) {
+        pane.hidden = !(element.require && element.require(selection));
+        // 如果需要展示的标签页中包含统一微观功耗模型标签页，那么将会设置标签页隐藏，点击加号用户选择是否显示
+        // @ts-ignore
+        if (idClosablePane.includes(tabConfigArr[i]) && (element.require && element.require(selection))) {
+          // 只将统一微观功耗模型的几个标签页添加删除功能
+          pane.closeable = true;
+          // @ts-ignore
+          this.tabInfo.set(element.title, {pane: pane!, key: i.toString()});
+          pane.hidden = true;
         }
-      });
+      }
+    }
+    // 更新统一微观功耗模型点击按钮后展示的表单内容
+    this.addRowSettingPop();
     if (restore) {
       if (this.litTabs?.activekey) {
         this.loadTabPaneData(this.litTabs?.activekey);

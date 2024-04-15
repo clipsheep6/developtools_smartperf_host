@@ -623,9 +623,11 @@ export class LitTabs extends HTMLElement {
         a.onclick = (e) => {
           e.stopPropagation();
           const closeKey = (e.target! as HTMLElement).parentElement!.dataset.key;
+          // 新增name属性，在触发关闭自定义事件时可以将name值传过去供后续使用
+          const closeName = (e.target! as HTMLElement).parentElement!.innerText;
           this.dispatchEvent(
             new CustomEvent('close-handler', {
-              detail: { key: closeKey },
+              detail: { key: closeKey, name: closeName },
               composed: true,
             })
           );
