@@ -1967,7 +1967,86 @@ export class SpApplication extends BaseElement {
           {
             title: 'Record new trace',
             icon: 'copyhovered',
-            clickHandler: (item: MenuItem): void => {
+          clickHandler: (item: MenuItem): void => this.clickHandleByRecordNewTrace(),
+        },
+        {
+          title: 'Record template',
+          icon: 'copyhovered',
+          clickHandler: (item: MenuItem): void => this.clickHandleByRecordTemplate(),
+        },
+      ],
+    };
+  }
+
+  private initSupportMenus() {
+    return {
+      collapsed: false,
+      title: 'Support',
+      second: false,
+      icon: '',
+      describe: 'Support',
+      children: [
+        {
+          title: 'Help Documents',
+          icon: 'smart-help',
+          clickHandler: (item: MenuItem): void => this.clickHandleByHelpDocuments(),
+        },
+        {
+          title: 'Flags',
+          icon: 'menu',
+          clickHandler: (item: MenuItem): void => this.clickHandleByFlags(),
+        },
+        {
+          title: 'Keyboard Shortcuts',
+          icon: 'smart-help',
+          clickHandler: (item: MenuItem): void => this.clickHandleByKeyboardShortcuts(),
+        },
+        {
+          title: 'Third File',
+          icon: 'file-fill',
+          fileModel: this.wasm ? 'wasm' : 'db',
+          clickHandler: (item: MenuItem): void => {
+            this.returnOriginalUrl();
+            this.search = false;
+            this.showContent(this.spThirdParty!);
+          },
+        },
+      ],
+    };
+  }
+
+  private clickHandleByHelpDocuments(): void {
+    this.spHelp!.dark = this.dark;
+    this.search = false;
+    this.showContent(this.spHelp!);
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'help_page',
+      action: 'help_doc',
+    });
+    this.changeUrl();
+  }
+
+  private clickHandleByFlags(): void {
+    this.returnOriginalUrl();
+    this.search = false;
+    this.showContent(this.spFlags!);
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'flags',
+      action: 'flags',
+    });
+  }
+
+  private clickHandleByKeyboardShortcuts(): void {
+    this.returnOriginalUrl();
+    document
+      .querySelector('body > sp-application')!
+      .shadowRoot!.querySelector<HTMLDivElement>('#sp-keyboard')!.style.visibility = 'visible';
+    SpSystemTrace.keyboardFlar = false;
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'Keyboard Shortcuts',
+      action: 'Keyboard Shortcuts',
+    });
+  }
               this.spRecordTrace!.synchronizeDeviceList();
               this.spRecordTemplate!.record_template = false;
               this.spRecordTrace!.refreshConfig(true);
@@ -1988,12 +2067,240 @@ export class SpApplication extends BaseElement {
         ],
       },
       {
-        collapsed: false,
-        title: 'Support',
-        second: false,
-        icon: '',
-        describe: 'Support',
-        children: [
+  private handleWasmMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
+    let that = this;
+    this.litSearch!.setPercent('', 1);
+    if (fileName.endsWith('.json')) {
+      that.progressEL!.loading = true;
+      that.spSystemTrace!.loadSample(ev).then(() => {
+        that.showContent(that.spSystemTrace!);
+        that.litSearch!.setPercent('', 101);
+        that.freshMenuDisable(false);
+        that.chartFilter!.setAttribute('mode', '');
+        that.progressEL!.loading = false;
+      });
+    } else {
+      let fileSizeStr = (fileSize / 1048576).toFixed(1);
+      postLog(fileName, fileSizeStr);
+      document.title = `${showFileName} (${fileSizeStr}M)`;
+      info('Parse trace using wasm mode ');
+      let completeHandler = async (res: any): Promise<void> => {
+        await this.traceLoadCompleteHandler(res, fileSizeStr, showFileName, fileName);
+        if (this.markJson) {
+          window.publish(window.SmartEvent.UI.ImportRecord, this.markJson);
+        }
+      };
+      threadPool.init('wasm').then((res) => {
+        let reader: FileReader | null = new FileReader();
+        reader.readAsArrayBuffer(ev as any);
+        reader.onloadend = function (ev): void {
+          info('read file onloadend');
+          that.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
+          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+          SpApplication.loadingProgress = 0;
+          SpApplication.progressStep = 3;
+          let data = that.markPositionHandler(this.result as ArrayBuffer);
+          info('initData start Parse Data');
+          that.spSystemTrace!.loadDatabaseArrayBuffer(
+            data,
+            wasmUrl,
+            (command: string, _: number) => that.setProgress(command),
+            completeHandler
+          );
+        };
+      });
+    }
+  }
+  private markPositionHandler(buf: ArrayBuffer): ArrayBuffer {
+    const decoder = new TextDecoder('utf-8');
+    const headText = decoder.decode(buf.slice(0, 100));
+    let hasMark = headText.includes('MarkPositionJSON');
+    if (hasMark) {
+      let markLength = headText.split('->')[0].replace('MarkPositionJSON', '');
+      let mark = decoder.decode(buf.slice(0, markLength.length + parseInt(markLength)));
+      if (mark.includes('->')) {
+        this.markJson = mark.split('->')[1];
+      }
+      return buf.slice(markLength.length + parseInt(markLength));
+    } else {
+      return buf;
+    }
+  }
+
+  private async traceLoadCompleteHandler(
+    res: any,
+    fileSize: string,
+    showFileName: string,
+    fileName: string
+  ): Promise<void> {
+    let existFtrace = await queryExistFtrace();
+    let isAllowTrace = true;
+    if (DbPool.sharedBuffer) {
+      let traceHeadData = new Uint8Array(DbPool.sharedBuffer!.slice(0, 10));
+      let enc = new TextDecoder();
+      let headerStr = enc.decode(traceHeadData);
+      let rowTraceStr = Array.from(new Uint8Array(DbPool.sharedBuffer!.slice(0, 2)))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+      if (headerStr.indexOf('OHOSPROF') !== 0 && rowTraceStr.indexOf('49df') !== 0) {
+        isAllowTrace = false;
+      }
+      this.cutTraceFile!.style.display = 'block';
+      DbPool.sharedBuffer = null;
+    }
+    let index = 2;
+    if (existFtrace.length > 0 && isAllowTrace) {
+      this.showConvertTraceMenu(fileName);
+      index = 3;
+    }
+    this.loadTraceCompleteMenuHandler(index);
+    if (res.status) {
+      info('loadDatabaseArrayBuffer success');
+      (window as any).traceFileName = fileName;
+      this.showCurrentTraceMenu(fileSize, showFileName, fileName);
+      this.importConfigDiv!.style.display = Utils.SCHED_SLICE_MAP.size > 0 ? 'block' : 'none';
+      this.showContent(this.spSystemTrace!);
+      this.litSearch!.setPercent('', 101);
+      this.chartFilter!.setAttribute('mode', '');
+      this.freshMenuDisable(false);
+    } else {
+      info('loadDatabaseArrayBuffer failed');
+      this.litSearch!.setPercent(res.msg || 'This File is not supported!', -1);
+      this.freshMenuDisable(false);
+      this.mainMenu!.menus!.splice(1, 1);
+      this.mainMenu!.menus = this.mainMenu!.menus!;
+    }
+    this.progressEL!.loading = false;
+    this.headerDiv!.style.pointerEvents = 'auto';
+    this.spInfoAndStats!.initInfoAndStatsData();
+  }
+  private showConvertTraceMenu(fileName: string): void {
+    this.mainMenu!.menus!.splice(2, 1, {
+      collapsed: false,
+      title: 'Convert trace',
+      second: false,
+      icon: '',
+      describe: 'Convert to other formats',
+      children: this.pushConvertTrace(fileName),
+    });
+  }
+
+  private showCurrentTraceMenu(fileSize: string, showFileName: string, fileName: string): void {
+    this.mainMenu!.menus!.splice(1, this.mainMenu!.menus!.length > 2 ? 1 : 0, {
+      collapsed: false,
+      title: 'Current Trace',
+      second: false,
+      icon: '',
+      describe: 'Actions on the current trace',
+      children: this.getTraceOptionMenus(showFileName, fileSize, fileName, false),
+    });
+  }
+
+  private loadTraceCompleteMenuHandler(index: number): void {
+    const that = this;
+    this.mainMenu!.menus!.splice(index, 1, {
+      collapsed: false,
+      title: 'Support',
+      second: false,
+      icon: '',
+      describe: 'Support',
+      children: [
+        {
+          title: 'Help Documents',
+          icon: 'smart-help',
+          clickHandler: (item: MenuItem): void => this.clickHandleByHelpDocuments(),
+        },
+        {
+          title: 'Flags',
+          icon: 'menu',
+          clickHandler: (item: MenuItem): void => this.clickHandleByFlags(),
+        },
+        {
+          title: 'Keyboard Shortcuts',
+          icon: 'smart-help',
+          clickHandler: (item: MenuItem): void => this.clickHandleByKeyboardShortcuts(),
+        },
+        {
+          title: 'Third File',
+          icon: 'file-fill',
+          fileModel: this.wasm ? 'wasm' : 'db',
+          clickHandler: (item: MenuItem): void => {
+            this.returnOriginalUrl();
+            this.search = false;
+            this.showContent(this.spThirdParty!);
+          },
+        },
+      ],
+    });
+  }
+
+  private validateGetTraceFileByPage(): boolean {
+    if (!this.wasm) {
+      this.progressEL!.loading = false;
+      return false;
+    }
+    return this.pageTimStamp !== 0;
+  }
+
+  private queryFileByPage(
+    instance: LongTraceDBUtils,
+    indexedDbPageNum: number,
+    maxTraceFileLength: number,
+    traceRange: IDBKeyRange
+  ) {
+    instance.indexedDBHelp.get(instance.tableName, traceRange, 'QueryFileByPage').then((result) => {
+      let traceData = indexedDataToBufferData(result);
+      let ebpfRange = this.getIDBKeyRange(indexedDbPageNum, 'ebpf_new');
+      let arkTsRange = this.getIDBKeyRange(indexedDbPageNum, 'arkts_new');
+      let hiperfRange = this.getIDBKeyRange(indexedDbPageNum, 'hiperf_new');
+      Promise.all([
+        instance.getByRange(ebpfRange),
+        instance.getByRange(arkTsRange),
+        instance.getByRange(hiperfRange),
+      ]).then((otherResult) => {
+        let ebpfData = indexedDataToBufferData(otherResult[0]);
+        let arkTsData = indexedDataToBufferData(otherResult[1]);
+        let hiperfData = indexedDataToBufferData(otherResult[2]);
+        let traceArray = new Uint8Array(traceData);
+        let ebpfArray = new Uint8Array(ebpfData);
+        let arkTsArray = new Uint8Array(arkTsData);
+        let hiPerfArray = new Uint8Array(hiperfData);
+        let allOtherData = [ebpfData, arkTsData, hiperfData];
+        let otherDataLength = traceData.byteLength + ebpfData.byteLength + arkTsData.byteLength + hiperfData.byteLength;
+        let timeStamp =
+          this.currentDataTime[0] +
+          this.currentDataTime[1] +
+          this.currentDataTime[2] +
+          '_' +
+          this.currentDataTime[3] +
+          this.currentDataTime[4] +
+          this.currentDataTime[5];
+        this.traceFileName = `hiprofiler_long_${timeStamp}_${indexedDbPageNum}.htrace`;
+        if (otherDataLength > maxTraceFileLength) {
+          if (traceData.byteLength > maxTraceFileLength) {
+            this.traceFileLoadFailedHandler('hitrace file too big!');
+          } else {
+            let freeDataLength = maxTraceFileLength - traceData.byteLength;
+            let freeDataIndex = findFreeSizeAlgorithm(
+              [ebpfData.byteLength, arkTsData.byteLength, hiperfData.byteLength],
+              freeDataLength
+            );
+            let finalData = [traceData];
+            freeDataIndex.forEach((dataIndex) => {
+              finalData.push(allOtherData[dataIndex]);
+            });
+            const file = new File([new Blob(finalData)], this.traceFileName);
+            this.handleWasmMode(file, file.name, file.size, this.traceFileName);
+          }
+        } else {
+          let fileBlob = new Blob([traceArray, ebpfArray, arkTsArray, hiPerfArray]);
+          const file = new File([fileBlob], this.traceFileName);
+          this.handleWasmMode(file, file.name, file.size, file.name);
+        }
+      });
+    });
+  }
+
           {
             title: 'Help Documents',
             icon: 'smart-help',
