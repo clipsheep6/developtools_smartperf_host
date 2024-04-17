@@ -13,28 +13,25 @@
  * limitations under the License.
  */
 
-#ifndef DEMO_META_TABLE_H
-#define DEMO_META_TABLE_H
-
-#include "demo_table_base.h"
-#include "trace_data_cache.h"
-
+#include "proto_reader_help.h"
 namespace SysTuning {
-namespace TraceStreamer {
-class DemoMetaTable : public DemoTableBase {
-public:
-    explicit DemoMetaTable(const TraceDataCache* dataCache);
-    ~DemoMetaTable() override;
-    std::unique_ptr<DemoTableBase::Cursor> CreateCursor() override;
-
-private:
-    class Cursor : public DemoTableBase::Cursor {
-    public:
-        explicit Cursor(const TraceDataCache* dataCache, DemoTableBase* table);
-        ~Cursor() override;
-        int32_t Column(int32_t demoMetaColumn) const override;
-    };
-};
-} // namespace TraceStreamer
+namespace ProtoReader {
+const uint8_t* VarIntDecode(const uint8_t* start, const uint8_t* end, uint64_t* varIntValue)
+{
+    const uint8_t* cursor = start;
+    uint64_t temp = 0;
+    uint32_t shift = 0;
+    do {
+        uint8_t currentByte = *cursor++;
+        temp |= static_cast<uint64_t>(currentByte & varIntValueMask) << shift;
+        if (!(currentByte & byteHighestBitMark)) {
+            *varIntValue = temp;
+            return cursor;
+        }
+        shift += varIntValueBits;
+    } while (cursor < end && shift < varIntValueDecodeMaxOffset);
+    *varIntValue = 0;
+    return start;
+}
+} // namespace ProtoReader
 } // namespace SysTuning
-#endif // DEMO_META_TABLE_H
