@@ -127,7 +127,7 @@ export class SpHiSysEnergyChart {
       new Promise<Array<BaseStruct>>((resolve) => resolve([]));
     this.energyTraceRow!.onThreadHandler = (useCache: boolean): void => {
       this.energyTraceRow?.canvasSave(this.trace.canvasPanelCtx!);
-      if (this.energyTraceRow!.expansion) {
+      if (this.energyTraceRow!.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, this.energyTraceRow!.frame.width, this.energyTraceRow!.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(

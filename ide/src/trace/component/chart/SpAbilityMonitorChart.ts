@@ -112,8 +112,8 @@ export class SpAbilityMonitorChart {
     info('The time to load the AbilityMonitor data is: ', durTime);
   }
 
-  private hasTable(result: Array<any>, tableName: string): boolean {
-    return result.find((o) => {
+  private hasTable(result: Array<unknown>, tableName: string): boolean {// @ts-ignore
+    return result.find((o) => {// @ts-ignore
       return o.event_name === tableName;
     });
   }
@@ -127,8 +127,8 @@ export class SpAbilityMonitorChart {
     abilityRow.folder = true;
     abilityRow.name = 'Ability Monitor';
     abilityRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    abilityRow.selectChangeHandler = this.trace.selectChangeHandler;
-    abilityRow.supplier = (): Promise<any[]> => new Promise<Array<any>>((resolve) => resolve([]));
+    abilityRow.selectChangeHandler = this.trace.selectChangeHandler;// @ts-ignore
+    abilityRow.supplier = (): Promise<unknown[]> => new Promise<Array<unknown>>((resolve) => resolve([]));
     abilityRow.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
       if (abilityRow.currentContext) {
@@ -137,7 +137,7 @@ export class SpAbilityMonitorChart {
         context = abilityRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
       abilityRow.canvasSave(context);
-      if (abilityRow.expansion) {
+      if (abilityRow.expansion) {// @ts-ignore
         context?.clearRect(0, 0, abilityRow.frame.width, abilityRow.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
@@ -329,7 +329,7 @@ export class SpAbilityMonitorChart {
     parent.addChildTraceRow(sysTraceRow);
   }
 
-  private memoryUsedThreadHandle(memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>, memoryTotal: any[]): void {
+  private memoryUsedThreadHandle(memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>, memoryTotal: unknown[]): void {// @ts-ignore
     let memoryTotalValue = memoryTotal[0].maxValue;
     let memoryTotalValueName = this.memoryMath(memoryTotalValue);
     memoryUsedRow.onThreadHandler = (useCache): void => {
@@ -355,8 +355,8 @@ export class SpAbilityMonitorChart {
   }
 
   private async initMemoryUsedRow(
-    memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>,
-    parent: TraceRow<any>
+    memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>,// @ts-ignore
+    parent: TraceRow<unknown>
   ): Promise<void> {
     let memoryTotal = await queryMemoryMaxData('sys.mem.total');
     let memoryTotalId = memoryTotal[0].filter_id;
@@ -390,7 +390,7 @@ export class SpAbilityMonitorChart {
     this.memoryUsedThreadHandle(memoryUsedRow, memoryTotal);
   }
 
-  private cachedThreadHandler(cachedFilesTraceRow: TraceRow<MemoryAbilityMonitorStruct>, cached: any[]): void {
+  private cachedThreadHandler(cachedFilesTraceRow: TraceRow<MemoryAbilityMonitorStruct>, cached: unknown[]): void {// @ts-ignore
     let cachedValue = cached[0].maxValue;
     let cachedValueName = this.memoryMath(cachedValue);
     cachedFilesTraceRow.onThreadHandler = (useCache): void => {
@@ -416,8 +416,8 @@ export class SpAbilityMonitorChart {
   }
 
   private async initCachedRow(
-    cachedFilesRow: TraceRow<MemoryAbilityMonitorStruct>,
-    parent: TraceRow<any>
+    cachedFilesRow: TraceRow<MemoryAbilityMonitorStruct>,// @ts-ignore
+    parent: TraceRow<unknown>
   ): Promise<void> {
     let cached = await queryMemoryMaxData('sys.mem.cached');
 
@@ -450,7 +450,7 @@ export class SpAbilityMonitorChart {
     this.cachedThreadHandler(cachedFilesRow, cached);
   }
 
-  private compressThreadHandler(compressedRow: TraceRow<MemoryAbilityMonitorStruct>, swap: any[]): void {
+  private compressThreadHandler(compressedRow: TraceRow<MemoryAbilityMonitorStruct>, swap: unknown[]): void {// @ts-ignore
     let swapValue = swap[0].maxValue;
     let swapValueName = this.memoryMath(swapValue);
     compressedRow.onThreadHandler = (useCache): void => {
@@ -476,8 +476,8 @@ export class SpAbilityMonitorChart {
   }
 
   private async initCompressedRow(
-    compressedRow: TraceRow<MemoryAbilityMonitorStruct>,
-    parent: TraceRow<any>
+    compressedRow: TraceRow<MemoryAbilityMonitorStruct>,// @ts-ignore
+    parent: TraceRow<unknown>
   ): Promise<void> {
     let swap = await queryMemoryMaxData('sys.mem.swap.total');
     let swapId = swap[0].filter_id;
@@ -527,7 +527,7 @@ export class SpAbilityMonitorChart {
     info('The time to load the Ability Memory is: ', durTime);
   };
 
-  private bytesReadThreadHandler(bytesReadRow: TraceRow<DiskAbilityMonitorStruct>, maxList: any[]): void {
+  private bytesReadThreadHandler(bytesReadRow: TraceRow<DiskAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxBytesRead = maxList[0].bytesRead;
     let maxBytesReadName = this.diskIOMath(maxBytesRead);
     bytesReadRow.onThreadHandler = (useCache): void => {
@@ -553,9 +553,9 @@ export class SpAbilityMonitorChart {
   }
 
   private initBytesReadRow(
-    bytesReadRow: TraceRow<DiskAbilityMonitorStruct>,
-    parentRow: TraceRow<any>,
-    maxList: any[]
+    bytesReadRow: TraceRow<DiskAbilityMonitorStruct>,// @ts-ignore
+    parentRow: TraceRow<unknown>,
+    maxList: unknown[]
   ): void {
     bytesReadRow.rowParentId = key;
     bytesReadRow.rowHidden = !parentRow.expansion;
@@ -584,7 +584,7 @@ export class SpAbilityMonitorChart {
     };
     this.bytesReadThreadHandler(bytesReadRow, maxList);
   }
-  private bytesWriteThreadHandler(bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>, maxList: any[]): void {
+  private bytesWriteThreadHandler(bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxBytesWrite = maxList[0].bytesWrite;
     let maxBytesWriteName = this.diskIOMath(maxBytesWrite);
     bytesWriteRow.onThreadHandler = (useCache): void => {
@@ -610,9 +610,9 @@ export class SpAbilityMonitorChart {
   }
 
   private initBytesWriteRow(
-    bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>,
-    parent: TraceRow<any>,
-    maxList: any[]
+    bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>,// @ts-ignore
+    parent: TraceRow<unknown>,
+    maxList: unknown[]
   ): void {
     bytesWriteRow.rowParentId = key;
     bytesWriteRow.rowHidden = !parent.expansion;
@@ -642,7 +642,8 @@ export class SpAbilityMonitorChart {
     this.bytesWriteThreadHandler(bytesWriteRow, maxList);
   }
 
-  private initReadOspRow(readOpsRow: TraceRow<DiskAbilityMonitorStruct>, parent: TraceRow<any>, maxList: any[]): void {
+  // @ts-ignore
+  private initReadOspRow(readOpsRow: TraceRow<DiskAbilityMonitorStruct>, parent: TraceRow<unknown>, maxList: unknown[]): void {// @ts-ignore
     let maxReadOps = maxList[0].readOps;
     let maxReadOpsName = this.diskIOMath(maxReadOps);
     readOpsRow.rowParentId = key;
@@ -692,7 +693,7 @@ export class SpAbilityMonitorChart {
     };
   }
 
-  private writeOspThreadHandler(writeOpsRow: TraceRow<DiskAbilityMonitorStruct>, maxList: any[]): void {
+  private writeOspThreadHandler(writeOpsRow: TraceRow<DiskAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxWriteOps = maxList[0].writeOps;
     let maxWriteOpsName = this.diskIOMath(maxWriteOps);
     writeOpsRow.onThreadHandler = (useCache): void => {
@@ -718,9 +719,9 @@ export class SpAbilityMonitorChart {
   }
 
   private initWriteOspRow(
-    writeOpsRow: TraceRow<DiskAbilityMonitorStruct>,
-    parent: TraceRow<any>,
-    maxList: any[]
+    writeOpsRow: TraceRow<DiskAbilityMonitorStruct>,// @ts-ignore
+    parent: TraceRow<unknown>,
+    maxList: unknown[]
   ): void {
     writeOpsRow.rowParentId = key;
     writeOpsRow.rowHidden = !parent.expansion;
@@ -772,7 +773,7 @@ export class SpAbilityMonitorChart {
     info('The time to load the Ability DiskIO is: ', durTime);
   };
 
-  private bytesInRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: any[]): void {
+  private bytesInRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxBytesIn = maxList[0].maxIn;
     let maxInByteName = this.networkMath(maxBytesIn);
     row.onThreadHandler = (useCache): void => {
@@ -800,7 +801,7 @@ export class SpAbilityMonitorChart {
   private initBytesInRow(
     row: TraceRow<NetworkAbilityMonitorStruct>,
     parent: TraceRow<ProcessStruct>,
-    maxList: any[]
+    maxList: unknown[]
   ): void {
     row.rowParentId = key;
     row.rowHidden = !parent.expansion;
@@ -829,7 +830,7 @@ export class SpAbilityMonitorChart {
     };
     this.bytesInRowThreadHandler(row, maxList);
   }
-  private bytesOutRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: any[]): void {
+  private bytesOutRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxBytesOut = maxList[0].maxOut;
     let maxOutByteName = this.networkMath(maxBytesOut);
     row.onThreadHandler = (useCache): void => {
@@ -857,7 +858,7 @@ export class SpAbilityMonitorChart {
   private initBytesOutRow(
     row: TraceRow<NetworkAbilityMonitorStruct>,
     parent: TraceRow<ProcessStruct>,
-    maxList: any[]
+    maxList: unknown[]
   ): void {
     row.rowParentId = key;
     row.rowHidden = !parent.expansion;
@@ -887,7 +888,7 @@ export class SpAbilityMonitorChart {
     this.bytesOutRowThreadHandler(row, maxList);
   }
 
-  private packetInRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: any[]): void {
+  private packetInRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxPacketIn = maxList[0].maxPacketIn;
     let maxInPacketName = this.networkMath(maxPacketIn);
     row.onThreadHandler = (useCache): void => {
@@ -915,7 +916,7 @@ export class SpAbilityMonitorChart {
   private initPacketInRow(
     row: TraceRow<NetworkAbilityMonitorStruct>,
     parent: TraceRow<ProcessStruct>,
-    maxList: any[]
+    maxList: unknown[]
   ): void {
     row.rowParentId = key;
     row.rowHidden = !parent.expansion;
@@ -945,7 +946,7 @@ export class SpAbilityMonitorChart {
     this.packetInRowThreadHandler(row, maxList);
   }
 
-  private packetOutRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: any[]): void {
+  private packetOutRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: unknown[]): void {// @ts-ignore
     let maxPacketOut = maxList[0].maxPacketOut;
     let maxOutPacketName = this.networkMath(maxPacketOut);
     row.onThreadHandler = (useCache): void => {
@@ -973,7 +974,7 @@ export class SpAbilityMonitorChart {
   private initPacketOutRow(
     row: TraceRow<NetworkAbilityMonitorStruct>,
     parent: TraceRow<ProcessStruct>,
-    maxList: any[]
+    maxList: unknown[]
   ): void {
     row.rowParentId = key;
     row.rowHidden = !parent.expansion;
@@ -1031,11 +1032,11 @@ export class SpAbilityMonitorChart {
       'Purgeable Total',
       TraceRow.ROW_TYPE_PURGEABLE_TOTAL_ABILITY,
       processRow
-    );
-    totalTraceRow.supplierFrame = (): Promise<any[]> =>
-      new Promise<Array<any>>((resolve): void =>
+    );// @ts-ignore
+    totalTraceRow.supplierFrame = (): Promise<unknown[]> =>
+      new Promise<Array<unknown>>((resolve): void =>
         resolve(
-          abilityPurgeableDataSender(totalTraceRow, snapshotDur, false).then((res: any[]) => {
+          abilityPurgeableDataSender(totalTraceRow, snapshotDur, false).then((res: unknown[]) => {
             this.setName(res);
             return res;
           })
@@ -1051,11 +1052,11 @@ export class SpAbilityMonitorChart {
       'Purgeable Pin',
       TraceRow.ROW_TYPE_PURGEABLE_PIN_ABILITY,
       processRow
-    );
-    pinTraceRow.supplierFrame = (): Promise<any[]> =>
-      new Promise<Array<any>>((resolve): void =>
+    );// @ts-ignore
+    pinTraceRow.supplierFrame = (): Promise<unknown[]> =>
+      new Promise<Array<unknown>>((resolve): void =>
         resolve(
-          abilityPurgeableDataSender(pinTraceRow, snapshotDur, true).then((res: any[]) => {
+          abilityPurgeableDataSender(pinTraceRow, snapshotDur, true).then((res: unknown[]) => {
             this.setName(res);
             return res;
           })
@@ -1070,11 +1071,11 @@ export class SpAbilityMonitorChart {
    */
   private initDmaAbility = async (processRow: TraceRow<ProcessStruct>): Promise<void> => {
     let snapshotDur = MemoryConfig.getInstance().snapshotDur;
-    let dmaTraceRow = this.initTraceRow('abilityMonitorDma', 'DMA', TraceRow.ROW_TYPE_DMA_ABILITY, processRow);
-    dmaTraceRow.supplierFrame = (): Promise<any[]> =>
-      new Promise<Array<any>>((resolve): void =>
+    let dmaTraceRow = this.initTraceRow('abilityMonitorDma', 'DMA', TraceRow.ROW_TYPE_DMA_ABILITY, processRow);// @ts-ignore
+    dmaTraceRow.supplierFrame = (): Promise<unknown[]> =>
+      new Promise<Array<unknown>>((resolve): void =>
         resolve(
-          abilityDmaDataSender(dmaTraceRow, snapshotDur).then((res: any[]) => {
+          abilityDmaDataSender(dmaTraceRow, snapshotDur).then((res: unknown[]) => {
             this.setName(res);
             return res;
           })
@@ -1094,11 +1095,11 @@ export class SpAbilityMonitorChart {
       'Skia Gpu Memory',
       TraceRow.ROW_TYPE_GPU_MEMORY_ABILITY,
       processRow
-    );
-    gpuMemoryTraceRow.supplierFrame = (): Promise<any[]> =>
-      new Promise<Array<any>>((resolve): void =>
+    );// @ts-ignore
+    gpuMemoryTraceRow.supplierFrame = (): Promise<unknown[]> =>
+      new Promise<Array<unknown>>((resolve): void =>
         resolve(
-          abilityGpuMemoryDataSender(gpuMemoryTraceRow, snapshotDur).then((res: any[]) => {
+          abilityGpuMemoryDataSender(gpuMemoryTraceRow, snapshotDur).then((res: unknown[]) => {
             this.setName(res);
             return res;
           })
@@ -1161,20 +1162,20 @@ export class SpAbilityMonitorChart {
     );
   }
 
-  private setName(data: Array<any>): void {
+  private setName(data: Array<unknown>): void {
     if (data.length > 0) {
-      data.forEach((item, index) => {
+      data.forEach((item, index) => {// @ts-ignore
         item.name = `SnapShot ${index}`;
       });
     }
   }
 
-  private computeDur(list: Array<any>): void {
+  private computeDur(list: Array<unknown>): void {
     let endNS = TraceRow.range?.endNS || 0;
     list.forEach((it, i) => {
-      if (i === list.length - 1) {
+      if (i === list.length - 1) {// @ts-ignore
         it.dur = (endNS || 0) - (it.startNS || 0);
-      } else {
+      } else {// @ts-ignore
         it.dur = (list[i + 1].startNS || 0) - (it.startNS || 0);
       }
     });

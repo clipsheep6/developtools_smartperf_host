@@ -290,7 +290,7 @@ export class SpRecordTrace extends BaseElement {
 
   private freshMenuDisable(disable: boolean): void {
     let mainMenu = this.sp!.shadowRoot?.querySelector('#main-menu') as LitMainMenu;
-    mainMenu.menus?.forEach((men): void => {
+    mainMenu.menus?.forEach((men): void => {// @ts-ignore
       men.children.forEach((child: HTMLElement): void => {
         // @ts-ignore
         child.disabled = disable;

@@ -109,22 +109,22 @@ function threadClickHandlerFunc(sp: SpSystemTrace): (e: ThreadStruct) => void {
       },
     ];
     let findEntry = cpuRow!.fixedList[0];
-    sp.rechargeCpuData(
-      findEntry,
+    sp.rechargeCpuData(// @ts-ignore
+      findEntry,// @ts-ignore
       cpuRow.dataListCache.find((it) => it.startTime > findEntry.startTime)
     );
-    if (
-      findEntry!.startTime! + findEntry!.dur! < TraceRow.range!.startNS ||
+    if (// @ts-ignore
+      findEntry!.startTime! + findEntry!.dur! < TraceRow.range!.startNS ||// @ts-ignore
       findEntry!.startTime! > TraceRow.range!.endNS
     ) {
-      sp.timerShaftEL?.setRangeNS(
-        findEntry!.startTime! - findEntry!.dur! * 2,
+      sp.timerShaftEL?.setRangeNS(// @ts-ignore
+        findEntry!.startTime! - findEntry!.dur! * 2,// @ts-ignore
         findEntry!.startTime! + findEntry!.dur! + findEntry!.dur! * 2
       );
     }
-    sp.hoverStructNull().selectStructNull().wakeupListNull();
-    CpuStruct.hoverCpuStruct = findEntry;
-    CpuStruct.selectCpuStruct = findEntry;
+    sp.hoverStructNull().selectStructNull().wakeupListNull();// @ts-ignore
+    CpuStruct.hoverCpuStruct = findEntry;// @ts-ignore
+    CpuStruct.selectCpuStruct = findEntry;// @ts-ignore
     sp.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
     sp.traceSheetEL?.displayCpuData(
       CpuStruct.selectCpuStruct!,
@@ -198,7 +198,7 @@ function jankClickHandlerFunc(sp: SpSystemTrace): Function {
             // 绘制跟自己关联的线
             datas.forEach((data) => {
               //@ts-ignore
-              let endParentRow = sp.shadowRoot?.querySelector<TraceRow<unknown>>(
+              let endParentRow = sp.shadowRoot?.querySelector<TraceRow<any>>(// @ts-ignore
                 `trace-row[row-type='process'][row-id='${data.pid}'][folder]`
               );
               sp.drawJankLine(endParentRow, JankStruct.selectJankStruct!, data, true);
@@ -266,7 +266,7 @@ function cpuClickHandlerTask(threadRow: TraceRow<unknown>, sp: SpSystemTrace, d:
     sp.timerShaftEL?.drawTriangle(findEntry!.startTime || 0, 'inverted');
     sp.traceSheetEL?.displayThreadData(
       ThreadStruct.selectThreadStruct!,
-      threadClickHandlerFunc(sp),
+      threadClickHandlerFunc(sp),// @ts-ignore
       cpuClickHandlerFunc(sp),
       (datas, str): void => {
         sp.removeLinkLinesByBusinessType('thread');
@@ -389,7 +389,7 @@ export default function spSystemTraceOnClickHandler(
   if (row) {
     let pointEvent = sp.createPointEvent(row);
     SpStatisticsHttpUtil.addOrdinaryVisitAction({
-      action: 'trace_row',
+      action: 'trace_row',// @ts-ignore
       event: pointEvent,
     });
   }

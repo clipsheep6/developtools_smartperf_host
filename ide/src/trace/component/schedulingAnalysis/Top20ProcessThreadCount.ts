@@ -105,9 +105,12 @@ export class Top20ProcessThreadCount extends BaseElement {
         },
         tip: (obj): string => {
           return `<div>
-                             <div>pid:${obj.obj.pid}</div> 
-                             <div>p_name:${obj.obj.pName}</div> 
-                             <div>thread count:${obj.obj.threadNumber}</div> 
+                             <div>pid:${// @ts-ignore
+                              obj.obj.pid}</div> 
+                             <div>p_name:${// @ts-ignore
+                              obj.obj.pName}</div> 
+                             <div>thread count:${// @ts-ignore
+                              obj.obj.threadNumber}</div> 
                         </div>
                 `;
         },

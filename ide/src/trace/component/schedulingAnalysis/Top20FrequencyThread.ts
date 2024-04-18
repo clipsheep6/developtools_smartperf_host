@@ -82,7 +82,7 @@ export class Top20FrequencyThread extends BaseElement {
         }
       }
       this.frequencyThreadPie?.showHover();
-    });
+    });// @ts-ignore
     this.frequencyThreadTbl!.itemTextHandleMap.set('freq', (value) => (value === -1 ? 'unknown' : value));
   }
 
@@ -183,10 +183,14 @@ export class Top20FrequencyThread extends BaseElement {
       },
       tip: (obj): string => {
         return `<div>
-                             <div>freq:${obj.obj.freq === -1 ? 'unknown' : obj.obj.freq}</div> 
-                             <div>cpu:${obj.obj.cpu}</div> 
-                             <div>time:${obj.obj.timeStr}</div> 
-                             <div>ratio:${obj.obj.ratio}%</div>
+                             <div>freq:${// @ts-ignore
+                              obj.obj.freq === -1 ? 'unknown' : obj.obj.freq}</div> 
+                             <div>cpu:${// @ts-ignore
+                              obj.obj.cpu}</div> 
+                             <div>time:${// @ts-ignore
+                              obj.obj.timeStr}</div> 
+                             <div>ratio:${// @ts-ignore
+                              obj.obj.ratio}%</div>
                         </div>
                 `;
       },

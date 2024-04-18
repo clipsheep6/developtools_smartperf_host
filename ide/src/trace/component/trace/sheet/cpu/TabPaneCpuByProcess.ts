@@ -28,13 +28,15 @@ export class TabPaneCpuByProcess extends BaseElement {
   private cpuByProcessSource: Array<SelectionData> = [];
   private currentSelectionParam: SelectionParam | undefined;
 
-  set data(cpuByProcessValue: SelectionParam | any) {
+  set data(cpuByProcessValue: SelectionParam | unknown) {
     if (this.currentSelectionParam === cpuByProcessValue) {
       return;
     }
+    // @ts-ignore
     this.currentSelectionParam = cpuByProcessValue;
     this.cpuByProcessRange!.textContent =
       `Selected range: ${ 
+        // @ts-ignore
         parseFloat(((cpuByProcessValue.rightNs - cpuByProcessValue.leftNs) / 1000000.0).toFixed(5))} ms`;
     if (this.cpuByProcessTbl) {
       // @ts-ignore
@@ -43,6 +45,7 @@ export class TabPaneCpuByProcess extends BaseElement {
     }
     this.cpuByProcessTbl!.recycleDataSource = [];
     this.cpuByProcessTbl!.loading = true;
+    // @ts-ignore
     getTabCpuByProcess(cpuByProcessValue.cpus, cpuByProcessValue.leftNs, cpuByProcessValue.rightNs).then((result) => {
       this.cpuByProcessTbl!.loading = false;
       if (result !== null && result.length > 0) {
@@ -116,7 +119,7 @@ export class TabPaneCpuByProcess extends BaseElement {
         `;
   }
 
-  sortByColumn(cpuByProcessDetail: any): void {
+  sortByColumn(cpuByProcessDetail: unknown): void {
     // @ts-ignore
     function compare(property, sort, type) {
       return function (cpuByProcessLeftData: SelectionData, cpuByProcessRightData: SelectionData): number {
@@ -144,13 +147,19 @@ export class TabPaneCpuByProcess extends BaseElement {
     }
 
     if (
+      // @ts-ignore
       cpuByProcessDetail.key === 'pid' ||
+      // @ts-ignore
       cpuByProcessDetail.key === 'wallDuration' ||
+      // @ts-ignore
       cpuByProcessDetail.key === 'avgDuration' ||
+      // @ts-ignore
       cpuByProcessDetail.key === 'occurrences'
     ) {
+      // @ts-ignore
       this.cpuByProcessSource.sort(compare(cpuByProcessDetail.key, cpuByProcessDetail.sort, 'number'));
     } else {
+      // @ts-ignore
       this.cpuByProcessSource.sort(compare(cpuByProcessDetail.key, cpuByProcessDetail.sort, 'string'));
     }
     this.cpuByProcessTbl!.recycleDataSource = this.cpuByProcessSource;

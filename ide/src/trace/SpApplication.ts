@@ -1912,7 +1912,7 @@ export class SpApplication extends BaseElement {
   private validateFileCacheLost(): void {
     caches.has(DbPool.fileCacheKey).then((exist) => {
       if (!exist) {
-        this.mainMenu!.menus?.forEach((mg) => {
+        this.mainMenu!.menus?.forEach((mg) => {// @ts-ignore
           mg.children.forEach((mi: unknown) => {
             //@ts-ignore
             if (mi.title === 'Download File') {

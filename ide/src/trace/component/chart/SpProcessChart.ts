@@ -103,18 +103,19 @@ export class SpProcessChart {
     row.folder = true;
     row.style.height = '40px';
     row.name = 'DeliverInputEvent';
+    // @ts-ignore
     row.supplier = folderSupplier();
     row.onThreadHandler = folderThreadHandler(row, this.trace);
 
     let asyncFuncGroup = Utils.groupBy(//@ts-ignore
       this.processAsyncFuncArray.filter((it) => it.funName === 'deliverInputEvent'),
       'tid'
-    );
+    );// @ts-ignore
     if (Reflect.ownKeys(asyncFuncGroup).length > 0) {
       this.trace.rowsEL?.appendChild(row);
-    }
-    Reflect.ownKeys(asyncFuncGroup).map((key: unknown) => {//@ts-ignore
-      let asyncFuncGroups: Array<unknown> = asyncFuncGroup[key];
+    }// @ts-ignore
+    Reflect.ownKeys(asyncFuncGroup).map((key: any) => {// @ts-ignore
+      let asyncFuncGroups: Array<any> = asyncFuncGroup[key];
       if (asyncFuncGroups.length > 0) {//@ts-ignore
         row.addChildTraceRow(this.createDeliverInputEventRow(row, key, asyncFuncGroups));
       }
@@ -213,8 +214,8 @@ export class SpProcessChart {
     if (FlagsConfig.getFlagsConfigEnableStatus('TaskPool')) {
       allTaskPoolPid = await queryTaskPoolProcessIds();
     }
-    let renderServiceProcess = await queryRsProcess();
-    info('ProcessList Data size is: ', processList!.length);
+    let renderServiceProcess = await queryRsProcess();// @ts-ignore
+    info('ProcessList Data size is: ', processList!.length);// @ts-ignore
     await this.initProcessRow(processList, allTaskPoolPid, allJankProcess, renderServiceProcess);
     let durTime = new Date().getTime() - time;
     info('The time to load the Process data is: ', durTime);
@@ -262,7 +263,7 @@ export class SpProcessChart {
       return pre;
     }, {});
     let queryProcessThreadResult = await queryProcessThreads();
-    let queryProcessThreadsByTableResult = await queryProcessThreadsByTable();
+    let queryProcessThreadsByTableResult = await queryProcessThreadsByTable();// @ts-ignore
     this.processThreads = Utils.removeDuplicates(queryProcessThreadResult, queryProcessThreadsByTableResult, 'tid');
     info('The amount of initialized process threads data is : ', this.processThreads!.length);
   }
@@ -969,9 +970,9 @@ export class SpProcessChart {
   //Async Function
   addAsyncFunction(it: { pid: number; processName: string | null }, processRow: TraceRow<ProcessStruct>): void {//@ts-ignore
     let asyncFuncList = this.processAsyncFuncMap[it.pid] || [];
-    let asyncFuncGroup = Utils.groupBy(asyncFuncList, 'funName');
-    Reflect.ownKeys(asyncFuncGroup).map((key: unknown) => {//@ts-ignore
-      let asyncFunctions: Array<unknown> = asyncFuncGroup[key];
+    let asyncFuncGroup = Utils.groupBy(asyncFuncList, 'funName');// @ts-ignore
+    Reflect.ownKeys(asyncFuncGroup).map((key: any) => {// @ts-ignore
+      let asyncFunctions: Array<any> = asyncFuncGroup[key];
       if (asyncFunctions.length > 0) {
         let isIntersect = (a: unknown, b: unknown): boolean =>//@ts-ignore
           Math.max(a.startTs + a.dur, b.startTs + b.dur) - Math.min(a.startTs, b.startTs) < a.dur + b.dur;

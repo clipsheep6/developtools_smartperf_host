@@ -210,7 +210,8 @@ export class SpHiPerf {
     this.rowFolder.addChildTraceRow(perfCallCutRow);
     perfCallCutRow.focusHandler = (): void => {
       this.callChartRowFocusHandler(perfCallCutRow);
-    };//@ts-ignore
+    };
+    // @ts-ignore
     perfCallCutRow.supplierFrame = async (): Promise<unknown> => {
       const res = await hiperfCallChartDataSender(perfCallCutRow, {
         startTime: window.recordStartNS,
@@ -218,6 +219,7 @@ export class SpHiPerf {
         type: this.callChartType,
         id: this.callChartId,
       });
+      // @ts-ignore
       let maxHeight = res.maxDepth * 20;
       perfCallCutRow.funcMaxHeight = maxHeight;
       if (perfCallCutRow.funcExpand) {
@@ -229,6 +231,7 @@ export class SpHiPerf {
           });
         }
       }
+      // @ts-ignore
       return res.dataList;
     };
     perfCallCutRow.findHoverStruct = (): void => {
@@ -335,7 +338,7 @@ export class SpHiPerf {
           return;
         }
         this.callChartType = type;
-        this.callChartId = id;
+        this.callChartId = id;// @ts-ignore
         row.name = `CallChart [${nodes[0].title}]`;
         row.isComplete = false;
         row.needRefresh = true;

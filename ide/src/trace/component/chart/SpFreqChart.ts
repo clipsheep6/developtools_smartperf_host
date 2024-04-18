@@ -85,6 +85,7 @@ export class SpFreqChart {
     folder.style.height = '40px';
     folder.rowHidden = folder.expansion;
     folder.setAttribute('children', '');
+    // @ts-ignore
     folder.supplier = folderSupplier();
     folder.onThreadHandler = folderThreadHandler(folder, this.trace);
     return folder;
