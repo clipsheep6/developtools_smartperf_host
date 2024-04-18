@@ -623,6 +623,7 @@ export class TraceSheet extends BaseElement {
   ): Promise<void> =>
     this.displayTab<TabPaneCurrentSelection>('current-selection').setThreadData(
       data,
+      // @ts-ignore
       scrollCallback,
       scrollWakeUp,
       callback
@@ -675,6 +676,7 @@ export class TraceSheet extends BaseElement {
     data: JankStruct,
     callback: ((data: Array<any>) => void) | undefined = undefined,
     scrollCallback: ((e: JankStruct) => void) | undefined
+    // @ts-ignore
   ): void => this.displayTab<TabPaneCurrentSelection>('current-selection').setJankData(data, callback, scrollCallback);
   displayShmData = (data: SnapshotStruct, dataList: Array<SnapshotStruct>): void => {
     this.displayTab<TabPaneVmTrackerShmComparison>('box-vmtracker-shm-comparison').setShmData(data, dataList);

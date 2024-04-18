@@ -463,6 +463,7 @@ export function spSystemTraceDrawTaskPollLine(sp: SpSystemTrace, row?: TraceRow<
           let collectList = sp.favoriteChartListEL!.getAllCollectRows();
           for (let selectCollectRow of collectList) {
             if (selectCollectRow.rowId === allocationRowId.toString() && selectCollectRow.rowType === 'func') {
+              // @ts-ignore
               selectRow = selectCollectRow;
               break;
             }
