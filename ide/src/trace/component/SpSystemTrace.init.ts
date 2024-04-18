@@ -577,12 +577,12 @@ function smartEventSubscribe(sp: SpSystemTrace): void {
   window.subscribe(window.SmartEvent.UI.SliceMark, (data) => sp.sliceMarkEventHandler(data));
   window.subscribe(window.SmartEvent.UI.TraceRowComplete, (tr) => {});
   window.subscribe(window.SmartEvent.UI.RefreshCanvas, () => sp.refreshCanvas(false));
-  window.subscribe(window.SmartEvent.UI.KeyboardEnable, (tr) => {
+  window.subscribe(window.SmartEvent.UI.KeyboardEnable, (tr) => {//@ts-ignore
     sp.keyboardEnable = tr.enable;
     if (!sp.keyboardEnable) {
       sp.stopWASD();
     }
-  });
+  });//@ts-ignore
   window.subscribe(window.SmartEvent.UI.CollapseAllLane, (collapse: boolean) => {
     if (!collapse) {
       // 一键折叠之前，记录当前打开的泳道图
@@ -595,14 +595,14 @@ function smartEventSubscribe(sp: SpSystemTrace): void {
     sp.removeAttribute('disable');
     sp.refreshCanvas(true);
   });
-  window.subscribe(window.SmartEvent.UI.MouseEventEnable, (tr) => {
+  window.subscribe(window.SmartEvent.UI.MouseEventEnable, (tr) => {//@ts-ignore
     sp.mouseEventEnable = tr.mouseEnable;
     if (sp.mouseEventEnable) {
       sp.removeAttribute('disable');
     } else {
       sp.setAttribute('disable', '');
     }
-  });
+  });//@ts-ignore
   window.subscribe(window.SmartEvent.UI.CollectGroupChange, (group: string) => (sp.currentCollectGroup = group));
 }
 

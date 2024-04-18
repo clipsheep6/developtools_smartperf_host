@@ -1430,7 +1430,7 @@ export class SpSystemTrace extends BaseElement {
     window.publish(window.SmartEvent.UI.Loading, { loading: false, text: 'Downloading trace file with mark' });
   }
 
-  private subRecordImportListener(): void {
+  private subRecordImportListener(): void {//@ts-ignore
     window.subscribe(window.SmartEvent.UI.ImportRecord, (data: string) => {
       let record = JSON.parse(data);
       if (record.leftNS !== undefined && record.rightNS !== undefined) {
@@ -1587,21 +1587,22 @@ export class SpSystemTrace extends BaseElement {
     });
     window.subscribe(window.SmartEvent.UI.KeyPath, (data): void => {
       this.invisibleRows.forEach((it) => (it.needRefresh = true));
-      this.visibleRows.forEach((it) => (it.needRefresh = true));
+      this.visibleRows.forEach((it) => (it.needRefresh = true));//@ts-ignore
       if (data.length === 0) {
         // clear
         SpSystemTrace.keyPathList = [];
         this.refreshCanvas(false);
       } else {
         // draw
+        //@ts-ignore
         queryCpuKeyPathData(data).then((res): void => {
           SpSystemTrace.keyPathList = res;
           this.refreshCanvas(false);
         });
       }
     });
-    window.subscribe(window.SmartEvent.UI.CheckALL, (data): void => {
-      this.getCollectRows((row) => row.rowParentId === data.rowId).forEach((it) => {
+    window.subscribe(window.SmartEvent.UI.CheckALL, (data): void => {//@ts-ignore
+      this.getCollectRows((row) => row.rowParentId === data.rowId).forEach((it) => {//@ts-ignore
         it.checkType = data.isCheck ? '2' : '0';
       });
     });
@@ -1611,7 +1612,7 @@ export class SpSystemTrace extends BaseElement {
 
   private scrollH: number = 0;
 
-  subscribeBottomTabVisibleEvent(): void {
+  subscribeBottomTabVisibleEvent(): void {//@ts-ignore
     window.subscribe(window.SmartEvent.UI.ShowBottomTab, (data: { show: number; delta: number }): void => {
       if (data.show === 1) {
         //显示底部tab

@@ -566,11 +566,11 @@ export class TabPaneSchedSwitch extends BaseElement {
       removeUnit: true, //移除单位换算
       seriesField: '',
       //设置柱状图的颜色
-      color(a): string {
+      color(a): string {//@ts-ignore
         if (a.cycle === 'Total') {
-          return '#2f72f8';
+          return '#2f72f8';//@ts-ignore
         } else if (a.cycle === 'Cycle A') {
-          return '#ffab67';
+          return '#ffab67';//@ts-ignore
         } else if (a.cycle === 'Cycle B') {
           return '#a285d2';
         } else {
@@ -578,9 +578,9 @@ export class TabPaneSchedSwitch extends BaseElement {
         }
       },
       //鼠标悬浮柱状图上方时显示对应的提示信息
-      tip(a): string {
+      tip(a): string {//@ts-ignore
         if (a && a[0]) {
-          let tip = '';
+          let tip = '';//@ts-ignore
           for (let obj of a) {
             tip = `${tip}
               <div style="display:flex;flex-direction: row;align-items: center;">

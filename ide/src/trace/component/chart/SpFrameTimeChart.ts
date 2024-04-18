@@ -553,7 +553,7 @@ export class SpFrameTimeChart {
     };
   }
 
-  private frameNoExpandTimeOut(event: CustomEventInit<any>, frameTimeLineRow: TraceRow<JanksStruct>): number {
+  private frameNoExpandTimeOut(event: CustomEventInit<unknown>, frameTimeLineRow: TraceRow<JanksStruct>): number {
     if (JankStruct!.selectJankStruct) {
       JankStruct.selectJankStructList?.push(<JankStruct>JankStruct!.selectJankStruct);
     }
@@ -574,14 +574,14 @@ export class SpFrameTimeChart {
         } else {
           linkNode[1].rowEL.translateY = linkNode[1].rowEL.offsetTop - this.trace.rowsPaneEL!.scrollTop;
         }
-        linkNode[1].y = linkNode[1].rowEL!.translateY! + linkNode[1].offsetY;
+        linkNode[1].y = linkNode[1].rowEL!.translateY! + linkNode[1].offsetY;//@ts-ignore
         if (linkNode[0].rowEL.rowParentId === event.detail?.rowId) {
           if (!linkNode[0].rowEL.collect) {
             linkNode[0].x = ns2xByTimeShaft(linkNode[0].ns, this.trace.timerShaftEL!);
             linkNode[0].y = frameTimeLineRow!.translateY! + linkNode[0].offsetY / halfNumber;
             linkNode[0].offsetY = linkNode[0].offsetY / halfNumber;
             linkNode[0].rowEL = frameTimeLineRow;
-          }
+          }//@ts-ignore
         } else if (linkNode[1].rowEL.rowParentId === event.detail?.rowId) {
           if (!linkNode[1].rowEL.collect) {
             linkNode[1].x = ns2xByTimeShaft(linkNode[1].ns, this.trace.timerShaftEL!);

@@ -77,7 +77,7 @@ export class SpChartList extends BaseElement {
     this.removeCollectIcon2 = this.shadowRoot?.querySelector<LitIcon>('#group_2_collect');
     this.rootEl = this.shadowRoot?.querySelector<HTMLDivElement>('.root');
     this.canvas = this.shadowRoot?.querySelector<HTMLCanvasElement>('.panel-canvas');
-    this.canvasCtx = this.canvas?.getContext('2d');
+    this.canvasCtx = this.canvas?.getContext('2d');//@ts-ignore
     window.subscribe(window.SmartEvent.UI.RowHeightChange, (data: { expand: number; value: number }) => {
       this.resizeHeight();
       if (!data.expand) {

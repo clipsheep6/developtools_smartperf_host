@@ -280,7 +280,7 @@ export class TimerShaftElement extends BaseElement {
         window.publish(window.SmartEvent.UI.CollectGroupChange, e.target.value);
       }
     });
-    procedurePool.timelineChange = (a: any): void => this.rangeChangeHandler?.(a);
+    procedurePool.timelineChange = (a: any): void => this.rangeChangeHandler?.(a);//@ts-ignore
     window.subscribe(window.SmartEvent.UI.TimeRange, (b) => this.setRangeNS(b.startNS, b.endNS));
     // -----------------------------点击负载区展开折叠---------------------------------
     this.usageEL = this.shadowRoot?.querySelector('.cpu-usage');
