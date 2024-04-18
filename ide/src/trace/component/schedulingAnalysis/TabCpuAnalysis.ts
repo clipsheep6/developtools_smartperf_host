@@ -50,8 +50,8 @@ export class TabCpuAnalysis extends BaseElement {
     this.drawerCpuTabs = this.shadowRoot?.querySelector<DrawerCpuTabs>('#drawer-cpu-tabs');
     this.schedulingSelect!.onchange = (e): void => {
       this.loadingPieData = true;
-      this.progress!.loading = this.loadingUsage || this.loadingPieData;
-      this.queryPieChartDataByType((e as any).detail.text);
+      this.progress!.loading = this.loadingUsage || this.loadingPieData;//@ts-ignore
+      this.queryPieChartDataByType((e as unknown).detail.text);
     };
     this.drawer!.onClose = (): void => {
       this.drawerCpuTabs!.clearData();
@@ -74,7 +74,7 @@ export class TabCpuAnalysis extends BaseElement {
     this.loadingUsage = true;
     this.loadingPieData = true;
     this.progress!.loading = this.loadingUsage || this.loadingPieData;
-    this.queryLogicWorker('scheduling-getCpuUsage', 'query Cpu Usage Time:', (res): void => {
+    this.queryLogicWorker('scheduling-getCpuUsage', 'query Cpu Usage Time:', (res): void => {//@ts-ignore
       if (res && res.length > 0) {
         this.cpuUsageGrid!.innerHTML = '';
         this.cpuUsageGrid!.append(this.createUsageItem('usage', '%'));
@@ -110,7 +110,7 @@ export class TabCpuAnalysis extends BaseElement {
     this.queryLogicWorker(`scheduling-${type}`, `query ${type} Analysis Time:`, (res): void => {
       for (let key of this.cpuPieMap.keys()) {
         this.cpuPieMap.get(key)!.config = {
-          appendPadding: 10,
+          appendPadding: 10,//@ts-ignore
           data: res.get(key) || [],
           angleField: 'sum',
           colorField: 'value',
@@ -127,8 +127,8 @@ export class TabCpuAnalysis extends BaseElement {
           label: {
             type: 'outer',
             color:
-              type !== 'CPU Idle' ? undefined : (it): string => {
-                return pieChartColors[(it as any).value];
+              type !== 'CPU Idle' ? undefined : (it): string => {//@ts-ignore
+                return pieChartColors[(it as unknown).value];
               },
           },
           interactions: [
@@ -143,7 +143,7 @@ export class TabCpuAnalysis extends BaseElement {
     });
   }
 
-  queryLogicWorker(cpuAnalysisType: string, log: string, handler: (res: any) => void): void {
+  queryLogicWorker(cpuAnalysisType: string, log: string, handler: (res: unknown) => void): void {
     let cpuAnalysisTime = new Date().getTime();
     procedurePool.submitWithName(
       'logic0',
@@ -159,7 +159,7 @@ export class TabCpuAnalysis extends BaseElement {
     info(log, durTime);
   }
 
-  createUsageItem(name: string, value: any): HTMLDivElement {
+  createUsageItem(name: string, value: unknown): HTMLDivElement {
     let div = document.createElement('div');
     div.className = 'usage_item_box';
     div.innerHTML = `<div class="usage_item">${name}</div><div class="usage_item">${value}</div>`;

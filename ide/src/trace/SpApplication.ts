@@ -1725,11 +1725,11 @@ export class SpApplication extends BaseElement {
 
   private initCustomEvents(): void {
     window.subscribe(window.SmartEvent.UI.MenuTrace, () => this.showContent(this.spSystemTrace!));
-    window.subscribe(window.SmartEvent.UI.Error, (err) => {
+    window.subscribe(window.SmartEvent.UI.Error, (err) => {//@ts-ignore
       this.litSearch!.setPercent(err, -1);
       this.progressEL!.loading = false;
       this.freshMenuDisable(false);
-    });
+    });//@ts-ignore
     window.subscribe(window.SmartEvent.UI.Loading, (arg: { loading: boolean; text?: string }) => {
       if (arg.text) {
         this.litSearch!.setPercent(arg.text || '', arg.loading ? -1 : 101);

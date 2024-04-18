@@ -856,7 +856,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         } else {
           // @ts-ignore
           this.rowSettingPop!.visible = false;
-        }
+        }//@ts-ignore
         this.onRowSettingChangeHandler?.(this.rowSettingTree!.getCheckdKeys(), this.rowSettingTree!.getCheckdNodes());
       };
     }
@@ -954,7 +954,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
         isVisible = true;
       }
       // @ts-ignore
-      this.rowSettingPop!.visible = isVisible;
+      this.rowSettingPop!.visible = isVisible;//@ts-ignore
       this.onRowSettingChangeHandler?.(this.rowSettingTree!.getCheckdKeys(), this.rowSettingTree!.getCheckdNodes());
     };
     this.rowSettingPop?.addEventListener('mouseenter', (): void => {
@@ -964,7 +964,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
   }
 
   getRowSettingKeys(): Array<string> {
-    if (this.rowSetting === 'enable') {
+    if (this.rowSetting === 'enable') {//@ts-ignore
       return this.rowSettingTree!.getCheckdKeys();
     }
     return [];

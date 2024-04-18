@@ -670,7 +670,7 @@ export class LitPageTable extends BaseElement {
     newTableElement.style.position = 'absolute';
     newTableElement.style.top = '0px';
     newTableElement.style.left = '0px';
-    newTableElement.style.cursor = 'pointer';
+    newTableElement.style.cursor = 'pointer';//@ts-ignore
     this.setHighLight(rowData.data.isSearch, newTableElement);
     this.addRowElementEvent(newTableElement, rowData);
     return newTableElement;
@@ -980,7 +980,7 @@ export class LitPageTable extends BaseElement {
       element.style.display = 'none';
       return;
     }
-    let childIndex = -1;
+    let childIndex = -1;//@ts-ignore
     this.setHighLight(rowObject.data.isSearch, element);
     element.childNodes.forEach((child) => {
       if (child.nodeType !== 1) {
@@ -989,7 +989,8 @@ export class LitPageTable extends BaseElement {
       childIndex++;
       let idx = firstElement !== undefined ? childIndex + 1 : childIndex;
       this.freshLineFirstElementHandler(firstElement, rowObject, childIndex);
-      let dataIndex = this.columns![idx].getAttribute('data-index') || '1';
+      //@ts-ignore
+      let dataIndex = this.columns![idx].getAttribute('data-index') || '1';//@ts-ignore
       let text = formatName(dataIndex, rowObject.data[dataIndex], this);// @ts-ignore
       if ((this.columns![idx] as unknown).template) {
         (child as HTMLElement).innerHTML = '';
@@ -997,8 +998,8 @@ export class LitPageTable extends BaseElement {
           (this.columns![idx] as unknown).template.render(rowObject.data).content.cloneNode(true)
         );
         (child as HTMLElement).title = text;
-      } else {
-        (child as HTMLElement).innerHTML = text;
+      } else {//@ts-ignore
+        (child as HTMLElement).innerHTML = text;//@ts-ignore
         (child as HTMLElement).title = text;
       }
     });
@@ -1006,7 +1007,7 @@ export class LitPageTable extends BaseElement {
   }
 
   freshLineFirstElementHandler(rowFirstElement: unknown, rowObject: TableRowObject, childIndex: number): void {
-    if (rowFirstElement !== undefined && childIndex === 0) {
+    if (rowFirstElement !== undefined && childIndex === 0) {//@ts-ignore
       this.setHighLight(rowObject.data.isSearch, rowFirstElement);// @ts-ignore
       (rowFirstElement as unknown).data = rowObject.data;// @ts-ignore
       if ((this.columns![0] as unknown).template) {// @ts-ignore
@@ -1014,11 +1015,11 @@ export class LitPageTable extends BaseElement {
           .render(rowObject.data)
           .content.cloneNode(true).innerHTML;
       } else {
-        let dataIndex = this.columns![0].getAttribute('data-index') || '1';
+        let dataIndex = this.columns![0].getAttribute('data-index') || '1';//@ts-ignore
         let text = formatName(dataIndex, rowObject.data[dataIndex], this);// @ts-ignore
         rowFirstElement.innerHTML = text;// @ts-ignore
         rowFirstElement.title = text;
-      }
+      }//@ts-ignore
       if (rowObject.children && rowObject.children.length > 0 && !rowObject.data.hasNext) {
         let btn = this.createExpandBtn(rowObject);// @ts-ignore
         rowFirstElement.insertBefore(btn, rowFirstElement.firstChild);
@@ -1026,7 +1027,7 @@ export class LitPageTable extends BaseElement {
       rowFirstElement.style.paddingLeft = iconWidth * rowObject.depth + 'px';
       if (!rowObject.children || rowObject.children.length === 0) {// @ts-ignore
         rowFirstElement.style.paddingLeft = iconWidth * rowObject.depth + iconWidth + iconPadding * 2 + 'px';
-      }
+      }//@ts-ignore
       if (rowObject.data.hasNext) {
         let btn = this.createBtn(rowObject);// @ts-ignore
         rowFirstElement.title = rowObject.data.objectName;// @ts-ignore
@@ -1036,8 +1037,8 @@ export class LitPageTable extends BaseElement {
       rowFirstElement.onclick = (): void => {
         this.dispatchRowClickEvent(rowObject, [rowFirstElement, element]);
       };// @ts-ignore
-      rowFirstElement.style.transform = `translateY(${rowObject.top - this.tableElement!.scrollTop}px)`;
-      if (rowObject.data.isSelected !== undefined) {
+      rowFirstElement.style.transform = `translateY(${rowObject.top - this.tableElement!.scrollTop}px)`;//@ts-ignore
+      if (rowObject.data.isSelected !== undefined) {//@ts-ignore
         this.setSelectedRow(rowObject.data.isSelected, [rowFirstElement]);
       } else {
         this.setSelectedRow(false, [rowFirstElement]);
@@ -1062,14 +1063,15 @@ export class LitPageTable extends BaseElement {
     };
     element.onmouseenter = (): void => {
       this.dispatchRowHoverEvent(rowData, [element]);
-    };// @ts-ignore
-    (element as unknown).data = rowData.data;
-    if (rowData.data.isSelected !== undefined) {
+    };
+    // @ts-ignore
+    (element as unknown).data = rowData.data;//@ts-ignore
+    if (rowData.data.isSelected !== undefined) {//@ts-ignore
       this.setSelectedRow(rowData.data.isSelected, [element]);
     } else {
       this.setSelectedRow(false, [element]);
-    }
-    if (rowData.data.isHover !== undefined) {
+    }//@ts-ignore
+    if (rowData.data.isHover !== undefined) {//@ts-ignore
       this.setMouseIn(rowData.data.isHover, [element]);
     } else {
       this.setMouseIn(false, [element]);

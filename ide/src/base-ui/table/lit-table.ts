@@ -655,7 +655,7 @@ export class LitTable extends HTMLElement {
         Math.min(totalHeight + height, this.tableElement!.scrollTop + this.tableElement!.clientHeight + headHeight)
       ) {
         let newTableElement = this.addTableElement(tableRowObject, false, false, true, totalHeight);
-        let td = newTableElement?.querySelectorAll('.td');
+        let td = newTableElement?.querySelectorAll('.td');//@ts-ignore
         if (tableRowObject.data.rowName === 'cpu-profiler') {
           td[0].innerHTML = '';
           this.createTextColor(tableRowObject, td[0]);
@@ -716,7 +716,7 @@ export class LitTable extends HTMLElement {
 
   freshLineHandler(index: number, skip: number, visibleObjects: TableRowObject[]): void {
     this.freshCurrentLine(this.currentRecycleList[index], visibleObjects[index + skip]);
-    if (visibleObjects[index + skip]) {
+    if (visibleObjects[index + skip]) {//@ts-ignore
       if (visibleObjects[index + skip].data.rowName === 'cpu-profiler') {
         this.createTextColor(visibleObjects[index + skip], this.currentRecycleList[index].childNodes[0]);
       }
@@ -924,7 +924,7 @@ export class LitTable extends HTMLElement {
     rowTreeElement.style.position = 'absolute';
     rowTreeElement.style.top = '0px';
     rowTreeElement.style.left = '0px';
-    rowTreeElement.style.cursor = 'pointer';
+    rowTreeElement.style.cursor = 'pointer';//@ts-ignore
     this.setHighLight(rowData.data.isSearch, rowTreeElement);
     this.addRowElementEvent(rowTreeElement, rowData);
     return rowTreeElement;
@@ -973,7 +973,7 @@ export class LitTable extends HTMLElement {
       } else {// @ts-ignore
         td.innerHTML = text;
       }// @ts-ignore
-      td.dataIndex = dataIndex;
+      td.dataIndex = dataIndex;//@ts-ignore
       if (text.indexOf('&lt;') === -1) {// @ts-ignore
         td.title = text;
       }
@@ -1038,7 +1038,7 @@ export class LitTable extends HTMLElement {
     tdDiv.style.overflow = 'hidden';// @ts-ignore
     tdDiv.style.textOverflow = 'ellipsis';// @ts-ignore
     tdDiv.style.whiteSpace = 'nowrap';// @ts-ignore
-    let text = formatName(dataIndex, rowData.data[dataIndex], this);
+    let text = formatName(dataIndex, rowData.data[dataIndex], this);//@ts-ignore
     if (text.indexOf('&lt;') === -1) {// @ts-ignore
       if (dataIndex === 'selfTimeStr' && rowData.data.chartFrameChildren) {// @ts-ignore
         tdDiv.title = rowData.data.selfTime + 'ns';// @ts-ignore
@@ -1098,7 +1098,7 @@ export class LitTable extends HTMLElement {
     td.style.whiteSpace = 'nowrap';// @ts-ignore
     td.dataIndex = dataIndex;// @ts-ignore
     td.style.justifyContent = column.getAttribute('align') || 'flex-start';// @ts-ignore
-    let text = formatName(dataIndex, rowData.data[dataIndex], this);
+    let text = formatName(dataIndex, rowData.data[dataIndex], this);//@ts-ignore
     if (text.indexOf('&lt;') === -1) {// @ts-ignore
       if (dataIndex === 'totalTimeStr' && rowData.data.chartFrameChildren) {// @ts-ignore
         td.title = rowData.data.totalTime + 'ns';
@@ -1440,7 +1440,7 @@ export class LitTable extends HTMLElement {
       element.style.display = 'none';
       return;
     }
-    let childIndex = -1;
+    let childIndex = -1;//@ts-ignore
     this.setHighLight(rowObject.data.isSearch, element);
     element.childNodes.forEach((child) => {
       if (child.nodeType !== 1) {
@@ -1450,7 +1450,8 @@ export class LitTable extends HTMLElement {
       let idx = firstElement !== undefined ? childIndex + 1 : childIndex;
       this.freshLineFirstElementHandler(firstElement, rowObject, childIndex);
       if (idx < this.columns!.length) {
-        let dataIndex = this.columns![idx].getAttribute('data-index') || '1';
+        //@ts-ignore
+        let dataIndex = this.columns![idx].getAttribute('data-index') || '1';//@ts-ignore
         let text = formatName(dataIndex, rowObject.data[dataIndex], this);// @ts-ignore
         if ((this.columns![idx] as unknown).template) {
           (child as HTMLElement).innerHTML = '';
@@ -1458,19 +1459,19 @@ export class LitTable extends HTMLElement {
             (this.columns![idx] as unknown).template.render(rowObject.data).content.cloneNode(true)
           );
           (child as HTMLElement).title = text;
-        } else {
+        } else {//@ts-ignore
           if (rowObject.data.rowName === 'cpu-profiler' && dataIndex === 'symbolName') {
             (child as HTMLElement).innerHTML = '';
-          } else {
+          } else {//@ts-ignore
             (child as HTMLElement).innerHTML = text;
-          }
-          if (dataIndex === 'selfTimeStr' && rowObject.data.chartFrameChildren) {
-            (child as HTMLElement).title = rowObject.data.selfTime + 'ns';
-          } else if (dataIndex === 'totalTimeStr' && rowObject.data.chartFrameChildren) {
+          }//@ts-ignore
+          if (dataIndex === 'selfTimeStr' && rowObject.data.chartFrameChildren) {//@ts-ignore
+            (child as HTMLElement).title = rowObject.data.selfTime + 'ns';//@ts-ignore
+          } else if (dataIndex === 'totalTimeStr' && rowObject.data.chartFrameChildren) {//@ts-ignore
             (child as HTMLElement).title = rowObject.data.totalTime + 'ns';
           } else if (dataIndex === 'timeStr' && rowObject.data instanceof JsCpuProfilerStatisticsStruct) {
             (child as HTMLElement).title = rowObject.data.time + 'ns';
-          } else {
+          } else {//@ts-ignore
             (child as HTMLElement).title = text;
           }
         }
@@ -1509,13 +1510,13 @@ export class LitTable extends HTMLElement {
       }
     };
 // @ts-ignore
-    (element as unknown).data = rowObject.data;
-    if (rowObject.data.isSelected !== undefined) {
+    (element as unknown).data = rowObject.data;//@ts-ignore
+    if (rowObject.data.isSelected !== undefined) {//@ts-ignore
       this.setSelectedRow(rowObject.data.isSelected, [element]);
     } else {
       this.setSelectedRow(false, [element]);
-    }
-    if (rowObject.data.isHover !== undefined) {
+    }//@ts-ignore
+    if (rowObject.data.isHover !== undefined) {//@ts-ignore
       this.setMouseIn(rowObject.data.isHover, [element]);
     } else {
       this.setMouseIn(false, [element]);
@@ -1526,7 +1527,7 @@ export class LitTable extends HTMLElement {
   }
 
   freshLineFirstElementHandler(firstElement: unknown, rowObject: TableRowObject, childIndex: number): void {
-    if (firstElement !== undefined && childIndex === 0) {
+    if (firstElement !== undefined && childIndex === 0) {//@ts-ignore
       this.setHighLight(rowObject.data.isSearch, firstElement);// @ts-ignore
       (firstElement as unknown).data = rowObject.data;// @ts-ignore
       if ((this.columns![0] as unknown).template) {// @ts-ignore
@@ -1534,15 +1535,15 @@ export class LitTable extends HTMLElement {
           .render(rowObject.data)
           .content.cloneNode(true).innerHTML;
       } else {
-        let dataIndex = this.columns![0].getAttribute('data-index') || '1';
-        let text = formatName(dataIndex, rowObject.data[dataIndex], this);
+        let dataIndex = this.columns![0].getAttribute('data-index') || '1';//@ts-ignore
+        let text = formatName(dataIndex, rowObject.data[dataIndex], this);//@ts-ignore
         if (rowObject.data.rowName === 'js-memory' || rowObject.data.rowName === 'cpu-profiler') {// @ts-ignore
           firstElement.innerHTML = '';
         } else {// @ts-ignore
           firstElement.innerHTML = text;
         }// @ts-ignore
         firstElement.title = text;
-      }
+      }//@ts-ignore
       if (rowObject.children && rowObject.children.length > 0 && !rowObject.data.hasNext) {
         let btn = this.createExpandBtn(rowObject);// @ts-ignore
         firstElement.insertBefore(btn, firstElement.firstChild);
@@ -1550,14 +1551,14 @@ export class LitTable extends HTMLElement {
       firstElement.style.paddingLeft = iconWidth * rowObject.depth + 'px';
       if (!rowObject.children || rowObject.children.length === 0) {// @ts-ignore
         firstElement.style.paddingLeft = iconWidth * rowObject.depth + iconWidth + iconPadding * 2 + 'px';
-      }
+      }//@ts-ignore
       if (rowObject.data.hasNext) {
         let btn = this.createBtn(rowObject);// @ts-ignore
         firstElement.title = rowObject.data.objectName;// @ts-ignore
         firstElement.insertBefore(btn, firstElement.firstChild);// @ts-ignore
         firstElement.style.paddingLeft = iconWidth * rowObject.depth + 'px';
       }
-      this.jsMemoryHandler(rowObject, firstElement);
+      this.jsMemoryHandler(rowObject, firstElement);//@ts-ignore
       if (rowObject.data.rowName === 'cpu-profiler') {
         this.createTextColor(rowObject, firstElement);
       }// @ts-ignore
@@ -1565,8 +1566,8 @@ export class LitTable extends HTMLElement {
         this.dispatchRowClickEvent(rowObject, [firstElement, element], e);
         e.stopPropagation();
       };// @ts-ignore
-      firstElement.style.transform = `translateY(${rowObject.top - this.tableElement!.scrollTop}px)`;
-      if (rowObject.data.isSelected !== undefined) {
+      firstElement.style.transform = `translateY(${rowObject.top - this.tableElement!.scrollTop}px)`;//@ts-ignore
+      if (rowObject.data.isSelected !== undefined) {//@ts-ignore
         this.setSelectedRow(rowObject.data.isSelected, [firstElement]);
       } else {
         this.setSelectedRow(false, [firstElement]);
