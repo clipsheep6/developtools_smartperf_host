@@ -41,10 +41,13 @@ export class TabPaneCpuFreqLimits extends BaseElement {
     let list: any[] = [];
     getCpuLimitFreqBoxSelect(cpuFreqLimitSelection.cpuFreqLimit, cpuFreqLimitSelection.rightNs).then((res) => {
       for (let it of res) {
+        //@ts-ignore
         if (!it.dur || it.startNs + it.dur > cpuFreqLimitSelection.rightNs) {
+          //@ts-ignore
           it.dur = (cpuFreqLimitSelection.rightNs || 0) - (it.startNs || 0);
         }
       }
+        //@ts-ignore
       this.formatData(res, cpuFreqLimitSelection.leftNs, cpuFreqLimitSelection.rightNs);
     });
   }

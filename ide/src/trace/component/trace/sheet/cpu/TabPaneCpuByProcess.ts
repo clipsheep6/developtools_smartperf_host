@@ -50,18 +50,19 @@ export class TabPaneCpuByProcess extends BaseElement {
         let sumWall = 0.0;
         let sumOcc = 0;
         for (let e of result) {
-          let process = Utils.PROCESS_MAP.get(e.pid);
-          e.process = !process || process.length === 0 ? '[NULL]' : process;
-          sumWall += e.wallDuration;
-          sumOcc += e.occurrences;
-          e.wallDuration = parseFloat((e.wallDuration / 1000000.0).toFixed(5));
+          //@ts-ignore
+          let process = Utils.PROCESS_MAP.get(e.pid);//@ts-ignore
+          e.process = !process || process.length === 0 ? '[NULL]' : process;//@ts-ignore
+          sumWall += e.wallDuration;//@ts-ignore
+          sumOcc += e.occurrences;//@ts-ignore
+          e.wallDuration = parseFloat((e.wallDuration / 1000000.0).toFixed(5));//@ts-ignore
           e.avgDuration = parseFloat((parseFloat(e.avgDuration) / 1000000.0).toFixed(5)).toString();
         }
         let count = new SelectionData();
         count.process = ' ';
         count.wallDuration = parseFloat((sumWall / 1000000.0).toFixed(5));
         count.occurrences = sumOcc;
-        result.splice(0, 0, count);
+        result.splice(0, 0, count);//@ts-ignore
         this.cpuByProcessSource = result;
         this.cpuByProcessTbl!.recycleDataSource = result;
       } else {

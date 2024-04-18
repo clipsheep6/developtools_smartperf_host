@@ -47,6 +47,7 @@ export class SpFreqChart {
   async init(): Promise<void> {
     let freqList = await queryCpuFreq();
     let cpuStateFilterIds = await queryCpuStateFilter();
+    //@ts-ignore
     this.trace.stateRowsId = cpuStateFilterIds;
     let cpuFreqLimits = await getCpuLimitFreqId();
     let cpuFreqLimitsMax = await getCpuLimitFreqMax(cpuFreqLimits.map((limit) => limit.maxFilterId).join(','));
@@ -90,8 +91,8 @@ export class SpFreqChart {
   }
 
   async addFreqRows(freqList: Array<any>): Promise<void> {
-    let freqMaxList = await queryCpuMaxFreq();
-    CpuFreqStruct.maxFreq = freqMaxList[0].maxFreq;
+    let freqMaxList = await queryCpuMaxFreq();//@ts-ignore
+    CpuFreqStruct.maxFreq = freqMaxList[0].maxFreq;//@ts-ignore
     let maxFreqObj = Utils.getFrequencyWithUnit(freqMaxList[0].maxFreq);
     CpuFreqStruct.maxFreq = maxFreqObj.maxFreq;
     CpuFreqStruct.maxFreqName = maxFreqObj.maxFreqName;

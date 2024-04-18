@@ -63,6 +63,7 @@ export class SpVirtualMemChart {
       vmFolder.canvasRestore(this.trace.canvasPanelCtx!, this.trace);
     };
     this.trace.rowsEL?.appendChild(vmFolder);
+    //@ts-ignore
     array.forEach((it) => this.initVirtualMemoryRow(vmFolder, it.id, it.name));
   }
 

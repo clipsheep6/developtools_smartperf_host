@@ -124,10 +124,10 @@ export class Top20FrequencyThread extends BaseElement {
     }
     this.traceChange = false;
     this.frequencyThreadProgress!.loading = true;
-    if (Top20FrequencyThread.threads === undefined) {
+    if (Top20FrequencyThread.threads === undefined) {//@ts-ignore
       Top20FrequencyThread.threads = (await queryThreads()) || [];
       this.nodata!.noData = Top20FrequencyThread.threads === undefined || Top20FrequencyThread.threads.length === 0;
-      this.threadSelect!.innerHTML = '';
+      this.threadSelect!.innerHTML = '';//@ts-ignore
       let threads = Top20FrequencyThread.threads.map((it) => {
         let option = new LitSelectOption();
         option.setAttribute('value', `${it.tid}`);
@@ -135,9 +135,9 @@ export class Top20FrequencyThread extends BaseElement {
         return option;
       });
       this.threadSelect!.append(...threads);
-      this.threadSelect?.initOptions();
-      this.threadSelect!.value = `${Top20FrequencyThread.threads[0].tid}`;
-      this.currentThread!.textContent = Top20FrequencyThread.threads[0].name;
+      this.threadSelect?.initOptions();//@ts-ignore
+      this.threadSelect!.value = `${Top20FrequencyThread.threads[0].tid}`;//@ts-ignore
+      this.currentThread!.textContent = Top20FrequencyThread.threads[0].name;//@ts-ignore
       this.currentTid = Top20FrequencyThread.threads[0].tid;
       this.queryData();
     }

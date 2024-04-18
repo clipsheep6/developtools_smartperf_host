@@ -109,6 +109,7 @@ export class SpArkTsChart implements ParseListener {
     let jsMemory = await queryJsMemoryData();
     if (jsMemory.length > 0 || jsCpu.length > 0) {
       this.folderRow = TraceRow.skeleton();
+      //@ts-ignore
       this.process = jsConfig[0].pid;
       this.folderRow.rowId = this.process;
       this.folderRow.rowType = TraceRow.ROW_TYPE_ARK_TS;
@@ -122,18 +123,21 @@ export class SpArkTsChart implements ParseListener {
       this.folderRow.supplierFrame = (): Promise<Array<unknown>> =>
         new Promise<Array<unknown>>((resolve) => resolve([]));
       this.folderThreadHandler();
-      this.trace.rowsEL?.appendChild(this.folderRow);
+      this.trace.rowsEL?.appendChild(this.folderRow);//@ts-ignore
       if (this.folderRow && jsConfig[0].type !== -1 && jsMemory.length > 0) {
         this.folderRow.addTemplateTypes('Memory');
-        if (jsConfig[0].type === TYPE_SNAPSHOT) {
+        if (//@ts-ignore
+        jsConfig[0].type === TYPE_SNAPSHOT) {
           // snapshot
           await this.initSnapshotChart();
-        } else if (jsConfig[0].type === TYPE_TIMELINE) {
+        } else if (//@ts-ignore
+        jsConfig[0].type === TYPE_TIMELINE) {
           // timeline
           await this.initTimelineChart();
         }
       }
-      if (this.folderRow && jsConfig[0].enableCpuProfiler === 1 && jsCpu.length > 0) {
+      if (//@ts-ignore
+      this.folderRow && jsConfig[0].enableCpuProfiler === 1 && jsCpu.length > 0) {
         await this.initJsCpuChart();
       }
       if ((this.heapSnapshotRow || this.heapTimelineRow) && jsMemory.length > 0) {

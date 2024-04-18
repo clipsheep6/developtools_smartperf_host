@@ -117,7 +117,7 @@ export class SpChartManager {
       let appStartUpPids = await queryAppStartupProcessIds();
       appStartUpPids.forEach((it) => SpChartManager.APP_STARTUP_PID_ARR.push(it.pid));
     }
-    await this.initTraceConfig();
+    await this.initTraceConfig();//@ts-ignore
     dict.map((d) => SpSystemTrace.DATA_DICT.set(d['id'], d['data']));
     await this.cacheDataDictToWorker();
     SpSystemTrace.DATA_TASK_POOL_CALLSTACK.clear();
@@ -125,16 +125,17 @@ export class SpChartManager {
     taskPoolCallStack.map((d) => SpSystemTrace.DATA_TASK_POOL_CALLSTACK.set(d.id, d));
     progress('time range', 65);
     await this.initTotalTime();
-    let ptArr = await queryThreadAndProcessName();
+    let ptArr = await queryThreadAndProcessName();//@ts-ignore
     this.handleProcessThread(ptArr);
     info('initData timerShaftEL Data initialized');
     const range = await queryTraceRange();
+    //@ts-ignore
     this.tranceRange = range[0];
   }
 
   async initCpu(progress: Function): Promise<void> {
     progress('cpu', 70);
-    let count = await sliceSender();
+    let count = await sliceSender();//@ts-ignore
     await this.cpu.init(count.cpu);
     info('initData cpu Data initialized');
     if (FlagsConfig.getFlagsConfigEnableStatus('Bpftrace')) {
@@ -203,7 +204,7 @@ export class SpChartManager {
 
   async importSoFileUpdate(): Promise<void> {
     SpSystemTrace.DATA_DICT.clear();
-    let dict = await queryDataDICT();
+    let dict = await queryDataDICT();//@ts-ignore
     dict.map((d) => SpSystemTrace.DATA_DICT.set(d['id'], d['data']));
     await this.cacheDataDictToWorker();
     await perfDataQuery.initPerfCache();
