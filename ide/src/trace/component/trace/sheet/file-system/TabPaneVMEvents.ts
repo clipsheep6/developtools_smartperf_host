@@ -189,6 +189,7 @@ export class TabPaneVirtualMemoryEvents extends BaseElement {
       (res: any) => {
         this.vmEventSource = this.vmEventSource.concat(res.data);
         this.queryVmEventDataSource = this.queryVmEventDataSource.concat(res.data);
+        // @ts-ignore
         this.filterTypeData(vmEventParam?.fileSystemVMData?.path || undefined);
         vmEventParam.fileSystemVMData = undefined;
         res.data = null;

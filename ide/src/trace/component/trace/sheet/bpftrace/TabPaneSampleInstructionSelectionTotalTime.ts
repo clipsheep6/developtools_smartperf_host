@@ -83,6 +83,7 @@ export class TabPaneSampleInstructionTotalTime extends BaseElement {
   }
 
   set data(SampleParam: SelectionParam) {
+    // @ts-ignore
     this.onReadableData = SampleParam.sampleData[0].property;
     this.calInstructionRangeCount();
   }
