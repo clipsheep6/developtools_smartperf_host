@@ -32,24 +32,24 @@ export class TabPaneSlices extends BaseElement {
   private slicesSource: Array<SelectionData> = [];
   private currentSelectionParam: SelectionParam | undefined;
 
-  set data(slicesParam: SelectionParam | any) {
+  set data(slicesParam: SelectionParam | unknown) {
     if (this.currentSelectionParam === slicesParam) {
       return;
-    }
+    }//@ts-ignore
     this.currentSelectionParam = slicesParam;
-    this.slicesRange!.textContent = `Selected range: ${parseFloat(
+    this.slicesRange!.textContent = `Selected range: ${parseFloat(//@ts-ignore
       ((slicesParam.rightNs - slicesParam.leftNs) / 1000000.0).toFixed(5)
     )} ms`;
     let asyncNames: Array<string> = [];
-    let asyncPid: Array<number> = [];
-    slicesParam.funAsync.forEach((it: any) => {
-      asyncNames.push(it.name);
+    let asyncPid: Array<number> = [];//@ts-ignore
+    slicesParam.funAsync.forEach((it: unknown) => {//@ts-ignore
+      asyncNames.push(it.name);//@ts-ignore
       asyncPid.push(it.pid);
     });
     this.slicesTbl!.loading = true;
     let filterNameEL: HTMLInputElement | undefined | null =
-      this.shadowRoot?.querySelector<HTMLInputElement>('#filterName');
-    getTabSlicesAsyncFunc(asyncNames, asyncPid, slicesParam.leftNs, slicesParam.rightNs).then((res) => {
+      this.shadowRoot?.querySelector<HTMLInputElement>('#filterName');//@ts-ignore
+    getTabSlicesAsyncFunc(asyncNames, asyncPid, slicesParam.leftNs, slicesParam.rightNs).then((res) => {//@ts-ignore
       getTabSlices(slicesParam.funTids, slicesParam.processIds, slicesParam.leftNs, slicesParam.rightNs).then(
         (res2) => {
           this.slicesTbl!.loading = false;
@@ -58,10 +58,15 @@ export class TabPaneSlices extends BaseElement {
             let sumWall = 0.0;
             let sumOcc = 0;
             for (let processSliceItem of processSlicesResult) {
+              //@ts-ignore
               processSliceItem.name = processSliceItem.name === null ? '' : processSliceItem.name;
+              //@ts-ignore
               sumWall += processSliceItem.wallDuration;
+              //@ts-ignore
               sumOcc += processSliceItem.occurrences;
+              //@ts-ignore
               processSliceItem.wallDuration = parseFloat((processSliceItem.wallDuration / 1000000.0).toFixed(5));
+              //@ts-ignore
               processSliceItem.avgDuration = parseFloat((processSliceItem.avgDuration / 1000000.0).toFixed(5));
             }
             let count = new SelectionData();
@@ -72,6 +77,7 @@ export class TabPaneSlices extends BaseElement {
             if (filterNameEL && filterNameEL.value.trim() !== '') {
               this.findName(filterNameEL.value);
             } else {
+              //@ts-ignore
               this.slicesSource = processSlicesResult;
               this.slicesTbl!.recycleDataSource = processSlicesResult;
             }
@@ -129,8 +135,8 @@ export class TabPaneSlices extends BaseElement {
         return;
       }
       // @ts-ignore
-      search.list = mixedResults.filter((item) => item.funName === data.name);
-      const sliceRowList: Array<TraceRow<any>> = [];
+      search.list = mixedResults.filter((item) => item.funName === data.name);//@ts-ignore
+      const sliceRowList: Array<TraceRow<unknown>> = [];
       // 框选的slice泳道
       for (let row of spSystemTrace.rangeSelect.rangeTraceRow!) {
         if (row.rowType === 'func') {
@@ -152,9 +158,9 @@ export class TabPaneSlices extends BaseElement {
   }
 
   private slicesTblFreshSearchSelect(
-    search: LitSearch,
-    sliceRowList: Array<TraceRow<any>>,
-    data: any,
+    search: LitSearch,//@ts-ignore
+    sliceRowList: Array<TraceRow<unknown>>,
+    data: unknown,
     spSystemTrace: SpSystemTrace
   ): void {
     let input = search.shadowRoot?.querySelector('input') as HTMLInputElement;
@@ -189,7 +195,7 @@ export class TabPaneSlices extends BaseElement {
 
     if (rangeSelectList.length === 0) {
       return;
-    }
+    }//@ts-ignore
     input.value = data.name;
     search.list = rangeSelectList;
     search.total = search.list.length;
@@ -239,7 +245,7 @@ export class TabPaneSlices extends BaseElement {
         `;
   }
 
-  sortByColumn(slicesDetail: any): void {
+  sortByColumn(slicesDetail: unknown): void {
     // @ts-ignore
     function compare(property, slicesSort, type) {
       return function (slicesLeftData: SelectionData, slicesRightData: SelectionData) {
@@ -268,10 +274,10 @@ export class TabPaneSlices extends BaseElement {
         }
       };
     }
-
-    if (slicesDetail.key === 'name') {
+//@ts-ignore
+    if (slicesDetail.key === 'name') {//@ts-ignore
       this.slicesSource.sort(compare(slicesDetail.key, slicesDetail.sort, 'string'));
-    } else {
+    } else {//@ts-ignore
       this.slicesSource.sort(compare(slicesDetail.key, slicesDetail.sort, 'number'));
     }
     this.slicesTbl!.recycleDataSource = this.slicesSource;

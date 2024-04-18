@@ -81,6 +81,7 @@ export class SpProcessChart {
   initAsyncFuncData = async (traceRange: { startTs: number; endTs: number }): Promise<void> => {
     const funcNamesArray = await queryAllFuncNames();
     funcNamesArray.forEach((it) => {
+      //@ts-ignore
       this.funcNameMap.set(it.id, it.name);
     });
     let asyncFuncList: unknown[] = await queryProcessAsyncFunc(traceRange);
@@ -229,24 +230,26 @@ export class SpProcessChart {
 
     let soInitNamesArray = await queryAllSoInitNames();
     soInitNamesArray.forEach((it) => {
+      //@ts-ignore
       this.soInitNameMap.set(it.id, it.name);
     });
     let processSrcSliceArray = await queryAllSrcSlices();
     processSrcSliceArray.forEach((it) => {
+      //@ts-ignore
       this.processSrcSliceMap.set(it.id, it.src);
     });
     let threadFuncMaxDepthArray = await getMaxDepthByTid();
     info('Gets the maximum tier per thread , tid and maxDepth');
-    threadFuncMaxDepthArray.forEach((it) => {
+    threadFuncMaxDepthArray.forEach((it) => {//@ts-ignore
       this.threadFuncMaxDepthMap.set(`${it.ipid}-${it.tid}`, it.maxDepth);
     });
     info('convert tid and maxDepth array to map');
     let pidCountArray = await queryProcessContentCount();
     info('fetch per process  pid,switch_count,thread_count,slice_count,mem_count');
-    pidCountArray.forEach((it) => {
-      this.processThreadDataCountMap.set(it.pid, it.switch_count);
-      this.processThreadCountMap.set(it.pid, it.thread_count);
-      this.processFuncDataCountMap.set(it.pid, it.slice_count);
+    pidCountArray.forEach((it) => {//@ts-ignore
+      this.processThreadDataCountMap.set(it.pid, it.switch_count);//@ts-ignore
+      this.processThreadCountMap.set(it.pid, it.thread_count);//@ts-ignore
+      this.processFuncDataCountMap.set(it.pid, it.slice_count);//@ts-ignore
       this.processMemDataCountMap.set(it.pid, it.mem_count);
     });
     this.processMem = await queryProcessMem();

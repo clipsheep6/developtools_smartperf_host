@@ -88,7 +88,7 @@ export class SpCpuChart {
     let cpuSchedSlice = await queryCpuSchedSlice();
     this.initSchedSliceData(cpuSchedSlice);
     info('Cpu trace row data size is: ', array.length);
-    if (array && array.length > 0 && array[0]) {
+    if (array && array.length > 0 && array[0]) {//@ts-ignore
       let cpuMax = array[0].cpu;
       CpuStruct.cpuCount = cpuMax + 1;
       for (let i1 = 0; i1 < CpuStruct.cpuCount; i1++) {

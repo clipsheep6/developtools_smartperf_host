@@ -448,6 +448,7 @@ export class TabPaneCurrentSelection extends BaseElement {
       let argsBinderRes = result[1];
       let asyncBinderStract: unknown;
       if (asyncBinderRes.length > 0) {
+        //@ts-ignore
         asyncBinderRes[0].type = TraceRow.ROW_TYPE_FUNC;
         asyncBinderStract = asyncBinderRes[0];
       }
@@ -932,6 +933,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     if (data.frame_type === 'render_service') {
       queryGpuDur(data.id!).then((it) => {
         if (it.length > 0) {
+          //@ts-ignore
           list.push({ name: 'Gpu Duration', value: getTimeString(it[0].gpu_dur) });
         }
       });
@@ -954,6 +956,7 @@ export class TabPaneCurrentSelection extends BaseElement {
       if (it.length > 0) {
         list.push({
           name: 'Gpu Duration',
+          //@ts-ignore
           value: getTimeString(it[0].gpu_dur),
         });
       }
@@ -1296,6 +1299,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         useEnd ? recordNs + data.startTs! + data.dur! : recordNs + data.startTs!
       ).then((result) => {
         if (result.length > 0) {
+          //@ts-ignore
           let pt: {
             pid: number;
             tid: number;
@@ -1370,6 +1374,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         let recordNs: number = (window as unknown).recordStartNS;
         queryThreadByItid(data.itid!, recordNs + data.startTs!).then((result) => {
           if (result.length > 0) {
+            //@ts-ignore
             let pt: {
               pid: number;
               tid: number;
@@ -1746,8 +1751,9 @@ export class TabPaneCurrentSelection extends BaseElement {
           priority: 0,
           isSelected: false,
         };
+        //@ts-ignore
         let find = res.find((re) => re.cpu === it.cpu && re.itid === it.itid && re.ts === it.ts);
-        if (find) {
+        if (find) {//@ts-ignore
           wake.priority = find.priority;
         }
         maxDuration = Math.max(maxDuration, it.dur!);

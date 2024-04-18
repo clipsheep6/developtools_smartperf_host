@@ -102,11 +102,12 @@ export class TabPanePurgTotalComparisonAbility extends BaseElement {
     // 点击的
     await querySysPurgeableSelectionTab(baseTime).then(async (results): Promise<void> => {
       for (let i = 0; i < results.length; i++) {
+        //@ts-ignore
         baseArr.push(new CompareStruct(results[i].name, results[i].value));
       }
       // 被比较的
       await querySysPurgeableSelectionTab(targetTime).then((results): void => {
-        for (let i = 0; i < results.length; i++) {
+        for (let i = 0; i < results.length; i++) { //@ts-ignore
           targetArr.push(new CompareStruct(results[i].name, results[i].value));
         }
         let compareData = compare(baseArr, targetArr);

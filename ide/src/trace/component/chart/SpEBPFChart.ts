@@ -35,8 +35,11 @@ export class SpEBPFChart {
   async init(): Promise<void> {
     let sys = await hasFileSysData();
     if (sys.length > 0) {
+      //@ts-ignore
       let fsCount = sys[0]['fsCount'] ?? 0;
+      //@ts-ignore
       let vmCount = sys[0]['vmCount'] ?? 0;
+      //@ts-ignore
       let ioCount = sys[0]['ioCount'] ?? 0;
       if (sys && sys.length > 0 && (fsCount > 0 || vmCount > 0 || ioCount > 0)) {
         let folder = await this.initFolder();

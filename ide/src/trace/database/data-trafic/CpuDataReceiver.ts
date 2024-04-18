@@ -120,6 +120,7 @@ export function searchDataHandler(data: unknown): void {
   let tidArr = data.params.tidArr as number[];
   for (let value of Array.from(cpuList.values())) {
     res.push(
+      //@ts-ignore
       ...value.filter((cpuData) => pidArr.includes(cpuData.pid || cpuData.processId) || tidArr.includes(cpuData.tid))
     );
   }

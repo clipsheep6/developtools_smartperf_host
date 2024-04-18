@@ -45,6 +45,7 @@ export class TabPanePurgTotalSelection extends BaseElement {
             value: (startNs + (window as any).recordStartNS) / 1000000000,
           });
           for (let i = 0; i < purgeTotalSelectResults.length; i++) {
+            //@ts-ignore
             purgeTotalSelectResults[i].value = Utils.getBinaryByteWithUnit(purgeTotalSelectResults[i].value);
             this.purgeableSelectionSource.push(purgeTotalSelectResults[i]);
           }
@@ -60,7 +61,7 @@ export class TabPanePurgTotalSelection extends BaseElement {
             name: 'TimeStamp(Absolute)',// @ts-ignore
             value: (startNs + (window as any).recordStartNS) / 1000000000,
           });
-          for (let i = 0; i < results.length; i++) {
+          for (let i = 0; i < results.length; i++) {//@ts-ignore
             results[i].value = Utils.getBinaryByteWithUnit(results[i].value);
             this.purgeableSelectionSource.push(results[i]);
           }

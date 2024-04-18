@@ -107,7 +107,8 @@ export class TabPaneMemoryAbility extends BaseElement {
 
   queryDataByDB(val: SelectionParam | unknown): void {
     queryStartTime().then((res): void => {
-      let startTime = res[0].start_ts;// @ts-ignore
+      //@ts-ignore
+      let startTime = res[0].start_ts;
       getTabMemoryAbilityData(val.leftNs + startTime, val.rightNs + startTime).then((items): void => {
         log(`getTabMemoryAbilityData result size : ${  items.length}`);
         this.memoryAbilitySource = [];

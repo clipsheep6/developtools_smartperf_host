@@ -101,11 +101,12 @@ export class TabPanePurgPinComparisonAbility extends BaseElement {
     // 点击的
     await querySysPurgeableSelectionTab(baseTime, true).then(async (results) => {
       for (let i = 0; i < results.length; i++) {
+        //@ts-ignore
         baseArr.push(new CompareStruct(results[i].name, results[i].value));
       }
       // 被比较的
       await querySysPurgeableSelectionTab(targetTime, true).then((results) => {
-        for (let i = 0; i < results.length; i++) {
+        for (let i = 0; i < results.length; i++) {//@ts-ignore
           targetArr.push(new CompareStruct(results[i].name, results[i].value));
         }
         let compareData = compare(baseArr, targetArr);

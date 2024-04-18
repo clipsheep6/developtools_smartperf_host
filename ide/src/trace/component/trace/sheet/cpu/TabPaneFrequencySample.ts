@@ -167,6 +167,7 @@ export class TabPaneFrequencySample extends BaseElement {
     // @ts-ignore
     frqSampleParam.cpuFreqFilterIds.forEach((a: number): void => {
       this.getInitTime(
+        //@ts-ignore
         result.filter((f) => f.filterId === a),
         sampleMap,
         // @ts-ignore

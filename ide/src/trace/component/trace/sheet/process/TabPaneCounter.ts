@@ -42,8 +42,10 @@ export class TabPaneCounter extends BaseElement {
     // @ts-ignore
     getTabCounters(counterParam.processTrackIds, counterParam.virtualTrackIds, counterParam.rightNs).then((result) => {
       this.counterTbl!.loading = false;
+      //@ts-ignore
       if (result !== null && result.length > 0) {
         let dataSource: Array<SelectionData> = [];
+        //@ts-ignore
         let collect = this.groupByTrackIdToMap(result);
         let sumCount = 0;
         for (let key of collect.keys()) {

@@ -60,6 +60,7 @@ export class TabPaneSPT extends BaseElement {
     sliceSPTSender(leftNs, rightNs, cpus, 'spt-getSPT').then((res): void => {
       this.sptTbl!.loading = false;
       this.sptTbl!.recycleDataSource = res;
+      //@ts-ignore
       this.theadClick(res);
     });
   }

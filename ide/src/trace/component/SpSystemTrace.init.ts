@@ -461,7 +461,9 @@ function selectHandlerRows(sp: SpSystemTrace, rows: Array<TraceRow<any>>): void 
         selection.diskIOipids
       ).then((res) => {
         if (res.length > 0) {
+          //@ts-ignore
           selection.fsCount = res[0].fsCount;
+          //@ts-ignore
           selection.vmCount = res[0].vmCount;
         }
         return new Promise((resolve) => resolve(1));

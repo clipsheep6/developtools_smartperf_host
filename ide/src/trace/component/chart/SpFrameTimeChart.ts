@@ -60,8 +60,8 @@ export class SpFrameTimeChart {
     this.idToProcessNameMap.clear();
     if (frameTimeData.length > 0) {
       let processNamesArray = await queryAllProcessNames();
-      processNamesArray.forEach((it) => {
-        this.pidToProcessNameMap.set(it.pid, it.name);
+      processNamesArray.forEach((it) => {//@ts-ignore
+        this.pidToProcessNameMap.set(it.pid, it.name);//@ts-ignore
         this.idToProcessNameMap.set(it.id, it.name);
       });
       let frameTimeLineRow: TraceRow<JanksStruct> = await this.initFrameTimeLine();

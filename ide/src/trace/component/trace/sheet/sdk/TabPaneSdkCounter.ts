@@ -114,7 +114,8 @@ export class TabPaneSdkCounter extends BaseElement {
 
   queryDataByDB(sdkVal: SelectionParam | unknown): void {
     queryStartTime().then((res) => {
-      let startTime = res[0].start_ts;// @ts-ignore
+      //@ts-ignore
+      let startTime = res[0].start_ts;
       this.parseJson(SpSystemTrace.SDK_CONFIG_MAP);
       let counters: Array<string> = [];
       let componentId: number = -1;
@@ -131,6 +132,7 @@ export class TabPaneSdkCounter extends BaseElement {
       let sql = sqlObj.TabCounterLeftData;
       // @ts-ignore
       getTabSdkCounterLeftData(sql, sdkVal.leftNs + startTime, counters, componentId).then((res) => {
+        //@ts-ignore
         let leftTime = res[res.length - 1].max_value - startTime;
         // @ts-ignore
         let sql = sqlObj.TabCounterData;

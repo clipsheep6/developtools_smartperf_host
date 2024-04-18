@@ -167,6 +167,7 @@ export class TabPaneCounterSample extends BaseElement {
       // @ts-ignore
       counterSampleParam.cpuStateFilterIds.forEach((a: number): void => {
         this.getInitTime(
+          //@ts-ignore
           result.filter((f) => f.filterId === a),
           sampleMap,
           // @ts-ignore

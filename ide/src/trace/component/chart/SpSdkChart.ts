@@ -174,7 +174,8 @@ export class SpSdkChart {
       return;
     }
     let res = await queryStartTime();
-    let startTime = res[0].start_ts;// @ts-ignore
+    //@ts-ignore
+    let startTime = res[0].start_ts;
     let tablesMap = this.parseJson(startTime, configMap);
     let tableKeys = tablesMap.keys();
     for (let componentId of tableKeys) {
@@ -259,6 +260,7 @@ export class SpSdkChart {
       CounterStruct.hoverCounterStruct = traceRow.getHoverStruct();
     };//@ts-ignore
     let maxList = await queryCounterMax(sqlMap.maxSql, result.counter_id, componentId);
+    //@ts-ignore
     let maxCounter = maxList[0].max_value;
     traceRow.onThreadHandler = (useCache: boolean): void => {
       let context: CanvasRenderingContext2D;
