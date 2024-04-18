@@ -287,7 +287,7 @@ export class TabPaneNMemory extends BaseElement {
       this.getDataByNativeMemoryWorker(this.currentSelection);
     });
     this.setItemTextHandleMapByMemoryTbl();
-    this.memoryTbl!.exportTextHandleMap.set('heapSize', (value) => {
+    this.memoryTbl!.exportTextHandleMap.set('heapSize', (value) => {// @ts-ignore
       return `${value['heapSize']}`;
     });
     this.shadowRoot?.querySelector<TabPaneFilter>('#filter')!.getFilterData((data: FilterData) => {
@@ -310,19 +310,19 @@ export class TabPaneNMemory extends BaseElement {
 
   private setItemTextHandleMapByMemoryTbl(): void {
     this.memoryTbl!.itemTextHandleMap.set('startTs', (startTs) => {
-      return SpNativeMemoryChart.REAL_TIME_DIF === 0
-        ? getTimeString(startTs)
+      return SpNativeMemoryChart.REAL_TIME_DIF === 0// @ts-ignore
+        ? getTimeString(startTs)// @ts-ignore
         : formatRealDateMs(startTs + SpNativeMemoryChart.REAL_TIME_DIF);
     });
-    this.memoryTbl!.itemTextHandleMap.set('endTs', (endTs) => {
-      return endTs > this.currentSelection!.leftNs &&
+    this.memoryTbl!.itemTextHandleMap.set('endTs', (endTs) => {// @ts-ignore
+      return endTs > this.currentSelection!.leftNs &&// @ts-ignore
         endTs <= this.currentSelection!.rightNs &&
         endTs !== 0 &&
         endTs !== null
         ? 'Freed'
         : 'Existing';
     });
-    this.memoryTbl!.itemTextHandleMap.set('heapSize', (heapSize) => {
+    this.memoryTbl!.itemTextHandleMap.set('heapSize', (heapSize) => {// @ts-ignore
       return getByteWithUnit(heapSize);
     });
   }

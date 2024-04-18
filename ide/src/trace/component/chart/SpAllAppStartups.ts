@@ -30,7 +30,7 @@ export class SpAllAppStartupsChart {
   static APP_STARTUP_PID_ARR: Array<number> = [];
   static jsonRow: TraceRow<CpuFreqStruct> | undefined;
   static trace: SpSystemTrace;
-  static AllAppStartupsNameArr: any[] = [];
+  static AllAppStartupsNameArr: unknown[] = [];
   static allAppStartupsAva: number[] = [];
 
   constructor(trace: SpSystemTrace) {
@@ -44,7 +44,7 @@ export class SpAllAppStartupsChart {
     SpAllAppStartupsChart.AllAppStartupsNameArr = [];
     SpAllAppStartupsChart.allAppStartupsAva = [];
     for (let i = 0; i < SpAllAppStartupsChart.APP_STARTUP_PID_ARR.length; i++) {
-      let tmpSingleApp: any[] = await queryProcessStartup(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]!);
+      let tmpSingleApp: unknown[] = await queryProcessStartup(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]!);
       if (tmpSingleApp.length === 8) {
         let avilSingleName = await querySingleAppStartupsName(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]!);
         SpAllAppStartupsChart.allAppStartupsAva.push(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]);
@@ -87,7 +87,7 @@ export class SpAllAppStartupsChart {
         sendRes.push({
           dur: singleDur,
           startTs: minStartTs,
-          startName: undefined,
+          startName: undefined,// @ts-ignore
           stepName: SpAllAppStartupsChart.AllAppStartupsNameArr[i],
           translateY: undefined,
           frame: undefined,
