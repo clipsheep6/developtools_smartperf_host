@@ -114,6 +114,7 @@ export class TabPaneFileSystemEvents extends BaseElement {
     if (this.filterProcess === '-1') {
       this.filterProcess =
         `${this.processList.indexOf(
+          // @ts-ignore
           `${this.currentSelection?.fileSystemFsData.name}[${this.currentSelection?.fileSystemFsData.pid}]`)}`;
     }
     this.fsSysEventFilter!.firstSelect = this.filterEventType;

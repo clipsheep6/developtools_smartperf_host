@@ -191,6 +191,7 @@ export class TabPaneIoCompletionTimes extends BaseElement {
       (res: any): void => {
         this.ioCompletionTimesSource = this.ioCompletionTimesSource.concat(res.data);
         this.ioCompletionTimesQueryDataSource = this.ioCompletionTimesQueryDataSource.concat(res.data);
+        // @ts-ignore
         this.filterTypeData(ioCompletionTimeParam?.fileSystemIoData?.path || undefined);
         ioCompletionTimeParam.fileSystemIoData = undefined;
         res.data = null;
