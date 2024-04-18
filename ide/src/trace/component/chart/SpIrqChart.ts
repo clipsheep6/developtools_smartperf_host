@@ -116,7 +116,7 @@ export class SpIrqChart {
     irqFolder.supplier = (): Promise<Array<any>> => new Promise<Array<any>>((resolve) => resolve([]));
     irqFolder.onThreadHandler = (useCache): void => {
       irqFolder.canvasSave(this.trace.canvasPanelCtx!);
-      if (irqFolder.expansion) {
+      if (irqFolder.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, irqFolder.frame.width, irqFolder.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(

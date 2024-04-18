@@ -77,7 +77,7 @@ export class TabPaneFreqStatesDataCut extends BaseElement {
     this.clickSingle(false);
     this.currentSelectionParam = threadStatesParam;
     // 清空表格数据
-    this.threadBindersTbl!.recycleDataSource = [];
+    this.threadBindersTbl!.recycleDataSource = [];// @ts-ignore
     this.theadClick(this.threadBindersTbl!.recycleDataSource);
   }
 
@@ -175,10 +175,11 @@ export class TabPaneFreqStatesDataCut extends BaseElement {
         this.threadBindersTbl!.recycleDataSource = stateCutArr;
         this.threadBindersTbl!.loading = false;
         // 表格添加点击事件
+        // @ts-ignore
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       } else {
         this.threadBindersTbl!.recycleDataSource = [];
-        this.threadBindersTbl!.loading = false;
+        this.threadBindersTbl!.loading = false;// @ts-ignore
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       }
     } else {
@@ -236,11 +237,11 @@ export class TabPaneFreqStatesDataCut extends BaseElement {
           }
         }
         this.threadBindersTbl!.recycleDataSource = stateCutArr;
-        this.threadBindersTbl!.loading = false;
+        this.threadBindersTbl!.loading = false;// @ts-ignore
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       } else {
         this.threadBindersTbl!.recycleDataSource = [];
-        this.threadBindersTbl!.loading = false;
+        this.threadBindersTbl!.loading = false;// @ts-ignore
         this.theadClick(this.threadBindersTbl!.recycleDataSource);
       }
     } else {

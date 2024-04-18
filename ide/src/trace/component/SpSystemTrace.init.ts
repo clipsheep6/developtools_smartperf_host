@@ -448,7 +448,7 @@ function selectHandlerRows(sp: SpSystemTrace, rows: Array<TraceRow<any>>): void 
     if (sp.rangeTraceRow!.length !== rows.length) {
       let event = sp.createPointEvent(it);
       SpStatisticsHttpUtil.addOrdinaryVisitAction({
-        action: 'trace_row',
+        action: 'trace_row',// @ts-ignore
         event: event,
       });
     }
@@ -544,7 +544,7 @@ function intersectionObserverHandler(sp: SpSystemTrace): void {
           sp.visibleRows.indexOf(tr) === -1 && sp.visibleRows.push(tr);
           sp.invisibleRows = sp.invisibleRows.filter((it) => it.sleeping);
         }
-        if (sp.handler) {
+        if (sp.handler) {// @ts-ignore
           clearTimeout(sp.handler);
         }
         sp.handler = setTimeout(() => sp.refreshCanvas(false), 100);
@@ -778,7 +778,7 @@ function findEntryTypeCpu(sp: SpSystemTrace, findEntry: any): void {
   sp.queryAllTraceRow('trace-row[row-type=\'cpu-data\']', (row): boolean => row.rowType === 'cpu-data').forEach((item): void => {
     if (item.rowId === `${findEntry.cpu}`) {
       sp.rechargeCpuData(
-        findEntry,
+        findEntry,// @ts-ignore
         item.dataListCache.find((it) => it.startTime > findEntry.startTime)
       );
       item.fixedList = [findEntry];

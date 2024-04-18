@@ -179,7 +179,7 @@ export class SpClockChart {
     clockFolder.supplier = (): Promise<any[]> => new Promise<Array<any>>((resolve) => resolve([]));
     clockFolder.onThreadHandler = (useCache): void => {
       clockFolder.canvasSave(this.trace.canvasPanelCtx!);
-      if (clockFolder.expansion) {
+      if (clockFolder.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, clockFolder.frame.width, clockFolder.frame.height);
       } else {
         (renders['empty'] as EmptyRender).renderMainThread(

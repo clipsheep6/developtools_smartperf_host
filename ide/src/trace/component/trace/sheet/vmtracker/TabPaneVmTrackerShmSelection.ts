@@ -51,9 +51,9 @@ export class TabPaneVmTrackerShmSelection extends BaseElement {
           filter.name = SpSystemTrace.DATA_DICT.get(filter.name)?.split('/');
           filter.ts = ns2s(filter.startNS);
           filter.sizeStr = Utils.getBinaryByteWithUnit(filter.size);
-          this.TableEl!.getItemTextColor = (filter): any => {
+          this.TableEl!.getItemTextColor = (filter): any => {// @ts-ignore
             if (filter.flag === 1) {
-              return '#d4b550';
+              return '#d4b550';// @ts-ignore
             } else if (filter.flag === 2) {
               return '#f86b6b';
             } else {

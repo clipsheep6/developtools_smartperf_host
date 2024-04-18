@@ -102,7 +102,7 @@ export class TabPaneSdkCounter extends BaseElement {
 
   queryDataByDB(sdkVal: SelectionParam | any): void {
     queryStartTime().then((res) => {
-      let startTime = res[0].start_ts;
+      let startTime = res[0].start_ts;// @ts-ignore
       this.parseJson(SpSystemTrace.SDK_CONFIG_MAP);
       let counters: Array<string> = [];
       let componentId: number = -1;

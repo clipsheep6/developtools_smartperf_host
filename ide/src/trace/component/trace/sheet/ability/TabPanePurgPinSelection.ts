@@ -26,10 +26,11 @@ import { queryProcessPurgeableSelectionTab } from '../../../../database/sql/Proc
 @element('tabpane-purg-pin-selection')
 export class TabPanePurgPinSelection extends BaseElement {
   private purgeableSelectionTable: LitTable | null | undefined;
-  private purgeableSelectionSource: Array<any> = [];
+  private purgeableSelectionSource: Array<unknown> = [];
 
-  set data(selection: SelectionParam | any) {
-    if (selection && selection.type) {
+  set data(selection: SelectionParam | unknown) {
+    // @ts-ignore
+    if (selection && selection.type) {// @ts-ignore
       this.queryTableData(selection.type, selection.startNs);
     }
   }

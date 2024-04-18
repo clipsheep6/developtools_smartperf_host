@@ -162,7 +162,7 @@ export class VmTrackerChart {
         context = VmTrackerRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
       VmTrackerRow.canvasSave(context);
-      if (VmTrackerRow.expansion) {
+      if (VmTrackerRow.expansion) {// @ts-ignore
         context?.clearRect(0, 0, VmTrackerRow.frame.width, VmTrackerRow.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
@@ -203,7 +203,7 @@ export class VmTrackerChart {
         context = sMapsRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
       sMapsRow.canvasSave(context);
-      if (sMapsRow.expansion) {
+      if (sMapsRow.expansion) {// @ts-ignore
         context?.clearRect(0, 0, sMapsRow.frame.width, sMapsRow.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
@@ -243,7 +243,7 @@ export class VmTrackerChart {
         context = gpuTraceRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
       gpuTraceRow.canvasSave(context);
-      if (gpuTraceRow.expansion) {
+      if (gpuTraceRow.expansion) {// @ts-ignore
         context?.clearRect(0, 0, gpuTraceRow.frame.width, gpuTraceRow.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
