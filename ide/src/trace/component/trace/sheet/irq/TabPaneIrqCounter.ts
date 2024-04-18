@@ -43,12 +43,19 @@ export class TabPaneIrqCounter extends BaseElement {
       resArr.forEach((res) => {
         res.forEach((item) => {
           let selectData = new SelectionData();
+          //@ts-ignore
           selectData.name = item.irqName;
+          //@ts-ignore
           selectData.count = item.count;
+          //@ts-ignore
           selectData.wallDuration = item.wallDuration;
+          //@ts-ignore
           selectData.wallDurationFormat = (item.wallDuration / 1000).toFixed(2);
+          //@ts-ignore
           selectData.maxDuration = item.wallDuration;
+          //@ts-ignore
           selectData.maxDurationFormat = (item.maxDuration / 1000).toFixed(2);
+          //@ts-ignore
           selectData.avgDuration = (item.avgDuration / 1000).toFixed(2);
           dataSource.push(selectData);
         });

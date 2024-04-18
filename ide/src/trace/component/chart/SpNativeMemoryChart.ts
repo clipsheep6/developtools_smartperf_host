@@ -202,9 +202,11 @@ export class SpNativeMemoryChart {
     let queryTime = await queryNativeMemoryRealTime();
     let bootTime = await queryBootTime();
     if (queryTime.length > 0) {
+      //@ts-ignore
       isRealtime = queryTime[0].clock_name === 'realtime';
     }
     if (bootTime.length > 0 && isRealtime) {
+      //@ts-ignore
       realTimeDif = queryTime[0].ts - bootTime[0].ts;
       SpNativeMemoryChart.REAL_TIME_DIF = realTimeDif;
     }

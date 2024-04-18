@@ -286,12 +286,12 @@ export class TabPaneSchedSwitch extends BaseElement {
       }
       if (btnHtml === SINGLE_BUTTON_TEXT) {
         this.isSingleBtnColor(true);
-        this.isLoopBtnColor(false);
+        this.isLoopBtnColor(false);//@ts-ignore
         funcData = await querySingleCutData(threadFunName, threadId, leftStartNs, rightEndNs);
       }
       if (btnHtml === LOOP_BUTTON_TEXT) {
         this.isSingleBtnColor(false);
-        this.isLoopBtnColor(true);
+        this.isLoopBtnColor(true);//@ts-ignore
         funcData = await queryLoopCutData(threadFunName, threadId, leftStartNs, rightEndNs);
       }
       //获取到线程数据和方法数据，处理周期
@@ -317,7 +317,7 @@ export class TabPaneSchedSwitch extends BaseElement {
     let threadSourceData: Array<ThreadInitConfig> = [];
     let leftStartNs: number = threadParam!.leftNs + threadParam!.recordStartNs;
     let rightEndNs: number = threadParam!.rightNs + threadParam!.recordStartNs;
-    let processIds: Array<number> = [...new Set(threadParam!.processIds)];
+    let processIds: Array<number> = [...new Set(threadParam!.processIds)];//@ts-ignore
     let res: Array<ThreadInitConfig> = await querySchedThreadStates(
       processIds,
       threadParam!.threadIds,

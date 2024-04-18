@@ -48,6 +48,7 @@ export class TabPanePTS extends BaseElement {
     sliceSPTSender(ptsLeftNs, ptsRightNs, cpus, 'spt-getPTS').then((res): void => {
       this.ptsTbl!.loading = false;
       this.ptsTbl!.recycleDataSource = res;
+      //@ts-ignore
       this.theadClick(res);
     });
   }

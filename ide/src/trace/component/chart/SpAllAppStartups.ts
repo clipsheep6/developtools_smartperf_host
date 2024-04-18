@@ -47,7 +47,7 @@ export class SpAllAppStartupsChart {
       let tmpSingleApp: any[] = await queryProcessStartup(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]!);
       if (tmpSingleApp.length === 8) {
         let avilSingleName = await querySingleAppStartupsName(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]!);
-        SpAllAppStartupsChart.allAppStartupsAva.push(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]);
+        SpAllAppStartupsChart.allAppStartupsAva.push(SpAllAppStartupsChart.APP_STARTUP_PID_ARR[i]);//@ts-ignore
         SpAllAppStartupsChart.AllAppStartupsNameArr.push(avilSingleName![0].name);
       }
     }

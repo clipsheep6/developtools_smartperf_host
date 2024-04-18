@@ -89,6 +89,7 @@ export class VmTrackerChart {
     }
     const isExistsShm = await queryisExistsShmData(this.memoryConfig.iPid);
     const isExistsDma = await queryisExistsDmaData(this.memoryConfig.iPid);
+    //@ts-ignore
     if (isExistsShm[0].data_exists) {
       await this.initShmRows();
     }
@@ -330,10 +331,10 @@ export class VmTrackerChart {
   private initPurgeableVM = async (): Promise<void> => {
     let time = new Date().getTime();
     const isExistsPurgeableTotal = await queryisExistsPurgeableData(this.memoryConfig.iPid, false);
-    const isExistsPurgeablePin = await queryisExistsPurgeableData(this.memoryConfig.iPid, true);
+    const isExistsPurgeablePin = await queryisExistsPurgeableData(this.memoryConfig.iPid, true);//@ts-ignore
     if (isExistsPurgeableTotal[0].data_exists) {
       await this.initPurgeableTotal();
-    }
+    }//@ts-ignore
     if (isExistsPurgeablePin[0].data_exists) {
       await this.initPurgeablePin();
     }

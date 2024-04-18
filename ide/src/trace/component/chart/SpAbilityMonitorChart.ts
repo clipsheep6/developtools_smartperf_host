@@ -161,14 +161,15 @@ export class SpAbilityMonitorChart {
     let hasTotal = false;
     let hasUserLoad = false;
     let hasSystemLoad = false;
+    //@ts-ignore
     let userLoad = cpuMaxData[0].userLoad;
     if (userLoad > 0) {
       hasUserLoad = true;
-    }
+    }//@ts-ignore
     let systemLoad = cpuMaxData[0].systemLoad;
     if (systemLoad > 0) {
       hasSystemLoad = true;
-    }
+    }//@ts-ignore
     let totalLoad = cpuMaxData[0].totalLoad;
     if (totalLoad > 0) {
       hasTotal = true;
@@ -359,6 +360,7 @@ export class SpAbilityMonitorChart {
     parent: TraceRow<any>
   ): Promise<void> {
     let memoryTotal = await queryMemoryMaxData('sys.mem.total');
+    //@ts-ignore
     let memoryTotalId = memoryTotal[0].filter_id;
 
     memoryUsedRow.rowParentId = key;
@@ -421,6 +423,7 @@ export class SpAbilityMonitorChart {
   ): Promise<void> {
     let cached = await queryMemoryMaxData('sys.mem.cached');
 
+    //@ts-ignore
     let cachedId = cached[0].filter_id;
     cachedFilesRow.rowParentId = key;
     cachedFilesRow.rowHidden = !parent.expansion;
@@ -480,6 +483,7 @@ export class SpAbilityMonitorChart {
     parent: TraceRow<any>
   ): Promise<void> {
     let swap = await queryMemoryMaxData('sys.mem.swap.total');
+    //@ts-ignore
     let swapId = swap[0].filter_id;
     compressedRow.rowParentId = key;
     compressedRow.rowHidden = !parent.expansion;
