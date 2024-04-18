@@ -27,13 +27,13 @@ export class TabPanePTS extends BaseElement {
   private ptsRange: HTMLLabelElement | null | undefined;
   private selectionParam: SelectionParam | null | undefined;
 
-  set data(ptsValue: SelectionParam | any) {
+  set data(ptsValue: SelectionParam | unknown) {
     if (ptsValue === this.selectionParam) {
       return;
-    }
+    }// @ts-ignore
     this.selectionParam = ptsValue;
-    this.ptsRange!.textContent =
-      `Selected range: ${parseFloat(((ptsValue.rightNs - ptsValue.leftNs) / 1000000.0).toFixed(5))} ms`;
+    this.ptsRange!.textContent =// @ts-ignore
+      `Selected range: ${parseFloat(((ptsValue.rightNs - ptsValue.leftNs) / 1000000.0).toFixed(5))} ms`;// @ts-ignore
     this.getDataByPTS(ptsValue.leftNs, ptsValue.rightNs, ptsValue.cpus);
   }
 

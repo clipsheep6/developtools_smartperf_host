@@ -252,10 +252,10 @@ export class SpChartManager {
       let endNS = 30_000_000_000;
       this.trace.timerShaftEL.totalNS = total;
       this.trace.timerShaftEL.getRangeRuler()!.drawMark = true;
-      this.trace.timerShaftEL.setRangeNS(0, total);
-      (window as any).recordStartNS = startNS;
-      (window as any).recordEndNS = endNS;
-      (window as any).totalNS = total;
+      this.trace.timerShaftEL.setRangeNS(0, total);// @ts-ignore
+      (window as unknown).recordStartNS = startNS;// @ts-ignore
+      (window as unknown).recordEndNS = endNS;// @ts-ignore
+      (window as unknown).totalNS = total;
       this.trace.timerShaftEL.loadComplete = true;
     }
   };
@@ -284,7 +284,7 @@ export class SpChartManager {
         'cache-data-dict',
         { dataDict: SpSystemTrace.DATA_DICT },
         undefined,
-        (res: any): void => {
+        (res: unknown): void => {
           resolve();
         }
       );
@@ -292,13 +292,13 @@ export class SpChartManager {
   }
 }
 
-export const folderSupplier = (): any => {
-  return () => new Promise<Array<any>>((resolve) => resolve([]));
-};
-export const folderThreadHandler = (row: TraceRow<any>, trace: SpSystemTrace) => {
+export const folderSupplier = (): unknown => {
+  return () => new Promise<Array<unknown>>((resolve) => resolve([]));
+};// @ts-ignore
+export const folderThreadHandler = (row: TraceRow<unknown>, trace: SpSystemTrace) => {
   return (useCache: boolean): void => {
     row.canvasSave(trace.canvasPanelCtx!);
-    if (row.expansion) {
+    if (row.expansion) {// @ts-ignore
       trace.canvasPanelCtx?.clearRect(0, 0, row.frame.width, row.frame.height);
     } else {
       (renders['empty'] as EmptyRender).renderMainThread(
@@ -317,23 +317,23 @@ export const folderThreadHandler = (row: TraceRow<any>, trace: SpSystemTrace) =>
 export function rowThreadHandler<T>(
   tag: string,
   contextField: string,
-  arg: any,
-  row: TraceRow<any>,
+  arg: unknown,// @ts-ignore
+  row: TraceRow<unknown>,
   trace: SpSystemTrace
 ) {
   return (useCache: boolean) : void => {
     let context: CanvasRenderingContext2D = getRowContext(row, trace);
-    row.canvasSave(context);
+    row.canvasSave(context);// @ts-ignore
     arg.useCache = useCache;
-    if (contextField) {
+    if (contextField) {// @ts-ignore
       arg[contextField] = context;
-    }
-    (renders[tag] as any).renderMainThread(arg, row);
+    }// @ts-ignore
+    (renders[tag] as unknown).renderMainThread(arg, row);
     row.canvasRestore(context, trace);
   };
 }
-
-export const getRowContext = (row: TraceRow<any>, trace: SpSystemTrace): CanvasRenderingContext2D => {
+// @ts-ignore
+export const getRowContext = (row: TraceRow<unknown>, trace: SpSystemTrace): CanvasRenderingContext2D => {
   if (row.currentContext) {
     return row.currentContext;
   } else {

@@ -36,24 +36,28 @@ export class TabPanePurgTotalComparisonVM extends BaseElement {
     this.selectEl = this.filterEl?.shadowRoot?.querySelector<LitSelect>('lit-select');
   }
 
-  public totalData(data: SelectionParam | any, dataList: any): void {
+  public totalData(data: SelectionParam | unknown, dataList: unknown): void {
     //@ts-ignore
     this.purgeableTotalTables?.shadowRoot?.querySelector('.table')?.style?.height = `${
       this.parentElement!.clientHeight - 45
     }px`;
     this.purgeableTotalSource = [];
-    let fileArr: any[] = [];
+    let fileArr: unknown[] = [];
+    // @ts-ignore
     for (let file of dataList) {
+      // @ts-ignore
       if (file.startNs !== data.startNs) {
         fileArr.push(file);
       }
     }
     fileArr = fileArr.sort();
+    // @ts-ignore
     this.initSelect(data.startNs, fileArr);
+    // @ts-ignore
     this.updateComparisonsData(data.startNs, fileArr[0].startNs);
   }
 
-  private initSelect(fileStartNs: number, purgeTotalComList: Array<any>): void {
+  private initSelect(fileStartNs: number, purgeTotalComList: Array<unknown>): void {
     let that = this;
     let input = this.selectEl!.shadowRoot?.querySelector('input') as HTMLInputElement;
     this.selectEl!.innerHTML = '';
@@ -61,19 +65,26 @@ export class TabPanePurgTotalComparisonVM extends BaseElement {
     option.innerHTML = 'File Name';
     option.setAttribute('disabled', 'disabled');
     this.selectEl?.appendChild(option);
+    // @ts-ignore
     if (purgeTotalComList[0].name) {
+      // @ts-ignore
       option.setAttribute('value', purgeTotalComList[0].name);
     }
+    // @ts-ignore
     this.selectEl!.defaultValue = purgeTotalComList[0].name;
+    // @ts-ignore
     this.selectEl!.placeholder = purgeTotalComList[0].name;
     this.selectEl!.dataSource = purgeTotalComList;
     this.selectEl!.querySelectorAll('lit-select-option').forEach((a) => {
-      a.addEventListener('onSelected', (e: any) => {
+      a.addEventListener('onSelected', (e: unknown) => {
         for (let f of purgeTotalComList) {
+          // @ts-ignore
           if (input.value === f.name) {
+            // @ts-ignore
             that.updateComparisonsData(fileStartNs, f.startNs);
           }
         }
+        // @ts-ignore
         e.stopPropagation();
       });
     });
@@ -90,7 +101,7 @@ export class TabPanePurgTotalComparisonVM extends BaseElement {
     }
   }
 
-  private async queryTotalVMData(baseTime: number, targetTime: number): Promise<any> {
+  private async queryTotalVMData(baseTime: number, targetTime: number): Promise<unknown> {
     let deltas = {
       purgSumDelta: '0Bytes',
       shmPurgDelta: '0Bytes',

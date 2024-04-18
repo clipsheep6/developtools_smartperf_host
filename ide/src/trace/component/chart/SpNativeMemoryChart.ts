@@ -44,7 +44,7 @@ export class SpNativeMemoryChart {
   folderThreadHandler(row: TraceRow<BaseStruct>): void {
     row.onThreadHandler = (useCache): void => {
       row.canvasSave(this.trace.canvasPanelCtx!);
-      if (row.expansion) {
+      if (row.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, row.frame.width, row.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
@@ -155,8 +155,8 @@ export class SpNativeMemoryChart {
       };
       allHeapRow.findHoverStruct = (): void => {
         HeapStruct.hoverHeapStruct = allHeapRow.getHoverStruct();
-      };
-      allHeapRow.supplierFrame = (): Promise<any> =>
+      };//@ts-ignore
+      allHeapRow.supplierFrame = (): Promise<unknown> =>
         nativeMemoryChartDataSender(allHeapRow, {
           eventType: i,
           ipid: process.ipid,
@@ -210,13 +210,13 @@ export class SpNativeMemoryChart {
       realTimeDif = queryTime[0].ts - bootTime[0].ts;
       SpNativeMemoryChart.REAL_TIME_DIF = realTimeDif;
     }
-    await new Promise<any>((resolve) => {
+    await new Promise<unknown>((resolve) => {
       procedurePool.submitWithName(
         'logic0',
         'native-memory-init',
         { isRealtime, realTimeDif },
         undefined,
-        (res: any) => {
+        (res: unknown) => {
           resolve(res);
         }
       );

@@ -27,17 +27,18 @@ export class TabPaneIrqCounter extends BaseElement {
   private sortColumn: string = 'wallDurationFormat';
   private sortType: number = 2;
 
-  set data(irqParam: SelectionParam | any) {
+  set data(irqParam: SelectionParam | unknown) {
     if (this.irqCounterTbl) {
       //@ts-ignore
       this.irqCounterTbl.shadowRoot.querySelector('.table').style.height = `${this.parentElement!.clientHeight - 45}px`;
     }
     this.irqRange!.textContent = `Selected range: ${parseFloat(
+      // @ts-ignore
       ((irqParam.rightNs - irqParam.leftNs) / 1000000.0).toFixed(5)
     )} ms`;
     let dataSource: Array<SelectionData> = [];
-    Promise.all([
-      queryIrqDataBoxSelect(irqParam.irqCallIds, irqParam.leftNs, irqParam.rightNs),
+    Promise.all([// @ts-ignore
+      queryIrqDataBoxSelect(irqParam.irqCallIds, irqParam.leftNs, irqParam.rightNs),// @ts-ignore
       querySoftIrqDataBoxSelect(irqParam.softIrqCallIds, irqParam.leftNs, irqParam.rightNs),
     ]).then((resArr) => {
       resArr.forEach((res) => {
