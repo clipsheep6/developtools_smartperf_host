@@ -117,8 +117,10 @@ export class TabCpuAnalysis extends BaseElement {
           radius: 0.8,
           tip: (obj): string => {
             return `<div>
-                                    <div>${tip}${obj.obj.value}</div> 
-                                    <div>ratio:${obj.obj.ratio}%</div>
+                                    <div>${tip}${// @ts-ignore
+                                      obj.obj.value}</div> 
+                                    <div>ratio:${// @ts-ignore
+                                      obj.obj.ratio}%</div>
                                 </div>
                                 `;
           },

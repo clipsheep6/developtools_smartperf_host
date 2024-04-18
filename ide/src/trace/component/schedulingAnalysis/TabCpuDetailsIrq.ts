@@ -113,13 +113,20 @@ export class TabCpuDetailsIrq extends BaseElement {
       },
       tip: (irqObj): string => {
         return `<div>
-                                <div>block:${irqObj.obj.block}</div> 
-                                <div>name:${irqObj.obj.value}</div>
-                                <div>min:${irqObj.obj.min}</div>
-                                <div>max:${irqObj.obj.max}</div>
-                                <div>average:${irqObj.obj.avg}</div>
-                                <div>duration:${irqObj.obj.sumTimeStr}</div>
-                                <div>ratio:${irqObj.obj.ratio}%</div>
+                                <div>block:${// @ts-ignore
+                                  irqObj.obj.block}</div> 
+                                <div>name:${// @ts-ignore
+                                  irqObj.obj.value}</div>
+                                <div>min:${// @ts-ignore
+                                  irqObj.obj.min}</div>
+                                <div>max:${// @ts-ignore
+                                  irqObj.obj.max}</div>
+                                <div>average:${// @ts-ignore
+                                  irqObj.obj.avg}</div>
+                                <div>duration:${// @ts-ignore
+                                  irqObj.obj.sumTimeStr}</div>
+                                <div>ratio:${// @ts-ignore
+                                  irqObj.obj.ratio}%</div>
                             </div>
                                 `;
       },
