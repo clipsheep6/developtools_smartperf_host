@@ -255,7 +255,7 @@ export class SpFrameTimeChart {
             processRow.addChildTraceRowBefore(frameChart, firstRow);
           } else if (secondRow !== null) {
             processRow.addChildTraceRowBefore(frameChart, secondRow);
-          } else {
+          } else {// @ts-ignore
             processRow.addChildTraceRowBefore(frameChart, targetRowList[0]);
           }
           let appNameList = await queryDynamicIdAndNameData();

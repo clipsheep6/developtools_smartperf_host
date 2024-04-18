@@ -82,7 +82,7 @@ export class Top20FrequencyThread extends BaseElement {
         }
       }
       this.frequencyThreadPie?.showHover();
-    });
+    });// @ts-ignore
     this.frequencyThreadTbl!.itemTextHandleMap.set('freq', (value) => (value === -1 ? 'unknown' : value));
   }
 

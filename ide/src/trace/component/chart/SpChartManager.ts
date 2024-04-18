@@ -297,7 +297,7 @@ export const folderSupplier = (): any => {
 export const folderThreadHandler = (row: TraceRow<any>, trace: SpSystemTrace) => {
   return (useCache: boolean): void => {
     row.canvasSave(trace.canvasPanelCtx!);
-    if (row.expansion) {
+    if (row.expansion) {// @ts-ignore
       trace.canvasPanelCtx?.clearRect(0, 0, row.frame.width, row.frame.height);
     } else {
       (renders['empty'] as EmptyRender).renderMainThread(

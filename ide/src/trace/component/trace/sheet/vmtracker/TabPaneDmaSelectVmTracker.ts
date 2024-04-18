@@ -74,7 +74,7 @@ export class TabPaneDmaSelectVmTracker extends BaseElement {
           item.expName = SpSystemTrace.DATA_DICT.get(item.expName as number) || '-';
           item.expTaskComm = SpSystemTrace.DATA_DICT.get(item.expTaskComm as number) || '-';
           item.timeStamp = ns2s(item.startNs);
-          item.sizes = Utils.getBinaryByteWithUnit(item.size);
+          item.sizes = Utils.getBinaryByteWithUnit(item.size);// @ts-ignore
           this.damClickTable!.getItemTextColor = (item: Dma): any => {
             if (item.flag === 1) {
               return '#d4b550';

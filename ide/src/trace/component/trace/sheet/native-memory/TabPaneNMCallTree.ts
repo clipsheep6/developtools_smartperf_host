@@ -407,7 +407,7 @@ export class TabpaneNMCalltree extends BaseElement {
       this.needShowMenu = needShowMenu;
     });
     this.nmCallTreeTbl!.rememberScrollTop = true;
-    this.nmCallTreeTbl!.exportTextHandleMap.set('heapSizeStr', (value) => {
+    this.nmCallTreeTbl!.exportTextHandleMap.set('heapSizeStr', (value) => {// @ts-ignore
       return `${value['size']}`;
     });
     this.nmCallTreeFilter = this.shadowRoot?.querySelector<TabPaneFilter>('#nm-call-tree-filter');

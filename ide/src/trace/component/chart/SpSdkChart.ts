@@ -174,7 +174,7 @@ export class SpSdkChart {
       return;
     }
     let res = await queryStartTime();
-    let startTime = res[0].start_ts;
+    let startTime = res[0].start_ts;// @ts-ignore
     let tablesMap = this.parseJson(startTime, configMap);
     let tableKeys = tablesMap.keys();
     for (let componentId of tableKeys) {
@@ -297,7 +297,7 @@ export class SpSdkChart {
     sdkFolder.supplier = async (): Promise<BaseStruct[]> => new Promise<[]>((resolve) => resolve([]));
     sdkFolder.onThreadHandler = (useCache: boolean): void => {
       sdkFolder.canvasSave(this.trace.canvasPanelCtx!);
-      if (sdkFolder.expansion) {
+      if (sdkFolder.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, sdkFolder.frame.width, sdkFolder.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(
@@ -335,7 +335,7 @@ export class SpSdkChart {
     sdkSecondFolder.supplier = async (): Promise<BaseStruct[]> => new Promise<[]>((resolve) => resolve([]));
     sdkSecondFolder.onThreadHandler = (useCache: boolean): void => {
       sdkSecondFolder.canvasSave(this.trace.canvasPanelCtx!);
-      if (sdkSecondFolder.expansion) {
+      if (sdkSecondFolder.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, sdkSecondFolder.frame.width, sdkSecondFolder.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(

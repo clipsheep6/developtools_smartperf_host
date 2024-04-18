@@ -332,7 +332,7 @@ export class SpHiPerf {
           return;
         }
         this.callChartType = type;
-        this.callChartId = id;
+        this.callChartId = id;// @ts-ignore
         row.name = `CallChart [${nodes[0].title}]`;
         row.isComplete = false;
         row.needRefresh = true;

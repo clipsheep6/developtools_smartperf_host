@@ -345,7 +345,7 @@ export class TabPaneSchedSwitch extends BaseElement {
     //处理sql查询数据为0条，或者当loop切割获取的数据时1条
     if (res.length === 0 || this.threadMap.size === 0 || (btnHtml === LOOP_BUTTON_TEXT && res.length === 1)) {
       this.schedSwitchTbl!.recycleDataSource = [];
-      this.schedSwitchTbl!.loading = false;
+      this.schedSwitchTbl!.loading = false;// @ts-ignore
       this.clickTableLabel(this.schedSwitchTbl!.recycleDataSource);
       return;
     }
@@ -413,7 +413,7 @@ export class TabPaneSchedSwitch extends BaseElement {
       this.translateIntoTree(cutDataObj, group);
     }
     this.schedSwitchTbl!.recycleDataSource = Object.values(group);
-    this.schedSwitchTbl!.loading = false;
+    this.schedSwitchTbl!.loading = false;// @ts-ignore
     this.clickTableLabel(this.schedSwitchTbl!.recycleDataSource);
   }
   //根据处理好的单个线程对应的周期数据、count总数、dur总数以及所属进程、线程相关信息，转换成树结构数据
