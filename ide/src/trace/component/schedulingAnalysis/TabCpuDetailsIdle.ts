@@ -125,12 +125,18 @@ export class TabCpuDetailsIdle extends BaseElement {
       },
       tip: (idleObj): string => {
         return `<div>
-                                <div>idle:${idleObj.obj.value}</div> 
-                                <div>min:${idleObj.obj.min}</div>
-                                <div>max:${idleObj.obj.max}</div>
-                                <div>average:${idleObj.obj.avg}</div>
-                                <div>duration:${idleObj.obj.sumTimeStr}</div>
-                                <div>ratio:${idleObj.obj.ratio}%</div>
+                                <div>idle:${// @ts-ignore
+                                  idleObj.obj.value}</div> 
+                                <div>min:${// @ts-ignore
+                                  idleObj.obj.min}</div>
+                                <div>max:${// @ts-ignore
+                                  idleObj.obj.max}</div>
+                                <div>average:${// @ts-ignore
+                                  idleObj.obj.avg}</div>
+                                <div>duration:${// @ts-ignore
+                                  idleObj.obj.sumTimeStr}</div>
+                                <div>ratio:${// @ts-ignore
+                                  idleObj.obj.ratio}%</div>
                             </div>
                                 `;
       },

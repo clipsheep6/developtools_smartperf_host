@@ -117,12 +117,18 @@ export class TabCpuDetailsThreads extends BaseElement {
       },
       tip: (obj): string => {
         return `<div>
-                                <div>t_name:${obj.obj.tName}</div> 
-                                <div>tid:${obj.obj.tid}</div>
-                                <div>p_name:${obj.obj.pName}</div>
-                                <div>p_pid:${obj.obj.pid}</div>
-                                <div>duration:${obj.obj.durStr}</div>
-                                <div>ratio:${obj.obj.ratio}%</div>
+                                <div>t_name:${// @ts-ignore
+                                  obj.obj.tName}</div> 
+                                <div>tid:${// @ts-ignore
+                                  obj.obj.tid}</div>
+                                <div>p_name:${// @ts-ignore
+                                  obj.obj.pName}</div>
+                                <div>p_pid:${// @ts-ignore
+                                  obj.obj.pid}</div>
+                                <div>duration:${// @ts-ignore
+                                  obj.obj.durStr}</div>
+                                <div>ratio:${// @ts-ignore
+                                  obj.obj.ratio}%</div>
                             </div>
                                 `;
       },

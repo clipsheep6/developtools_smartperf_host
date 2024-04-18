@@ -103,6 +103,7 @@ export class SpProcessChart {
     row.folder = true;
     row.style.height = '40px';
     row.name = 'DeliverInputEvent';
+    // @ts-ignore
     row.supplier = folderSupplier();
     row.onThreadHandler = folderThreadHandler(row, this.trace);
 

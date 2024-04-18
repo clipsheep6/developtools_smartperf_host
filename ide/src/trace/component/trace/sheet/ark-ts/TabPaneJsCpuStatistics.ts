@@ -106,8 +106,11 @@ export class TabPaneJsCpuStatistics extends BaseElement {
       },
       tip: (obj): string => {
         return `<div>
-                    <div>type: ${obj.obj.type}</div>
-                    <div>total: ${ns2s(obj.obj.time)} (${obj.obj.percentage}%)</div>
+                    <div>type: ${// @ts-ignore
+                      obj.obj.type}</div>
+                    <div>total: ${// @ts-ignore
+                      ns2s(obj.obj.time)} (${// @ts-ignore
+                        obj.obj.percentage}%)</div>
                 </div> `;
       },
       hoverHandler: (data): void => {
