@@ -118,12 +118,18 @@ export class TabCpuDetailsFrequency extends BaseElement {
       },
       tip: (freObj): string => {
         return `<div>
-                                <div>frequency:${freObj.obj.value}</div> 
-                                <div>min:${freObj.obj.min}</div>
-                                <div>max:${freObj.obj.max}</div>
-                                <div>average:${freObj.obj.avg}</div>
-                                <div>duration:${freObj.obj.sumTimeStr}</div>
-                                <div>ratio:${freObj.obj.ratio}%</div>
+                                <div>frequency:${// @ts-ignore
+                                  freObj.obj.value}</div> 
+                                <div>min:${// @ts-ignore
+                                  freObj.obj.min}</div>
+                                <div>max:${// @ts-ignore
+                                  freObj.obj.max}</div>
+                                <div>average:${// @ts-ignore
+                                  freObj.obj.avg}</div>
+                                <div>duration:${// @ts-ignore
+                                  freObj.obj.sumTimeStr}</div>
+                                <div>ratio:${// @ts-ignore
+                                  freObj.obj.ratio}%</div>
                             </div>
                                 `;
       },

@@ -79,7 +79,7 @@ export class SpEBPFChart {
     fsFolder.supplierFrame = (): Promise<Array<any>> => new Promise<Array<any>>((resolve) => resolve([]));
     fsFolder.onThreadHandler = (useCache): void => {
       fsFolder.canvasSave(this.trace.canvasPanelCtx!);
-      if (fsFolder.expansion) {
+      if (fsFolder.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, fsFolder.frame.width, fsFolder.frame.height);
       } else {
         (renders['empty'] as EmptyRender).renderMainThread(

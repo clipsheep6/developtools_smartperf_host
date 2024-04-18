@@ -86,9 +86,12 @@ export class Top20ProcessSwitchCount extends BaseElement {
         radius: 0.8,
         tip: (obj): string => {
           return `<div>
-                             <div>pid:${obj.obj.tid}</div> 
-                             <div>p_name:${obj.obj.tName}</div> 
-                             <div>sched_switch count:${obj.obj.switchCount}</div> 
+                             <div>pid:${// @ts-ignore
+                              obj.obj.tid}</div> 
+                             <div>p_name:${// @ts-ignore
+                              obj.obj.tName}</div> 
+                             <div>sched_switch count:${// @ts-ignore
+                              obj.obj.switchCount}</div> 
                         </div>
                 `;
         },

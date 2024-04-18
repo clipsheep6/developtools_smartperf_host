@@ -195,12 +195,15 @@ export class TabPaneNMemory extends BaseElement {
   private setFilterNativeTypeSelection(val: SelectionParam): number {
     let typeIndexOf = -1;
     if (val.statisticsSelectData) {
+      // @ts-ignore
       typeIndexOf = this.nativeType.indexOf(val.statisticsSelectData.memoryTap);
       if (this.statsticsSelection.indexOf(val.statisticsSelectData) === -1 && typeIndexOf === -1) {
         this.statsticsSelection.push(val.statisticsSelectData);
+        // @ts-ignore
         this.nativeType.push(val.statisticsSelectData.memoryTap);
         typeIndexOf = this.nativeType.length - 1;
       } else {
+        // @ts-ignore
         let index = this.statsticsSelection.findIndex((mt) => mt.memoryTap === val.statisticsSelectData.memoryTap);
         if (index !== -1) {
           this.statsticsSelection[index] = val.statisticsSelectData;

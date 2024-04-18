@@ -54,7 +54,8 @@ export class TabPaneHiLogs extends BaseElement {
       this.filterData = [];
     }
     window.clearTimeout(this.timeOutId);
-    let oneDayTime = (window as any).recordEndNS - this.ONE_DAY_NS;
+    // @ts-ignore
+    let oneDayTime = (window as unknown).recordEndNS - this.ONE_DAY_NS;
     if (systemLogParam && systemLogParam.hiLogs.length > 0) {
       this.progressEL!.loading = true;
       queryLogAllData(oneDayTime, systemLogParam.leftNs, systemLogParam.rightNs).then((res) => {

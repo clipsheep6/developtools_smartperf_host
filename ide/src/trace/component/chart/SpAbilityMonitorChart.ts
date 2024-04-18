@@ -137,7 +137,7 @@ export class SpAbilityMonitorChart {
         context = abilityRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
       abilityRow.canvasSave(context);
-      if (abilityRow.expansion) {
+      if (abilityRow.expansion) {// @ts-ignore
         context?.clearRect(0, 0, abilityRow.frame.width, abilityRow.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(

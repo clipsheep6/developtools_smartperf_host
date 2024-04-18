@@ -433,13 +433,20 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       },
       tip: (typeTipValue): string => {
         return `<div>   
-                    <div>Memory Type:${typeTipValue.obj.tableName}</div>
-                    <div>Existing:${typeTipValue.obj.existSizeFormat} (${typeTipValue.obj.existSizePercent}%)</div>
-                    <div># Existing:${typeTipValue.obj.existCount} (${typeTipValue.obj.existCountPercent}%)</div>
-                    <div>Total Bytes:${typeTipValue.obj.applySizeFormat} (${typeTipValue.obj.applySizePercent}%)</div>
-                    <div># Total:${typeTipValue.obj.applyCount} (${typeTipValue.obj.applyCountPercent}%)</div>
-                    <div>Transient:${typeTipValue.obj.releaseSizeFormat} (${typeTipValue.obj.releaseSizePercent}%)</div>
-                    <div># Transient:${typeTipValue.obj.releaseCount} (${typeTipValue.obj.releaseCountPercent}%)</div>
+                    <div>Memory Type:${// @ts-ignore
+                      typeTipValue.obj.tableName}</div>
+                    <div>Existing:${// @ts-ignore
+                      typeTipValue.obj.existSizeFormat} (${typeTipValue.obj.existSizePercent}%)</div>
+                    <div># Existing:${// @ts-ignore
+                      typeTipValue.obj.existCount} (${typeTipValue.obj.existCountPercent}%)</div>
+                    <div>Total Bytes:${// @ts-ignore
+                      typeTipValue.obj.applySizeFormat} (${typeTipValue.obj.applySizePercent}%)</div>
+                    <div># Total:${// @ts-ignore
+                      typeTipValue.obj.applyCount} (${typeTipValue.obj.applyCountPercent}%)</div>
+                    <div>Transient:${// @ts-ignore
+                      typeTipValue.obj.releaseSizeFormat} (${typeTipValue.obj.releaseSizePercent}%)</div>
+                    <div># Transient:${// @ts-ignore
+                      typeTipValue.obj.releaseCount} (${typeTipValue.obj.releaseCountPercent}%)</div>
                 </div>`;
       },
       angleClick: (it): void => {
@@ -485,13 +492,20 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       },
       tip: (threadTipValue): string => {
         return `<div>
-                    <div>Thread:${threadTipValue.obj.tableName}</div>
-                    <div>Existing:${threadTipValue.obj.existSizeFormat} (${threadTipValue.obj.existSizePercent}%)</div>
-                    <div># Existing:${threadTipValue.obj.existCount} (${threadTipValue.obj.existCountPercent}%)</div>
-                    <div>Total Bytes:${threadTipValue.obj.applySizeFormat} (${threadTipValue.obj.applySizePercent}%)</div>
-                    <div># Total:${threadTipValue.obj.applyCount} (${threadTipValue.obj.applyCountPercent}%)</div>
-                    <div>Transient:${threadTipValue.obj.releaseSizeFormat} (${threadTipValue.obj.releaseSizePercent}%)</div>
-                    <div># Transient:${threadTipValue.obj.releaseCount} (${threadTipValue.obj.releaseCountPercent}%)</div>
+                    <div>Thread:${// @ts-ignore
+                      threadTipValue.obj.tableName}</div>
+                    <div>Existing:${// @ts-ignore
+                      threadTipValue.obj.existSizeFormat} (${threadTipValue.obj.existSizePercent}%)</div>
+                    <div># Existing:${// @ts-ignore
+                      threadTipValue.obj.existCount} (${threadTipValue.obj.existCountPercent}%)</div>
+                    <div>Total Bytes:${// @ts-ignore
+                      threadTipValue.obj.applySizeFormat} (${threadTipValue.obj.applySizePercent}%)</div>
+                    <div># Total:${// @ts-ignore
+                      threadTipValue.obj.applyCount} (${threadTipValue.obj.applyCountPercent}%)</div>
+                    <div>Transient:${// @ts-ignore
+                      threadTipValue.obj.releaseSizeFormat} (${threadTipValue.obj.releaseSizePercent}%)</div>
+                    <div># Transient:${// @ts-ignore
+                      threadTipValue.obj.releaseCount} (${threadTipValue.obj.releaseCountPercent}%)</div>
                 </div>`;
       },
       angleClick: (it: unknown): void => {
@@ -616,19 +630,32 @@ export class TabPaneNMStatisticAnalysis extends BaseElement {
       },
       tip: (functionTipValue): string => {
         return `<div>
-                    <div>Function:${functionTipValue.obj.symbolName}</div>
-                    <div>Existing:${functionTipValue.obj.existSizeFormat} 
-                    (${functionTipValue.obj.existSizePercent}%)</div>
-                    <div># Existing:${functionTipValue.obj.existCount} 
-                    (${functionTipValue.obj.existCountPercent}%)</div>
-                    <div>Total Bytes:${functionTipValue.obj.applySizeFormat} 
-                    (${functionTipValue.obj.applySizePercent}%)</div>
-                    <div># Total:${functionTipValue.obj.applyCount} 
-                    (${functionTipValue.obj.applyCountPercent}%)</div>
-                    <div>Transient:${functionTipValue.obj.releaseSizeFormat} 
-                    (${functionTipValue.obj.releaseSizePercent}%)</div>
-                    <div># Transient:${functionTipValue.obj.releaseCount} 
-                    (${functionTipValue.obj.releaseCountPercent}%)</div>
+                    <div>Function:${// @ts-ignore
+                      functionTipValue.obj.symbolName}</div>
+                    <div>Existing:${// @ts-ignore
+                      functionTipValue.obj.existSizeFormat} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.existSizePercent}%)</div>
+                    <div># Existing:${// @ts-ignore
+                      functionTipValue.obj.existCount} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.existCountPercent}%)</div>
+                    <div>Total Bytes:${// @ts-ignore
+                      functionTipValue.obj.applySizeFormat} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.applySizePercent}%)</div>
+                    <div># Total:${// @ts-ignore
+                      functionTipValue.obj.applyCount} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.applyCountPercent}%)</div>
+                    <div>Transient:${// @ts-ignore
+                      functionTipValue.obj.releaseSizeFormat} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.releaseSizePercent}%)</div>
+                    <div># Transient:${// @ts-ignore
+                      functionTipValue.obj.releaseCount} 
+                    (${// @ts-ignore
+                      functionTipValue.obj.releaseCountPercent}%)</div>
                 </div>`;
       },
       hoverHandler: (data): void => {

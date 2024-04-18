@@ -66,7 +66,7 @@ export class TabPaneSdkSlice extends BaseElement {
         let value = values[0];
         componentId = Number(values[1]);
         slices.push(value);
-      }
+      }// @ts-ignore
       this.parseJson(SpSystemTrace.SDK_CONFIG_MAP);
       let sql = this.sqlMap.get(componentId);
       if (sql === undefined) {

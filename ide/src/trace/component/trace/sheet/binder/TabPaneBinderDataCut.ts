@@ -72,7 +72,7 @@ export class TabPaneBinderDataCut extends BaseElement {
     this.clickLoop(false);
     this.clickSingle(false);
     this.isQueryDataFromDb = false;
-    this.threadBindersTbl!.recycleDataSource = [];
+    this.threadBindersTbl!.recycleDataSource = [];// @ts-ignore
     this.tHeadClick(this.threadBindersTbl!.recycleDataSource);
     this.parentElement!.style.overflow = 'hidden';
     new ResizeObserver(() => {
@@ -147,11 +147,11 @@ export class TabPaneBinderDataCut extends BaseElement {
           ? this.loopDataCutCycleMap(this.funcCycleArr)
           : this.singleDataCutCycleMap(this.funcCycleArr);
         this.threadBindersTbl!.recycleDataSource = this.mergeData(cycleMap);
-        this.threadBindersTbl!.loading = false;
+        this.threadBindersTbl!.loading = false;// @ts-ignore
         this.tHeadClick(this.threadBindersTbl!.recycleDataSource);
       } else {
         this.threadBindersTbl!.recycleDataSource = [];
-        this.threadBindersTbl!.loading = false;
+        this.threadBindersTbl!.loading = false;// @ts-ignore
         this.tHeadClick(this.threadBindersTbl!.recycleDataSource);
       }
     } else {
@@ -169,7 +169,7 @@ export class TabPaneBinderDataCut extends BaseElement {
       threadId.style.border = '1px solid rgb(255,0,0)';
       threadId.setAttribute('placeholder', 'Please input thread id');
       this.threadBindersTbl!.recycleDataSource = [];
-      this.threadBindersTbl!.loading = false;
+      this.threadBindersTbl!.loading = false;// @ts-ignore
       this.tHeadClick(this.threadBindersTbl!.recycleDataSource);
     } else {
       threadId.style.border = '1px solid rgb(151,151,151)';
@@ -178,7 +178,7 @@ export class TabPaneBinderDataCut extends BaseElement {
       threadFunc.style.border = '1px solid rgb(255,0,0)';
       threadFunc.setAttribute('placeholder', 'Please input function name');
       this.threadBindersTbl!.recycleDataSource = [];
-      this.threadBindersTbl!.loading = false;
+      this.threadBindersTbl!.loading = false;// @ts-ignore
       this.tHeadClick(this.threadBindersTbl!.recycleDataSource);
     } else {
       threadFunc.style.border = '1px solid rgb(151,151,151)';

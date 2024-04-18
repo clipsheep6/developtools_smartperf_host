@@ -164,17 +164,21 @@ export class TabPaneSlices extends BaseElement {
     for (const searchItem of search.list) {
       for (const traceRow of sliceRowList) {
         if (
+          // @ts-ignore
           Math.max(TraceRow.rangeSelectObject?.startNS!, searchItem.startTime) <=
-            Math.min(TraceRow.rangeSelectObject?.endNS!, searchItem.startTime + searchItem.dur) &&
+          // @ts-ignore
+          Math.min(TraceRow.rangeSelectObject?.endNS!, searchItem.startTime + searchItem.dur) &&
           !rangeSelectList.includes(searchItem)
         ) {
           // 异步调用栈
           if (traceRow.asyncFuncName) {
+            // @ts-ignore
             if (`${searchItem.pid}` === `${traceRow.asyncFuncNamePID}`) {
               rangeSelectList.push(searchItem);
             }
           } else {
             // 线程调用栈
+            // @ts-ignore
             if (`${searchItem.tid}` === traceRow.rowId) {
               rangeSelectList.push(searchItem);
             }
@@ -246,9 +250,9 @@ export class TabPaneSlices extends BaseElement {
           // @ts-ignore
           return slicesSort === 2
             ? // @ts-ignore
-              parseFloat(slicesRightData[property]) - parseFloat(slicesLeftData[property])
+            parseFloat(slicesRightData[property]) - parseFloat(slicesLeftData[property])
             : // @ts-ignore
-              parseFloat(slicesLeftData[property]) - parseFloat(slicesRightData[property]);
+            parseFloat(slicesLeftData[property]) - parseFloat(slicesRightData[property]);
         } else {
           // @ts-ignore
           if (slicesRightData[property] > slicesLeftData[property]) {

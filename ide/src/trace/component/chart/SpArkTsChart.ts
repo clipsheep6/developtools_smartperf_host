@@ -87,7 +87,7 @@ export class SpArkTsChart implements ParseListener {
   private folderThreadHandler(): void {
     this.folderRow!.onThreadHandler = (useCache): void => {
       this.folderRow!.canvasSave(this.trace.canvasPanelCtx!);
-      if (this.folderRow!.expansion) {
+      if (this.folderRow!.expansion) {// @ts-ignore
         this.trace.canvasPanelCtx?.clearRect(0, 0, this.folderRow!.frame.width, this.folderRow!.frame.height);
       } else {
         (renders.empty as EmptyRender).renderMainThread(

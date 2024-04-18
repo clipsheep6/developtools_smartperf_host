@@ -54,7 +54,7 @@ export class TabPaneVmTrackerShmSelection extends BaseElement {
           // @ts-ignore
           this.TableEl!.getItemTextColor = (filter): unknown => {
             if (filter.flag === 1) {
-              return '#d4b550';
+              return '#d4b550';// @ts-ignore
             } else if (filter.flag === 2) {
               return '#f86b6b';
             } else {
