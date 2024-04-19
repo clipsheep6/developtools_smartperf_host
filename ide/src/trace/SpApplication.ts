@@ -1153,15 +1153,30 @@ export class SpApplication extends BaseElement {
       }
       let indexedDbPageNum = pageNumber - 1;
       let maxTraceFileLength = 400 * 1024 * 1024;
-      let traceRange = IDBKeyRange.bound(
-        [that.pageTimStamp, 'trace', indexedDbPageNum],
-        [that.pageTimStamp, 'trace', indexedDbPageNum],
-        false,
-        false
-      );
-      LongTraceDBUtils.getInstance()
-        .indexedDBHelp.get(LongTraceDBUtils.getInstance().tableName, traceRange, 'QueryFileByPage')
-        .then((result) => {
+  private longTraceFileRead = async (
+    file: any,
+    isNormalType: boolean,
+    traceTypePage: Array<number>,
+    readSize: number,
+    timStamp: number,
+    allFileSize: number
+  ): Promise<boolean> => {
+    info('reading long trace file ', file.name);
+    let that = this;
+    return new Promise((resolve, reject) => {
+      let fr = new FileReader();
+      let message = { fileType: '', startIndex: 0, endIndex: 0, size: 0 };
+      info('Parse long trace using wasm mode ');
+      const { fileType, pageNumber } = this.getFileTypeAndPages(file.name, isNormalType, traceTypePage);
+      let chunk = 48 * 1024 * 1024;
+      let offset = 0;
+      let sliceLen = 0;
+      let index = 1;
+      fr.onload = function (): void {
+        let data = fr.result as ArrayBuffer;
+        LongTraceDBUtils.getInstance()
+          .addLongTableData(data, fileType, timStamp, pageNumber, index, offset, sliceLen)
+          .then(() => {
           let traceData = indexedDataToBufferData(result);
           let traceLength = traceData.byteLength;
           let ebpfRange = IDBKeyRange.bound(
@@ -1688,9 +1703,27 @@ export class SpApplication extends BaseElement {
               });
               return;
             }
-          } else {
-            return;
-          }
+  private openLineFileHandler(urlParams: URLSearchParams): void {
+    this.openFileInit();
+    this.openMenu(false);
+    let downloadLineFile = urlParams.get('local') ? false : true;
+    this.setProgress(downloadLineFile ? 'download trace file' : 'open trace file');
+    this.downloadOnLineFile(
+      urlParams.get('trace') as string,
+      downloadLineFile,
+      (arrayBuf, fileName, showFileName, fileSize) => {
+        this.handleWasmMode(new File([arrayBuf], fileName), showFileName, fileSize, fileName);
+      },
+      (localPath) => {
+        let path = urlParams.get('trace') as string;
+        let fileName: string = '';
+        let showFileName: string = '';
+        if (urlParams.get('local')) {
+          this.openMenu(true);
+          fileName = urlParams.get('traceName') as string;
+        } else {
+          fileName = path.split('/').reverse()[0];
+        }
         });
       } else {
         litSearch.clear();
@@ -1882,30 +1915,26 @@ export class SpApplication extends BaseElement {
       },
       false
     );
-    body!.addEventListener(
-      'drop',
-      (e: any) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this.rootEL!.classList.contains('filedrag')) {
-          this.rootEL!.classList.remove('filedrag');
+    this.initGlobalDropEvents();
+  }
+
+  private initDocumentListener(): void {
+    document.addEventListener('file-error', () => {
+      this.litSearch!.setPercent('This File is Error!', -1);
+    });
+    document.addEventListener('file-correct', () => {
+      this.litSearch!.setPercent('', 101);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.validateFileCacheLost();
+        if (window.localStorage.getItem('Theme') === 'dark') {
+          this.changeTheme(Theme.DARK);
+        } else {
+          this.changeTheme(Theme.LIGHT);
         }
-        if (e.dataTransfer.items !== undefined && e.dataTransfer.items.length > 0) {
-          let item = e.dataTransfer.items[0];
-          if (item.webkitGetAsEntry()?.isFile) {
-            openTraceFile(item.getAsFile());
-          } else if (item.webkitGetAsEntry()?.isDirectory) {
-            litSearch.setPercent('This File is not supported!', -1);
-            progressEL.loading = false;
-            that.freshMenuDisable(false);
-            mainMenu.menus!.splice(1, 1);
-            mainMenu.menus = mainMenu.menus!;
-            spSystemTrace!.reset(null);
-          }
-        }
-      },
-      false
-    );
+      }
+    });
     document.addEventListener('keydown', (event) => {
       const e = event || window.event;
       const ctrlKey = e.ctrlKey || e.metaKey;
@@ -2047,26 +2076,89 @@ export class SpApplication extends BaseElement {
       action: 'Keyboard Shortcuts',
     });
   }
-              this.spRecordTrace!.synchronizeDeviceList();
-              this.spRecordTemplate!.record_template = false;
-              this.spRecordTrace!.refreshConfig(true);
-              this.showContent(this.spRecordTrace!);
-            },
+
+  private clickHandleByRecordNewTrace(): void {
+    this.returnOriginalUrl();
+    this.spRecordTrace!.synchronizeDeviceList();
+    this.spRecordTemplate!.record_template = false;
+    this.spRecordTrace!.refreshConfig(true);
+    this.showContent(this.spRecordTrace!);
+  }
+
+  private clickHandleByRecordTemplate(): void {
+    this.returnOriginalUrl();
+    this.spRecordTemplate!.refreshHint();
+    this.spRecordTemplate!.record_template = true;
+    this.spRecordTemplate!.refreshConfig(false);
+    this.spRecordTemplate!.synchronizeDeviceList();
+    this.showContent(this.spRecordTemplate!);
+  }
+
+  private changeUrl() {
+    let url = new URL(window.location.href);
+    let actionParam = url.searchParams.get('action');
+    let newActionValue = 'help';
+    if (actionParam) {
+      url.searchParams.set('action', newActionValue);
+    } else {
+      url.searchParams.append('action', newActionValue);
+    }
+    let newURL = url.href;
+    history.pushState({}, '', newURL);
+  }
+
+  private returnOriginalUrl() {
+    history.pushState({}, '', window.location.origin + window.location.pathname);
+  }
+
+  private handleSqliteMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
+    let that = this;
+    let fileSizeStr = (fileSize / 1048576).toFixed(1);
+    postLog(fileName, fileSizeStr);
+    document.title = `${showFileName} (${fileSizeStr}M)`;
+    this.litSearch!.setPercent('', 0);
+    threadPool.init('sqlite').then((res) => {
+      let reader = new FileReader();
+      reader.readAsArrayBuffer(ev as any);
+      reader.onloadend = function (ev): void {
+        SpApplication.loadingProgress = 0;
+        SpApplication.progressStep = 3;
+        that.spSystemTrace!.loadDatabaseArrayBuffer(
+          this.result as ArrayBuffer,
+          '',
+          (command: string, _: number) => {
+            that.setProgress(command);
           },
-          {
-            title: 'Record template',
-            icon: 'copyhovered',
-            clickHandler: (item: MenuItem): void => {
-              this.spRecordTemplate!.refreshHint();
-              this.spRecordTemplate!.record_template = true;
-              this.spRecordTemplate!.refreshConfig(false);
-              this.spRecordTemplate!.synchronizeDeviceList();
-              this.showContent(this.spRecordTemplate!);
-            },
-          },
-        ],
-      },
-      {
+          () => {
+            that.mainMenu!.menus!.splice(1, that.mainMenu!.menus!.length > 2 ? 1 : 0, {
+              collapsed: false,
+              title: 'Current Trace',
+              second: false,
+              icon: '',
+              describe: 'Actions on the current trace',
+              children: that.getTraceOptionMenus(showFileName, fileSizeStr, fileName, true),
+            });
+            that.mainMenu!.menus!.splice(2, 1, {
+              collapsed: false,
+              title: 'Support',
+              second: false,
+              icon: '',
+              describe: 'Support',
+              children: that.getTraceSupportMenus(),
+            });
+            that.litSearch!.setPercent('', 101);
+            that.chartFilter!.setAttribute('mode', '');
+            that.progressEL!.loading = false;
+            that.freshMenuDisable(false);
+            that.spInfoAndStats!.initInfoAndStatsData();
+            that.cutTraceFile!.style.display = 'none';
+            that.headerDiv!.style.pointerEvents = 'auto';
+          }
+        );
+      };
+    });
+  }
+
   private handleWasmMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
     let that = this;
     this.litSearch!.setPercent('', 1);
@@ -3728,14 +3820,14 @@ export class SpApplication extends BaseElement {
   private async download(mainMenu: LitMainMenu, fileName: string, isServer: boolean, dbName?: string) {
     let a = document.createElement('a');
     if (isServer) {
-      if (dbName != '') {
+      if (dbName !== '') {
         let file = dbName?.substring(0, dbName?.lastIndexOf('.')) + fileName.substring(fileName.lastIndexOf('.'));
-        a.href = `https://${window.location.host.split(':')[0]}:${window.location.port}` + file;
+        a.href = `https://${window.location.host.split(':')[0]}:${window.location.port}${file}`;
       } else {
         return;
       }
     } else {
-      let buffer = await this.readTraceFileBuffer();
+      let buffer = await readTraceFileBuffer();
       if (buffer) {
         a.href = URL.createObjectURL(new Blob([buffer]));
       }
@@ -3751,7 +3843,7 @@ export class SpApplication extends BaseElement {
     }, 4000);
   }
 
-  private itemIconLoading(mainMenu: LitMainMenu, groupName: string, itemName: string, start: boolean) {
+  private itemIconLoading(mainMenu: LitMainMenu, groupName: string, itemName: string, start: boolean): void {
     let currentTraceGroup = mainMenu.shadowRoot?.querySelector<LitMainMenuGroup>(
       `lit-main-menu-group[title='${groupName}']`
     );
@@ -3766,23 +3858,17 @@ export class SpApplication extends BaseElement {
     }
   }
 
-  freshMenuDisable(disable: boolean) {
-    let mainMenu = this.shadowRoot?.querySelector('#main-menu') as LitMainMenu;
+  freshMenuDisable(disable: boolean): void {
     // @ts-ignore
-    mainMenu.menus[0].children[0].disabled = disable;
+    this.mainMenu!.menus[0].children[0].disabled = disable;
     // @ts-ignore
-    mainMenu.menus[0].children[1].disabled = disable;
-    if (mainMenu.menus!.length > 2) {
+    this.mainMenu!.menus[0].children[1].disabled = disable;
+    if (this.mainMenu!.menus!.length > 2) {
       // @ts-ignore
-      mainMenu.menus[1].children.map((it) => (it.disabled = disable));
+      this.mainMenu!.menus[1].children.map((it) => (it.disabled = disable));
     }
-    mainMenu.menus = mainMenu.menus;
-    let litIcon = this.shadowRoot?.querySelector('.filter-config') as LitIcon;
-    if (disable) {
-      litIcon.style.visibility = 'hidden';
-    } else {
-      litIcon.style.visibility = 'visible';
-    }
+    this.mainMenu!.menus = this.mainMenu!.menus;
+    this.filterConfig!.style.visibility = disable ? 'hidden' : 'visible';
   }
 
   private getCurrentDataTime(): string[]{

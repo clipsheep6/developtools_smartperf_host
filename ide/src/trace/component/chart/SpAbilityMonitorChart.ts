@@ -50,6 +50,14 @@ import {
   abilityPurgeableDataSender,
 } from '../../database/data-trafic/VmTrackerDataSender';
 import { MemoryConfig } from '../../bean/MemoryConfig';
+import { queryMemoryMaxData } from '../../database/sql/Memory.sql';
+import { queryDiskIoMaxData, queryNetWorkMaxData } from '../../database/sql/SqlLite.sql';
+import { queryAbilityExits, queryCPuAbilityMaxData, queryPurgeableSysData } from '../../database/sql/Ability.sql';
+const networkNameList: Array<string> = ['Bytes In/Sec', 'Bytes Out/Sec', 'Packets In/Sec', 'Packets Out/Sec'];
+const memoryNameList: Array<string> = ['MemoryTotal', 'Cached', 'SwapTotal'];
+const diskIONameList: Array<string> = ['Bytes Read/Sec', 'Bytes Written/Sec', 'Read Ops/Sec', 'Written Ops/Sec'];
+const key = 'abilityMonitor';
+
 export class SpAbilityMonitorChart {
   private trace: SpSystemTrace;
   constructor(trace: SpSystemTrace) {
@@ -79,11 +87,13 @@ export class SpAbilityMonitorChart {
     return maxByteName;
   };
 
-  async init() {
+  async init(): Promise<void> {
     let time = new Date().getTime();
     let result = await queryAbilityExits();
     info('Ability Monitor Exits Tables size is: ', result!.length);
-    if (result.length <= 0) return;
+    if (result.length <= 0) {
+      return;
+    }
     let processRow = this.initAbilityRow();
     if (this.hasTable(result, 'trace_cpu_usage')) {
       await this.initCpuAbility(processRow);
@@ -112,7 +122,7 @@ export class SpAbilityMonitorChart {
     info('The time to load the AbilityMonitor data is: ', durTime);
   }
 
-  private hasTable(result: Array<any>, tableName: string) {
+  private hasTable(result: Array<any>, tableName: string): boolean {
     return result.find((o) => {
       return o.event_name === tableName;
     });
@@ -120,7 +130,7 @@ export class SpAbilityMonitorChart {
 
   private initAbilityRow = (): TraceRow<ProcessStruct> => {
     let abilityRow = TraceRow.skeleton<ProcessStruct>();
-    abilityRow.rowId = 'abilityMonitor';
+    abilityRow.rowId = key;
     abilityRow.rowType = TraceRow.ROW_TYPE_MONITOR;
     abilityRow.style.height = '40px';
     abilityRow.rowParentId = '';
@@ -266,28 +276,77 @@ export class SpAbilityMonitorChart {
       userTraceRow.canvasRestore(context, this.trace);
     };
     processRow.addChildTraceRow(userTraceRow);
+  }
+
+  private initTotalMonitorTraceRow(parent: TraceRow<ProcessStruct>, cpuList: Array<string>, hasTotal: boolean): void {
+    let traceRow = TraceRow.skeleton<CpuAbilityMonitorStruct>();
+    traceRow.rowParentId = key;
+    traceRow.rowHidden = !parent.expansion;
+    traceRow.rowId = cpuList[0];
+    traceRow.rowType = TraceRow.ROW_TYPE_CPU_ABILITY;
+    traceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    traceRow.selectChangeHandler = this.trace.selectChangeHandler;
+    traceRow.style.height = '40px';
+    traceRow.style.width = '100%';
+    traceRow.setAttribute('children', '');
+    traceRow.name = `CPU ${cpuList[0]} Load`;
+    traceRow.supplierFrame = (): Promise<CpuAbilityMonitorStruct[]> =>
+      cpuAbilityUserDataSender(traceRow, 'CpuAbilityMonitorData').then((res): CpuAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    traceRow.focusHandler = (ev): void => {
+      let monitorCpuTip = `${(CpuAbilityMonitorStruct.hoverCpuAbilityStruct?.value || 0).toFixed(2)}'%'`;
+      this.trace?.displayTip(traceRow, CpuAbilityMonitorStruct.hoverCpuAbilityStruct, `<span>${monitorCpuTip}</span>`);
+    };
+    traceRow.findHoverStruct = (): void => {
+      CpuAbilityMonitorStruct.hoverCpuAbilityStruct = traceRow.getHoverStruct();
+    };
+    traceRow.onThreadHandler = (useCache): void => {
+      let context: CanvasRenderingContext2D;
+      if (traceRow.currentContext) {
+        context = traceRow.currentContext;
+      } else {
+        context = traceRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
+      }
+      traceRow.canvasSave(context);
+      (renders['monitorCpu'] as CpuAbilityRender).renderMainThread(
+        {
+          context: context,
+          useCache: useCache,
+          type: 'monitorCpu0',
+          maxCpuUtilization: 100,
+          maxCpuUtilizationName: hasTotal ? '100%' : '0%',
+        },
+        traceRow
+      );
+      traceRow.canvasRestore(context, this.trace);
+    };
+    parent.addChildTraceRow(traceRow);
+  }
+
+  private initSysMonitorTraceRow(parent: TraceRow<ProcessStruct>, cpuList: Array<string>, hasLoad: boolean): void {
     let sysTraceRow = TraceRow.skeleton<CpuAbilityMonitorStruct>();
-    sysTraceRow.rowParentId = `abilityMonitor`;
-    sysTraceRow.rowHidden = !processRow.expansion;
-    sysTraceRow.rowId = cpuNameList[2];
+    sysTraceRow.rowParentId = key;
+    sysTraceRow.rowHidden = !parent.expansion;
+    sysTraceRow.rowId = cpuList[2];
     sysTraceRow.rowType = TraceRow.ROW_TYPE_CPU_ABILITY;
     sysTraceRow.style.height = '40px';
-    sysTraceRow.style.width = `100%`;
+    sysTraceRow.style.width = '100%';
     sysTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
     sysTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
     sysTraceRow.setAttribute('children', '');
-    sysTraceRow.name = `CPU ${cpuNameList[2]} Load`;
+    sysTraceRow.name = `CPU ${cpuList[2]} Load`;
     sysTraceRow.supplierFrame = (): Promise<CpuAbilityMonitorStruct[]> =>
       cpuAbilityUserDataSender(sysTraceRow, 'CpuAbilitySystemData').then((res): CpuAbilityMonitorStruct[] => {
         this.computeDur(res);
         return res;
       });
-    sysTraceRow.focusHandler = (ev): void => {
-      let monitorCpuTip = (CpuAbilityMonitorStruct.hoverCpuAbilityStruct?.value || 0).toFixed(2) + '%';
+    sysTraceRow.focusHandler = (): void => {
       this.trace?.displayTip(
         sysTraceRow,
         CpuAbilityMonitorStruct.hoverCpuAbilityStruct,
-        `<span>${monitorCpuTip}</span>`
+        `<span>${(CpuAbilityMonitorStruct.hoverCpuAbilityStruct?.value || 0).toFixed(2)}%</span>`
       );
     };
     sysTraceRow.findHoverStruct = (): void => {
@@ -305,24 +364,18 @@ export class SpAbilityMonitorChart {
         {
           context: context,
           useCache: useCache,
-          type: `monitorCpu2`,
+          type: 'monitorCpu2',
           maxCpuUtilization: 100,
-          maxCpuUtilizationName: hasSystemLoad ? '100%' : '0%',
+          maxCpuUtilizationName: hasLoad ? '100%' : '0%',
         },
         sysTraceRow
       );
       sysTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(sysTraceRow);
-    let durTime = new Date().getTime() - time;
-    info('The time to load the Ability Cpu is: ', durTime);
-  };
+    parent.addChildTraceRow(sysTraceRow);
+  }
 
-  private initMemoryAbility = async (processRow: TraceRow<ProcessStruct>): Promise<void> => {
-    let time = new Date().getTime();
-    // sys.mem.total  sys.mem.cached  sys.mem.swap.total
-    let memoryNameList: Array<string> = ['MemoryTotal', 'Cached', 'SwapTotal'];
-    let memoryTotal = await queryMemoryMaxData('sys.mem.total');
+  private memoryUsedThreadHandle(memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>, memoryTotal: any[]): void {
     let memoryTotalValue = memoryTotal[0].maxValue;
     let memoryTotalId = memoryTotal[0].filter_id;
     let memoryTotalValueName = this.memoryMath(memoryTotalValue);
@@ -375,24 +428,27 @@ export class SpAbilityMonitorChart {
       );
       memoryUsedTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(memoryUsedTraceRow);
-    let cached = await queryMemoryMaxData('sys.mem.cached');
-    let cachedValue = cached[0].maxValue;
-    let cachedValueName = this.memoryMath(cachedValue);
-    let cachedId = cached[0].filter_id;
-    let cachedFilesTraceRow = TraceRow.skeleton<MemoryAbilityMonitorStruct>();
-    cachedFilesTraceRow.rowParentId = `abilityMonitor`;
-    cachedFilesTraceRow.rowHidden = !processRow.expansion;
-    cachedFilesTraceRow.rowId = memoryNameList[1];
-    cachedFilesTraceRow.rowType = TraceRow.ROW_TYPE_MEMORY_ABILITY;
-    cachedFilesTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    cachedFilesTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    cachedFilesTraceRow.style.height = '40px';
-    cachedFilesTraceRow.style.width = `100%`;
-    cachedFilesTraceRow.setAttribute('children', '');
-    cachedFilesTraceRow.name = memoryNameList[1];
-    cachedFilesTraceRow.supplierFrame = (): Promise<MemoryAbilityMonitorStruct[]> =>
-      abilityMemoryUsedDataSender(cachedId, cachedFilesTraceRow).then((res): MemoryAbilityMonitorStruct[] => {
+  }
+
+  private async initMemoryUsedRow(
+    memoryUsedRow: TraceRow<MemoryAbilityMonitorStruct>,
+    parent: TraceRow<any>
+  ): Promise<void> {
+    let memoryTotal = await queryMemoryMaxData('sys.mem.total');
+    let memoryTotalId = memoryTotal[0].filter_id;
+
+    memoryUsedRow.rowParentId = key;
+    memoryUsedRow.rowHidden = !parent.expansion;
+    memoryUsedRow.rowId = memoryNameList[0];
+    memoryUsedRow.rowType = TraceRow.ROW_TYPE_MEMORY_ABILITY;
+    memoryUsedRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    memoryUsedRow.selectChangeHandler = this.trace.selectChangeHandler;
+    memoryUsedRow.style.height = '40px';
+    memoryUsedRow.style.width = '100%';
+    memoryUsedRow.setAttribute('children', '');
+    memoryUsedRow.name = memoryNameList[0];
+    memoryUsedRow.supplierFrame = (): Promise<MemoryAbilityMonitorStruct[]> => {
+      return abilityMemoryUsedDataSender(memoryTotalId, memoryUsedRow).then((res): MemoryAbilityMonitorStruct[] => {
         this.computeDur(res);
         return res;
       });
@@ -482,39 +538,62 @@ export class SpAbilityMonitorChart {
     info('The time to load the Ability Memory is: ', durTime);
   };
 
-  private initDiskAbility = async (processRow: TraceRow<ProcessStruct>): Promise<void> => {
-    let time = new Date().getTime();
-    let maxList = await queryDiskIoMaxData();
-    let maxBytesRead = maxList[0].bytesRead;
-    let maxBytesReadName = this.diskIOMath(maxBytesRead);
-    let diskIONameList: Array<string> = ['Bytes Read/Sec', 'Bytes Written/Sec', 'Read Ops/Sec', 'Written Ops/Sec'];
-    let bytesReadTraceRow = TraceRow.skeleton<DiskAbilityMonitorStruct>();
-    bytesReadTraceRow.rowParentId = `abilityMonitor`;
-    bytesReadTraceRow.rowHidden = !processRow.expansion;
-    bytesReadTraceRow.rowId = diskIONameList[0];
-    bytesReadTraceRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
-    bytesReadTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    bytesReadTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    bytesReadTraceRow.style.height = '40px';
-    bytesReadTraceRow.style.width = `100%`;
-    bytesReadTraceRow.setAttribute('children', '');
-    bytesReadTraceRow.name = 'Disk ' + diskIONameList[0];
-    bytesReadTraceRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
-      abilityBytesReadDataSender(bytesReadTraceRow, 'AbilityBytesReadData').then((res): DiskAbilityMonitorStruct[] => {
+  private async initCompressedRow(
+    compressedRow: TraceRow<MemoryAbilityMonitorStruct>,
+    parent: TraceRow<any>
+  ): Promise<void> {
+    let swap = await queryMemoryMaxData('sys.mem.swap.total');
+    let swapId = swap[0].filter_id;
+    compressedRow.rowParentId = key;
+    compressedRow.rowHidden = !parent.expansion;
+    compressedRow.rowId = memoryNameList[2];
+    compressedRow.rowType = TraceRow.ROW_TYPE_MEMORY_ABILITY;
+    compressedRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    compressedRow.selectChangeHandler = this.trace.selectChangeHandler;
+    compressedRow.style.height = '40px';
+    compressedRow.style.width = '100%';
+    compressedRow.setAttribute('children', '');
+    compressedRow.name = memoryNameList[2];
+    compressedRow.supplierFrame = (): Promise<MemoryAbilityMonitorStruct[]> =>
+      abilityMemoryUsedDataSender(swapId, compressedRow).then((res): MemoryAbilityMonitorStruct[] => {
         this.computeDur(res);
         return res;
       });
     bytesReadTraceRow.focusHandler = (ev): void => {
       this.trace?.displayTip(
-        bytesReadTraceRow,
-        DiskAbilityMonitorStruct.hoverDiskAbilityStruct,
-        `<span>${DiskAbilityMonitorStruct.hoverDiskAbilityStruct?.value || '0'} KB/S</span>`
+        compressedRow,
+        MemoryAbilityMonitorStruct.hoverMemoryAbilityStruct,
+        `<span>${Utils.getBinaryKBWithUnit(MemoryAbilityMonitorStruct.hoverMemoryAbilityStruct?.value || 0)}</span>`
       );
     };
-    bytesReadTraceRow.findHoverStruct = (): void => {
-      DiskAbilityMonitorStruct.hoverDiskAbilityStruct = bytesReadTraceRow.getHoverStruct();
+    compressedRow.findHoverStruct = (): void => {
+      MemoryAbilityMonitorStruct.hoverMemoryAbilityStruct = compressedRow.getHoverStruct();
     };
-    bytesReadTraceRow.onThreadHandler = (useCache): void => {
+    this.compressThreadHandler(compressedRow, swap);
+  }
+
+  private initMemoryAbility = async (processRow: TraceRow<ProcessStruct>): Promise<void> => {
+    let time = new Date().getTime();
+    // sys.mem.total  sys.mem.cached  sys.mem.swap.total
+    let memoryUsedTraceRow = TraceRow.skeleton<MemoryAbilityMonitorStruct>();
+    this.initMemoryUsedRow(memoryUsedTraceRow, processRow);
+    processRow.addChildTraceRow(memoryUsedTraceRow);
+
+    let cachedFilesTraceRow = TraceRow.skeleton<MemoryAbilityMonitorStruct>();
+    this.initCachedRow(cachedFilesTraceRow, processRow);
+    processRow.addChildTraceRow(cachedFilesTraceRow);
+
+    let compressedTraceRow = TraceRow.skeleton<MemoryAbilityMonitorStruct>();
+    this.initCompressedRow(compressedTraceRow, processRow);
+    processRow.addChildTraceRow(compressedTraceRow);
+    let durTime = new Date().getTime() - time;
+    info('The time to load the Ability Memory is: ', durTime);
+  };
+
+  private bytesReadThreadHandler(bytesReadRow: TraceRow<DiskAbilityMonitorStruct>, maxList: any[]): void {
+    let maxBytesRead = maxList[0].bytesRead;
+    let maxBytesReadName = this.diskIOMath(maxBytesRead);
+    bytesReadRow.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
       if (bytesReadTraceRow.currentContext) {
         context = bytesReadTraceRow.currentContext;
@@ -534,28 +613,29 @@ export class SpAbilityMonitorChart {
       );
       bytesReadTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(bytesReadTraceRow);
-    let maxBytesWrite = maxList[0].bytesWrite;
-    let maxBytesWriteName = this.diskIOMath(maxBytesWrite);
-    let bytesWrittenTraceRow = TraceRow.skeleton<DiskAbilityMonitorStruct>();
-    bytesWrittenTraceRow.rowParentId = `abilityMonitor`;
-    bytesWrittenTraceRow.rowHidden = !processRow.expansion;
-    bytesWrittenTraceRow.rowId = diskIONameList[1];
-    bytesWrittenTraceRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
-    bytesWrittenTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    bytesWrittenTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    bytesWrittenTraceRow.style.height = '40px';
-    bytesWrittenTraceRow.style.width = `100%`;
-    bytesWrittenTraceRow.setAttribute('children', '');
-    bytesWrittenTraceRow.name = 'Disk ' + diskIONameList[1];
-    bytesWrittenTraceRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
-      abilityBytesReadDataSender(bytesWrittenTraceRow, 'AbilityBytesWrittenData').then(
-        (res): DiskAbilityMonitorStruct[] => {
-          this.computeDur(res);
-          return res;
-        }
-      );
-    bytesWrittenTraceRow.focusHandler = (ev): void => {
+  }
+
+  private initBytesReadRow(
+    bytesReadRow: TraceRow<DiskAbilityMonitorStruct>,
+    parentRow: TraceRow<any>,
+    maxList: any[]
+  ): void {
+    bytesReadRow.rowParentId = key;
+    bytesReadRow.rowHidden = !parentRow.expansion;
+    bytesReadRow.rowId = diskIONameList[0];
+    bytesReadRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
+    bytesReadRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    bytesReadRow.selectChangeHandler = this.trace.selectChangeHandler;
+    bytesReadRow.style.height = '40px';
+    bytesReadRow.style.width = '100%';
+    bytesReadRow.setAttribute('children', '');
+    bytesReadRow.name = `Disk ${diskIONameList[0]}`;
+    bytesReadRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
+      abilityBytesReadDataSender(bytesReadRow, 'AbilityBytesReadData').then((res): DiskAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    bytesReadRow.focusHandler = (ev): void => {
       this.trace?.displayTip(
         bytesWrittenTraceRow,
         DiskAbilityMonitorStruct.hoverDiskAbilityStruct,
@@ -565,7 +645,12 @@ export class SpAbilityMonitorChart {
     bytesWrittenTraceRow.findHoverStruct = (): void => {
       DiskAbilityMonitorStruct.hoverDiskAbilityStruct = bytesWrittenTraceRow.getHoverStruct();
     };
-    bytesWrittenTraceRow.onThreadHandler = (useCache): void => {
+    this.bytesReadThreadHandler(bytesReadRow, maxList);
+  }
+  private bytesWriteThreadHandler(bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>, maxList: any[]): void {
+    let maxBytesWrite = maxList[0].bytesWrite;
+    let maxBytesWriteName = this.diskIOMath(maxBytesWrite);
+    bytesWriteRow.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
       if (bytesWrittenTraceRow.currentContext) {
         context = bytesWrittenTraceRow.currentContext;
@@ -585,22 +670,56 @@ export class SpAbilityMonitorChart {
       );
       bytesWrittenTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(bytesWrittenTraceRow);
+  }
+
+  private initBytesWriteRow(
+    bytesWriteRow: TraceRow<DiskAbilityMonitorStruct>,
+    parent: TraceRow<any>,
+    maxList: any[]
+  ): void {
+    bytesWriteRow.rowParentId = key;
+    bytesWriteRow.rowHidden = !parent.expansion;
+    bytesWriteRow.rowId = diskIONameList[1];
+    bytesWriteRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
+    bytesWriteRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    bytesWriteRow.selectChangeHandler = this.trace.selectChangeHandler;
+    bytesWriteRow.style.height = '40px';
+    bytesWriteRow.style.width = '100%';
+    bytesWriteRow.setAttribute('children', '');
+    bytesWriteRow.name = `Disk ${diskIONameList[1]}`;
+    bytesWriteRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
+      abilityBytesReadDataSender(bytesWriteRow, 'AbilityBytesWrittenData').then((res): DiskAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    bytesWriteRow.focusHandler = (ev): void => {
+      this.trace?.displayTip(
+        bytesWriteRow,
+        DiskAbilityMonitorStruct.hoverDiskAbilityStruct,
+        `<span>${DiskAbilityMonitorStruct.hoverDiskAbilityStruct?.value || '0'} KB/S</span>`
+      );
+    };
+    bytesWriteRow.findHoverStruct = (): void => {
+      DiskAbilityMonitorStruct.hoverDiskAbilityStruct = bytesWriteRow.getHoverStruct();
+    };
+    this.bytesWriteThreadHandler(bytesWriteRow, maxList);
+  }
+
+  private initReadOspRow(readOpsRow: TraceRow<DiskAbilityMonitorStruct>, parent: TraceRow<any>, maxList: any[]): void {
     let maxReadOps = maxList[0].readOps;
     let maxReadOpsName = this.diskIOMath(maxReadOps);
-    let readOpsTraceRow = TraceRow.skeleton<DiskAbilityMonitorStruct>();
-    readOpsTraceRow.rowParentId = `abilityMonitor`;
-    readOpsTraceRow.rowHidden = !processRow.expansion;
-    readOpsTraceRow.rowId = diskIONameList[2];
-    readOpsTraceRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
-    readOpsTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    readOpsTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    readOpsTraceRow.style.height = '40px';
-    readOpsTraceRow.style.width = `100%`;
-    readOpsTraceRow.setAttribute('children', '');
-    readOpsTraceRow.name = 'Disk ' + diskIONameList[2];
-    readOpsTraceRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
-      abilityBytesReadDataSender(readOpsTraceRow, 'AbilityReadOpsData').then((res): DiskAbilityMonitorStruct[] => {
+    readOpsRow.rowParentId = key;
+    readOpsRow.rowHidden = !parent.expansion;
+    readOpsRow.rowId = diskIONameList[2];
+    readOpsRow.rowType = TraceRow.ROW_TYPE_DISK_ABILITY;
+    readOpsRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    readOpsRow.selectChangeHandler = this.trace.selectChangeHandler;
+    readOpsRow.style.height = '40px';
+    readOpsRow.style.width = '100%';
+    readOpsRow.setAttribute('children', '');
+    readOpsRow.name = `Disk ${diskIONameList[2]}`;
+    readOpsRow.supplierFrame = (): Promise<DiskAbilityMonitorStruct[]> =>
+      abilityBytesReadDataSender(readOpsRow, 'AbilityReadOpsData').then((res): DiskAbilityMonitorStruct[] => {
         this.computeDur(res);
         return res;
       });
@@ -744,28 +863,29 @@ export class SpAbilityMonitorChart {
       );
       bytesInTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(bytesInTraceRow);
-    let bytesOutTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
-    let maxBytesOut = maxList[0].maxOut;
-    let maxOutByteName = this.networkMath(maxBytesOut);
-    bytesOutTraceRow.rowParentId = `abilityMonitor`;
-    bytesOutTraceRow.rowHidden = !processRow.expansion;
-    bytesOutTraceRow.rowId = networkNameList[1];
-    bytesOutTraceRow.rowType = TraceRow.ROW_TYPE_NETWORK_ABILITY;
-    bytesOutTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    bytesOutTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    bytesOutTraceRow.style.height = '40px';
-    bytesOutTraceRow.style.width = `100%`;
-    bytesOutTraceRow.setAttribute('children', '');
-    bytesOutTraceRow.name = 'Network ' + networkNameList[1];
-    bytesOutTraceRow.supplierFrame = (): Promise<NetworkAbilityMonitorStruct[]> =>
-      abilityBytesInTraceDataSender(bytesOutTraceRow, 'AbilityBytesOutTraceData').then(
-        (res): NetworkAbilityMonitorStruct[] => {
-          this.computeDur(res);
-          return res;
-        }
-      );
-    bytesOutTraceRow.focusHandler = (ev): void => {
+  }
+
+  private initBytesInRow(
+    row: TraceRow<NetworkAbilityMonitorStruct>,
+    parent: TraceRow<ProcessStruct>,
+    maxList: any[]
+  ): void {
+    row.rowParentId = key;
+    row.rowHidden = !parent.expansion;
+    row.rowId = networkNameList[0];
+    row.rowType = TraceRow.ROW_TYPE_NETWORK_ABILITY;
+    row.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    row.selectChangeHandler = this.trace.selectChangeHandler;
+    row.style.height = '40px';
+    row.style.width = '100%';
+    row.setAttribute('children', '');
+    row.name = `Network ${networkNameList[0]}`;
+    row.supplierFrame = (): Promise<NetworkAbilityMonitorStruct[]> =>
+      abilityBytesInTraceDataSender(row, 'AbilityBytesInTraceData').then((res): NetworkAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    row.focusHandler = (ev): void => {
       this.trace?.displayTip(
         bytesOutTraceRow,
         NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct,
@@ -846,47 +966,52 @@ export class SpAbilityMonitorChart {
       );
       packetInTraceRow.canvasRestore(context, this.trace);
     };
-    processRow.addChildTraceRow(packetInTraceRow);
-    let packetOutTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
+  }
+
+  private initPacketInRow(
+    row: TraceRow<NetworkAbilityMonitorStruct>,
+    parent: TraceRow<ProcessStruct>,
+    maxList: any[]
+  ): void {
+    row.rowParentId = key;
+    row.rowHidden = !parent.expansion;
+    row.rowId = networkNameList[2];
+    row.rowType = TraceRow.ROW_TYPE_NETWORK_ABILITY;
+    row.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    row.selectChangeHandler = this.trace.selectChangeHandler;
+    row.style.height = '40px';
+    row.style.width = '100%';
+    row.setAttribute('children', '');
+    row.name = `Network ${networkNameList[2]}`;
+    row.supplierFrame = (): Promise<NetworkAbilityMonitorStruct[]> =>
+      abilityBytesInTraceDataSender(row, 'AbilityPacketInTraceData').then((res): NetworkAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    row.focusHandler = (ev): void => {
+      this.trace?.displayTip(
+        row,
+        NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct,
+        `<span>${Utils.getBinaryByteWithUnit(NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct?.value || 0)}</span>`
+      );
+    };
+    row.findHoverStruct = (): void => {
+      NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct = row.getHoverStruct();
+    };
+    this.packetInRowThreadHandler(row, maxList);
+  }
+
+  private packetOutRowThreadHandler(row: TraceRow<NetworkAbilityMonitorStruct>, maxList: any[]): void {
     let maxPacketOut = maxList[0].maxPacketOut;
     let maxOutPacketName = this.networkMath(maxPacketOut);
-    packetOutTraceRow.rowParentId = `abilityMonitor`;
-    packetOutTraceRow.rowHidden = !processRow.expansion;
-    packetOutTraceRow.rowId = networkNameList[3];
-    packetOutTraceRow.rowType = TraceRow.ROW_TYPE_NETWORK_ABILITY;
-    packetOutTraceRow.favoriteChangeHandler = this.trace.favoriteChangeHandler;
-    packetOutTraceRow.selectChangeHandler = this.trace.selectChangeHandler;
-    packetOutTraceRow.style.height = '40px';
-    packetOutTraceRow.style.width = `100%`;
-    packetOutTraceRow.setAttribute('children', '');
-    packetOutTraceRow.name = 'Network ' + networkNameList[3];
-    packetOutTraceRow.supplierFrame = (): Promise<NetworkAbilityMonitorStruct[]> =>
-      abilityBytesInTraceDataSender(packetOutTraceRow, 'AbilityPacketsOutTraceData').then(
-        (res): NetworkAbilityMonitorStruct[] => {
-          this.computeDur(res);
-          return res;
-        }
-      );
-    packetOutTraceRow.focusHandler = (ev): void => {
-      if (NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct) {
-        this.trace?.displayTip(
-          packetOutTraceRow,
-          NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct,
-          `<span>${Utils.getBinaryByteWithUnit(NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct!.value!)}</span>`
-        );
-      }
-    };
-    packetOutTraceRow.findHoverStruct = (): void => {
-      NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct = packetOutTraceRow.getHoverStruct();
-    };
-    packetOutTraceRow.onThreadHandler = (useCache): void => {
+    row.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
-      if (packetOutTraceRow.currentContext) {
-        context = packetOutTraceRow.currentContext;
+      if (row.currentContext) {
+        context = row.currentContext;
       } else {
-        context = packetOutTraceRow.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
+        context = row.collect ? this.trace.canvasFavoritePanelCtx! : this.trace.canvasPanelCtx!;
       }
-      packetOutTraceRow.canvasSave(context);
+      row.canvasSave(context);
       (renders['monitorNetwork'] as NetworkAbilityRender).renderMainThread(
         {
           context: context,
@@ -899,6 +1024,57 @@ export class SpAbilityMonitorChart {
       );
       packetOutTraceRow.canvasRestore(context, this.trace);
     };
+  }
+
+  private initPacketOutRow(
+    row: TraceRow<NetworkAbilityMonitorStruct>,
+    parent: TraceRow<ProcessStruct>,
+    maxList: any[]
+  ): void {
+    row.rowParentId = key;
+    row.rowHidden = !parent.expansion;
+    row.rowId = networkNameList[3];
+    row.rowType = TraceRow.ROW_TYPE_NETWORK_ABILITY;
+    row.favoriteChangeHandler = this.trace.favoriteChangeHandler;
+    row.selectChangeHandler = this.trace.selectChangeHandler;
+    row.style.height = '40px';
+    row.style.width = '100%';
+    row.setAttribute('children', '');
+    row.name = `Network ${networkNameList[3]}`;
+    row.supplierFrame = (): Promise<NetworkAbilityMonitorStruct[]> =>
+      abilityBytesInTraceDataSender(row, 'AbilityPacketsOutTraceData').then((res): NetworkAbilityMonitorStruct[] => {
+        this.computeDur(res);
+        return res;
+      });
+    row.focusHandler = (ev): void => {
+      if (NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct) {
+        this.trace?.displayTip(
+          row,
+          NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct,
+          `<span>${Utils.getBinaryByteWithUnit(NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct!.value!)}</span>`
+        );
+      }
+    };
+    row.findHoverStruct = (): void => {
+      NetworkAbilityMonitorStruct.hoverNetworkAbilityStruct = row.getHoverStruct();
+    };
+    this.packetOutRowThreadHandler(row, maxList);
+  }
+  private initNetworkAbility = async (processRow: TraceRow<ProcessStruct>): Promise<void> => {
+    let time = new Date().getTime();
+    let maxList = await queryNetWorkMaxData();
+    let bytesInTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
+    this.initBytesInRow(bytesInTraceRow, processRow, maxList);
+    processRow.addChildTraceRow(bytesInTraceRow);
+
+    let bytesOutTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
+    this.initBytesOutRow(bytesOutTraceRow, processRow, maxList);
+    processRow.addChildTraceRow(bytesOutTraceRow);
+    let packetInTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
+    this.initPacketInRow(packetInTraceRow, processRow, maxList);
+    processRow.addChildTraceRow(packetInTraceRow);
+    let packetOutTraceRow = TraceRow.skeleton<NetworkAbilityMonitorStruct>();
+    this.initPacketOutRow(packetOutTraceRow, processRow, maxList);
     processRow.addChildTraceRow(packetOutTraceRow);
     let durTime = new Date().getTime() - time;
     info('The time to load the Ability Network is: ', durTime);

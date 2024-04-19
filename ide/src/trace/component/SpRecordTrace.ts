@@ -503,55 +503,100 @@ export class SpRecordTrace extends BaseElement {
     } else {
       this.deviceSelect!.innerHTML = '';
       // @ts-ignore
-      HdcDeviceManager.getDevices().then((devs: USBDevice[]) => {
-        if (devs.length == 0) {
+      HdcDeviceManager.getDevices().then(async (devs: USBDevice[]) => {
+        if (devs.length === 0) {
           this.recordButton!.hidden = true;
           this.disconnectButton!.hidden = true;
           this.devicePrompt!.innerText = 'Device not connected';
+          this.hintEl!.textContent = DEVICE_NOT_CONNECT;
+          if (!this.showHint) {
+            this.showHint = true;
+          }
         }
+        let optionNum = 0;
         for (let len = 0; len < devs.length; len++) {
           let dev = devs[len];
           let option = document.createElement('option');
           option.className = 'select';
           if (typeof dev.serialNumber === 'string') {
-            option.value = dev.serialNumber;
+            let res = await HdcDeviceManager.connect(dev.serialNumber);
+            if (res) {
+              optionNum++;
+              option.value = dev.serialNumber;
+              option.textContent = dev!.serialNumber ? dev!.serialNumber!.toString() : 'hdc Device';
+              this.deviceSelect!.appendChild(option);
+            }
+            if (len === 0 && res) {
+              option.selected = true;
+              this.recordButton!.hidden = false;
+              this.disconnectButton!.hidden = false;
+              this.showHint = false;
+              this.devicePrompt!.innerText = '';
+              this.hintEl!.textContent = '';
+              SpRecordTrace.serialNumber = option.value;
+              this.refreshDeviceVersion(option);
+            }
           }
-          option.textContent = dev!.serialNumber ? dev!.serialNumber!.toString() : 'hdc Device';
-          this.deviceSelect!.appendChild(option);
-          if (len == 0) {
-            option.selected = true;
-            this.recordButton!.hidden = false;
-            this.disconnectButton!.hidden = false;
-            this.devicePrompt!.innerText = '';
-            SpRecordTrace.serialNumber = option.value;
-            HdcDeviceManager.connect(option.value).then((result) => {
-              if (result) {
-                HdcDeviceManager.shellResultAsString(CmdConstant.CMD_GET_VERSION, false).then((version) => {
-                  SpRecordTrace.selectVersion = this.getDeviceVersion(version);
-                  this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
-                  this.nativeMemoryHideBySelectVersion();
-                  this.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
-                    PluginConvertUtils.BeanToCmdTxt(this.makeRequest(), false),
-                    this.recordSetting!.output,
-                    this.recordSetting!.maxDur
-                  );
-                  if (this.nowChildItem === this.spWebShell) {
-                    window.publish(window.SmartEvent.UI.DeviceConnect, option.value);
-                  }
-                });
-              } else {
-                SpRecordTrace.selectVersion = SpRecordTrace.supportVersions[0];
-                this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
-                this.nativeMemoryHideBySelectVersion();
-                let cmdTxt = PluginConvertUtils.BeanToCmdTxt(this.makeRequest(), false);
-                this.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
-                  cmdTxt,
-                  this.recordSetting!.output,
-                  this.recordSetting!.maxDur
-                );
-              }
-            });
+        };
+        if(!optionNum){
+          this.deviceSelect!.style!.border = '2px solid red';
+          setTimeout(() => {
+            this.deviceSelect!.style!.border = '1px solid #4D4D4D';
+          },3000);
+          this.recordButton!.hidden = true;
+          this.disconnectButton!.hidden = true;
+          this.devicePrompt!.innerText = 'Device not connected';
+          this.hintEl!.textContent = DEVICE_NOT_CONNECT;
+          if (!this.showHint) {
+            this.showHint = true;
           }
+        }
+      });
+    }
+  }
+  private refreshDeviceVersion(option: HTMLOptionElement): void {
+    HdcDeviceManager.connect(option.value).then((result) => {
+      if (result) {
+        HdcDeviceManager.shellResultAsString(CmdConstant.CMD_GET_VERSION, false).then((version) => {
+          SpRecordTrace.selectVersion = this.getDeviceVersion(version);
+          this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
+          this.nativeMemoryHideBySelectVersion();
+          this.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
+            PluginConvertUtils.BeanToCmdTxt(this.makeRequest(), false),
+            this.recordSetting!.output,
+            this.recordSetting!.maxDur
+          );
+          if (this.nowChildItem === this.spWebShell) {
+            window.publish(window.SmartEvent.UI.DeviceConnect, option.value);
+          }
+        });
+      } else {
+        SpRecordTrace.selectVersion = SpRecordTrace.supportVersions[0];
+        this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
+        this.nativeMemoryHideBySelectVersion();
+        let cmdTxt = PluginConvertUtils.BeanToCmdTxt(this.makeRequest(), false);
+        this.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
+          cmdTxt,
+          this.recordSetting!.output,
+          this.recordSetting!.maxDur
+        );
+      }
+    });
+  }
+  private refreshDeviceListByVs(): void {
+    Cmd.execHdcCmd(CmdConstant.CMD_HDC_DEVICES, (res: string) => {
+      let devs: string[] = res.trim().replace(/\r\n/g, '\r').replace(/\n/g, '\r').split(/\r/);
+      if (devs.length === 1 && devs[0].indexOf('Empty') !== -1) {
+        this.deviceSelect!.innerHTML = '';
+        return;
+      }
+      let clearFlag = this.compareArray(devs);
+      if (clearFlag) {
+        this.deviceSelect!.innerHTML = '';
+        if (devs.length === 0) {
+          this.recordButton!.hidden = true;
+          this.disconnectButton!.hidden = true;
+          this.devicePrompt!.innerText = 'Device not connected';
         }
         for (let i = 0; i < devs.length; i++) {
           let dev = devs[i];
@@ -934,13 +979,23 @@ export class SpRecordTrace extends BaseElement {
     } else {
       this.appContent.append(this.recordSetting);
     }
-    this.initMenuItems();
+    // @ts-ignore
+    if (navigator.usb) {
+      // @ts-ignore
+      navigator.usb.addEventListener(
+        'disconnect',
+        // @ts-ignore
+        (ev: USBConnectionEvent) => {
+          this.usbDisConnectionListener(ev);
+        }
+      );
+    }
   }
 
-  private nativeMemoryHideBySelectVersion() {
+  private nativeMemoryHideBySelectVersion(): void {
     let divConfigs = this.spAllocations?.shadowRoot?.querySelectorAll<HTMLDivElement>('.version-controller');
     if (divConfigs) {
-      if (SpRecordTrace.selectVersion != '3.2') {
+      if (SpRecordTrace.selectVersion !== '3.2') {
         for (let divConfig of divConfigs) {
           divConfig!.style.zIndex = '1';
         }
@@ -965,7 +1020,7 @@ export class SpRecordTrace extends BaseElement {
       option.textContent = `OpenHarmony-${supportVersion}`;
       option.setAttribute('device-version', supportVersion);
       this.deviceVersion!.append(option);
-      SpRecordTrace.selectVersion = '4.0+'
+      SpRecordTrace.selectVersion = '4.0+';
       this.nativeMemoryHideBySelectVersion();
     });
   }
@@ -987,13 +1042,15 @@ export class SpRecordTrace extends BaseElement {
     this.cancelButtonShow(false);
     if (this.vs) {
       let cmd = Cmd.formatString(CmdConstant.CMS_HDC_STOP, [SpRecordTrace.serialNumber]);
-      Cmd.execHdcCmd(cmd, (res: string) => {});
+      Cmd.execHdcCmd(cmd, (): void => {
+      });
     } else {
       let selectedOption = this.deviceSelect!.options[this.deviceSelect!.selectedIndex] as HTMLOptionElement;
       HdcDeviceManager.connect(selectedOption.value).then((result) => {
         if (result) {
           try {
-            HdcDeviceManager.shellResultAsString(CmdConstant.CMS_STOP, true).then((result) => {});
+            HdcDeviceManager.shellResultAsString(CmdConstant.CMS_STOP, true).then((): void => {
+            });
           } catch (exception) {
             this.recordButtonDisable(false);
             log(exception);
@@ -1003,12 +1060,12 @@ export class SpRecordTrace extends BaseElement {
     }
   }
 
-  cancelRecordListener(): void {
+  cancelRecordListener = (): void => {
     this.recordButtonText!.textContent = this.record;
     this.cancelButtonShow(false);
     if (this.vs) {
       let cmd = Cmd.formatString(CmdConstant.CMS_HDC_CANCEL, [SpRecordTrace.serialNumber]);
-      Cmd.execHdcCmd(cmd, (res: string) => {
+      Cmd.execHdcCmd(cmd, () => {
         this.freshMenuDisable(false);
         this.freshConfigMenuDisable(false);
         this.progressEL!.loading = false;
@@ -1034,16 +1091,17 @@ export class SpRecordTrace extends BaseElement {
             this.deviceSelect!.style.pointerEvents = 'auto';
             this.deviceVersion!.style.pointerEvents = 'auto';
             SpRecordTrace.cancelRecord = true;
-            HdcDeviceManager.stopHiprofiler(CmdConstant.CMS_CANCEL).then((result) => {});
+            HdcDeviceManager.stopHiprofiler(CmdConstant.CMS_CANCEL).then((): void => {
+            });
           } catch (exception) {
             log(exception);
           }
         }
       });
     }
-  }
+  };
 
-  private cancelButtonShow(show: boolean) {
+  private cancelButtonShow(show: boolean): void {
     if (show) {
       this.cancelButton!.style.visibility = 'visible';
     } else {
@@ -1051,127 +1109,16 @@ export class SpRecordTrace extends BaseElement {
     }
   }
 
-  private initMenuItems(): void {
-    let that = this;
-    if (this.record_template) {
-      this._menuItems = [
-        {
-          title: 'Record setting',
-          icon: 'properties',
-          fileChoose: false,
-          clickHandler: function (event: InputEvent): void {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.recordSetting!);
-            that.freshMenuItemsStatus('Record setting');
-          },
-        },
-        {
-          title: 'Trace template',
-          icon: 'realIntentionBulb',
-          clickHandler: function (ev: InputEvent): void {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.spRecordTemplate!);
-            that.freshMenuItemsStatus('Trace template');
-          },
-        },
-        {
-          title: 'Trace command',
-          icon: 'dbsetbreakpoint',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent): void {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.traceCommand!);
-            that.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
-              PluginConvertUtils.BeanToCmdTxt(that.makeRequest(), false),
-              that.recordSetting!.output,
-              that.recordSetting!.maxDur
-            );
-            that.freshMenuItemsStatus('Trace command');
-          },
-        },
-      ];
-    } else {
-      this._menuItems = [
-        {
-          title: 'Record setting',
-          icon: 'properties',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent): void {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.recordSetting!);
-            that.freshMenuItemsStatus('Record setting');
-          },
-        },
-        {
-          title: 'Trace command',
-          icon: 'dbsetbreakpoint',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent): void {
-            that.freshMenuItemsStatus('Trace command');
-            let request = that.makeRequest();
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.traceCommand!);
-            that.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
-              PluginConvertUtils.BeanToCmdTxt(request, false),
-              that.recordSetting!.output,
-              that.recordSetting!.maxDur
-            );
-          },
-        },
-        {
-          title: 'Hdc Shell',
-          icon: 'file-config',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent) {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.spWebShell!);
-            that.spWebShell!.shellDiv!.scrollTop = that.spWebShell!.currentScreenRemain;
-            setTimeout(() => {
-              that.spWebShell!.hdcShellFocus();
-            }, 100);
-            that.nowChildItem = that.spWebShell!;
-            that.freshMenuItemsStatus('Hdc Shell');
-          },
-        },
-        {
-          title: 'Probes config',
-          icon: 'realIntentionBulb',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent): void {
-            that.appContent!.innerHTML = '';
-            that.appContent!.append(that.probesConfig!);
-            that.freshMenuItemsStatus('Probes config');
-          },
-        },
-        {
-          title: 'Native Memory',
-          icon: 'externaltools',
-          fileChoose: false,
-          clickHandler: function (ev: InputEvent): void {
-            let startNativeSwitch = that.spAllocations?.shadowRoot?.getElementById('switch-disabled') as LitSwitch;
-            let recordModeSwitch = that.probesConfig?.shadowRoot?.querySelector('lit-switch') as LitSwitch;
-            let checkDesBoxDis = that.probesConfig?.shadowRoot?.querySelectorAll('check-des-box');
-            let litCheckBoxDis = that.probesConfig?.shadowRoot?.querySelectorAll('lit-check-box');
-
-            that.ftraceSlider = that.probesConfig?.shadowRoot?.querySelector<LitSlider>('#ftrace-buff-size-slider');
-            startNativeSwitch.addEventListener('change', (event: any) => {
-              let detail = event.detail;
-              if (detail!.checked) {
-                recordModeSwitch.removeAttribute('checked');
-
-                checkDesBoxDis?.forEach((item: any) => {
-                  item.setAttribute('disabled', '');
-                  item.checked = false;
-                });
-
-                litCheckBoxDis?.forEach((item: any) => {
-                  item.setAttribute('disabled', '');
-                  item.checked = false;
-                });
-
-                that.ftraceSlider!.setAttribute('disabled', '');
-              }
-            });
+  private traceCommandClickHandler(recordTrace: SpRecordTrace): void {
+    recordTrace.appContent!.innerHTML = '';
+    recordTrace.appContent!.append(recordTrace.traceCommand!);
+    recordTrace.traceCommand!.hdcCommon = PluginConvertUtils.createHdcCmd(
+      PluginConvertUtils.BeanToCmdTxt(recordTrace.makeRequest(), false),
+      recordTrace.recordSetting!.output,
+      recordTrace.recordSetting!.maxDur
+    );
+    recordTrace.freshMenuItemsStatus('Trace command');
+  }
 
             let divConfigs = that.spAllocations?.shadowRoot?.querySelectorAll<HTMLDivElement>('.version-controller');
             if ((!SpRecordTrace.selectVersion || SpRecordTrace.selectVersion === '3.2') && divConfigs) {
@@ -1768,59 +1715,55 @@ export class SpRecordTrace extends BaseElement {
             }
           );
           this.litSearch!.setPercent(`downloading ${fileType} file `, 101);
-          let buffer = await pullRes.arrayBuffer();
-          let chunks = Math.ceil(buffer.byteLength / maxSize);
-          let offset = 0;
-          let sliceLen = 0;
-          let message = {
-            fileType: '',
-            startIndex: 0,
-            endIndex: 0,
-            size: 0,
-          };
-          for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
-            let start = chunkIndex * maxSize;
-            let end = Math.min(start + maxSize, buffer.byteLength);
-            let chunk = buffer.slice(start, end);
-            if (chunkIndex === 0) {
-              message.fileType = fileType;
-              message.startIndex = chunkIndex;
-            }
-            sliceLen = Math.min(buffer.byteLength - offset, maxSize);
-            if (chunkIndex === 0 && fileType === 'trace') {
-              this.sp!.longTraceHeadMessageList.push({
-                pageNum: pageNumber,
-                data: buffer.slice(offset, 1024),
-              });
-            }
-            this.sp!.longTraceDataList.push({
-              index: chunkIndex,
-              fileType: fileType,
-              pageNum: pageNumber,
-              startOffsetSize: offset,
-              endOffsetSize: offset + sliceLen,
-            });
-            await LongTraceDBUtils.getInstance().indexedDBHelp.add(LongTraceDBUtils.getInstance().tableName, {
-              buf: chunk,
-              id: `${fileType}_${timStamp}_${pageNumber}_${chunkIndex}`,
-              fileType: fileType,
-              pageNum: pageNumber,
-              startOffset: offset,
-              endOffset: offset + sliceLen,
-              index: chunkIndex,
-              timStamp: timStamp,
-            });
-            offset += sliceLen;
-            if (offset >= buffer.byteLength) {
-              message.endIndex = chunkIndex;
-              message.size = buffer.byteLength;
-              this.longTraceFileMapHandler(pageNumber, message);
-            }
-          }
+          await this.saveIndexDBByLongTrace(pullRes, fileType, pageNumber, timStamp);
         }
       }
       resolve(1);
     });
+  }
+
+  private async saveIndexDBByLongTrace(pullRes: Blob, fileType: string, pageNumber: number, timStamp: number) {
+    let buffer = await pullRes.arrayBuffer();
+    let chunks = Math.ceil(buffer.byteLength / indexDBMaxSize);
+    let offset = 0;
+    let sliceLen = 0;
+    let message = {fileType: '', startIndex: 0, endIndex: 0, size: 0};
+    for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+      let start = chunkIndex * indexDBMaxSize;
+      let end = Math.min(start + indexDBMaxSize, buffer.byteLength);
+      let chunk = buffer.slice(start, end);
+      if (chunkIndex === 0) {
+        message.fileType = fileType;
+        message.startIndex = chunkIndex;
+      }
+      sliceLen = Math.min(buffer.byteLength - offset, indexDBMaxSize);
+      if (chunkIndex === 0 && fileType === 'trace') {
+        this.sp!.longTraceHeadMessageList.push({ pageNum: pageNumber, data: buffer.slice(offset, kbSize)});
+      }
+      this.sp!.longTraceDataList.push({
+        index: chunkIndex,
+        fileType: fileType,
+        pageNum: pageNumber,
+        startOffsetSize: offset,
+        endOffsetSize: offset + sliceLen,
+      });
+      await LongTraceDBUtils.getInstance().indexedDBHelp.add(LongTraceDBUtils.getInstance().tableName, {
+        buf: chunk,
+        id: `${fileType}_${timStamp}_${pageNumber}_${chunkIndex}`,
+        fileType: fileType,
+        pageNum: pageNumber,
+        startOffset: offset,
+        endOffset: offset + sliceLen,
+        index: chunkIndex,
+        timStamp: timStamp,
+      });
+      offset += sliceLen;
+      if (offset >= buffer.byteLength) {
+        message.endIndex = chunkIndex;
+        message.size = buffer.byteLength;
+        this.longTraceFileMapHandler(pageNumber, message);
+      }
+    }
   }
 
   private longTraceFileMapHandler(pageNumber: number, message: {
