@@ -24,6 +24,7 @@ import '../../../../base-ui/progress-bar/LitProgressBar';
 import { LitChartPie } from '../../../../base-ui/chart/pie/LitChartPie';
 import '../../../../base-ui/chart/pie/LitChartPie';
 import { Utils } from '../../trace/base/Utils';
+import { LitIcon } from '../../../../base-ui/icon/LitIcon';
 
 @element('top10-process-switch-count')
 export class Top10ProcessSwitchCount extends BaseElement {
@@ -31,47 +32,16 @@ export class Top10ProcessSwitchCount extends BaseElement {
   private processSwitchCountTbl: LitTable | null | undefined;
   private processSwitchCountPie: LitChartPie | null | undefined;
   private processSwitchCountProgress: LitProgressBar | null | undefined;
-  private nodata: TableNoData | null | undefined;
+  private nodataPro: TableNoData | null | undefined;
   private processSwitchCountData: Array<Top10ProcSwiCount> = [];
-
-  initElements(): void {
-    this.nodata = this.shadowRoot!.querySelector<TableNoData>('#nodata');
-    this.processSwitchCountProgress = this.shadowRoot!.querySelector<LitProgressBar>('#loading');
-    this.processSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-process-thread-count');
-    this.processSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie');
-    // @ts-ignore
-    this.processSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
-      let data = evt.detail.data;
-      this.queryLogicWorker(
-        'scheduling-Process Top10Swicount',
-        'query Process Top10 Switch Count Analysis Time:',
-        this.callBack.bind(this),
-        evt.detail.data.pid
-      );
-      data.isSelected = true;
-      if (evt.detail.callBack) {
-        evt.detail.callBack(true);
-      }
-    });
-    this.processSwitchCountTbl!.addEventListener('column-click', (evt) => {
-      // @ts-ignore
-      this.sortByColumn(evt.detail);
-    });
-    this.processSwitchCountTbl!.addEventListener('row-hover', (evt) => {
-      // @ts-ignore
-      if (evt.detail.data) {
-        // @ts-ignore
-        let data = evt.detail.data;
-        data.isHover = true;
-        // @ts-ignore
-        if (evt.detail.callBack) {
-          // @ts-ignore
-          evt.detail.callBack(true);
-        }
-      }
-      this.processSwitchCountPie?.showHover();
-    });
-  }
+  private threadSwitchCountTbl: LitTable | null | undefined;
+  private threadSwitchCountPie: LitChartPie | null | undefined;
+  private nodataThr: TableNoData | null | undefined;
+  private display_pro: HTMLDivElement | null | undefined;
+  private display_thr: HTMLDivElement | null | undefined;
+  private processId: number | undefined;
+  private display_flag: boolean = true;
+  private back: HTMLDivElement | null | undefined;
 
   init() {
     if (!this.traceChange) {
@@ -97,7 +67,7 @@ export class Top10ProcessSwitchCount extends BaseElement {
 
   queryLogicWorker(option: string, log: string, handler: (res: Array<Top10ProcSwiCount>) => void, pid?: number) {
     let processThreadCountTime = new Date().getTime();
-    procedurePool.submitWithName('logic0', option, {}, undefined, handler);
+    procedurePool.submitWithName('logic0', option, {pid: pid}, undefined, handler);
     let durTime = new Date().getTime() - processThreadCountTime;
     info(log, durTime);
   }
@@ -129,7 +99,8 @@ export class Top10ProcessSwitchCount extends BaseElement {
     if (
       detail.key === 'NO' ||
       detail.key === 'pid' ||
-      detail.key === 'switchCount'
+      detail.key === 'switchCount' ||
+      detail.key === 'tid'
     ) {
       this.processSwitchCountData.sort(
         compare(detail.key, detail.sort, 'number')
@@ -147,52 +118,167 @@ export class Top10ProcessSwitchCount extends BaseElement {
     for (let i = 0; i < arr.length; i++) {
       result.push({
         NO: i + 1, 
-        pid: arr[i].pid, 
+        pid: arr[i].pid || this.processId, 
         pName: Utils.PROCESS_MAP.get(arr[i].pid!) === null ? 'Process ' : Utils.PROCESS_MAP.get(arr[i].pid!)!,
-        switchCount: arr[i].occurrences
+        switchCount: arr[i].occurrences,
+        tid: arr[i].tid,
+        tName:Utils.THREAD_MAP.get(arr[i].tid!) === null ? 'Thread ' : Utils.THREAD_MAP.get(arr[i].tid!)!
       });
     }
     return result;
   }
 
   callBack(res: Array<Top10ProcSwiCount>): void {
-    this.nodata!.noData = res === undefined || res.length === 0;
-    let result: Array<Top10ProcSwiCount> = this.organizationData(res);
-    this.processSwitchCountTbl!.recycleDataSource = result;
-    this.processSwitchCountTbl!.reMeauseHeight();
-    this.processSwitchCountData = result;
-    this.processSwitchCountPie!.config = {
-      appendPadding: 10,
-      data: result,
-      angleField: 'switchCount',
-      colorField: 'pid',
-      radius: 0.8,
-      label: {
-        type: 'outer',
-      },
-      hoverHandler: (data) => {
-        if (data) {
-          this.processSwitchCountTbl!.setCurrentHover(data);
-        } else {
-          this.processSwitchCountTbl!.mouseOut();
-        }
-      },
-      tip: (obj) => {
-        return `
-          <div>
-            <div>Process_Id:${obj.obj.pid}</div> 
-            <div>Process_Name:${obj.obj.pName}</div> 
-            <div>Switch Count:${obj.obj.switchCount}</div> 
-          </div>
-        `;
-      },
-      interactions: [
-        {
-          type: 'element-active',
+    if (this.display_flag === true) {
+      this.nodataPro!.noData = res === undefined || res.length === 0;
+      let result: Array<Top10ProcSwiCount> = this.organizationData(res);
+      this.processSwitchCountTbl!.recycleDataSource = result;
+      this.processSwitchCountTbl!.reMeauseHeight();
+      this.processSwitchCountData = result;
+      this.processSwitchCountPie!.config = {
+        appendPadding: 10,
+        data: result,
+        angleField: 'switchCount',
+        colorField: 'pid',
+        radius: 0.8,
+        label: {
+          type: 'outer',
         },
-      ],
-    };
+        hoverHandler: (data) => {
+          if (data) {
+            this.processSwitchCountTbl!.setCurrentHover(data);
+          } else {
+            this.processSwitchCountTbl!.mouseOut();
+          }
+        },
+        tip: (obj) => {
+          return `
+            <div>
+              <div>Process_Id:${obj.obj.pid}</div> 
+              <div>Process_Name:${obj.obj.pName}</div> 
+              <div>Switch Count:${obj.obj.switchCount}</div> 
+            </div>
+          `;
+        },
+        interactions: [
+          {
+            type: 'element-active',
+          },
+        ],
+      };
+    } else {
+      this.nodataThr!.noData = res === undefined || res.length === 0;
+      let result: Array<Top10ProcSwiCount> = this.organizationData(res);
+      this.threadSwitchCountTbl!.recycleDataSource = result;
+      this.threadSwitchCountTbl!.reMeauseHeight();
+      this.processSwitchCountData = result;
+      this.threadSwitchCountPie!.config = {
+        appendPadding: 10,
+        data: result,
+        angleField: 'switchCount',
+        colorField: 'tid',
+        radius: 0.8,
+        label: {
+          type: 'outer',
+        },
+        hoverHandler: (data) => {
+          if (data) {
+            this.processSwitchCountTbl!.setCurrentHover(data);
+          } else {
+            this.processSwitchCountTbl!.mouseOut();
+          }
+        },
+        tip: (obj) => {
+          return `
+            <div>
+              <div>Thread_Id:${obj.obj.tid}</div> 
+              <div>Thread_Name:${obj.obj.tName}</div> 
+              <div>Switch Count:${obj.obj.switchCount}</div> 
+              <div>Process_Id:${obj.obj.pid}</div> 
+            </div>
+          `;
+        },
+        interactions: [
+          {
+            type: 'element-active',
+          },
+        ],
+      };
+    }
     this.processSwitchCountProgress!.loading = false;
+  }
+
+  initElements(): void {
+    this.processSwitchCountProgress = this.shadowRoot!.querySelector<LitProgressBar>('#loading');
+    this.nodataPro = this.shadowRoot!.querySelector<TableNoData>('#nodata_pro');
+    this.processSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-process-switch-count');
+    this.processSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_pro');
+    this.nodataThr = this.shadowRoot!.querySelector<TableNoData>('#nodata_thr');
+    this.threadSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-thread-switch-count');
+    this.threadSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_thr');
+    this.display_pro = this.shadowRoot!.querySelector<HTMLDivElement>('#display_pro');
+    this.display_thr = this.shadowRoot!.querySelector<HTMLDivElement>('#display_thr');
+    this.back = this.shadowRoot!.querySelector<HTMLDivElement>('#back');
+    // @ts-ignore
+    this.processSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
+      this.display_flag = false;
+      let data = evt.detail.data;
+      this.processId = data.pid;
+      this.display_thr!.style.display = 'block';
+      this.display_pro!.style.display = 'none';
+      this.queryLogicWorker(
+        'scheduling-Process Top10Swicount',
+        'query Process Top10 Switch Count Analysis Time:',
+        this.callBack.bind(this),
+        data.pid
+      );
+      data.isSelected = true;
+      if (evt.detail.callBack) {
+        evt.detail.callBack(true);
+      }
+    });
+    this.processSwitchCountTbl!.addEventListener('column-click', (evt) => {
+      // @ts-ignore
+      this.sortByColumn(evt.detail);
+    });
+    this.threadSwitchCountTbl!.addEventListener('column-click', (evt) => {
+      // @ts-ignore
+      this.sortByColumn(evt.detail);
+    });
+    this.processSwitchCountTbl!.addEventListener('row-hover', (evt) => {
+      // @ts-ignore
+      if (evt.detail.data) {
+        // @ts-ignore
+        let data = evt.detail.data;
+        data.isHover = true;
+        // @ts-ignore
+        if (evt.detail.callBack) {
+          // @ts-ignore
+          evt.detail.callBack(true);
+        }
+      }
+      this.processSwitchCountPie?.showHover();
+    });
+    this.threadSwitchCountTbl!.addEventListener('row-hover', (evt) => {
+      // @ts-ignore
+      if (evt.detail.data) {
+        // @ts-ignore
+        let data = evt.detail.data;
+        data.isHover = true;
+        // @ts-ignore
+        if (evt.detail.callBack) {
+          // @ts-ignore
+          evt.detail.callBack(true);
+        }
+      }
+      this.processSwitchCountPie?.showHover();
+    });
+    this.back?.addEventListener('click', (event) => {
+      this.display_flag = true;
+      this.display_pro!.style.display = 'block';
+      this.display_thr!.style.display = 'none';
+      this.threadSwitchCountTbl!.recycleDataSource = [];
+    });
   }
 
   initHtml(): string {
@@ -226,29 +312,50 @@ export class Top10ProcessSwitchCount extends BaseElement {
         }
         </style>
         <lit-progress-bar id='loading' style='height: 1px;width: 100%' loading></lit-progress-bar>
-        <div class="bg" style="display: flex;flex-direction: row;">
-            <div id="setting" style="height: 45px;display: flex;flex-direction: row;align-items: center;cursor: pointer">
-                上一层
-                <span style="width: 10px"></span>
-                <lit-icon name="setting" size="20"></lit-icon>
+        <div id='display_pro'>
+          <table-no-data id='nodata_pro' contentHeight='500px'>
+            <div class='switchcount-root'>
+              <div style='display: flex;flex-direction: column;align-items: center'>
+                <div>Statistics By Process's Switch Count</div>
+                <lit-chart-pie id='pie_pro' class='pie-chart'></lit-chart-pie>
+              </div>
+              <div class='tb_switch_count'>
+                <lit-table id='tb-process-switch-count' hideDownload style='height: auto'>
+                  <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Process_Name' data-index='pName' key='pName' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
+                </lit-table>
+              </div>
             </div>
+          </table-no-data>
         </div>
-        <table-no-data id='nodata' contentHeight='500px'>
-          <div class='switchcount-root'>
-            <div style='display: flex;flex-direction: column;align-items: center'>
-              <div>Statistics By Process's Switch Count</div>
-              <lit-chart-pie id='pie' class='pie-chart'></lit-chart-pie>
-            </div>
-            <div class='tb_switch_count'>
-              <lit-table id='tb-process-thread-count' hideDownload style='height: auto'>
-                <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
-                <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
-                <lit-table-column width='1fr' title='Process_Name' data-index='pName' key='pName' align='flex-start' order></lit-table-column>
-                <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
-              </lit-table>
+        <div id='display_thr' style='display: none'>
+          <div class="bg" style="display: flex;flex-direction: row;">
+            <div id="back" style="height: 45px;display: flex;flex-direction: row;align-items: center;cursor: pointer">
+              上一层
+              <span style="width: 10px"></span>
+              <lit-icon name="arrowleft" size="20"></lit-icon>
             </div>
           </div>
-        </table-no-data>
+          <table-no-data id='nodata_thr' contentHeight='500px'>
+            <div class='switchcount-root'>
+              <div style='display: flex;flex-direction: column;align-items: center'>
+                <div>Statistics By Thread's Switch Count</div>
+                <lit-chart-pie id='pie_thr' class='pie-chart'></lit-chart-pie>
+              </div>
+              <div class='tb_switch_count'>
+                <lit-table id='tb-thread-switch-count' hideDownload style='height: auto'>
+                  <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Thread_Id' data-index='tid' key='tid' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Thread_Name' data-index='tName' key='tName' align='flex-start' order></lit-table-column>
+                  <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
+                </lit-table>
+              </div>
+            </div>
+          </table-no-data>
+        </div>
         `;
   }
 }
@@ -258,6 +365,7 @@ interface Top10ProcSwiCount {
   pid?: number,
   tid?: number,
   pName?: string,
+  tName?: string,
   switchCount?: number,
   occurrences?: number
 }
