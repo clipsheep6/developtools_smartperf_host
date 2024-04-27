@@ -50,10 +50,42 @@ import { SpSystemTrace } from '../../SpSystemTrace';
 import { AppStartupStruct } from '../../../database/ui-worker/ProcedureWorkerAppStartup';
 import { SoStruct } from '../../../database/ui-worker/ProcedureWorkerSoInit';
 import { type SelectionParam } from '../../../bean/BoxSelection';
-import { type FrameAnimationStruct } from '../../../database/ui-worker/ProcedureWorkerFrameAnimation';
+import {
+  type FrameAnimationStruct
+} from '../../../database/ui-worker/ProcedureWorkerFrameAnimation';
+import {
+  queryBinderByArgsId,
+  queryBinderBySliceId,
+  queryFlowsData,
+  queryPrecedingData,
+  queryThreadByItid,
+  queryFpsSourceList,
+  queryStateFreqList
+} from '../../../database/sql/SqlLite.sql';
+import {
+  queryBinderArgsByArgset,
+  queryRunnableTimeByRunning,
+  queryThreadNearData,
+  queryThreadStateArgs,
+  queryThreadWakeUp,
+  queryThreadWakeUpFrom
+} from '../../../database/sql/ProcessThread.sql';
+import { queryGpuDur } from '../../../database/sql/Gpu.sql';
+import { queryWakeupListPriority } from '../../../database/sql/Cpu.sql';
+import { TabPaneCurrentSelectionHtml } from './TabPaneCurrentSelection.html';
+import {queryRealTime} from "../../../database/sql/Clock.sql";
 
 const INPUT_WORD =
   'This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running.';
+
+const CLOCK_STARTTIME_ABSALUTED_ID: string = "clockStartTimeAbsaluteId";
+const CLOCK_TRANSF_BTN_ID:string = "clockTransfBtnId";
+const CPU_STARTTIME_ABSALUTED_ID: string = "cpuStartTimeAbsaluteId";
+const CPU_TRANSF_BTN_ID:string = "cpuTransfBtnId";
+const THREAD_STARTTIME_ABSALUTED_ID: string = "threadStartTimeAbsaluteId";
+const THREAD_TRANSF_BTN_ID:string = "threadTransfBtnId";
+const FUN_STARTTIME_ABSALUTED_ID: string = "funStartTimeAbsaluteId";
+const FUN_TRANSF_BTN_ID:string = "funTransfBtnId"; 
 
 export function getTimeString(ns: number): string {
   if (ns === 0) {
@@ -102,6 +134,10 @@ export class TabPaneCurrentSelection extends BaseElement {
   private scrollView: HTMLDivElement | null | undefined;
   // @ts-ignore
   private dpr: any = window.devicePixelRatio || window.webkitDevicePixelRatio || window.mozDevicePixelRatio || 1;
+  private wakeUp: string = '';
+  private isFpsAvailable: boolean = true;
+  private realTime: number = 0;
+  private bootTime: number = 0;
 
   set data(currentSelectionValue: any) {
     if (
@@ -113,17 +149,152 @@ export class TabPaneCurrentSelection extends BaseElement {
     }
   }
 
-  setCpuData(
+  /**
+   * 创建StartTime的Dom节点
+   * @param selectTable面板的dom树对象
+   * @param startTs 开始时间
+   * @param transfBtnId 转换按钮id
+   * @param startTimeAbsaluteId 开始时间的id
+   */
+  createStartTimeNode(list: any[], startTs: number, transfBtnId: string, startTimeAbsaluteId: string): void {
+    let timeStr: string = '';
+    let startTimeValue: string = '';
+    let startTimeAbsolute = startTs + (window as any).recordStartNS;
+    if (this.realTime > 0) {
+      if (Utils.isTransformed) {
+        timeStr = this.getRealTimeStr(startTimeAbsolute);
+      } else {
+        timeStr = startTimeAbsolute / 1000000000 + 's';
+      }
+      startTimeValue = `<div style="white-space: nowrap;display: flex;align-items: center">
+                            <div id="${startTimeAbsaluteId}" style="white-space:pre-wrap" >${timeStr}</div>                             
+                            <lit-icon id="${transfBtnId}" class="temp-icon" title="Convert to realtime" name="restore" size="30" 
+                                  style="position: relative; top: 5px; left: 10px;"></lit-icon>
+                        </div>`;
+    } else {
+      startTimeValue = startTimeAbsolute / 1000000000 + 's';
+    }
+    list.push({
+      name: 'StartTime(Absolute)',
+      value: startTimeValue,
+    });
+  }
+
+  /**
+   * 给转换按钮添加点击事件
+   * @param startTimeAbsolute 开始时间
+   * @param transfBtnId 转换按钮id
+   * @param startTimeAbsaluteId 开始时间ID
+   */
+  addClickToTransfBtn(startTimeAbsolute: number, transfBtnId: string, startTimeAbsaluteId: string):void {
+    let transfBtn = this.currentSelectionTbl?.shadowRoot?.querySelector(`#${transfBtnId}`);
+      transfBtn?.addEventListener('click', () => {
+        let startTimeAbsalute = this.currentSelectionTbl?.shadowRoot?.querySelector(`#${startTimeAbsaluteId}`);
+        if (startTimeAbsalute) {
+          if (Utils.isTransformed) {
+            startTimeAbsalute!.innerHTML = startTimeAbsolute / 1000000000 + 's';
+            Utils.isTransformed = false;
+          } else {
+            startTimeAbsalute!.innerHTML = this.getRealTimeStr(startTimeAbsolute);
+            Utils.isTransformed = true;
+          }
+        }
+      });
+  }
+
+  async setCpuData(
     data: CpuStruct,
     callback: ((data: WakeupBean | null) => void) | undefined = undefined,
     scrollCallback?: (data: CpuStruct) => void
-  ): void {
+  ): Promise<void> { 
+    await this.setRealTime(); 
     this.setTableHeight('650px');
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');
     if (leftTitle) {
       leftTitle.innerText = 'Slice Details';
     }
     let list: any[] = [];
+    this.updateUI(data, list);
+    Promise.all([this.queryThreadStateDArgs(data.argSetID), this.queryCPUWakeUpFromData(data)]).then((resArr) => {
+      let args = resArr[0];
+      let bean = resArr[1];
+      if (callback) {
+        callback(bean);
+      }
+      if (args.length > 0) {
+        args.forEach((arg) => {
+          list.push({ name: arg.keyName, value: arg.strValue });
+        });
+      }
+      this.currentSelectionTbl!.dataSource = list;
+      let startTimeAbsolute = (data.startTime || 0) + (window as any).recordStartNS;
+      this.addClickToTransfBtn( startTimeAbsolute , CPU_TRANSF_BTN_ID, CPU_STARTTIME_ABSALUTED_ID );
+      
+      let rightArea: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#table-right');
+      let rightTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#rightTitle');
+      let rightButton: HTMLElement | null | undefined = this?.shadowRoot
+        ?.querySelector('#rightButton')
+        ?.shadowRoot?.querySelector('#custom-button');
+      let rightStar: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#right-star');
+      this.threadClickEvent(scrollCallback, data);
+      let canvas = this.initCanvas();
+      if (bean !== null) {
+        this.selectWakeupBean = {
+          process: `${this.transferString(data.processName || 'Process')}(${data.processId})`,
+          thread: `${this.transferString(data.name || 'Thread')}(${data.tid})`,
+          cpu: data.cpu,
+          dur: data.dur,
+          priority: data.priority,
+          isSelected: false,
+        };
+
+        this.weakUpBean = bean;
+        this.updateRightTitleUI(rightArea!, rightTitle!, rightButton!, rightStar!);
+        this.drawRight(canvas, bean);
+      } else {
+        this.handleNullBeanUI(rightArea!, rightTitle!, rightButton!, rightStar!);
+      }
+    });
+  }
+
+  private threadClickEvent(scrollCallback: ((data: CpuStruct) => void) | undefined, data: CpuStruct): void {
+    let threadClick = this.currentSelectionTbl?.shadowRoot?.querySelector('#thread-id');
+    threadClick?.addEventListener('click', () => {
+      //cpu点击
+      if (scrollCallback) {
+        data.state = 'Running';
+        scrollCallback(data);
+      }
+    });
+  }
+
+  private updateRightTitleUI(rightArea: HTMLElement, rightTitle: HTMLElement, rightButton: HTMLElement,
+    rightStar: HTMLElement) {
+    if (rightArea !== null && rightArea) {
+      rightArea.style.visibility = 'visible';
+    }
+    if (rightTitle !== null && rightTitle) {
+      rightTitle.style.visibility = 'visible';
+      rightButton!.style.visibility = 'visible';
+      rightStar!.style.visibility = 'hidden';
+      SpSystemTrace.btnTimer = null;
+    }
+  }
+
+  private handleNullBeanUI(rightArea: HTMLElement, rightTitle: HTMLElement, rightButton: HTMLElement,
+    rightStar: HTMLElement) {
+    this.weakUpBean = null;
+    if (rightArea !== null && rightArea) {
+      rightArea.style.visibility = 'hidden';
+    }
+    if (rightTitle !== null && rightTitle) {
+      rightTitle.style.visibility = 'hidden';
+      rightButton!.style.visibility = 'hidden';
+      rightStar!.style.visibility = 'hidden';
+    }
+  }
+
+  private updateUI(data: CpuStruct, list: any[]) {
     let process = this.transferString(data.processName || 'Process');
     let processId = data.processId || data.tid;
     let state = '';
@@ -228,39 +399,139 @@ export class TabPaneCurrentSelection extends BaseElement {
     });
   }
 
-  setFunctionData(data: FuncStruct, scrollCallback: Function): void {
-    //方法信息
+  async setFunctionData(data: FuncStruct, scrollCallback: Function,callback?: ((data: Array<any>, str: string) => void)): Promise<void> {
+    //方法信息     
+    await this.setRealTime(); 
     this.tabCurrentSelectionInit('Slice Details');
     let list: any[] = [];
     let name = this.transferString(data.funName ?? '');
     let isBinder = FuncStruct.isBinder(data);
+    let jankJumperList = new Array<ThreadTreeNode>();
     let isAsyncBinder = isBinder && FuncStruct.isBinderAsync(data);
     if (data.argsetid !== undefined && data.argsetid !== null && data.argsetid >= 0) {
       this.setTableHeight('700px');
       if (isAsyncBinder) {
-        Promise.all([
-          queryBinderByArgsId(data.argsetid!, data.startTs!, !data.funName!.endsWith('rcv')),
-          queryBinderArgsByArgset(data.argsetid),
-        ]).then((result) => {
-          let asyncBinderRes = result[0];
-          let argsBinderRes = result[1];
-          let asyncBinderStract: any;
-          if (asyncBinderRes.length > 0) {
-            asyncBinderRes[0].type = TraceRow.ROW_TYPE_FUNC;
-            asyncBinderStract = asyncBinderRes[0];
-          }
-          if (argsBinderRes.length > 0) {
-            argsBinderRes.forEach((item) => {
-              list.push({
-                name: item.keyName,
-                value: item.strValue,
-              });
-            });
-          }
-          if (asyncBinderStract !== undefined) {
-            list.unshift({
-              name: 'Name',
-              value: `<div style="white-space: nowrap;display: flex;align-items: center">
+        this.handleAsyncBinder(data, list, name, scrollCallback);
+      } else if (isBinder) {
+        this.handleBinder(data, list,jankJumperList, name, scrollCallback,callback);
+      } else {
+        this.handleNonBinder(data, list, name);
+      }
+    } else {
+      this.setTableHeight('auto');
+      list.push({ name: 'Name', value: name }); 
+      list.push({
+        name: 'StartTime(Relative)',
+        value: getTimeString(data.startTs || 0),
+      });
+      this.createStartTimeNode(list, data.startTs || 0 , FUN_TRANSF_BTN_ID, FUN_STARTTIME_ABSALUTED_ID);
+      list.push({
+        name: 'Duration',
+        value: getTimeString(data.dur || 0),
+      });
+      list.push({ name: 'depth', value: data.depth });
+      this.currentSelectionTbl!.dataSource = list;
+      let startTimeAbsolute = (data.startTs || 0) + (window as any).recordStartNS;
+      this.addClickToTransfBtn(startTimeAbsolute, FUN_TRANSF_BTN_ID, FUN_STARTTIME_ABSALUTED_ID);     
+    }
+  }
+
+  // 计算真实时间
+  private getRealTimeStr(startTs: number): string { 
+    let time = (startTs || 0) + (window as any).recordStartNS - this.bootTime + this.realTime;    
+    const formateDateStr = this.getDate(parseInt(time.toString().substring(0, 13))) + "." + time.toString().substring(10);    
+    return formateDateStr;
+  }
+
+  // 格式化时间戳为字符串格式 yyyy/mm/dd hh:mi:ss
+  private getDate(timestamp: number): string { 
+    let date = new Date(timestamp);   
+    let gmt = date.toLocaleString();
+    return gmt;
+  }
+
+  private handleNonBinder(data: FuncStruct, list: any[], name: string): void {
+    queryBinderArgsByArgset(data.argsetid!).then((argset) => {
+      list.push({ name: 'Name', value: name });
+      argset.forEach((item) => {
+        list.push({ name: item.keyName, value: item.strValue });
+      });
+      this.addTabPanelContent(list, data);
+      this.currentSelectionTbl!.dataSource = list;
+    });
+  }
+
+  private handleBinder(data: FuncStruct, list: any[],jankJumperList: ThreadTreeNode[], name: string, scrollCallback: Function,callback?: ((data: Array<any>, str: string,binderTid:Number
+    ) => void)): void {
+    queryBinderArgsByArgset(data.argsetid!).then((argset) => {
+      let binderSliceId = -1;
+      let binderTid = -1;
+      argset.forEach((item) => {
+        if(item.keyName === 'destination thread') {
+          binderTid = Number(item.strValue);
+        }
+        if (item.keyName === 'destination slice id') {
+          binderSliceId = Number(item.strValue);
+          list.unshift({
+            name: 'Name',
+            value: `<div style="white-space: nowrap;display: flex;align-items: center">
+<div style="white-space:pre-wrap">${name || 'binder'}</div>
+<lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="function-jump" name="select" color="#7fa1e7" size="20"></lit-icon>
+</div>`,
+          });
+        }
+        list.push({ name: item.keyName, value: item.strValue });
+      });
+      if (binderSliceId === -1) {
+        list.unshift({ name: 'Name', value: name });
+      }
+      this.addTabPanelContent(list, data);
+      this.currentSelectionTbl!.dataSource = list;
+      let funcClick = this.currentSelectionTbl?.shadowRoot?.querySelector('#function-jump');
+      funcClick?.addEventListener('click', () => {
+        if (!Number.isNaN(binderSliceId) && binderSliceId !== -1) {
+          queryBinderBySliceId(binderSliceId).then((result: any[]) => {
+            if (result.length > 0) {
+              result[0].type = TraceRow.ROW_TYPE_FUNC;
+              scrollCallback(result[0]);
+              let timeLineNode = new ThreadTreeNode(result[0]?.tid,result[0]?.pid,result[0].startTs,result[0]?.depth);
+              jankJumperList.push(timeLineNode);
+              if(callback) {
+                let linkTo = 'binder-to';
+                callback(jankJumperList,linkTo,binderTid);
+                linkTo = '';
+              }
+            }
+          });
+        }
+      });
+    });
+  }
+
+  private handleAsyncBinder(data: FuncStruct, list: any[], name: string, scrollCallback: Function): void {
+    Promise.all([
+      queryBinderByArgsId(data.argsetid!, data.startTs!, !data.funName!.endsWith('rcv')),
+      queryBinderArgsByArgset(data.argsetid!),
+    ]).then((result) => {
+      let asyncBinderRes = result[0];
+      let argsBinderRes = result[1];
+      let asyncBinderStract: any;
+      if (asyncBinderRes.length > 0) {
+        asyncBinderRes[0].type = TraceRow.ROW_TYPE_FUNC;
+        asyncBinderStract = asyncBinderRes[0];
+      }
+      if (argsBinderRes.length > 0) {
+        argsBinderRes.forEach((item) => {
+          list.push({
+            name: item.keyName,
+            value: item.strValue,
+          });
+        });
+      }
+      if (asyncBinderStract !== undefined) {
+        list.unshift({
+          name: 'Name',
+          value: `<div style="white-space: nowrap;display: flex;align-items: center">
 <div style="white-space:pre-wrap">${name || 'binder'}</div>
 <lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="function-jump" name="select" color="#7fa1e7" size="20"></lit-icon>
 </div>`,
@@ -379,7 +650,8 @@ export class TabPaneCurrentSelection extends BaseElement {
     }
   }
 
-  setClockData(data: ClockStruct): void {
+  async setClockData(data: ClockStruct): Promise<void> {
+    await this.setRealTime(); 
     this.setTableHeight('auto');
     //时钟信息
     this.tabCurrentSelectionInit('Counter Details');
@@ -387,17 +659,16 @@ export class TabPaneCurrentSelection extends BaseElement {
     list.push({
       name: 'StartTime(Relative)',
       value: getTimeString(data.startNS || 0),
-    });
-    list.push({
-      name: 'StartTime(Absolute)',
-      value: ((data.startNS || 0) + (window as any).recordStartNS) / 1000000000 + 's',
-    });
+    }); 
+    this.createStartTimeNode(list, data.startNS || 0 , CLOCK_TRANSF_BTN_ID, CLOCK_STARTTIME_ABSALUTED_ID);
     list.push({
       name: 'Value',
       value: ColorUtils.formatNumberComma(data.value || 0),
     });
     list.push({ name: 'Duration', value: getTimeString(data.dur || 0) });
     this.currentSelectionTbl!.dataSource = list;
+    let startTimeAbsolute = (data.startNS || 0) + (window as any).recordStartNS;
+    this.addClickToTransfBtn(startTimeAbsolute, CLOCK_TRANSF_BTN_ID, CLOCK_STARTTIME_ABSALUTED_ID);
   }
 
   setMemData(data: ProcessMemStruct): void {
@@ -455,13 +726,14 @@ export class TabPaneCurrentSelection extends BaseElement {
     });
   }
 
-  setThreadData(
+  async setThreadData(
     data: ThreadStruct,
     scrollCallback: ((d: any) => void) | undefined,
     scrollWakeUp: (d: any) => void | undefined,
-    callback: ((data: Array<any>) => void) | undefined = undefined
-  ): void {
+    callback?: ((data: Array<any>, str: string) => void)
+  ): Promise<void> {
     //线程信息
+    await this.setRealTime();
     this.setTableHeight('550px');
     this.initCanvas();
     let leftTitle: HTMLElement | null | undefined = this?.shadowRoot?.querySelector('#leftTitle');

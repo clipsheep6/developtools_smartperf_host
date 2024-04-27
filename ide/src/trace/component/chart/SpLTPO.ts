@@ -30,6 +30,7 @@ import { LtpoRender, LtpoStruct } from '../../database/ui-worker/ProcedureWorker
 import { HitchTimeStruct, hitchTimeRender } from '../../database/ui-worker/ProcedureWorkerHitchTime';
 import { lostFrameSender } from '../../database/data-trafic/LostFrameSender';
 import { fps } from '../../database/ui-worker/ProcedureWorkerFPS';
+import { timeStamp } from 'console';
 
 export class SpLtpoChart {
   private readonly trace: SpSystemTrace | undefined;
@@ -213,7 +214,6 @@ export class SpLtpoChart {
   };
   //render_service的nowTime 集成RSHardThread泳道Fps数组的FenceId和Signaled
   fpsToRenderService(): void {
-    if (SpLtpoChart.signaledList.length || SpLtpoChart.skipDataList.length) {
       let rsIndex = 0;
       let hardIndex = 0;
       while (rsIndex < SpLtpoChart.rsNowTimeList.length) {
@@ -235,45 +235,64 @@ export class SpLtpoChart {
           return;
         }
       }
-    }
   };
   //render_service中找出skip和signaled，将需要从上平时间减去的时间计算出来存在对应的nowTime的item中
   filterNowTime(): void {
-    let skipIndex = 0;
     let nowTimeIndex = 0;
     let cutTimeSum = 0;
-    let tempFps = 0;//如果中间出现signaled，记录一下fps；
-    //将render_service中的nowTime数组中的skip去除掉
     SpLtpoChart.tempRsNowTimeList = SpLtpoChart.rsNowTimeList.filter((item) => item.fps);
-    while (skipIndex < SpLtpoChart.skipDataList.length) {
-      if (SpLtpoChart.skipDataList[skipIndex] && SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
-        if (SpLtpoChart.skipDataList[skipIndex].ts! > SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
-          if (cutTimeSum > 0 && nowTimeIndex > 0) {
-            SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
-            if (!SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
-              cutTimeSum = 0;
-            }
-          };
-          if (SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {//两帧之间初心signaled
-            tempFps = SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
-            cutTimeSum += 1000 / tempFps;
-            SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
-            SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
-          } else {
-            nowTimeIndex++;
-            cutTimeSum = 0;
-            tempFps = 0;
-          }
-        } else if (SpLtpoChart.skipDataList[skipIndex].ts! <= SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
-          if (nowTimeIndex > 0) {
-            cutTimeSum += tempFps ? (1000 / tempFps) : (1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].fps!);
-          }
-          skipIndex++;
+    while (nowTimeIndex < SpLtpoChart.tempRsNowTimeList.length) {
+      if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
+        if (cutTimeSum > 0 && nowTimeIndex > 0 && !SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
+          SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
+          cutTimeSum = 0;
         }
-      } else {
-        return;
+        if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {
+          cutTimeSum += 1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
+          SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
+        }else if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex === 0) {
+          SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
+        }else {
+          nowTimeIndex ++;
+        }
       }
     }
+    // let skipIndex = 0;
+    // let nowTimeIndex = 0;
+    // let cutTimeSum = 0;
+    // let tempFps = 0;//如果中间出现signaled，记录一下fps；
+    // //将render_service中的nowTime数组中的skip去除掉
+    // SpLtpoChart.tempRsNowTimeList = SpLtpoChart.rsNowTimeList.filter((item) => item.fps);
+    // while (skipIndex < SpLtpoChart.skipDataList.length) {
+    //   if (SpLtpoChart.skipDataList[skipIndex] && SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
+    //     if (SpLtpoChart.skipDataList[skipIndex].ts! > SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
+    //       if (cutTimeSum > 0 && nowTimeIndex > 0) {
+    //         SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
+    //         if (!SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
+    //           cutTimeSum = 0;
+    //         }
+    //       };
+    //       if (SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {//两帧之间初心signaled
+    //         tempFps = SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
+    //         cutTimeSum += 1000 / tempFps;
+    //         SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
+    //         SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
+    //       } else {
+    //         nowTimeIndex++;
+    //         cutTimeSum = 0;
+    //         tempFps = 0;
+    //       }
+    //     } else if (SpLtpoChart.skipDataList[skipIndex].ts! <= SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
+    //       if (nowTimeIndex > 0) {
+    //         cutTimeSum += tempFps ? (1000 / tempFps) : (1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].fps!);
+    //       }
+    //       skipIndex++;
+    //     }
+    //   } else {
+    //     return;
+    //   }
+    // }
+    
   };
   pushLtpoData(
     lptoArr: any[] | undefined,
@@ -330,12 +349,39 @@ export class SpLtpoChart {
       let sendStartTs: number | undefined = 0;
       let sendDur: number | undefined = 0;
       let cutSendDur: number | undefined = 0;
-      if (ltpoDataArr[ltpoDataIndex].fanceId !== -1 && ltpoDataArr[ltpoDataIndex].nextDur) {
-        sendStartTs = Number(ltpoDataArr[ltpoDataIndex].startTs) + Number(ltpoDataArr[ltpoDataIndex].dur);
-        sendDur = Number(ltpoDataArr[ltpoDataIndex].nextStartTs) + Number(ltpoDataArr[ltpoDataIndex].nextDur) - sendStartTs;
-      };
       if (ltpoDataArr[ltpoDataIndex] && SpLtpoChart.tempRsNowTimeList[tempRsNowTimeIndex]) {
         if (ltpoDataArr[ltpoDataIndex].fanceId! < SpLtpoChart.tempRsNowTimeList[tempRsNowTimeIndex].fanceId!) {
+          if (ltpoDataArr[ltpoDataIndex].fanceId !== -1 && ltpoDataArr[ltpoDataIndex].nextDur) {
+            sendStartTs = Number(ltpoDataArr[ltpoDataIndex].startTs) + Number(ltpoDataArr[ltpoDataIndex].dur);
+            sendDur = Number(ltpoDataArr[ltpoDataIndex].nextStartTs) + Number(ltpoDataArr[ltpoDataIndex].nextDur) - sendStartTs;
+          };
+          let tmpDur = cutSendDur ? ((Math.ceil(cutSendDur / 100000)) / 10) : (Math.ceil(sendDur / 100000)) / 10;
+          if (tmpDur < 170) {
+            sendDataArr.push(
+              {
+                dur: sendDur,
+                cutSendDur: cutSendDur,
+                value: 0,
+                startTs: sendStartTs,
+                pid: ltpoDataArr[ltpoDataIndex].fanceId,
+                itid: ltpoDataArr[ltpoDataIndex].fanceId,
+                name: undefined,
+                presentId: ltpoDataArr[ltpoDataIndex].fanceId,
+                ts: undefined,
+                fanceId: ltpoDataArr[ltpoDataIndex].fanceId,
+                fps: ltpoDataArr[ltpoDataIndex].fps,
+                nextStartTs: ltpoDataArr[ltpoDataIndex].nextStartTs,
+                nextDur: ltpoDataArr[ltpoDataIndex].nextDur,
+                translateY: undefined,
+                isHover: false,
+                startTime: undefined,
+                signaled: undefined,
+                nowTime: undefined,
+                cutTime: undefined,
+                frame: undefined,
+              }
+            )
+          }
           ltpoDataIndex++;
         } else if (ltpoDataArr[ltpoDataIndex].fanceId! > SpLtpoChart.tempRsNowTimeList[tempRsNowTimeIndex].fanceId!) {
           tempRsNowTimeIndex++;
@@ -344,37 +390,41 @@ export class SpLtpoChart {
             cutSendDur = sendDur - (SpLtpoChart.tempRsNowTimeList[tempRsNowTimeIndex].cutTime! * 1000000);
             cutSendDur = cutSendDur < 0 ? 0 : cutSendDur;
           }
-        }
-      };
-      let tmpDur = cutSendDur ? ((Math.ceil(cutSendDur / 100000)) / 10) : (Math.ceil(sendDur / 100000)) / 10;
-      if (tmpDur < 170) {
-        sendDataArr.push(
-          {
-            dur: sendDur,
-            cutSendDur: cutSendDur,
-            value: 0,
-            startTs: sendStartTs,
-            pid: ltpoDataArr[ltpoDataIndex].fanceId,
-            itid: ltpoDataArr[ltpoDataIndex].fanceId,
-            name: undefined,
-            presentId: ltpoDataArr[ltpoDataIndex].fanceId,
-            ts: undefined,
-            fanceId: ltpoDataArr[ltpoDataIndex].fanceId,
-            fps: ltpoDataArr[ltpoDataIndex].fps,
-            nextStartTs: ltpoDataArr[ltpoDataIndex].nextStartTs,
-            nextDur: ltpoDataArr[ltpoDataIndex].nextDur,
-            translateY: undefined,
-            frame: undefined,
-            isHover: false,
-            startTime: undefined,
-            signaled: undefined,
-            nowTime: undefined,
-            cutTime: undefined
+          if (ltpoDataArr[ltpoDataIndex].fanceId !== -1 && ltpoDataArr[ltpoDataIndex].nextDur) {
+            sendStartTs = Number(ltpoDataArr[ltpoDataIndex].startTs) + Number(ltpoDataArr[ltpoDataIndex].dur);
+            sendDur = Number(ltpoDataArr[ltpoDataIndex].nextStartTs) + Number(ltpoDataArr[ltpoDataIndex].nextDur) - sendStartTs;
           }
-        );
-      };
-      ltpoDataIndex++;
-      tempRsNowTimeIndex++;
+          let tmpDur = cutSendDur ? ((Math.ceil(cutSendDur / 100000)) / 10) : (Math.ceil(sendDur / 100000)) / 10;
+          if (tmpDur < 170) {
+            sendDataArr.push(
+              {
+                dur: sendDur,
+                cutSendDur: cutSendDur,
+                value: 0,
+                startTs: sendStartTs,
+                pid: ltpoDataArr[ltpoDataIndex].fanceId,
+                itid: ltpoDataArr[ltpoDataIndex].fanceId,
+                name: undefined,
+                presentId: ltpoDataArr[ltpoDataIndex].fanceId,
+                ts: undefined,
+                fanceId: ltpoDataArr[ltpoDataIndex].fanceId,
+                fps: ltpoDataArr[ltpoDataIndex].fps,
+                nextStartTs: ltpoDataArr[ltpoDataIndex].nextStartTs,
+                nextDur: ltpoDataArr[ltpoDataIndex].nextDur,
+                translateY: undefined,
+                isHover: false,
+                startTime: undefined,
+                signaled: undefined,
+                nowTime: undefined,
+                cutTime: undefined,
+                frame: undefined,
+              }
+            )
+          }
+          ltpoDataIndex++;
+          tempRsNowTimeIndex++;
+        }
+      }
     }
     return sendDataArr;
   }
@@ -401,38 +451,25 @@ export class SpLtpoChart {
     };
   }
   //六舍七入
-  specialValue(valueType: string, num: number) {
+  specialValue(num: number) {
     if (num < 0) {
       return 0;
     } else {
       if (!num.toString().split('.')[1]) {
         return num;
       } else {
-        if (valueType === 'hitchTimes') {
-          if(num.toString().split('.')[1].split('').length > 1){//当hitchTime小数点后多于两位
-            let tempNum = num * 10;
-            let singleNumber = Number(tempNum.toString().split('.')[1].charAt(0));
-            if(singleNumber > 6) {
-              return (Math.ceil(tempNum) / 10);
-            }else {
-              return (Math.floor(tempNum) / 10);
-            }
-          }else{//当hitchTime只有一位小数
-            return num
-          }
+        let tempNum = Number(num.toString().split('.')[1].charAt(0));
+        if (tempNum > 6) {
+          return Math.ceil(num);
         } else {
-          let tempNum = Number(num.toString().split('.')[1].charAt(0));
-          if (tempNum > 6) {
-            return Math.ceil(num);
-          } else {
-            return Math.floor(num);
-          }
+          return Math.floor(num);
         }
       }
 
     }
 
   }
+
 
   async initFolder() {
     SpLtpoChart.presentArr = [];
@@ -452,7 +489,7 @@ export class SpLtpoChart {
         for (let i = 0; i < SpLtpoChart.sendLTPODataArr.length; i++) {
           let tmpDur = SpLtpoChart.sendLTPODataArr[i].cutSendDur ? (SpLtpoChart.sendLTPODataArr[i].cutSendDur! / 1000000) : (SpLtpoChart.sendLTPODataArr[i].dur! / 1000000);
           let mathValue = tmpDur * Number(SpLtpoChart.sendLTPODataArr[i].fps) / 1000 - 1;
-          SpLtpoChart.sendLTPODataArr[i].value = this.specialValue('lostFrames', mathValue);
+          SpLtpoChart.sendLTPODataArr[i].value = this.specialValue(mathValue);
         }
         return SpLtpoChart.sendLTPODataArr;
       })
@@ -460,6 +497,9 @@ export class SpLtpoChart {
     row.focusHandler = () => {
       SpLtpoChart.trace?.displayTip(row!, LtpoStruct.hoverLtpoStruct, `<span>${(LtpoStruct.hoverLtpoStruct?.value!)}</span>`)
     };
+    row.findHoverStruct = (): void => {
+      LtpoStruct.hoverLtpoStruct = row.getHoverStruct(true,false,'value');
+    }
     row.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
       if (row.currentContext) {
@@ -499,20 +539,19 @@ export class SpLtpoChart {
 
           let mathValue = tmpDur * Number(SpLtpoChart.sendHitchDataArr[i].fps) / 1000 - 1;
           let finalValue = tmpVale! < 0 ? 0 : tmpVale;
-          SpLtpoChart.sendHitchDataArr[i].value = this.specialValue('hitchTimes', finalValue)
-          SpLtpoChart.sendHitchDataArr[i].name = this.specialValue('lostFrames', mathValue)!.toString();
+          SpLtpoChart.sendHitchDataArr[i].value = this.specialValue(finalValue);
+          SpLtpoChart.sendHitchDataArr[i].value = SpLtpoChart.sendHitchDataArr[i].value! >= (0.7*1000/SpLtpoChart.sendHitchDataArr[i].fps!) ? SpLtpoChart.sendHitchDataArr[i].value : 0;
+          SpLtpoChart.sendHitchDataArr[i].name = this.specialValue(mathValue)!.toString();
         }
         return SpLtpoChart.sendHitchDataArr;
       })
     }
     row.focusHandler = () => {
-      let viewValue = (HitchTimeStruct.hoverHitchTimeStruct?.value!)! + '';
-      let rep = /[\.]/;
-      if (!rep.test(viewValue) && viewValue !== '0') {
-        viewValue += '.0';
-      }
-      SpLtpoChart.trace?.displayTip(row!, HitchTimeStruct.hoverHitchTimeStruct, `<span>${viewValue}</span>`)
+      SpLtpoChart.trace?.displayTip(row!, HitchTimeStruct.hoverHitchTimeStruct, `<span>${(HitchTimeStruct.hoverHitchTimeStruct?.value!)}</span>`)
     };
+    row.findHoverStruct = (): void => {
+      HitchTimeStruct.hoverHitchTimeStruct = row.getHoverStruct(true,false,'value');
+    }
     row.onThreadHandler = (useCache): void => {
       let context: CanvasRenderingContext2D;
       if (row.currentContext) {
