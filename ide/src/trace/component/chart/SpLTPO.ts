@@ -238,61 +238,41 @@ export class SpLtpoChart {
   };
   //render_service中找出skip和signaled，将需要从上平时间减去的时间计算出来存在对应的nowTime的item中
   filterNowTime(): void {
+    let skipIndex = 0;
     let nowTimeIndex = 0;
     let cutTimeSum = 0;
+    let tempFps = 0;//如果中间出现signaled，记录一下fps；
+    //将render_service中的nowTime数组中的skip去除掉
     SpLtpoChart.tempRsNowTimeList = SpLtpoChart.rsNowTimeList.filter((item) => item.fps);
-    while (nowTimeIndex < SpLtpoChart.tempRsNowTimeList.length) {
-      if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
-        if (cutTimeSum > 0 && nowTimeIndex > 0 && !SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
-          SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
-          cutTimeSum = 0;
+    while (skipIndex < SpLtpoChart.skipDataList.length) {
+      if (SpLtpoChart.skipDataList[skipIndex] && SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
+        if (SpLtpoChart.skipDataList[skipIndex].ts! > SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
+          if (cutTimeSum > 0 && nowTimeIndex > 0) {
+            SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
+            if (!SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
+              cutTimeSum = 0;
+            }
+          };
+          if (SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {//两帧之间初心signaled
+            tempFps = SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
+            cutTimeSum += 1000 / tempFps;
+            SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
+            SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
+          } else {
+            nowTimeIndex++;
+            cutTimeSum = 0;
+            tempFps = 0;
+          }
+        } else if (SpLtpoChart.skipDataList[skipIndex].ts! <= SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
+          if (nowTimeIndex > 0) {
+            cutTimeSum += tempFps ? (1000 / tempFps) : (1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].fps!);
+          }
+          skipIndex++;
         }
-        if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {
-          cutTimeSum += 1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
-          SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
-        }else if(SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex === 0) {
-          SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
-        }else {
-          nowTimeIndex ++;
-        }
+      } else {
+        return;
       }
     }
-    // let skipIndex = 0;
-    // let nowTimeIndex = 0;
-    // let cutTimeSum = 0;
-    // let tempFps = 0;//如果中间出现signaled，记录一下fps；
-    // //将render_service中的nowTime数组中的skip去除掉
-    // SpLtpoChart.tempRsNowTimeList = SpLtpoChart.rsNowTimeList.filter((item) => item.fps);
-    // while (skipIndex < SpLtpoChart.skipDataList.length) {
-    //   if (SpLtpoChart.skipDataList[skipIndex] && SpLtpoChart.tempRsNowTimeList[nowTimeIndex]) {
-    //     if (SpLtpoChart.skipDataList[skipIndex].ts! > SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
-    //       if (cutTimeSum > 0 && nowTimeIndex > 0) {
-    //         SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
-    //         if (!SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled) {
-    //           cutTimeSum = 0;
-    //         }
-    //       };
-    //       if (SpLtpoChart.tempRsNowTimeList[nowTimeIndex].signaled && nowTimeIndex > 0) {//两帧之间初心signaled
-    //         tempFps = SpLtpoChart.tempRsNowTimeList[nowTimeIndex].fps!;
-    //         cutTimeSum += 1000 / tempFps;
-    //         SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].cutTime = cutTimeSum;
-    //         SpLtpoChart.tempRsNowTimeList.splice(nowTimeIndex, 1);
-    //       } else {
-    //         nowTimeIndex++;
-    //         cutTimeSum = 0;
-    //         tempFps = 0;
-    //       }
-    //     } else if (SpLtpoChart.skipDataList[skipIndex].ts! <= SpLtpoChart.tempRsNowTimeList[nowTimeIndex].ts!) {
-    //       if (nowTimeIndex > 0) {
-    //         cutTimeSum += tempFps ? (1000 / tempFps) : (1000 / SpLtpoChart.tempRsNowTimeList[nowTimeIndex - 1].fps!);
-    //       }
-    //       skipIndex++;
-    //     }
-    //   } else {
-    //     return;
-    //   }
-    // }
-    
   };
   pushLtpoData(
     lptoArr: any[] | undefined,
@@ -539,8 +519,7 @@ export class SpLtpoChart {
 
           let mathValue = tmpDur * Number(SpLtpoChart.sendHitchDataArr[i].fps) / 1000 - 1;
           let finalValue = tmpVale! < 0 ? 0 : tmpVale;
-          SpLtpoChart.sendHitchDataArr[i].value = this.specialValue(finalValue);
-          SpLtpoChart.sendHitchDataArr[i].value = SpLtpoChart.sendHitchDataArr[i].value! >= (0.7*1000/SpLtpoChart.sendHitchDataArr[i].fps!) ? SpLtpoChart.sendHitchDataArr[i].value : 0;
+          SpLtpoChart.sendHitchDataArr[i].value = this.specialValue(finalValue)
           SpLtpoChart.sendHitchDataArr[i].name = this.specialValue(mathValue)!.toString();
         }
         return SpLtpoChart.sendHitchDataArr;
