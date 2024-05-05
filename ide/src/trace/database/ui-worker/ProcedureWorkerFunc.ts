@@ -23,10 +23,12 @@ import {
   Render,
   RequestMessage,
   drawString,
+  drawFunString,
   drawLoadingFrame,
 } from './ProcedureWorkerCommon';
 import { FuncStruct as BaseFuncStruct } from '../../bean/FuncStruct';
 import { FlagsConfig } from '../../component/SpFlags';
+import {TabPaneTaskFrames} from "../../component/trace/sheet/task/TabPaneTaskFrames";
 export class FuncRender extends Render {
   renderMainThread(
     req: {
@@ -130,6 +132,7 @@ export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any
       if (FuncStruct.funcSelect) {
         TabPaneTaskFrames.TaskArray = [];
         sp.removeLinkLinesByBusinessType('task');
+        FuncStruct.firstSelectFuncStruct = FuncStruct.selectFuncStruct;
         let hoverFuncStruct = entry || FuncStruct.hoverFuncStruct;
         FuncStruct.selectFuncStruct = hoverFuncStruct;
         sp.timerShaftEL?.drawTriangle(FuncStruct.selectFuncStruct!.startTs || 0, 'inverted');
@@ -143,7 +146,21 @@ export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any
             }
           }
         }
-        sp.traceSheetEL?.displayFuncData(showTabArray, FuncStruct.selectFuncStruct, scrollToFuncHandler);
+        sp.traceSheetEL?.displayFuncData(showTabArray, FuncStruct.selectFuncStruct, scrollToFuncHandler,
+          (datas: any, str: string, binderTid:Number) => {
+            sp.removeLinkLinesByBusinessType('func');
+            if(str === 'binder-to') {
+              datas.forEach((data: {
+                tid: any; pid: any; }) => {
+                //@ts-ignore
+                let endParentRow = sp.shadowRoot?.querySelector<TraceRow<any>>(
+                  `trace-row[row-id='${data.pid}'][folder]`
+                );
+                sp.drawFuncLine(endParentRow,hoverFuncStruct,data,binderTid)
+              })
+            }
+        });
+        sp.refreshCanvas(true);
         sp.timerShaftEL?.modifyFlagList(undefined);
       }
       reject(new Error());
@@ -155,9 +172,11 @@ export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any
 export class FuncStruct extends BaseFuncStruct {
   static hoverFuncStruct: FuncStruct | undefined;
   static selectFuncStruct: FuncStruct | undefined;
+  static firstSelectFuncStruct: FuncStruct | undefined;
   flag: string | undefined; // 570000
   textMetricsWidth: number | undefined;
   static funcSelect: boolean = true;
+  pid: any;
   static setFuncFrame(funcNode: any, padding: number, startNS: number, endNS: number, totalNS: number, frame: any) {
     let x1: number, x2: number;
     if ((funcNode.startTs || 0) > startNS && (funcNode.startTs || 0) <= endNS) {

@@ -164,7 +164,27 @@ let convertJSON = (arr: any): any => {
     return arr;
   }
 };
-self.onmessage = function (e: any): void {
+
+self.onmessage = (e: any): void => {
+  clear(e);
+  if (e.data.params && e.data.params.list) {
+    dataList[e.data.type] = convertJSON(e.data.params.list);
+    if (e.data.params.offscreen) {
+      canvasList[e.data.type] = e.data.params.offscreen;
+      contextList[e.data.type] = e.data.params.offscreen!.getContext('2d');
+      contextList[e.data.type].scale(e.data.params.dpr, e.data.params.dpr);
+    }
+  }
+  if (!dataFilter[e.data.type]) {
+    dataFilter[e.data.type] = [];
+  }
+  let req = new RequestMessage();
+  setReq(req, e);
+
+  match(req.type!, req);
+};
+
+function clear(e: any) {
   if (e.data.type && (e.data.type as string).startsWith('clear')) {
     dataList = {};
     dataList2 = {};
