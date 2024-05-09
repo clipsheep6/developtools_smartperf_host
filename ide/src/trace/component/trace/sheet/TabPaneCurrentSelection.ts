@@ -405,17 +405,34 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.tabCurrentSelectionInit('Slice Details');
     let list: any[] = [];
     let name = this.transferString(data.funName ?? '');
+    // 从缓存中拿到详细信息的表
+    let information: string = '';
+    let funDetailList: Array<funDetail> = new Array();
+    await caches.match('/funDetail').then(
+      res => {
+        return res!.text()
+      }).then(
+        res => {
+          funDetailList = JSON.parse(res)
+        });
+    if (Array.isArray(funDetailList)) {
+      // 筛选当前函数块的信息项
+      let informationList: Array<funDetail> = funDetailList.filter((v: funDetail) => {
+        return v.slice.indexOf(name) > -1 || name.indexOf(v.slice) > -1
+      });
+      information = (informationList && informationList.length > 0) ? informationList[0].CN : `没有找到相关${name}的描述`
+    }
     let isBinder = FuncStruct.isBinder(data);
     let jankJumperList = new Array<ThreadTreeNode>();
     let isAsyncBinder = isBinder && FuncStruct.isBinderAsync(data);
     if (data.argsetid !== undefined && data.argsetid !== null && data.argsetid >= 0) {
       this.setTableHeight('700px');
       if (isAsyncBinder) {
-        this.handleAsyncBinder(data, list, name, scrollCallback);
+        this.handleAsyncBinder(data, list, name, scrollCallback, information);
       } else if (isBinder) {
-        this.handleBinder(data, list,jankJumperList, name, scrollCallback,callback);
+        this.handleBinder(data, list, jankJumperList, name, scrollCallback, information,callback);
       } else {
-        this.handleNonBinder(data, list, name);
+        this.handleNonBinder(data, list, name, information);
       }
     } else {
       this.setTableHeight('auto');
@@ -430,6 +447,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         value: getTimeString(data.dur || 0),
       });
       list.push({ name: 'depth', value: data.depth });
+      list.push({ name: 'information:', value: information });
       this.currentSelectionTbl!.dataSource = list;
       let startTimeAbsolute = (data.startTs || 0) + (window as any).recordStartNS;
       this.addClickToTransfBtn(startTimeAbsolute, FUN_TRANSF_BTN_ID, FUN_STARTTIME_ABSALUTED_ID);     
@@ -450,24 +468,24 @@ export class TabPaneCurrentSelection extends BaseElement {
     return gmt;
   }
 
-  private handleNonBinder(data: FuncStruct, list: any[], name: string): void {
+  private handleNonBinder(data: FuncStruct, list: any[], name: string, information: string): void {
     queryBinderArgsByArgset(data.argsetid!).then((argset) => {
       list.push({ name: 'Name', value: name });
       argset.forEach((item) => {
         list.push({ name: item.keyName, value: item.strValue });
       });
-      this.addTabPanelContent(list, data);
+      this.addTabPanelContent(list, data, information);
       this.currentSelectionTbl!.dataSource = list;
     });
   }
 
-  private handleBinder(data: FuncStruct, list: any[],jankJumperList: ThreadTreeNode[], name: string, scrollCallback: Function,callback?: ((data: Array<any>, str: string,binderTid:Number
+  private handleBinder(data: FuncStruct, list: any[],jankJumperList: ThreadTreeNode[], name: string, scrollCallback: Function, information: string,callback?: ((data: Array<any>, str: string,binderTid:Number
     ) => void)): void {
     queryBinderArgsByArgset(data.argsetid!).then((argset) => {
       let binderSliceId = -1;
       let binderTid = -1;
       argset.forEach((item) => {
-        if(item.keyName === 'destination thread') {
+        if(item.keyName === 'calling tid') {
           binderTid = Number(item.strValue);
         }
         if (item.keyName === 'destination slice id') {
@@ -485,7 +503,7 @@ export class TabPaneCurrentSelection extends BaseElement {
       if (binderSliceId === -1) {
         list.unshift({ name: 'Name', value: name });
       }
-      this.addTabPanelContent(list, data);
+      this.addTabPanelContent(list, data, information);
       this.currentSelectionTbl!.dataSource = list;
       let funcClick = this.currentSelectionTbl?.shadowRoot?.querySelector('#function-jump');
       funcClick?.addEventListener('click', () => {
@@ -508,7 +526,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     });
   }
 
-  private handleAsyncBinder(data: FuncStruct, list: any[], name: string, scrollCallback: Function): void {
+  private handleAsyncBinder(data: FuncStruct, list: any[], name: string, scrollCallback: Function, information: string): void {
     Promise.all([
       queryBinderByArgsId(data.argsetid!, data.startTs!, !data.funName!.endsWith('rcv')),
       queryBinderArgsByArgset(data.argsetid!),
@@ -927,6 +945,109 @@ export class TabPaneCurrentSelection extends BaseElement {
         });
       }
     });
+
+    this.currentSelectionTbl?.shadowRoot?.querySelector('#previous-state-click')?.addEventListener('click', () => {
+      if (preData && scrollWakeUp !== undefined) {
+        scrollWakeUp({
+          processId: preData.pid,
+          tid: preData.tid,
+          startTime: preData.startTime,
+          dur: preData.dur,
+          cpu: preData.cpu,
+          id: preData.itid,
+          state: preData.state,
+          argSetID: preData.argSetID,
+        });
+      }
+    });
+
+    this.currentSelectionTbl?.shadowRoot?.querySelector('#state-click')?.addEventListener('click', () => {
+      //线程点击
+      if (scrollCallback) {
+        scrollCallback(data);
+      }
+    });
+    this.currentSelectionTbl?.shadowRoot?.querySelector('#prio-click')?.addEventListener('click', (ev) => {
+      if (scrollPrio) {
+        sqlPrioCount(data).then((res: any) => {
+          scrollPrio(res);
+        })
+      }
+    });
+  }
+
+  private async prepareThreadInfo(list: any[], data: ThreadStruct): Promise<void> {
+    list.push({
+      name: 'StartTime(Relative)',
+      value: getTimeString(data.startTime || 0),
+    });
+    this.createStartTimeNode(list, data.startTime || 0, THREAD_TRANSF_BTN_ID, THREAD_STARTTIME_ABSALUTED_ID);
+    list.push({ name: 'Duration', value: getTimeString(data.dur || 0) });
+    let state;
+    if (data.state) {
+      state = Utils.getEndState(data.state);
+    } else if (data.state === '' || data.state === null) {
+      state = '';
+    } else {
+      state = 'Unknown State';
+    }
+    if ('Running' === state) {
+      state = state + ' on CPU ' + data.cpu;
+      list.push({
+        name: 'State',
+        value: `<div style="white-space: nowrap;display: flex;align-items: center">
+            <div style="white-space:pre-wrap">${state}</div>
+            <lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="state-click" name="select" color="#7fa1e7" size="20"></lit-icon>
+            </div>`,
+      });
+    } else {
+      list.push({ name: 'State', value: `${state}` });
+    }
+    if (state.includes('Running')) {
+      let startTime: number = data.startTime || 0;
+      let endTime: number = (data.startTime || 0) + (data.dur || 0);
+      let freqList: Array<any> = [];
+      let str = '';
+      freqList = await queryStateFreqList(startTime, endTime, (data.cpu || 0));
+      freqList.forEach(it => {
+        if (it.startTime < startTime! && it.endTime > endTime!) {
+          it.stateDur = data.dur;
+        } else if (it.startTime < startTime! && startTime! < it.endTime && it.endTime < endTime!) {
+          it.stateDur = it.endTime - startTime!;
+        } else if (it.startTime > startTime! && startTime! < it.endTime && it.endTime < endTime!) {
+          it.stateDur = it.dur;
+        } else if (it.startTime > startTime! && endTime! > it.startTime && it.endTime > endTime!) {
+          it.stateDur = endTime! - it.startTime;
+        }
+        str += '[' + it.value + ': ' + (it.stateDur || 0) / 1000 + ']' + ','
+      })
+      list.push({ name: 'Freq [KHz,μs]', value: str.substring(0, str.length - 1) });
+    }
+    let slice = Utils.SCHED_SLICE_MAP.get(`${data.id}-${data.startTime}`);
+    if (slice) {
+      list.push(
+        {
+        name: 'Prio',
+        value: `<div style="white-space: nowrap;display: flex;align-item: center">
+        <div style="white-space: pre-wrap">${slice.priority}</div>
+        <lit-icon style="cursor:pointer;transform: scalex(-1);margin-left: 5px" id="prio-click" name="select" color="#7fa1e7" size="20"></lit-icon>
+        </div>` 
+        }
+      );
+    }
+    let processName = Utils.PROCESS_MAP.get(data.pid!);
+    if (
+      processName === null ||
+      processName === undefined ||
+      processName === '' ||
+      processName.toLowerCase() == 'null'
+    ) {
+      processName = Utils.THREAD_MAP.get(data.tid!) || 'null';
+    }
+    list.push({
+      name: 'Process',
+      value: this.transferString(processName ?? '') + ' [' + data.pid + '] ',
+    });
   }
 
   setJankData(
@@ -940,174 +1061,206 @@ export class TabPaneCurrentSelection extends BaseElement {
     let list: any[] = [];
     this.setJankCommonMessage(list, data);
     if (data.type == '0') {
-      this.setJankType(data, list);
-      let jankJumperList = new Array<JankTreeNode>();
-      if (data.frame_type === 'render_service') {
-        queryGpuDur(data.id!).then((it) => {
-          if (it.length > 0) {
-            list.push({ name: 'Gpu Duration', value: getTimeString(it[0].gpu_dur) });
-          }
-        });
-        if (data.src_slice) {
-          queryFlowsData(data.src_slice!.split(',')).then((it) => {
-            if (it.length > 0) {
-              list.push({
-                name: 'FrameTimeLine flows',
-                value: '',
-              });
-              it.forEach((a: any) => {
-                let appNode = new JankTreeNode(a.name, a.pid, 'app');
-                appNode.children.push(new JankTreeNode(a.name, a.pid, 'frameTime'));
-                jankJumperList.push(appNode);
-                list.push({
-                  name: 'Slice',
-                  value:
-                    a.cmdline +
-                    ' [' +
-                    a.name +
-                    ']' +
-                    `<lit-icon  class="jank_cla" style="display: inline-flex;cursor: pointer;transform: scaleX(-1);margin-left: 5px" id="actual frameTime" slice_name="${a.name}" pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
-                });
-              });
-              list.push({
-                name: 'Following flows',
-                value: '',
-              });
-              it.forEach((a: any) => {
-                list.push({
-                  name: 'Slice',
-                  value:
-                    a.cmdline +
-                    ' [' +
-                    a.name +
-                    ']' +
-                    `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${a.type}-${a.pid}" slice_name="${a.name}"  pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
-                });
-              });
-              this.currentSelectionTbl!.dataSource = list;
-              this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
-            }
-          });
-        } else {
-          this.currentSelectionTbl!.dataSource = list;
+      this.handleTypeJank(data, list, scrollCallback, callback);
+    } else {
+      this.currentSelectionTbl!.dataSource = list;
+    }
+  }
+
+  private handleTypeJank(data: JankStruct, list: any[], scrollCallback: ((d: any) => void) | undefined,
+    callback: ((data: Array<any>) => void) | undefined): void {
+    this.setJankType(data, list);
+    let jankJumperList = new Array<JankTreeNode>();
+    if (data.frame_type === 'render_service') {
+      queryGpuDur(data.id!).then((it) => {
+        if (it.length > 0) {
+          list.push({ name: 'Gpu Duration', value: getTimeString(it[0].gpu_dur) });
         }
-      } else if (data.frame_type === 'app') {
+      });
+      this.handleRenderServiceJank(data, list, jankJumperList, scrollCallback, callback);
+    } else if (data.frame_type === 'app') {
+      this.handleAppJank(list, data, jankJumperList, scrollCallback, callback);
+    } else if (data.frame_type === 'frameTime') {
+      this.handleFrameTimeJank(data, list, jankJumperList, scrollCallback, callback);
+    }
+  }
+
+  private handleFrameTimeJank(data: JankStruct, list: any[], jankJumperList: JankTreeNode[],
+    scrollCallback: ((d: any) => void) | undefined, callback: ((data: Array<any>) => void) | undefined): void {
+    queryGpuDur(data.id!).then((it) => {
+      if (it.length > 0) {
         list.push({
-          name: 'FrameTimeLine flows',
-          value: '',
-        });
-        list.push({
-          name: 'Slice',
-          value:
-            data.cmdline +
-            ' [' +
-            data.name +
-            ']' +
-            `<lit-icon  class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="actual frameTime"  slice_name="${data.name}"  pid="${data.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
-        });
-        let timeLineNode = new JankTreeNode(data.name!, data.pid!, 'frameTime');
-        jankJumperList.push(timeLineNode);
-        if (data.dst_slice) {
-          queryPrecedingData(data.dst_slice).then((it) => {
-            if (it.length > 0) {
-              list.push({
-                name: 'Preceding flows',
-                value: '',
-              });
-              it.forEach((a: any) => {
-                let rsNode = new JankTreeNode(a.name, a.pid, 'render_service');
-                jankJumperList.push(rsNode);
-                list.push({
-                  name: 'Slice',
-                  value:
-                    a.cmdline +
-                    ' [' +
-                    a.name +
-                    ']' +
-                    `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${a.type}-${a.pid}" slice_name="${a.name}" pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
-                });
-              });
-              this.currentSelectionTbl!.dataSource = list;
-              this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
-            }
-          });
-        } else {
-          this.currentSelectionTbl!.dataSource = list;
-          this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
-        }
-      } else if (data.frame_type === 'frameTime') {
-        queryGpuDur(data.id!).then((it) => {
-          if (it.length > 0) {
-            list.push({
-              name: 'Gpu Duration',
-              value: getTimeString(it[0].gpu_dur),
-            });
-          }
-          if (data.name) {
-            list.push({
-              name: 'App Frame',
-              value: '',
-            });
-            list.push({
-              name: 'Process',
-              value: data.cmdline + ' ' + data.pid,
-            });
-            list.push({
-              name: 'StartTime(Relative)',
-              value: getTimeString(data.ts || 0),
-            });
-            list.push({
-              name: 'StartTime(Absolute)',
-              value: ((data.ts || 0) + (window as any).recordStartNS) / 1000000000 + 's',
-            });
-            list.push({
-              name: 'end time',
-              value: getTimeString(data!.ts! + data.dur! || 0),
-            });
-          }
-          if (data.rs_name) {
-            list.push({
-              name: 'RenderService Frame',
-              value: '',
-            });
-            list.push({
-              name: 'Process',
-              value: 'render_service ' + data.rs_pid,
-            });
-            list.push({
-              name: 'StartTime(Relative)',
-              value: getTimeString(data.rs_ts || 0),
-            });
-            list.push({
-              name: 'StartTime(Absolute)',
-              value: ((data.rs_ts || 0) + (window as any).recordStartNS) / 1000000000 + 's',
-            });
-            list.push({
-              name: 'end time',
-              value: getTimeString(data.rs_ts! + data.rs_dur! || 0),
-            });
-          }
-          list.push({
-            name: 'Following',
-            value: '',
-          });
-          list.push({
-            name: 'Slice',
-            value:
-              data.cmdline +
-              ' [' +
-              data.name +
-              ']' +
-              `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${data.type}-${data.pid}" slice_name="${data.name}"  pid="${data.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
-          });
-          let appNode = new JankTreeNode(data.name!, data.pid!, 'app');
-          let rsNode = new JankTreeNode(data.rs_vsync!, data.rs_pid!, 'render_service');
-          appNode.children.push(rsNode);
-          jankJumperList.push(appNode);
-          this.currentSelectionTbl!.dataSource = list;
-          this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
+          name: 'Gpu Duration',
+          value: getTimeString(it[0].gpu_dur),
         });
       }
+      this.addAppFrameDetails(data, list);
+      this.addRenderServiceFrameDetails(data, list);
+      this.addFollowingDetails(list, data);
+      let appNode = new JankTreeNode(data.name!, data.pid!, 'app');
+      let rsNode = new JankTreeNode(data.rs_vsync!, data.rs_pid!, 'render_service');
+      appNode.children.push(rsNode);
+      jankJumperList.push(appNode);
+      this.currentSelectionTbl!.dataSource = list;
+      this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
+    });
+  }
+
+  private addRenderServiceFrameDetails(data: JankStruct, list: any[]): void {
+    if (data.rs_name) {
+      list.push({
+        name: 'RenderService Frame',
+        value: '',
+      });
+      list.push({
+        name: 'Process',
+        value: 'render_service ' + data.rs_pid,
+      });
+      list.push({
+        name: 'StartTime(Relative)',
+        value: getTimeString(data.rs_ts || 0),
+      });
+      list.push({
+        name: 'StartTime(Absolute)',
+        value: ((data.rs_ts || 0) + (window as any).recordStartNS) / 1000000000 + 's',
+      });
+      list.push({
+        name: 'end time',
+        value: getTimeString(data.rs_ts! + data.rs_dur! || 0),
+      });
+    }
+  }
+
+  private addFollowingDetails(list: any[], data: JankStruct): void {
+    list.push({
+      name: 'Following',
+      value: '',
+    });
+    list.push({
+      name: 'Slice',
+      value:
+        data.cmdline +
+        ' [' +
+        data.name +
+        ']' +
+        `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${data.type}-${data.pid}" slice_name="${data.name}"  pid="${data.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
+    });
+  }
+
+  private addAppFrameDetails(data: JankStruct, list: any[]): void {
+    if (data.name) {
+      list.push({
+        name: 'App Frame',
+        value: '',
+      });
+      list.push({
+        name: 'Process',
+        value: data.cmdline + ' ' + data.pid,
+      });
+      list.push({
+        name: 'StartTime(Relative)',
+        value: getTimeString(data.ts || 0),
+      });
+      list.push({
+        name: 'StartTime(Absolute)',
+        value: ((data.ts || 0) + (window as any).recordStartNS) / 1000000000 + 's',
+      });
+      list.push({
+        name: 'end time',
+        value: getTimeString(data!.ts! + data.dur! || 0),
+      });
+    }
+  }
+
+  private handleAppJank(list: any[], data: JankStruct, jankJumperList: JankTreeNode[],
+    scrollCallback: ((d: any) => void) | undefined, callback: ((data: Array<any>) => void) | undefined): void {
+    list.push({
+      name: 'FrameTimeLine flows',
+      value: '',
+    });
+    list.push({
+      name: 'Slice',
+      value:
+        data.cmdline +
+        ' [' +
+        data.name +
+        ']' +
+        `<lit-icon  class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="actual frameTime"  slice_name="${data.name}"  pid="${data.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
+    });
+    let timeLineNode = new JankTreeNode(data.name!, data.pid!, 'frameTime');
+    jankJumperList.push(timeLineNode);
+    if (data.dst_slice) {
+      queryPrecedingData(data.dst_slice).then((it) => {
+        if (it.length > 0) {
+          list.push({
+            name: 'Preceding flows',
+            value: '',
+          });
+          it.forEach((a: any) => {
+            let rsNode = new JankTreeNode(a.name, a.pid, 'render_service');
+            jankJumperList.push(rsNode);
+            list.push({
+              name: 'Slice',
+              value:
+                a.cmdline +
+                ' [' +
+                a.name +
+                ']' +
+                `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${a.type}-${a.pid}" slice_name="${a.name}" pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
+            });
+          });
+          this.currentSelectionTbl!.dataSource = list;
+          this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
+        }
+      });
+    } else {
+      this.currentSelectionTbl!.dataSource = list;
+      this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
+    }
+  }
+
+  private handleRenderServiceJank(data: JankStruct, list: any[], jankJumperList: JankTreeNode[],
+    scrollCallback: ((d: any) => void) | undefined, callback: ((data: Array<any>) => void) | undefined): void {
+    if (data.src_slice) {
+      queryFlowsData(data.src_slice!.split(',')).then((it) => {
+        if (it.length > 0) {
+          list.push({
+            name: 'FrameTimeLine flows',
+            value: '',
+          });
+          it.forEach((a: any) => {
+            let appNode = new JankTreeNode(a.name, a.pid, 'app');
+            appNode.children.push(new JankTreeNode(a.name, a.pid, 'frameTime'));
+            jankJumperList.push(appNode);
+            list.push({
+              name: 'Slice',
+              value:
+                a.cmdline +
+                ' [' +
+                a.name +
+                ']' +
+                `<lit-icon  class="jank_cla" style="display: inline-flex;cursor: pointer;transform: scaleX(-1);margin-left: 5px" id="actual frameTime" slice_name="${a.name}" pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
+            });
+          });
+          list.push({
+            name: 'Following flows',
+            value: '',
+          });
+          it.forEach((a: any) => {
+            list.push({
+              name: 'Slice',
+              value:
+                a.cmdline +
+                ' [' +
+                a.name +
+                ']' +
+                `<lit-icon class="jank_cla" style="display: inline-flex;cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="${a.type}-${a.pid}" slice_name="${a.name}"  pid="${a.pid}" name="select" color="#7fa1e7" size="20"></lit-icon>`,
+            });
+          });
+          this.currentSelectionTbl!.dataSource = list;
+          this.addJankScrollCallBackEvent(scrollCallback, callback, jankJumperList);
+        }
+      });
     } else {
       this.currentSelectionTbl!.dataSource = list;
     }
