@@ -24,26 +24,29 @@ import '../../../../base-ui/progress-bar/LitProgressBar';
 import { LitChartPie } from '../../../../base-ui/chart/pie/LitChartPie';
 import '../../../../base-ui/chart/pie/LitChartPie';
 import { Utils } from '../../trace/base/Utils';
-import { LitIcon } from '../../../../base-ui/icon/LitIcon';
 
 @element('top10-process-switch-count')
 export class Top10ProcessSwitchCount extends BaseElement {
   traceChange: boolean = false;
   private processSwitchCountTbl: LitTable | null | undefined;
-  private processSwitchCountPie: LitChartPie | null | undefined;
-  private processSwitchCountProgress: LitProgressBar | null | undefined;
-  private nodataPro: TableNoData | null | undefined;
-  private processSwitchCountData: Array<Top10ProcSwiCount> = [];
   private threadSwitchCountTbl: LitTable | null | undefined;
-  private threadSwitchCountPie: LitChartPie | null | undefined;
+  private nodataPro: TableNoData | null | undefined;
   private nodataThr: TableNoData | null | undefined;
+  private processSwitchCountData: Array<Top10ProcSwiCount> = [];
+  private threadSwitchCountData: Array<Top10ProcSwiCount> = [];
+  private threadSwitchCountPie: LitChartPie | null | undefined;
+  private processSwitchCountPie: LitChartPie | null | undefined;
   private display_pro: HTMLDivElement | null | undefined;
   private display_thr: HTMLDivElement | null | undefined;
+  private processSwitchCountProgress: LitProgressBar | null | undefined;
   private processId: number | undefined;
   private display_flag: boolean = true;
   private back: HTMLDivElement | null | undefined;
 
-  init() {
+  /**
+   * 初始化操作，若trace发生改变，将所有变量设置为默认值并重新请求数据。若trace未改变，跳出初始化
+   */
+  init(): void {
     if (!this.traceChange) {
       if (this.processSwitchCountTbl!.recycleDataSource.length > 0) {
         this.processSwitchCountTbl?.reMeauseHeight();
@@ -52,6 +55,9 @@ export class Top10ProcessSwitchCount extends BaseElement {
     }
     this.traceChange = false;
     this.processSwitchCountProgress!.loading = true;
+    this.display_flag = true;
+    this.display_pro!.style.display = 'block';
+    this.display_thr!.style.display = 'none';
     this.queryLogicWorker(
       'scheduling-Process Top10Swicount',
       'query Process Top10 Switch Count Analysis Time:',
@@ -59,254 +65,18 @@ export class Top10ProcessSwitchCount extends BaseElement {
     );
   }
 
-  clearData() {
+  /**
+   * 清除已存储数据
+   */
+  clearData(): void {
     this.traceChange = true;
     this.processSwitchCountPie!.dataSource = [];
     this.processSwitchCountTbl!.recycleDataSource = [];
+    this.threadSwitchCountPie!.dataSource = [];
+    this.threadSwitchCountTbl!.recycleDataSource = [];
+    this.processSwitchCountData = [];
+    this.threadSwitchCountData = [];
   }
-
-  queryLogicWorker(option: string, log: string, handler: (res: Array<Top10ProcSwiCount>) => void, pid?: number) {
-    let processThreadCountTime = new Date().getTime();
-    procedurePool.submitWithName('logic0', option, {pid: pid}, undefined, handler);
-    let durTime = new Date().getTime() - processThreadCountTime;
-    info(log, durTime);
-  }
-
-  sortByColumn(detail: any) {
-    // @ts-ignore
-    function compare(processThreadCountProperty, sort, type) {
-      return function (a: any, b: any) {
-        if (type === 'number') {
-          // @ts-ignore
-          return sort === 2
-            ? parseFloat(b[processThreadCountProperty]) -
-                parseFloat(a[processThreadCountProperty])
-            : parseFloat(a[processThreadCountProperty]) -
-                parseFloat(b[processThreadCountProperty]);
-        } else {
-          if (sort === 2) {
-            return b[processThreadCountProperty]
-              .toString()
-              .localeCompare(a[processThreadCountProperty].toString());
-          } else {
-            return a[processThreadCountProperty]
-              .toString()
-              .localeCompare(b[processThreadCountProperty].toString());
-          }
-        }
-      };
-    }
-    if (
-      detail.key === 'NO' ||
-      detail.key === 'pid' ||
-      detail.key === 'switchCount' ||
-      detail.key === 'tid'
-    ) {
-      this.processSwitchCountData.sort(
-        compare(detail.key, detail.sort, 'number')
-      );
-    } else {
-      this.processSwitchCountData.sort(
-        compare(detail.key, detail.sort, 'string')
-      );
-    }
-    this.processSwitchCountTbl!.recycleDataSource = this.processSwitchCountData;
-  }
-
-    /**
-   * 提交线程后，结果返回后的回调函数
-   * @param res 数据库查询结果
-   */
-    callBack(res: Array<Top10ProcSwiCount>): void {
-      let result: Array<Top10ProcSwiCount> = this.organizationData(res);
-      // 判断当前显示的是进程组还是线程组
-      if (this.display_flag === true) {
-        this.processCallback(result);
-      } else {
-        this.threadCallback(result);
-      }
-      this.processSwitchCountProgress!.loading = false;
-    }
-  
-    /**
-     * 大函数块拆解分为两部分，此部分为Top10进程数据
-     * @param result 需要显示在表格中的数据
-     */
-    processCallback(result: Array<Top10ProcSwiCount>): void {
-      this.nodataPro!.noData = result === undefined || result.length === 0;
-      this.processSwitchCountTbl!.recycleDataSource = result;
-      this.processSwitchCountTbl!.reMeauseHeight();
-      this.processSwitchCountData = result;
-      this.processSwitchCountPie!.config = {
-        appendPadding: 10,
-        data: result,
-        angleField: 'switchCount',
-        colorField: 'pid',
-        radius: 0.8,
-        label: {
-          type: 'outer',
-        },
-        hoverHandler: (data) => {
-          if (data) {
-            this.processSwitchCountTbl!.setCurrentHover(data);
-          } else {
-            this.processSwitchCountTbl!.mouseOut();
-          }
-        },
-        tip: (obj) => {
-          return `
-            <div>
-              <div>Process_Id:${obj.obj.pid}</div> 
-              <div>Process_Name:${obj.obj.pName}</div> 
-              <div>Switch Count:${obj.obj.switchCount}</div> 
-            </div>
-          `;
-        },
-        interactions: [
-          {
-            type: 'element-active',
-          },
-        ],
-      };
-    }
-  
-    /**
-     * 大函数块拆解分为两部分，此部分为Top10线程数据
-     * @param result 需要显示在表格中的数据
-     */
-    threadCallback(result: Array<Top10ProcSwiCount>): void {
-      this.nodataThr!.noData = result === undefined || result.length === 0;
-      this.threadSwitchCountTbl!.recycleDataSource = result;
-      this.threadSwitchCountTbl!.reMeauseHeight();
-      this.threadSwitchCountData = result;
-      this.threadSwitchCountPie!.config = {
-        appendPadding: 10,
-        data: result,
-        angleField: 'switchCount',
-        colorField: 'tid',
-        radius: 0.8,
-        label: {
-          type: 'outer',
-        },
-        hoverHandler: (data) => {
-          if (data) {
-            this.threadSwitchCountTbl!.setCurrentHover(data);
-          } else {
-            this.threadSwitchCountTbl!.mouseOut();
-          }
-        },
-        tip: (obj) => {
-          return `
-            <div>
-              <div>Thread_Id:${obj.obj.tid}</div> 
-              <div>Thread_Name:${obj.obj.tName}</div> 
-              <div>Switch Count:${obj.obj.switchCount}</div> 
-              <div>Process_Id:${obj.obj.pid}</div> 
-            </div>
-          `;
-        },
-        interactions: [
-          {
-            type: 'element-active',
-          },
-        ],
-      };
-    }
-
-    /**
-   * 元素初始化，将html节点与内部变量进行绑定
-   */
-    initElements(): void {
-      this.processSwitchCountProgress = this.shadowRoot!.querySelector<LitProgressBar>('#loading');
-      this.processSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-process-switch-count');
-      this.threadSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-thread-switch-count');
-      this.processSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_pro');
-      this.threadSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_thr');
-      this.nodataPro = this.shadowRoot!.querySelector<TableNoData>('#nodata_pro');
-      this.nodataThr = this.shadowRoot!.querySelector<TableNoData>('#nodata_thr');
-      this.display_pro = this.shadowRoot!.querySelector<HTMLDivElement>('#display_pro');
-      this.display_thr = this.shadowRoot!.querySelector<HTMLDivElement>('#display_thr');
-      this.back = this.shadowRoot!.querySelector<HTMLDivElement>('#back');
-      this.clickEventListener();
-      this.hoverEventListener();
-    }
-  
-    /**
-     * 点击监听事件函数块
-     */
-    clickEventListener(): void {
-      // @ts-ignore
-      this.processSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
-        this.display_flag = false;
-        let data = evt.detail.data;
-        this.processId = data.pid;
-        this.display_thr!.style.display = 'block';
-        this.display_pro!.style.display = 'none';
-        this.queryLogicWorker(
-          'scheduling-Process Top10Swicount',
-          'query Process Top10 Switch Count Analysis Time:',
-          this.callBack.bind(this),
-          data.pid
-        );
-        data.isSelected = true;
-        if (evt.detail.callBack) {
-          evt.detail.callBack(true);
-        }
-      });
-      // @ts-ignore
-      this.threadSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
-        let data = evt.detail.data;
-        data.isSelected = true;
-        if (evt.detail.callBack) {
-          evt.detail.callBack(true);
-        }
-      });
-      this.processSwitchCountTbl!.addEventListener('column-click', (evt) => {
-        // @ts-ignore
-        this.sortByColumn(evt.detail, this.processSwitchCountData);
-        this.processSwitchCountTbl!.recycleDataSource = this.processSwitchCountData;
-      });
-      this.threadSwitchCountTbl!.addEventListener('column-click', (evt) => {
-        // @ts-ignore
-        this.sortByColumn(evt.detail, this.threadSwitchCountData);
-        this.threadSwitchCountTbl!.recycleDataSource = this.threadSwitchCountData;
-      });
-      this.back!.addEventListener('click', (event) => {
-        this.display_flag = true;
-        this.display_pro!.style.display = 'block';
-        this.display_thr!.style.display = 'none';
-        this.threadSwitchCountTbl!.recycleDataSource = [];
-      });
-  
-    }
-
-    /**
-     * 移入事件监听函数块
-     */
-    hoverEventListener(): void {
-      // @ts-ignore
-      this.processSwitchCountTbl!.addEventListener('row-hover', (evt: CustomEvent) => {
-        if (evt.detail.data) {
-          let data = evt.detail.data;
-          data.isHover = true;
-          if (evt.detail.callBack) {
-            evt.detail.callBack(true);
-          }
-        }
-        this.processSwitchCountPie?.showHover();
-      });
-      // @ts-ignore
-      this.threadSwitchCountTbl!.addEventListener('row-hover', (evt: CustomEvent) => {
-        if (evt.detail.data) {
-          let data = evt.detail.data;
-          data.isHover = true;
-          if (evt.detail.callBack) {
-            evt.detail.callBack(true);
-          }
-        }
-        this.threadSwitchCountPie?.showHover();
-      });
-    }
 
   /**
    * 提交worker线程，进行数据库查询
@@ -342,10 +112,264 @@ export class Top10ProcessSwitchCount extends BaseElement {
     return result;
   }
 
+  /**
+   * 提交线程后，结果返回后的回调函数
+   * @param res 数据库查询结果
+   */
+  callBack(res: Array<Top10ProcSwiCount>): void {
+    let result: Array<Top10ProcSwiCount> = this.organizationData(res);
+    // 判断当前显示的是进程组还是线程组
+    if (this.display_flag === true) {
+      this.processCallback(result);
+    } else {
+      this.threadCallback(result);
+    }
+    this.processSwitchCountProgress!.loading = false;
+  }
 
+  /**
+   * 大函数块拆解分为两部分，此部分为Top10进程数据
+   * @param result 需要显示在表格中的数据
+   */
+  processCallback(result: Array<Top10ProcSwiCount>): void {
+    this.nodataPro!.noData = result === undefined || result.length === 0;
+    this.processSwitchCountTbl!.recycleDataSource = result;
+    this.processSwitchCountTbl!.reMeauseHeight();
+    this.processSwitchCountData = result;
+    this.processSwitchCountPie!.config = {
+      appendPadding: 10,
+      data: result,
+      angleField: 'switchCount',
+      colorField: 'pid',
+      radius: 0.8,
+      label: {
+        type: 'outer',
+      },
+      hoverHandler: (data) => {
+        if (data) {
+          this.processSwitchCountTbl!.setCurrentHover(data);
+        } else {
+          this.processSwitchCountTbl!.mouseOut();
+        }
+      },
+      tip: (obj) => {
+        return `
+          <div>
+            <div>Process_Id:${obj.obj.pid}</div> 
+            <div>Process_Name:${obj.obj.pName}</div> 
+            <div>Switch Count:${obj.obj.switchCount}</div> 
+          </div>
+        `;
+      },
+      interactions: [
+        {
+          type: 'element-active',
+        },
+      ],
+    };
+  }
+
+  /**
+   * 大函数块拆解分为两部分，此部分为Top10线程数据
+   * @param result 需要显示在表格中的数据
+   */
+  threadCallback(result: Array<Top10ProcSwiCount>): void {
+    this.nodataThr!.noData = result === undefined || result.length === 0;
+    this.threadSwitchCountTbl!.recycleDataSource = result;
+    this.threadSwitchCountTbl!.reMeauseHeight();
+    this.threadSwitchCountData = result;
+    this.threadSwitchCountPie!.config = {
+      appendPadding: 10,
+      data: result,
+      angleField: 'switchCount',
+      colorField: 'tid',
+      radius: 0.8,
+      label: {
+        type: 'outer',
+      },
+      hoverHandler: (data) => {
+        if (data) {
+          this.threadSwitchCountTbl!.setCurrentHover(data);
+        } else {
+          this.threadSwitchCountTbl!.mouseOut();
+        }
+      },
+      tip: (obj) => {
+        return `
+          <div>
+            <div>Thread_Id:${obj.obj.tid}</div> 
+            <div>Thread_Name:${obj.obj.tName}</div> 
+            <div>Switch Count:${obj.obj.switchCount}</div> 
+            <div>Process_Id:${obj.obj.pid}</div> 
+          </div>
+        `;
+      },
+      interactions: [
+        {
+          type: 'element-active',
+        },
+      ],
+    };
+  }
+
+  /**
+   * 元素初始化，将html节点与内部变量进行绑定
+   */
+  initElements(): void {
+    this.processSwitchCountProgress = this.shadowRoot!.querySelector<LitProgressBar>('#loading');
+    this.processSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-process-switch-count');
+    this.threadSwitchCountTbl = this.shadowRoot!.querySelector<LitTable>('#tb-thread-switch-count');
+    this.processSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_pro');
+    this.threadSwitchCountPie = this.shadowRoot!.querySelector<LitChartPie>('#pie_thr');
+    this.nodataPro = this.shadowRoot!.querySelector<TableNoData>('#nodata_pro');
+    this.nodataThr = this.shadowRoot!.querySelector<TableNoData>('#nodata_thr');
+    this.display_pro = this.shadowRoot!.querySelector<HTMLDivElement>('#display_pro');
+    this.display_thr = this.shadowRoot!.querySelector<HTMLDivElement>('#display_thr');
+    this.back = this.shadowRoot!.querySelector<HTMLDivElement>('#back');
+    this.clickEventListener();
+    this.hoverEventListener();
+  }
+
+  /**
+   * 点击监听事件函数块
+   */
+  clickEventListener(): void {
+    // @ts-ignore
+    this.processSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
+      this.display_flag = false;
+      let data = evt.detail.data;
+      this.processId = data.pid;
+      this.display_thr!.style.display = 'block';
+      this.display_pro!.style.display = 'none';
+      this.queryLogicWorker(
+        'scheduling-Process Top10Swicount',
+        'query Process Top10 Switch Count Analysis Time:',
+        this.callBack.bind(this),
+        data.pid
+      );
+      data.isSelected = true;
+      if (evt.detail.callBack) {
+        evt.detail.callBack(true);
+      }
+    });
+    // @ts-ignore
+    this.threadSwitchCountTbl!.addEventListener('row-click', (evt: CustomEvent) => {
+      let data = evt.detail.data;
+      data.isSelected = true;
+      if (evt.detail.callBack) {
+        evt.detail.callBack(true);
+      }
+    });
+    this.processSwitchCountTbl!.addEventListener('column-click', (evt) => {
+      // @ts-ignore
+      this.sortByColumn(evt.detail, this.processSwitchCountData);
+      this.processSwitchCountTbl!.recycleDataSource = this.processSwitchCountData;
+    });
+    this.threadSwitchCountTbl!.addEventListener('column-click', (evt) => {
+      // @ts-ignore
+      this.sortByColumn(evt.detail, this.threadSwitchCountData);
+      this.threadSwitchCountTbl!.recycleDataSource = this.threadSwitchCountData;
+    });
+    this.back!.addEventListener('click', (event) => {
+      this.display_flag = true;
+      this.display_pro!.style.display = 'block';
+      this.display_thr!.style.display = 'none';
+      this.threadSwitchCountTbl!.recycleDataSource = [];
+    });
+
+  }
+
+  /**
+   * 移入事件监听函数块
+   */
+  hoverEventListener(): void {
+    // @ts-ignore
+    this.processSwitchCountTbl!.addEventListener('row-hover', (evt: CustomEvent) => {
+      if (evt.detail.data) {
+        let data = evt.detail.data;
+        data.isHover = true;
+        if (evt.detail.callBack) {
+          evt.detail.callBack(true);
+        }
+      }
+      this.processSwitchCountPie?.showHover();
+    });
+    // @ts-ignore
+    this.threadSwitchCountTbl!.addEventListener('row-hover', (evt: CustomEvent) => {
+      if (evt.detail.data) {
+        let data = evt.detail.data;
+        data.isHover = true;
+        if (evt.detail.callBack) {
+          evt.detail.callBack(true);
+        }
+      }
+      this.threadSwitchCountPie?.showHover();
+    });
+  }
+
+  /**
+   * 表格数据排序
+   * @param detail 点击的列名，以及排序状态0 1 2分别代表不排序、升序排序、降序排序
+   * @param data 表格中需要排序的数据
+   */
+  sortByColumn(detail: {key: string, sort: number}, data: Array<Top10ProcSwiCount>): void {
+    // @ts-ignore
+    function compare(processThreadCountProperty, sort, type) {
+      return function (a: any, b: any) {
+        if (type === 'number') {
+          // @ts-ignore
+          return sort === 2
+            ? parseFloat(b[processThreadCountProperty]) -
+                parseFloat(a[processThreadCountProperty])
+            : parseFloat(a[processThreadCountProperty]) -
+                parseFloat(b[processThreadCountProperty]);
+        } else {
+          if (sort === 2) {
+            return b[processThreadCountProperty]
+              .toString()
+              .localeCompare(a[processThreadCountProperty].toString());
+          } else {
+            return a[processThreadCountProperty]
+              .toString()
+              .localeCompare(b[processThreadCountProperty].toString());
+          }
+        }
+      };
+    }
+    if (detail.key === 'pName' || detail.key === 'tName') {
+      data.sort(
+        compare(detail.key, detail.sort, 'string')
+      );
+    } else {
+      data.sort(
+        compare(detail.key, detail.sort, 'number')
+      );
+    }
+  }
+
+  /**
+   * 生命周期函数，调整表格高度，适应其数据
+   */
+  connectedCallback(): void {
+    super.connectedCallback();
+    resizeObserver(this.parentElement!, this.processSwitchCountTbl!);
+  }
+
+  /**
+   * 用于将元素节点挂载，大函数块拆分为样式、节点
+   * @returns 返回字符串形式的元素节点
+   */
   initHtml(): string {
+    return this.initStyleHtml() + this.initTagHtml();
+  }
+
+  /**
+   * 样式html代码块
+   * @returns 返回样式代码块字符串
+   */
+  initStyleHtml(): string {
     return `
-        <style>
+      <style>
         :host {
             width: 100%;
             height: 100%;
@@ -372,53 +396,62 @@ export class Top10ProcessSwitchCount extends BaseElement {
             display: flex;
             flex-direction: row;
         }
-        </style>
-        <lit-progress-bar id='loading' style='height: 1px;width: 100%' loading></lit-progress-bar>
-        <div id='display_pro'>
-          <table-no-data id='nodata_pro' contentHeight='500px'>
-            <div class='switchcount-root'>
-              <div style='display: flex;flex-direction: column;align-items: center'>
-                <div>Statistics By Process's Switch Count</div>
-                <lit-chart-pie id='pie_pro' class='pie-chart'></lit-chart-pie>
-              </div>
-              <div class='tb_switch_count'>
-                <lit-table id='tb-process-switch-count' hideDownload style='height: auto'>
-                  <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Process_Name' data-index='pName' key='pName' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
-                </lit-table>
-              </div>
+      </style>
+    `;
+  }
+
+  /**
+   * 节点html代码块
+   * @returns 返回节点代码块字符串
+   */
+  initTagHtml() :string {
+    return `
+      <lit-progress-bar id='loading' style='height: 1px;width: 100%' loading></lit-progress-bar>
+      <div id='display_pro'>
+        <table-no-data id='nodata_pro' contentHeight='500px'>
+          <div class='switchcount-root'>
+            <div style='display: flex;flex-direction: column;align-items: center'>
+              <div>Statistics By Process's Switch Count</div>
+              <lit-chart-pie id='pie_pro' class='pie-chart'></lit-chart-pie>
             </div>
-          </table-no-data>
-        </div>
-        <div id='display_thr' style='display: none'>
-          <div class="bg" style="display: flex;flex-direction: row;">
-            <div id="back" style="height: 45px;display: flex;flex-direction: row;align-items: center;cursor: pointer">
-              上一层
-              <span style="width: 10px"></span>
-              <lit-icon name="arrowleft" size="20"></lit-icon>
+            <div class='tb_switch_count'>
+              <lit-table id='tb-process-switch-count' hideDownload style='height: auto'>
+                <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Process_Name' data-index='pName' key='pName' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
+              </lit-table>
             </div>
           </div>
-          <table-no-data id='nodata_thr' contentHeight='500px'>
-            <div class='switchcount-root'>
-              <div style='display: flex;flex-direction: column;align-items: center'>
-                <div>Statistics By Thread's Switch Count</div>
-                <lit-chart-pie id='pie_thr' class='pie-chart'></lit-chart-pie>
-              </div>
-              <div class='tb_switch_count'>
-                <lit-table id='tb-thread-switch-count' hideDownload style='height: auto'>
-                  <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Thread_Id' data-index='tid' key='tid' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Thread_Name' data-index='tName' key='tName' align='flex-start' order></lit-table-column>
-                  <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
-                </lit-table>
-              </div>
-            </div>
-          </table-no-data>
+        </table-no-data>
+      </div>
+      <div id='display_thr' style='display: none'>
+        <div class="bg" style="display: flex;flex-direction: row;">
+          <div id="back" style="height: 45px;display: flex;flex-direction: row;align-items: center;cursor: pointer">
+            上一层
+            <span style="width: 10px"></span>
+            <lit-icon name="arrowleft" size="20"></lit-icon>
+          </div>
         </div>
-        `;
+        <table-no-data id='nodata_thr' contentHeight='500px'>
+          <div class='switchcount-root'>
+            <div style='display: flex;flex-direction: column;align-items: center'>
+              <div>Statistics By Thread's Switch Count</div>
+              <lit-chart-pie id='pie_thr' class='pie-chart'></lit-chart-pie>
+            </div>
+            <div class='tb_switch_count'>
+              <lit-table id='tb-thread-switch-count' hideDownload style='height: auto'>
+                <lit-table-column width='1fr' title='NO' data-index='NO' key='NO' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Process_Id' data-index='pid' key='pid' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Thread_Id' data-index='tid' key='tid' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Thread_Name' data-index='tName' key='tName' align='flex-start' order></lit-table-column>
+                <lit-table-column width='1fr' title='Switch Count' data-index='switchCount' key='switchCount' align='flex-start' order></lit-table-column>        
+              </lit-table>
+            </div>
+          </div>
+        </table-no-data>
+      </div>
+    `;
   }
 }
 
@@ -429,5 +462,26 @@ interface Top10ProcSwiCount {
   pName?: string,
   tName?: string,
   switchCount?: number,
-  occurrences?: number
+  occurrences?: number 
+}
+
+export function resizeObserver(
+  parentEl: HTMLElement,
+  tableEl: LitTable,
+  tblOffsetHeight: number = 50,
+  loadingPage?: HTMLElement,
+  loadingPageOffsetHeight: number = 24
+): void {
+  new ResizeObserver((entries) => {
+    if (parentEl.clientHeight !== 0) {
+      if (tableEl) {
+        // @ts-ignore
+        tableEl.shadowRoot.querySelector('.table').style.height = parentEl.clientHeight - tblOffsetHeight + 'px';
+        tableEl.reMeauseHeight();
+      }
+      if (loadingPage) {
+        loadingPage.style.height = parentEl.clientHeight - loadingPageOffsetHeight + 'px';
+      }
+    }
+  }).observe(parentEl);
 }
