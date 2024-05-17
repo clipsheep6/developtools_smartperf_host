@@ -126,7 +126,13 @@ export function func(
     });
   }
 }
-export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any>|undefined, scrollToFuncHandler: any, entry?: any) {
+export function funcStructOnClick(
+  clickRowType: string,
+  sp: SpSystemTrace,
+  row: TraceRow<FuncStruct> | undefined,
+  scrollToFuncHandler: Function,
+  entry?: FuncStruct
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     if (clickRowType === TraceRow.ROW_TYPE_FUNC && (FuncStruct.hoverFuncStruct || entry)) {
       if (FuncStruct.funcSelect) {
@@ -146,20 +152,24 @@ export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any
             }
           }
         }
-        sp.traceSheetEL?.displayFuncData(showTabArray, FuncStruct.selectFuncStruct, scrollToFuncHandler,
-          (datas: any, str: string, binderTid:Number) => {
+        sp.timerShaftEL?.drawTriangle(hoverFuncStruct!.ts || 0, 'inverted');
+        sp.traceSheetEL?.displayFuncData(
+          showTabArray,
+          FuncStruct.selectFuncStruct!,
+          scrollToFuncHandler,
+          (datas: any, str: string, binderTid: number) => {
             sp.removeLinkLinesByBusinessType('func');
-            if(str === 'binder-to') {
-              datas.forEach((data: {
-                tid: any; pid: any; }) => {
+            if (str === 'binder-to') {
+              datas.forEach((data: { tid: any; pid: any }) => {
                 //@ts-ignore
-                let endParentRow = sp.shadowRoot?.querySelector<TraceRow<any>>(
+                let endParentRow = sp.shadowRoot?.querySelector<TraceRow<unknown>>(
                   `trace-row[row-id='${data.pid}'][folder]`
                 );
-                sp.drawFuncLine(endParentRow,hoverFuncStruct,data,binderTid)
-              })
+                sp.drawFuncLine(endParentRow, hoverFuncStruct, data, binderTid);
+              });
             }
-        });
+          }
+        );
         sp.refreshCanvas(true);
         sp.timerShaftEL?.modifyFlagList(undefined);
       }
@@ -172,13 +182,22 @@ export function FuncStructOnClick(clickRowType: string, sp:any, row:TraceRow<any
 export class FuncStruct extends BaseFuncStruct {
   static hoverFuncStruct: FuncStruct | undefined;
   static selectFuncStruct: FuncStruct | undefined;
+  static selectLineFuncStruct: Array<FuncStruct> = [];
   static firstSelectFuncStruct: FuncStruct | undefined;
   flag: string | undefined; // 570000
   textMetricsWidth: number | undefined;
   static funcSelect: boolean = true;
-  pid: any;
-  static setFuncFrame(funcNode: any, padding: number, startNS: number, endNS: number, totalNS: number, frame: any) {
-    let x1: number, x2: number;
+  pid: number = 0;
+  static setFuncFrame(
+    funcNode: FuncStruct,
+    padding: number,
+    startNS: number,
+    endNS: number,
+    totalNS: number,
+    frame: Rect
+  ): void {
+    let x1: number;
+    let x2: number;
     if ((funcNode.startTs || 0) > startNS && (funcNode.startTs || 0) <= endNS) {
       x1 = ns2x(funcNode.startTs || 0, startNS, endNS, totalNS, frame);
     } else {
@@ -193,24 +212,30 @@ export class FuncStruct extends BaseFuncStruct {
       x2 = frame.width;
     }
     if (!funcNode.frame) {
-      funcNode.frame = {};
+      funcNode.frame = new Rect(0, 0, 0, 0);
     }
     let getV: number = x2 - x1 < 1 ? 1 : x2 - x1;
     funcNode.frame.x = Math.floor(x1);
-    funcNode.frame.y = funcNode.depth * 18 + 3;
+    funcNode.frame.y = funcNode.depth! * 18 + 3;
     funcNode.frame.width = Math.ceil(getV);
     funcNode.frame.height = 18;
   }
 
-  static draw(ctx: CanvasRenderingContext2D, data: FuncStruct) {
+  static draw(ctx: CanvasRenderingContext2D, data: FuncStruct): void {
     if (data.frame) {
       let isBinder = FuncStruct.isBinder(data);
-      if (data.dur == undefined || data.dur == null) {
+      if (data.dur === undefined || data.dur === null) {
       } else {
         ctx.globalAlpha = 1;
-        ctx.fillStyle = ColorUtils.FUNC_COLOR[ColorUtils.hashFunc(data.funName || '', 0, ColorUtils.FUNC_COLOR.length)];
+        if (data.funName!.startsWith('XStream')) {
+          ctx.fillStyle = '#7a8c22';
+        } else if (data.funName!.startsWith('WU-')) {
+          ctx.fillStyle = '#349199';
+        } else {
+          ctx.fillStyle = ColorUtils.FUNC_COLOR[ColorUtils.hashFunc(data.funName || '', 0, ColorUtils.FUNC_COLOR.length)];
+        }
         let textColor = ColorUtils.FUNC_COLOR[ColorUtils.hashFunc(data.funName || '', 0, ColorUtils.FUNC_COLOR.length)];
-        if (FuncStruct.hoverFuncStruct && data.funName == FuncStruct.hoverFuncStruct.funName) {
+        if (FuncStruct.hoverFuncStruct && data.funName === FuncStruct.hoverFuncStruct.funName) {
           ctx.globalAlpha = 0.7;
         }
         ctx.fillRect(data.frame.x, data.frame.y, data.frame.width, data.frame.height);
@@ -219,9 +244,11 @@ export class FuncStruct extends BaseFuncStruct {
           ctx.textBaseline = 'middle';
           drawFunString(ctx, `${data.funName || ''}`, 5, data.frame, data);
         }
-        if (data.callid == FuncStruct.selectFuncStruct?.callid&&
-          data.startTs == FuncStruct.selectFuncStruct?.startTs&&
-          data.depth == FuncStruct.selectFuncStruct?.depth) {
+        if (
+          data.callid === FuncStruct.selectFuncStruct?.callid &&
+          data.startTs === FuncStruct.selectFuncStruct?.startTs &&
+          data.depth === FuncStruct.selectFuncStruct?.depth
+        ) {
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(data.frame.x, data.frame.y + 1, data.frame.width, data.frame.height - 2);
@@ -313,9 +340,9 @@ export class FuncStruct extends BaseFuncStruct {
 
   static isSelected(data: FuncStruct): boolean {
     return (
-      FuncStruct.selectFuncStruct != undefined &&
-      FuncStruct.selectFuncStruct.startTs == data.startTs &&
-      FuncStruct.selectFuncStruct.depth == data.depth
+      FuncStruct.selectFuncStruct !== undefined &&
+      FuncStruct.selectFuncStruct.startTs === data.startTs &&
+      FuncStruct.selectFuncStruct.depth === data.depth
     );
   }
 }
