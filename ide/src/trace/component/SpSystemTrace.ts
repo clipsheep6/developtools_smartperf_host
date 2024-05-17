@@ -4229,7 +4229,18 @@ export class SpSystemTrace extends BaseElement {
       { passive: false }
     );
 
-    SpApplication.skinChange2 = (val: boolean) => {
+  connectedCallback(): void {
+    this.initPointToEvent();
+    this.eventListener();
+    this.subRecordExportListener();
+    this.subRecordImportListener();
+    /**
+     * 泳道图中添加ctrl+鼠标滚轮事件，对泳道图进行放大缩小。
+     * 鼠标滚轮事件转化为键盘事件，keyPress和keyUp两个事件需要配合使用，
+     * 否则泳道图会一直放大或一直缩小。
+     * setTimeout()函数中的时间参数可以控制鼠标滚轮的频率。
+     */
+    SpApplication.skinChange2 = (val: boolean): void => {
       this.timerShaftEL?.render();
     };
     window.subscribe(window.SmartEvent.UI.UploadSOFile, (data) => {
@@ -4266,7 +4277,24 @@ export class SpSystemTrace extends BaseElement {
     window.subscribe(window.SmartEvent.UI.HoverNull, () => this.hoverStructNull());
   }
 
-  favoriteAreaSearchHandler(row: TraceRow<any>): void {
+  private scrollH: number = 0;
+
+  subscribeBottomTabVisibleEvent(): void {
+    //@ts-ignore
+    window.subscribe(window.SmartEvent.UI.ShowBottomTab, (data: { show: number; delta: number }): void => {
+      if (data.show === 1) {
+        //显示底部tab
+        this.scrollH = this.rowsEL!.scrollHeight;
+      } else {
+        // 底部 tab 为 最小化 或者隐藏 时候
+        if (this.rowsEL!.scrollHeight > this.scrollH) {
+          this.rowsEL!.scrollTop = this.rowsEL!.scrollTop - data.delta;
+        }
+      }
+    });
+  }
+  // @ts-ignore
+  favoriteAreaSearchHandler(row: TraceRow<unknown>): void {
     if (this.timerShaftEL!.collecBtn!.hasAttribute('close')) {
       this.timerShaftEL!.collecBtn!.removeAttribute('close');
       this.favoriteChartListEL!.showCollectArea();
@@ -4274,10 +4302,12 @@ export class SpSystemTrace extends BaseElement {
     this.favoriteChartListEL?.expandSearchRowGroup(row);
   }
 
-  scrollToProcess(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true) {
-    let traceRow =
-      this.rowsEL!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowId}'][row-type='${rowType}']`) ||
-      this.favoriteChartListEL!.getCollectRow((row) => row.rowId === rowId && row.rowType === rowType);
+  scrollToProcess(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true): void {
+    let id = Utils.getDistributedRowId(rowId);
+    let parentId = Utils.getDistributedRowId(rowParentId);
+    let traceRow = // @ts-ignore
+      this.rowsEL!.querySelector<TraceRow<any>>(`trace-row[row-id='${id}'][row-type='${rowType}']`) ||
+      this.favoriteChartListEL!.getCollectRow((row) => row.rowId === id && row.rowType === rowType);
     if (traceRow?.collect) {
       this.favoriteChartListEL!.scroll({
         top:
@@ -4302,9 +4332,9 @@ export class SpSystemTrace extends BaseElement {
     }
   }
 
-  scrollToDepth(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true, depth: number) {
-    let rootRow =
-      this.rowsEL!.querySelector<TraceRow<any>>(`trace-row[row-id='${rowId}'][row-type='${rowType}']`) ||
+  scrollToDepth(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true, depth: number): void {
+    let rootRow = // @ts-ignore
+      this.rowsEL!.querySelector<TraceRow<unknown>>(`trace-row[row-id='${rowId}'][row-type='${rowType}']`) ||
       this.favoriteChartListEL!.getCollectRow((row) => row.rowId === rowId && row.rowType === rowType);
     if (rootRow && rootRow!.collect) {
       this.favoriteAreaSearchHandler(rootRow);
@@ -4322,21 +4352,29 @@ export class SpSystemTrace extends BaseElement {
       if (rootRow) {
         rootRow.expandFunc();
       }
-      if (rootRow && rootRow.offsetTop >= 0 && rootRow.offsetHeight >= 0) {
-        let top = (rootRow?.offsetTop || 0) - this.canvasPanel!.offsetHeight + (++depth * 20 || 0);
-        this.rowsPaneEL!.scroll({
-          top: top,
-          left: 0,
-          behavior: smooth ? 'smooth' : undefined,
-        });
-      }
+      setTimeout(() => {
+        rootRow!.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
     }
   }
 
-  scrollToFunction(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true) {
-    let condition = `trace-row[row-id='${rowId}'][row-type='${rowType}'][row-parent-id='${rowParentId}']`;
-    let rootRow =
-      this.rowsEL!.querySelector<TraceRow<any>>(condition) ||
+  isInViewport(e: unknown): boolean {
+    // @ts-ignore
+    const rect = e.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+  }
+
+  scrollToFunction(rowId: string, rowParentId: string, rowType: string, smooth: boolean = true): void {
+    let id = Utils.getDistributedRowId(rowId);
+    let parentId = Utils.getDistributedRowId(rowParentId);
+    let condition = `trace-row[row-id='${id}'][row-type='${rowType}'][row-parent-id='${parentId}']`;
+    let rootRow = // @ts-ignore
+      this.rowsEL!.querySelector<TraceRow<unknown>>(condition) ||
       this.favoriteChartListEL!.getCollectRow((row) => {
         return row.rowId === rowId && row.rowType === rowType && row.rowParentId === rowParentId;
       });
@@ -4426,11 +4464,21 @@ export class SpSystemTrace extends BaseElement {
     buf: ArrayBuffer,
     thirdPartyWasmConfigUrl: string,
     progress: (name: string, percent: number) => void,
-    complete?: ((res: { status: boolean; msg: string }) => void) | undefined
-  ) {
+    isDistributed: boolean,
+    complete?: ((res: { status: boolean; msg: string }) => void) | undefined,
+    buf2?: ArrayBuffer,
+    fileName1?: string,
+    fileName2?: string
+  ): void {
     this.observerScrollHeightEnable = false;
-    this.init({ buf }, thirdPartyWasmConfigUrl, progress).then((res) => {
-      this.rowsEL?.querySelectorAll('trace-row').forEach((it: any) => this.observer.observe(it));
+    if (isDistributed) {
+      this.timerShaftEL?.setAttribute('distributed', '');
+    } else {
+      this.timerShaftEL?.removeAttribute('distributed');
+    }
+    this.init({ buf, buf2, fileName1, fileName2 }, thirdPartyWasmConfigUrl, progress, isDistributed).then((res) => {
+      // @ts-ignore
+      this.rowsEL?.querySelectorAll('trace-row').forEach((it: unknown) => this.observer.observe(it));
       if (complete) {
         complete(res);
         window.publish(window.SmartEvent.UI.MouseEventEnable, {
@@ -4520,9 +4568,27 @@ export class SpSystemTrace extends BaseElement {
     }
   }
 
-  searchSdk(dataList: Array<any>, query: string): Array<any> {
-    let traceRow =
-      this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[scene]`) ||
+  searchTargetTraceHandler(): void {
+    if (Utils.currentSelectTrace) {
+      let traceFolder1 = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='trace-1']`);
+      let traceFolder2 = this.shadowRoot!.querySelector<TraceRow<any>>(`trace-row[row-id='trace-2']`);
+      if (Utils.currentSelectTrace === '1') {
+        if (traceFolder2?.expansion) {
+          traceFolder2!.expansion = false;
+        }
+        traceFolder1!.expansion = true;
+      } else {
+        if (traceFolder1?.expansion) {
+          traceFolder1!.expansion = false;
+        }
+        traceFolder2!.expansion = true;
+      }
+    }
+  }
+
+  searchSdk(dataList: Array<unknown>, query: string): Array<unknown> {
+    let traceRow = // @ts-ignore
+      this.shadowRoot!.querySelector<TraceRow<unknown>>('trace-row[scene]') ||
       this.favoriteChartListEL!.getCollectRow((row) => row.hasAttribute('scene'));
     let dataAll = `trace-row[row-type^='sdk']`;
     if (traceRow) {
@@ -4752,7 +4818,22 @@ export class SpSystemTrace extends BaseElement {
     });
   }
 
-  moveRangeToCenter(startTime: number, dur: number) {
+  moveRangeToLeft(startTime: number, dur: number): void {
+    let startNS = this.timerShaftEL?.getRange()?.startNS || 0;
+    let endNS = this.timerShaftEL?.getRange()?.endNS || 0;
+    let harfDur = Math.trunc(endNS - startNS - dur / 2);
+    let leftNs = startTime;
+    let rightNs = startTime + dur + harfDur;
+    if (startTime - harfDur < 0) {
+      leftNs = 0;
+      rightNs += harfDur - startTime;
+    }
+    this.timerShaftEL?.setRangeNS(leftNs, rightNs);
+    TraceRow.range!.refresh = true;
+    this.refreshCanvas(true, 'move range to left');
+  }
+
+  moveRangeToCenter(startTime: number, dur: number): void {
     let startNS = this.timerShaftEL?.getRange()?.startNS || 0;
     let endNS = this.timerShaftEL?.getRange()?.endNS || 0;
     let harfDur = Math.trunc((endNS - startNS) / 2 - dur / 2);
