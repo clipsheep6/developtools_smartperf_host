@@ -29,7 +29,13 @@ import { LitProgressBar } from '../base-ui/progress-bar/LitProgressBar';
 import { SpRecordTrace } from './component/SpRecordTrace';
 import { SpWelcomePage } from './component/SpWelcomePage';
 import { LitSearch } from './component/trace/search/Search';
-import { DbPool, threadPool } from './database/SqlLite';
+import {
+  getThreadPoolTraceBuffer,
+  getThreadPoolTraceBufferCacheKey,
+  setThreadPoolTraceBuffer,
+  threadPool,
+  threadPool2,
+} from './database/SqlLite';
 import './component/trace/search/Search';
 import './component/SpWelcomePage';
 import './component/SpSystemTrace';
@@ -2004,7 +2010,40 @@ export class SpApplication extends BaseElement {
           clickHandler: (item: MenuItem): void => this.clickHandleByRecordTemplate(),
         },
       ],
-    };
+      },
+      {
+        collapsed: !multiTrace,
+        title: 'Open multiple trace',
+        second: false,
+        icon: 'caret-down',
+        describe: 'long trace or distributed trace',
+        children: [
+          {
+            title: 'Open long trace',
+            icon: 'folder',
+            fileChoose: true,
+            clickHandler: (ev: InputEvent): void => {
+              Utils.currentTraceMode = TraceMode.LONG_TRACE;
+              this.openLongTraceFile(ev, true);
+            },
+            fileHandler: (ev: InputEvent): void => {
+              Utils.currentTraceMode = TraceMode.LONG_TRACE;
+              this.openLongTraceFile(ev);
+            },
+          },
+          {
+            title: 'Open distributed trace',
+            icon: 'folder',
+            multi: true,
+            fileChoose: true,
+            fileHandler: (ev: InputEvent): void => {
+              Utils.currentTraceMode = TraceMode.DISTRIBUTED;
+              this.openDistributedTraceFile(ev);
+            },
+          },
+        ],
+      },
+    ];
   }
 
   private initSupportMenus() {
@@ -2159,25 +2198,73 @@ export class SpApplication extends BaseElement {
     });
   }
 
-  private handleWasmMode(ev: any, showFileName: string, fileSize: number, fileName: string): void {
-    let that = this;
+  private handleDistributedWasmMode(file1: File, file2: File): void {
+    this.litSearch!.setPercent('', 1);
+    document.title = 'Distributed Trace';
+    let completeHandler = async (res: unknown): Promise<void> => {
+      await this.traceLoadCompleteHandler(res, '', '', file1.name, true, file2.name);
+    };
+    let typeHeader = file1.slice(0, 6);
+    let reader: FileReader | null = new FileReader();
+    reader.readAsText(typeHeader);
+    reader.onloadend = (event): void => {
+      let headerStr: string = `${reader?.result}`;
+      let traceType = 'wasm';
+      if (headerStr.indexOf('SQLite') === 0) {
+        traceType = 'sqlite';
+      }
+      Promise.all([threadPool.init(traceType), threadPool2.init(traceType)]).then(() => {
+        let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+        Promise.all([file1.arrayBuffer(), file2.arrayBuffer()]).then((bufArr) => {
+          this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
+          SpApplication.loadingProgress = 0;
+          SpApplication.progressStep = 2;
+          let buf1 = this.markPositionHandler(bufArr[0]);
+          let buf2 = this.markPositionHandler(bufArr[1]);
+          info('initData start Parse Data');
+          this.spSystemTrace!.loadDatabaseArrayBuffer(
+            buf1,
+            wasmUrl,
+            (command: string, _: number) => this.setProgress(command),
+            true,
+            completeHandler,
+            buf2,
+            file1.name,
+            file2.name
+          );
+        });
+      });
+    };
+  }
+
+  private handleWasmMode(ev: unknown, showFileName: string, fileSize: number, fileName: string): void {
     this.litSearch!.setPercent('', 1);
     if (fileName.endsWith('.json')) {
-      that.progressEL!.loading = true;
-      that.spSystemTrace!.loadSample(ev).then(() => {
-        that.showContent(that.spSystemTrace!);
-        that.litSearch!.setPercent('', 101);
-        that.freshMenuDisable(false);
-        that.chartFilter!.setAttribute('mode', '');
-        that.progressEL!.loading = false;
+      this.progressEL!.loading = true;
+      //@ts-ignore
+      self.spSystemTrace!.loadSample(ev).then(() => {
+        this.showContent(this.spSystemTrace!);
+        this.litSearch!.setPercent('', 101);
+        this.freshMenuDisable(false);
+        this.chartFilter!.setAttribute('mode', '');
+        this.progressEL!.loading = false;
+      });
+    } else if (fileName.endsWith('.csv')) {
+      this.progressEL!.loading = true;
+      this.spSystemTrace!.loadGpuCounter(ev as File).then(() => {
+        this.showContent(this.spSystemTrace!);
+        this.litSearch!.setPercent('', 101);
+        this.freshMenuDisable(false);
+        this.chartFilter!.setAttribute('mode', '');
+        this.progressEL!.loading = false;
       });
     } else {
       let fileSizeStr = (fileSize / 1048576).toFixed(1);
       postLog(fileName, fileSizeStr);
       document.title = `${showFileName} (${fileSizeStr}M)`;
       info('Parse trace using wasm mode ');
-      let completeHandler = async (res: any): Promise<void> => {
-        await this.traceLoadCompleteHandler(res, fileSizeStr, showFileName, fileName);
+      let completeHandler = async (res: unknown): Promise<void> => {
+        await this.traceLoadCompleteHandler(res, fileSizeStr, showFileName, fileName, false);
         if (this.markJson) {
           window.publish(window.SmartEvent.UI.ImportRecord, this.markJson);
         }
