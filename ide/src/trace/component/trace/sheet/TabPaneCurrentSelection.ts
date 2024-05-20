@@ -468,6 +468,56 @@ export class TabPaneCurrentSelection extends BaseElement {
     return gmt;
   }
 
+  private async chainSpanListCallBackHandle(data: FuncStruct, callBack: Function): Promise<void> {
+    let allMainChainList: FuncStruct[];
+    if (Utils.currentTraceMode === TraceMode.DISTRIBUTED) {
+      let chainAllData = await Promise.all([
+        queryDistributedRelationAllData(data.chainId!, threadPool.traceId),
+        queryDistributedRelationAllData(data.chainId!, threadPool2.traceId),
+      ]);
+      allMainChainList = [...chainAllData[0], ...chainAllData[1]];
+    } else {
+      allMainChainList = await queryDistributedRelationAllData(data.chainId!);
+    }
+    let finalChainSpanList: FuncStruct[] = allMainChainList.filter((spanNode) => spanNode.spanId === data.spanId);
+    let setParentChainList = (currentData: FuncStruct): void => {
+      let currentParentSpanList = allMainChainList.filter((spanNode) => spanNode.spanId === currentData.parentSpanId);
+      for (let index = currentParentSpanList.length - 1; index >= 0; index--) {
+        let spanStruct = currentParentSpanList[index];
+        if (finalChainSpanList.indexOf(spanStruct) < 0) {
+          finalChainSpanList.unshift(spanStruct);
+        }
+      }
+      if (
+        currentParentSpanList.length > 0 &&
+        currentParentSpanList[0].parentSpanId !== '' &&
+        currentParentSpanList[0].parentSpanId !== '0'
+      ) {
+        setParentChainList(currentParentSpanList[0]);
+      }
+    };
+    setParentChainList(data);
+    let setChildChainList = (currentData: FuncStruct): void => {
+      let currentChildSpanList = allMainChainList.filter((spanNode) => spanNode.parentSpanId === currentData.spanId);
+      currentChildSpanList.forEach((childSpan) => {
+        if (finalChainSpanList.indexOf(childSpan) < 0) {
+          finalChainSpanList.push(childSpan);
+        }
+      });
+      if (
+        currentChildSpanList.length > 0 &&
+        currentChildSpanList[0].spanId !== '' &&
+        currentChildSpanList[0].spanId !== '0'
+      ) {
+        setChildChainList(currentChildSpanList[0]);
+      }
+    };
+    setChildChainList(data);
+    if (callBack) {
+      callBack(finalChainSpanList);
+    }
+  }
+
   private handleNonBinder(data: FuncStruct, list: any[], name: string, information: string): void {
     queryBinderArgsByArgset(data.argsetid!).then((argset) => {
       list.push({ name: 'Name', value: name });
@@ -479,8 +529,15 @@ export class TabPaneCurrentSelection extends BaseElement {
     });
   }
 
-  private handleBinder(data: FuncStruct, list: any[],jankJumperList: ThreadTreeNode[], name: string, scrollCallback: Function, information: string,callback?: ((data: Array<any>, str: string,binderTid:Number
-    ) => void)): void {
+  private handleBinder(
+    data: FuncStruct,
+    list: any[],
+    jankJumperList: ThreadTreeNode[],
+    name: string,
+    scrollCallback: Function,
+    information: string,
+    callback?: (data: Array<any>, str: string, binderTid: number) => void
+  ): void {
     queryBinderArgsByArgset(data.argsetid!).then((argset) => {
       let binderSliceId = -1;
       let binderTid = -1;
@@ -689,6 +746,31 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.addClickToTransfBtn(startTimeAbsolute, CLOCK_TRANSF_BTN_ID, CLOCK_STARTTIME_ABSALUTED_ID);
   }
 
+  setPerfToolsData(data: PerfToolStruct): void {
+    this.setTableHeight('auto');
+    //Perf Tools info
+    this.tabCurrentSelectionInit('Slice Details');
+    let list: any[] = [];
+    list.push({
+      name: 'Name',
+      value: data.name,
+    });
+    list.push({
+      name: 'StartTime(Relative)',
+      value: getTimeString(data.startTs || 0),
+    });
+    list.push({
+      name: 'StartTime(Absolute)',
+      value: ((data.startTs || 0) + (window as any).recordStartNS) / 1000000000 + 's',
+    });
+    list.push({
+      name: 'Value',
+      value: data.count,
+    });
+    list.push({ name: 'Duration', value: getTimeString(data.dur || 0) });
+    this.currentSelectionTbl!.dataSource = list;
+  }
+
   setMemData(data: ProcessMemStruct): void {
     this.setTableHeight('auto');
     //时钟信息
@@ -862,11 +944,31 @@ export class TabPaneCurrentSelection extends BaseElement {
             <div style="white-space:pre-wrap">${e.tid}</div>
             <lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="wakeup-${e.tid}" class="wakeup-click" name="select" color="#7fa1e7" size="20"></lit-icon>
             </div>`,
-          });
         });
-      }
-      let timeLineNode = new ThreadTreeNode(data.tid!, data.pid!, data.startTime!);
-      jankJumperList.push(timeLineNode);
+      });
+    }
+  }
+
+  private queryThreadDetails(
+    data: ThreadStruct,
+    list: unknown[],
+    jankJumperList: ThreadTreeNode[],
+    callback: ((data: Array<unknown>, str: string) => void) | undefined,
+    scrollWakeUp: (d: unknown) => void | undefined,
+    scrollPrio: (d: any) => void | undefined,
+    scrollCallback: ((d: unknown) => void) | undefined
+  ): void {
+    Promise.all([
+      this.queryThreadWakeUpFromData(data.id!, data.startTime!, data.dur!),
+      this.queryThreadWakeUpData(data.id!, data.startTime!, data.dur!),
+      this.queryThreadStateDArgs(data.argSetID),
+      queryThreadNearData(data.id!, data.startTime!),
+    ]).then((result) => {
+      let fromBean = result[0];
+      let wakeUps = result[1];
+      let args = result[2];
+      let [preData, nextData] = this.sortByNearData(result[3], data, list);
+      this.setWakeupData(fromBean, wakeUps, list);
       if (args.length > 0) {
         args.forEach((arg) => {
           list.push({ name: arg.keyName, value: arg.strValue });
@@ -1085,8 +1187,13 @@ export class TabPaneCurrentSelection extends BaseElement {
     }
   }
 
-  private handleFrameTimeJank(data: JankStruct, list: any[], jankJumperList: JankTreeNode[],
-    scrollCallback: ((d: any) => void) | undefined, callback: ((data: Array<any>) => void) | undefined): void {
+  private handleFrameTimeJank(
+    data: JankStruct,
+    list: unknown[],
+    jankJumperList: JankTreeNode[],
+    scrollCallback: ((d: unknown) => void) | undefined,
+    callback: ((data: Array<unknown>) => void) | undefined
+  ): void {
     queryGpuDur(data.id!).then((it) => {
       if (it.length > 0) {
         list.push({
@@ -1172,8 +1279,13 @@ export class TabPaneCurrentSelection extends BaseElement {
     }
   }
 
-  private handleAppJank(list: any[], data: JankStruct, jankJumperList: JankTreeNode[],
-    scrollCallback: ((d: any) => void) | undefined, callback: ((data: Array<any>) => void) | undefined): void {
+  private handleAppJank(
+    list: unknown[],
+    data: JankStruct,
+    jankJumperList: JankTreeNode[],
+    scrollCallback: ((d: unknown) => void) | undefined,
+    callback: ((data: Array<unknown>) => void) | undefined
+  ): void {
     list.push({
       name: 'FrameTimeLine flows',
       value: '',
