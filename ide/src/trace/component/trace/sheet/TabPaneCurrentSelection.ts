@@ -1417,6 +1417,76 @@ export class TabPaneCurrentSelection extends BaseElement {
   setStartupData(data: AppStartupStruct, scrollCallback: Function): void {
     this.setTableHeight('550px');
     this.initCanvas();
+    this.setStartUpStyle();
+    let list: unknown[] = [];
+    list.push({ name: 'Name', value: AppStartupStruct.getStartupName(data.startName) });
+    list.push({
+      name: 'StartTime(Relative)',
+      value: `
+      <div style="display: flex;white-space: nowrap;align-items: center">
+<div style="white-space:pre-wrap">${getTimeString(data.startTs || 0)}</div>
+<lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="start-jump" name="select" color="#7fa1e7" size="20"></lit-icon>
+</div>`,
+    });
+    list.push({
+      name: 'StartTime(Absolute)',
+      value: ((data.startTs || 0) + Utils.getInstance().getRecordStartNS()) / 1000000000 + 's',
+    });
+    if (data.dur && data.dur > 0) {
+      list.push({
+        name: 'EndTime(Relative)',
+        value: `<div style="white-space: nowrap;display: flex;align-items: center">
+<div style="white-space:pre-wrap">${getTimeString((data.startTs || 0) + (data.dur || 0))}</div>
+<lit-icon style="cursor:pointer;transform: scaleX(-1);margin-left: 5px" id="end-jump" name="select" color="#7fa1e7" size="20"></lit-icon>
+</div>`,
+      });
+      list.push({
+        name: 'EndTime(Absolute)',
+        value: ((data.startTs || 0) + (data.dur || 0) + Utils.getInstance().getRecordStartNS()) / 1000000000 + 's',
+      });
+    } else {
+      list.push({
+        name: 'EndTime(Relative)',
+        value: 'Unknown Time',
+      });
+      list.push({
+        name: 'EndTime(Absolute)',
+        value: 'Unknown Time',
+      });
+    }
+    list.push({ name: 'Duration', value: getTimeString(data.dur || 0) });
+    // @ts-ignore
+    let sortedArray = rowData.slice().sort(function (a: { startTs: number }, b: { startTs: number }) {
+      return a.startTs - b.startTs;
+    });
+    sortedArray.forEach((item: unknown, index: number) => {
+      // @ts-ignore
+      if (item.startName === data.startName) {
+        list.push({
+          name: 'StartSlice',
+          value:
+            index === 0
+              ? 'NULL'
+              : `${AppStartupStruct.getStartupName(sortedArray[index - 1].startName)}     ${getTimeString(
+                  sortedArray[index - 1].startTs + sortedArray[index - 1].dur
+                )}`,
+        });
+        list.push({
+          name: 'EndSlice',
+          value:
+            index === sortedArray.length - 1
+              ? 'NULL'
+              : `${AppStartupStruct.getStartupName(sortedArray[index + 1].startName)}      ${getTimeString(
+                  sortedArray[index + 1].startTs
+                )}`,
+        });
+      }
+    });
+    this.currentSelectionTbl!.dataSource = list;
+    this.attachScrollHandlers(data, scrollCallback);
+  }
+
+  private setStartUpStyle(): void {
     let rightButton: HTMLElement | null | undefined = this?.shadowRoot
       ?.querySelector('#rightButton')
       ?.shadowRoot?.querySelector('#custom-button');
