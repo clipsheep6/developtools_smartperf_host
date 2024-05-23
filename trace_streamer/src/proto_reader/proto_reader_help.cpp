@@ -13,16 +13,25 @@
  * limitations under the License.
  */
 
-#ifndef VERSION_H
-#define VERSION_H
-#include <string>
-#include <sys/types.h>
+#include "proto_reader_help.h"
 namespace SysTuning {
-namespace TraceStreamer {
-extern size_t g_loadSize;
-extern size_t g_fileSize;
-extern const std::string TRACE_STREAMER_VERSION;         // version
-extern const std::string TRACE_STREAMER_PUBLISH_VERSION; // publish datetime
-} // namespace TraceStreamer
+namespace ProtoReader {
+const uint8_t *VarIntDecode(const uint8_t *start, const uint8_t *end, uint64_t *varIntValue)
+{
+    const uint8_t *cursor = start;
+    uint64_t temp = 0;
+    uint32_t shift = 0;
+    do {
+        uint8_t currentByte = *cursor++;
+        temp |= static_cast<uint64_t>(currentByte & varIntValueMask) << shift;
+        if (!(currentByte & byteHighestBitMark)) {
+            *varIntValue = temp;
+            return cursor;
+        }
+        shift += varIntValueBits;
+    } while (cursor < end && shift < varIntValueDecodeMaxOffset);
+    *varIntValue = 0;
+    return start;
+}
+} // namespace ProtoReader
 } // namespace SysTuning
-#endif
