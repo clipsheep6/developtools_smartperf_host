@@ -67,6 +67,7 @@ export class LitSlicerTrack extends HTMLElement {
   private line: HTMLElement | null | undefined;
   private draging: boolean = false;
   private normalWidth: number = 0;
+  private rightWidth: number = 0;
 
   static get observedAttributes() {
     return ['range-left', 'range-right'];
@@ -121,13 +122,22 @@ export class LitSlicerTrack extends HTMLElement {
     if (parentDirection.startsWith('h')) {
       this.line!.className = 'rootH';
       let previousElementSibling = this.previousElementSibling as HTMLElement;
-      let preX: number, preY: number, preWidth: number;
+      let nextElementSibling = this.nextElementSibling as HTMLElement;
+      let preX: number;
+      let preY: number;
+      let preWidth: number;
+      let nextWidth: number;
       this.line!.onmousedown = (e) => {
         this.draging = true;
         preX = e.pageX;
         preWidth = previousElementSibling!.clientWidth;
-        if (this.normalWidth == 0) this.normalWidth = previousElementSibling!.clientWidth;
+        nextWidth = nextElementSibling!.clientWidth;
+        if (this.normalWidth == 0) {
+          this.normalWidth = previousElementSibling!.clientWidth;
+          this.rightWidth = nextElementSibling!.clientWidth;
+        }
         previousElementSibling!.style.width = preWidth + 'px';
+        nextElementSibling!.style.width = nextWidth + 'px';
         document.body.style.userSelect = 'none';
         document.body.style.webkitUserSelect = 'none';
         // @ts-ignore
