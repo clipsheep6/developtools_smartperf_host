@@ -121,6 +121,7 @@ import { TabPaneGpuGraph } from '../sheet/gpu/TabPaneGraph';
 import { TabPaneFreqUsage } from '../sheet/frequsage/TabPaneFreqUsage';
 import { TabPaneHisysEvents } from '../sheet/hisysevent/TabPaneHisysEvents';
 import { TabPaneHiSysEventSummary } from '../sheet/hisysevent/TabPaneHiSysEventSummary';
+import { TabPanePerfAsync } from '../sheet/hiperf/TabPerfAsyncList';
 
 export let tabConfig: any = {
   'current-selection': {
@@ -261,6 +262,11 @@ export let tabConfig: any = {
   'box-perf-sample': {
     title: 'Sample List',
     type: TabPanePerfSample,
+    require: (param: SelectionParam) => param.perfSampleIds.length > 0,
+  },
+  'box-perf-async': {
+    title: 'Async Call Profile',
+    type: TabPanePerfAsync,
     require: (param: SelectionParam) => param.perfSampleIds.length > 0,
   },
 
