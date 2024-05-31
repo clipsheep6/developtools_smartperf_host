@@ -678,9 +678,10 @@ export class InitAnalysis {
 
 interface perfAsyncList {
   tid?: number;
-  thread?: string;
-  time?: number | string;
-  traceid?: number;
+  pid?: number;
+  time?: number;
+  symbol?: string;
+  traceid?: number | string;
   eventCount?: number;
   sampleCount?: number;
   jsFuncName?: string;
@@ -691,9 +692,33 @@ interface perfAsyncList {
   children?: Array<perfAsyncList>;
   eventTypeId?: number;
   symbolName?: string;
-  callerCallStack?: Array<callStackInfo>
-  calleeCallStack?: Array<callStackInfo>,
+  callerCallStack?: Array<callStackInfo>;
+  calleeCallStack?: Array<callStackInfo>;
+  callStackList?: Array<callStackInfo>;
+  parent?: perfAsyncList;
+  isProcess?: boolean;
+  isThread?: boolean;
+  depth?: number;
   isSearch?: boolean;
+  isJsStack?: boolean;
+  lib?: string;
+  isChartSelectParent?: boolean;
+  isChartSelect?: boolean;
+  isDraw?: boolean;
+  drawDur?: number;
+  drawEventCount?: number;
+  drawCount?: number;
+  drawSize?: number;
+  searchEventCount?: number;
+  searchCount?: number;
+  searchDur?: number;
+  searchSize?: number;
+  size?: number;
+  count?: number;
+  dur?: number;
+  tsArray?: Array<number>;
+  isCharged?: boolean;
+  addr: string;
 }
 
 interface callStackInfo {
@@ -767,4 +792,61 @@ export function dealAsyncData(
     }
   }
   return arr;
+}
+
+/**
+   * 递归整理合并相同调用栈与被调用栈
+   * @param data 需要合并给目标数据的数据
+   * @param targetData 目标数据
+   * @param index 递归次数
+   */
+export function recusion(data: perfAsyncList, targetData: perfAsyncList, flag?: boolean) {
+  // 将新元素合并到目标元素时，将目标元素的sampleCount和eventCount进行累加,每次进来都是要合并的值
+  targetData.sampleCount! += data.sampleCount!;
+  targetData.count! += data.count!;
+  targetData.dur! += data.dur!;
+  targetData.eventCount! += data.eventCount!;
+  targetData.tsArray?.push(data.time!);
+  if (data.callerCallchainid !== targetData.callerCallchainid) {
+    targetData.jsFuncName = '';
+    // @ts-ignore
+    targetData.callerCallchainid = '';
+    targetData.traceid = '';
+  }
+  if (data.calleeCallchainid !== targetData.calleeCallchainid) {
+    targetData.asyncFuncName = '';
+    // @ts-ignore
+    targetData.calleeCallchainid = '';
+  }
+  // 需要根据子级是否有值判断如何合并，两者都有子级
+  if (data.children!.length !== 0 && targetData.children!.length !== 0) {
+    // 目标栈可能已经保存了多条数据，需要找到合并栈子级与被合并栈子级相同的分支进行栈合并
+    // 筛选出子项最多的那个
+    const num: number = targetData?.children?.findIndex((item) => 
+      item.symbol === data.children![0].symbol
+    )!;
+    // 去重
+    targetData.tsArray = [...new Set(targetData.tsArray)];
+    // 若存在symbol相同的子级，则进入下一层合并。若不存在，则证明是新的分支，将新的子级填充到目标元素子级中
+    if (num >= 0) {
+      //此处是为了区分简表和详表。简表只有5层，存在首尾相同，中间不同的情况
+      if (flag && targetData.children![num].calleeCallchainid !== data.children![0].calleeCallchainid && data.children![0].children!.length === 0) {
+        targetData.children!.push(data.children![0]);
+        data.children![0].parent = targetData;
+      } else {
+        recusion(data.children![0], targetData.children![num], flag);
+      }
+    } else {
+      targetData.children!.push(data.children![0]);
+      data.children![0].parent = targetData;
+    }
+  } else if (data.children!.length !== 0 && targetData.children!.length === 0) {
+    // 若目标元素不存在子级，当前元素存在子级。证明目标元素中需要添加一个子级更多的元素，并将其填充到队首，方便查找相同分支时拿到的是子级更多的分支。拆分之前合并的数据
+    targetData.children = data.children;
+    data.children![0].parent = targetData;
+  } else {
+    // 递归已经到最下层，则只需要时间数组去重即可
+    targetData.tsArray = [...new Set(targetData.tsArray)];
+    data.parent = targetData.parent;
+  }
 }
