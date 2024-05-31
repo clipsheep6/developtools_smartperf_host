@@ -322,6 +322,8 @@ export class SportRuler extends Graph {
             }
           }
           let x = TraceRow.rangeSelectObject!.startX! + (rangeSelectWidth / section) * i;
+          this.context2D.fillStyle = '#f00';
+          this.context2D.font = '14px sans-serif';
           if (i !== section) {
             this.context2D.moveTo(x, this.frame.y + 22);
             this.context2D.lineTo(x, this.frame.y + 22 + 5);
