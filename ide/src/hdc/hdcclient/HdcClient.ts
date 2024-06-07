@@ -36,6 +36,7 @@ export class HdcClient implements DataListener {
   private transmissionChannel: TransmissionInterface;
   public readDataProcessing: DataProcessing;
   private cmdStreams = new Map();
+  private isSuccess: boolean = false;
 
   constructor(
     transmissionChannel: TransmissionInterface,
@@ -51,14 +52,50 @@ export class HdcClient implements DataListener {
     debug('start Connect Device');
     this.sessionId = Utils.getSessionId();
     log(`sessionId is ${this.sessionId}`);
+    this.isSuccess = false;
+    const result = await this.handShakeConnect(AuthType.AUTH_NONE, '');
+    return result;
+  }
+
+  private async handShakeOption(returnAuth: number, message: string, handBody: DataView): Promise<void> {
+    switch (returnAuth) {
+      case AuthType.AUTH_NONE:
+        break;
+      case AuthType.AUTH_PUBLICKEY:
+        const responsePub = await fetch(`${window.location.origin}/application/hdcPublicKey`);
+        const data = await responsePub.json();
+        const publicKey = data.success && (`smartPerf-Host` + String.fromCharCode(12) + data.data.publicKey);
+        await this.handShakeConnect(AuthType.AUTH_PUBLICKEY, publicKey);
+        break;
+      case AuthType.AUTH_SIGNATURE:
+        const response = await fetch(`${window.location.origin}/application/encryptHdcMsg?message=` + message);
+        const dataBody = await response.json();
+        const encryptHdcMsg = dataBody.success && dataBody.data.signatures;
+        await this.handShakeConnect(AuthType.AUTH_SIGNATURE, encryptHdcMsg);
+        break;
+      case AuthType.AUTH_TOKEN:
+        break;
+      case AuthType.AUTH_OK:
+        if (message.toLocaleLowerCase().indexOf('unauth') === -1 || message.includes('SUCCESS')) {
+          this.handShakeSuccess(handBody);
+          this.isSuccess = true;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async handShakeConnect(authType: number, buf: string): Promise<boolean> {
     // @ts-ignore
     let handShake: SessionHandShake = new SessionHandShake(
       HANDSHAKE_MESSAGE,
-      AuthType.AUTH_NONE,
+      authType,
       this.sessionId,
       // @ts-ignore
       this.usbDevice.serialNumber,
-      ''
+      buf,
+      'Ver: 3.0.0b'
     );
     let hs = Serialize.serializeSessionHandShake(handShake);
     debug('start Connect hs ', hs);
@@ -72,17 +109,14 @@ export class HdcClient implements DataListener {
     if (sendResult) {
       let handShake = await this.readDataProcessing.readUsbHead();
       let handBody = await this.readDataProcessing.readBody(handShake!.dataSize);
-      if (this.sessionId === handShake!.sessionId) {
-        debug('handShake: ', handShake);
-        this.handShakeSuccess(handBody);
-        return true;
-      } else {
-        log(`session is not eq handShake?.sessionId is : ${handShake?.sessionId} now session is ${this.sessionId}`);
-        return false;
-      }
-    } else {
-      return false;
+      let message = new DataMessage(handShake!, handBody);
+      let backMessage = Serialize.parseHandshake(new Uint8Array(message.resArrayBuffer!));
+      const returnBuf: string = backMessage.buf;
+      const returnAuth: number = backMessage.authType;
+      await this.handShakeOption(returnAuth, returnBuf, handBody);
     }
+
+    return this.isSuccess;
   }
 
   private handShakeSuccess(handBody: DataView): void {
@@ -119,12 +153,12 @@ export class HdcClient implements DataListener {
   }
 
   public unbindStream(channel: number): boolean {
-    this.cmdStreams['delete'](channel);
+    this.cmdStreams.delete(channel);
     return true;
   }
 
   public unbindStopStream(channel: number): boolean {
-    this.cmdStreams['delete'](channel);
+    this.cmdStreams.delete(channel);
     return true;
   }
 
