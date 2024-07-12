@@ -1975,18 +1975,6 @@ export class SpApplication extends BaseElement {
     };
   }
   private initSearchEvents(): void {
-    this.litSearch!.addEventListener('focus', (e): void => {
-      Utils.currentSelectTrace = this.litSearch!.getSearchTraceId();
-      this.spSystemTrace!.searchTargetTraceHandler();
-      window.publish(window.SmartEvent.UI.KeyboardEnable, {
-        enable: false,
-      });
-    });
-    this.litSearch!.addEventListener('blur', () => {
-      window.publish(window.SmartEvent.UI.KeyboardEnable, {
-        enable: true,
-      });
-    });
     this.litSearch!.addEventListener('previous-data', (ev) => {
       if(this.progressEL!.loading) {
         return;
@@ -2007,7 +1995,7 @@ export class SpApplication extends BaseElement {
         return;
       }
       this.litSearch!.index = this.spSystemTrace!.showStruct(
-        true,
+        false,
         //@ts-ignore
         ev.detail.value,
         this.litSearch!.list,
@@ -2027,19 +2015,11 @@ export class SpApplication extends BaseElement {
     this.spSystemTrace?.addEventListener('trace-previous-data', (ev) => {
       if(this.progressEL!.loading) {
         return;
-      }
-      if(this.litSearch!.isSearchInputFocus) {
-        this.litSearch!.isSearchInputFocus = !this.litSearch!.isSearchInputFocus;
-        return;
-      }
+      } 
       this.litSearch!.index = this.spSystemTrace!.showStruct(true, this.litSearch!.index, this.litSearch!.list);
     });
     this.spSystemTrace?.addEventListener('trace-next-data', (ev) => {
       if(this.progressEL!.loading) {
-        return;
-      }
-      if(this.litSearch!.isSearchInputFocus) {
-        this.litSearch!.isSearchInputFocus = !this.litSearch!.isSearchInputFocus;
         return;
       }
       this.litSearch!.index = this.spSystemTrace!.showStruct(false, this.litSearch!.index, this.litSearch!.list);
