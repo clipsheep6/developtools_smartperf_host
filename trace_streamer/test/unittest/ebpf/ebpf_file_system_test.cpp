@@ -51,6 +51,7 @@ class EbpfFileSystemTest : public ::testing::Test {
 public:
     void SetUp()
     {
+        TS_LOGI("EbpfFileSystemTest SetUp");
         stream_.InitFilter();
         parser_ = std::make_unique<EbpfDataParser>(stream_.traceDataCache_.get(), stream_.streamFilters_.get());
 
@@ -68,6 +69,7 @@ public:
 
     void InitData(uint16_t nrUserIPs = IPS_NUM_00)
     {
+        TS_LOGI("EbpfFileSystemTest InitData");
         fsFixedHeader_.pid = PID_01;
         fsFixedHeader_.tid = TID_01;
         fsFixedHeader_.startTime = START_TIME_01;
@@ -82,6 +84,7 @@ public:
 
     void ResetData()
     {
+        TS_LOGI("EbpfFileSystemTest ResetData");
         fsFixedHeader_.pid = PID_02;
         fsFixedHeader_.tid = TID_02;
         fsFixedHeader_.startTime = START_TIME_02;
@@ -96,6 +99,7 @@ public:
 
     void UpdateData()
     {
+        TS_LOGI("EbpfFileSystemTest UpdateData");
         dequeBuffer_.insert(dequeBuffer_.end(), reinterpret_cast<uint8_t *>(&ebpfTypeAndLength_),
                             reinterpret_cast<uint8_t *>(&ebpfTypeAndLength_ + 1));
         dequeBuffer_.insert(dequeBuffer_.end(), reinterpret_cast<uint8_t *>(&fsFixedHeader_),
