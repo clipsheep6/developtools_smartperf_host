@@ -20,6 +20,8 @@ describe('SpStatisticsHttpUtil Test', () => {
   let mockXMLHttpRequest;
   let originalFetch;
   let mockFetch;
+  let originalXMLHttp；
+  let mockXMLHttp；
 
   beforeAll(() => {
     // Mock XMLHttpRequest
@@ -54,6 +56,7 @@ describe('SpStatisticsHttpUtil Test', () => {
   afterAll(() => {
     global.XMLHttpRequest = originalXMLHttpRequest;
     global.fetch = originalFetch;
+    global.XMLHttp = originalXMLHttp 
   });
   afterEach(() => {
     mockXMLHttpRequest.mockClear();
