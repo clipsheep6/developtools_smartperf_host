@@ -55,7 +55,6 @@ public:
 
     void InitData(uint32_t length, uint32_t nips, const uint64_t startTime, const uint64_t endTime, uint32_t prio = 0)
     {
-        TS_LOGI("InitData");
         ebpfHeader_.header.clock = EBPF_CLOCK_BOOTTIME;
         ebpfHeader_.header.cmdLineLen = COMMAND_LINE.length();
         strcpy_s(ebpfHeader_.cmdline, EBPF_COMMAND_MAX_SIZE, COMMAND_LINE.c_str());
