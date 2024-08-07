@@ -34,7 +34,6 @@ describe('SpStatisticsHttpUtil Test', () => {
         }
       },
     }));
-    global.XMLHttpRequest = mockXMLHttpRequest;
 
     // Mock fetch
     originalFetch = global.fetch;
