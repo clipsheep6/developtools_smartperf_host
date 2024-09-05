@@ -15,26 +15,45 @@
 
 import { BaseElement, element } from '../../../../../base-ui/BaseElement';
 import { LitTable } from '../../../../../base-ui/table/lit-table';
-import { SelectionData, SliceBoxJumpParam } from '../../../../bean/BoxSelection';
+import { SelectionData, SelectionParam, SliceBoxJumpParam } from '../../../../bean/BoxSelection';
 import { Utils } from '../../base/Utils';
 import { resizeObserver } from '../SheetUtils';
-import { getTabDetails, getCatDetails } from '../../../../database/sql/Func.sql';
+import { getTabDetails, getGhDetails, getSfDetails } from '../../../../database/sql/Func.sql';
 
 @element('box-slice-child')
 export class TabPaneSliceChild extends BaseElement {
   private sliceChildTbl: LitTable | null | undefined;
   private boxChildSource: Array<unknown> = [];
-  private sliceChildParam: SliceBoxJumpParam | null | undefined;
+  private sliceChildParam: { param: SliceBoxJumpParam, selection: SelectionParam } | null | undefined;
 
-  set data(boxChildValue: SliceBoxJumpParam) {
+  set data(boxChildValue: { param: SliceBoxJumpParam, selection: SelectionParam | null | undefined }) {
     //切换Tab页 保持childTab数据不变 除非重新点击跳转
-    if (boxChildValue === this.sliceChildParam || !boxChildValue.isJumpPage) {
+    if (boxChildValue === this.sliceChildParam || !boxChildValue.param.isJumpPage) {
       return;
     }
     // @ts-ignore
     this.sliceChildParam = boxChildValue;
     this.sliceChildTbl!.recycleDataSource = [];
-    this.getDataByDB(boxChildValue);
+    //合并SF异步信息，相同pid和tid的name
+    let sfAsyncFuncMap: Map<string, { name: string[]; pid: number, tid: number | undefined }> = new Map();
+    let filterSfAsyncFuncName = boxChildValue.selection!.funAsync;
+    if (!boxChildValue.param.isSummary!) {
+      filterSfAsyncFuncName = filterSfAsyncFuncName.filter((item) => item.name === boxChildValue.param.name![0]);
+    }
+    filterSfAsyncFuncName.forEach((it: { name: string; pid: number, tid: number | undefined }) => {
+      if (sfAsyncFuncMap.has(`${it.pid}-${it.tid}`)) {
+        let item = sfAsyncFuncMap.get(`${it.pid}-${it.tid}`);
+        item?.name.push(it.name);
+      } else {
+        sfAsyncFuncMap.set(`${it.pid}-${it.tid}`, {
+          name: [it.name],
+          pid: it.pid,
+          tid: it.tid
+        });
+      }
+    });
+    //@ts-ignore
+    this.getDataByDB(boxChildValue, sfAsyncFuncMap, boxChildValue.selection!.funCatAsync);
   }
 
   initElements(): void {
@@ -63,42 +82,78 @@ export class TabPaneSliceChild extends BaseElement {
     resizeObserver(this.parentElement!, this.sliceChildTbl!, 25);
   }
 
-  getDataByDB(val: SliceBoxJumpParam): void {
-    this.sliceChildTbl!.loading = true;
-    //处理异步方法
-    getTabDetails(val.name!, val.processId, val.leftNs, val.rightNs, 'async').then((res1: unknown) => {//@ts-ignore
-      //处理cat方法
-      getCatDetails(val.name!, val.asyncCatNames!, val.processId, val.leftNs, val.rightNs).then((res2) => {//@ts-ignore
-        //处理同步方法
-        getTabDetails(val.name!, val.processId, val.leftNs, val.rightNs, 'sync', val.threadId).then(
-          (res3: unknown) => {//@ts-ignore
-            let result: unknown = (res1 || []).concat(res2 || []).concat(res3 || []);
-            this.sliceChildTbl!.loading = false;//@ts-ignore
-            if (result.length !== null && result.length > 0) {//@ts-ignore
-              result.map((e: unknown) => {//@ts-ignore
-                e.startTime = Utils.getTimeString(e.startNs);
-                // @ts-ignore
-                e.absoluteTime = ((window as unknown).recordStartNS + e.startNs) / 1000000000;//@ts-ignore
-                e.duration = e.duration / 1000000;//@ts-ignore
-                e.state = Utils.getEndState(e.state)!;//@ts-ignore
-                e.processName = `${e.process === undefined || e.process === null ? 'process' : e.process}(${e.processId})`;//@ts-ignore
-                e.threadName = `${e.thread === undefined || e.thread === null ? 'thread' : e.thread}(${e.threadId})`;
-              });//@ts-ignore
-              this.boxChildSource = result;
-              if (this.sliceChildTbl) {
-                // @ts-ignore
-                this.sliceChildTbl.recycleDataSource = result;
-              }
-            } else {
-              this.boxChildSource = [];
-              if (this.sliceChildTbl) {
-                // @ts-ignore
-                this.sliceChildTbl.recycleDataSource = [];
-              }
-            }
-          }
-        );
+  getDataByDB(
+    val: { param: SliceBoxJumpParam, selection: SelectionParam },
+    sfAsyncFuncMap: Map<string, { name: string[]; pid: number, tid: number | undefined }>,
+    ghAsyncFunc: { threadName: string; pid: number }[]): void {
+    //获取点击跳转，SF异步Func数据
+    let result1 = (): Array<unknown> => {
+      let promises: unknown[] = [];
+      sfAsyncFuncMap.forEach(async (item: { name: string[]; pid: number, tid: number | undefined }) => {
+        let res = await getSfDetails(item.name, item.pid, item.tid, val.param.leftNs, val.param.rightNs);
+        if (res !== undefined && res.length > 0) {
+          promises.push(...res);
+        }
       });
+      return promises;
+    };
+
+    //获取点击跳转，GH异步Func数据
+    let result2 = (): unknown => {
+      let promises: unknown[] = [];
+      ghAsyncFunc.forEach(async (item: { pid: number; threadName: string }) => {
+        let res = await getGhDetails(val.param.name!, item.threadName, item.pid, val.param.leftNs, val.param.rightNs);
+        if (res !== undefined && res.length > 0) {
+          promises.push(...res);
+        }
+      });
+      return promises;
+    };
+
+    //获取同步Func数据，同步Func数据
+    let result3 = async (): Promise<unknown> => {
+      let promises: unknown[] = [];
+      let res = await getTabDetails(val.param.name!, val.param.processId, val.param.threadId, val.param.leftNs, val.param.rightNs);
+      if (res !== undefined && res.length > 0) {
+        promises.push(...res);
+      }
+      return promises;
+    };
+    this.sliceChildTbl!.loading = true;
+    Promise.all([result1(), result2(), result3()]).then(res => {
+      this.sliceChildTbl!.loading = false;
+      let result: unknown = (res[0] || []).concat(res[1] || []).concat(res[2] || []);
+      this.sliceChildTbl!.loading = false;
+      // @ts-ignore
+      if (result.length !== null && result.length > 0) {
+        // @ts-ignore
+        result.map((e: unknown) => {
+          // @ts-ignore
+          e.startTime = Utils.getTimeString(e.startNs);
+          // @ts-ignore
+          e.absoluteTime = ((window as unknown).recordStartNS + e.startNs) / 1000000000;
+          // @ts-ignore
+          e.duration = e.duration / 1000000;
+          // @ts-ignore
+          e.state = Utils.getEndState(e.state)!;
+          // @ts-ignore
+          e.processName = `${e.process === undefined || e.process === null ? 'process' : e.process}[${e.processId}]`;
+          // @ts-ignore
+          e.threadName = `${e.thread === undefined || e.thread === null ? 'thread' : e.thread}[${e.threadId}]`;
+        });
+        // @ts-ignore
+        this.boxChildSource = result;
+        if (this.sliceChildTbl) {
+          // @ts-ignore
+          this.sliceChildTbl.recycleDataSource = result;
+        }
+      } else {
+        this.boxChildSource = [];
+        if (this.sliceChildTbl) {
+          // @ts-ignore
+          this.sliceChildTbl.recycleDataSource = [];
+        };
+      }
     });
   }
 
@@ -152,7 +207,7 @@ export class TabPaneSliceChild extends BaseElement {
       };
     }
     //@ts-ignore
-    if (detail.key === 'startTime' || detail.key === 'processName' || detail.key === 'threadName' || //@ts-ignore
+    if (detail.key === 'startTime' || detail.key === 'processName' || detail.key === 'threadName' ||//@ts-ignore
       detail.key === 'name') {
       // @ts-ignore
       this.boxChildSource.sort(compare(detail.key, detail.sort, 'string'));// @ts-ignore
