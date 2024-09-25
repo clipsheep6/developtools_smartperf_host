@@ -66,6 +66,7 @@ import { threadPool, threadPool2 } from '../../../database/SqlLite';
 import { threadNearData } from '../../../database/data-trafic/SliceSender';
 import { HangStruct } from '../../../database/ui-worker/ProcedureWorkerHang';
 import { BaseStruct } from '../../../bean/BaseStruct';
+import {XpowerStruct} from '../../../database/ui-worker/ProcedureWorkerXpower'; 
 
 const INPUT_WORD =
   'This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running.';
@@ -807,6 +808,28 @@ export class TabPaneCurrentSelection extends BaseElement {
       value: data.context,
     });
     this.currentSelectionTbl!.dataSource = list;
+  }
+
+  async setXpowerData(data: XpowerStruct): Promise<void> {  
+    if (SpApplication.traceType.indexOf('SQLite') === -1) {
+      await this.setRealTime();
+    }
+    this.setTableHeight('auto');
+    this.tabCurrentSelectionInit('Counter Details');
+    let list: unknown[] = [];
+    list.push({
+      name: 'StartTime(Relative)',
+      value: getTimeString(data.startNS || 0),
+    });
+    this.createStartTimeNode(list, data.startNS || 0, CLOCK_TRANSF_BTN_ID, CLOCK_STARTTIME_ABSALUTED_ID);
+    list.push({
+      name: 'Value',
+      value: String(data.value).indexOf('.') > -1 ? data.value || 0 : ColorUtils.formatNumberComma(data.value || 0),
+    });
+    list.push({ name: 'Duration', value: getTimeString(data.dur || 0) });
+    this.currentSelectionTbl!.dataSource = list;
+    let startTimeAbsolute = (data.startNS || 0) + Utils.getInstance().getRecordStartNS();
+    this.addClickToTransfBtn(startTimeAbsolute, CLOCK_TRANSF_BTN_ID, CLOCK_STARTTIME_ABSALUTED_ID);
   }
 
   async setHangData(data: HangStruct, sp: SpSystemTrace, scrollCallback: Function): Promise<void> {
