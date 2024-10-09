@@ -256,7 +256,10 @@ export class SpAiAnalysisPage extends BaseElement {
             token: this.token,
             question: this.question,
             collection: 'smart_perf_test',
+<<<<<<< HEAD
             scope:'smartperf'
+=======
+>>>>>>> b78932f40115efeeb43e297a6fcaf4af0fed3ac2
         };
         let answer = await SpStatisticsHttpUtil.askAi(requestBody);
         if (answer !== '') {
@@ -367,7 +370,11 @@ export class SpAiAnalysisPage extends BaseElement {
     async getSuggestion(description: string, itemDiv: HTMLDivElement | null | undefined, suggestonDiv: HTMLDivElement | null | undefined) {
         let suggestion = await SpStatisticsHttpUtil.askAi({
             token: this.token,
+<<<<<<< HEAD
             question: description + ',请问该怎么优化？',
+=======
+            question: description + '请问该怎么优化？',
+>>>>>>> b78932f40115efeeb43e297a6fcaf4af0fed3ac2
             collection: ''
         });
         suggestonDiv!.innerHTML = `<span class="item-name">优化建议：</span>${suggestion}`;
