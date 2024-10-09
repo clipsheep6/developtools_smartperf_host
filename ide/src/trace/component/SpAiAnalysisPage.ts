@@ -256,6 +256,7 @@ export class SpAiAnalysisPage extends BaseElement {
             token: this.token,
             question: this.question,
             collection: 'smart_perf_test',
+            scope:'smartperf'
         };
         let answer = await SpStatisticsHttpUtil.askAi(requestBody);
         if (answer !== '') {
@@ -366,7 +367,7 @@ export class SpAiAnalysisPage extends BaseElement {
     async getSuggestion(description: string, itemDiv: HTMLDivElement | null | undefined, suggestonDiv: HTMLDivElement | null | undefined) {
         let suggestion = await SpStatisticsHttpUtil.askAi({
             token: this.token,
-            question: description + '请问该怎么优化？',
+            question: description + ',请问该怎么优化？',
             collection: ''
         });
         suggestonDiv!.innerHTML = `<span class="item-name">优化建议：</span>${suggestion}`;
