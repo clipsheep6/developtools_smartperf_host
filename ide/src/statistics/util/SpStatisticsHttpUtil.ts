@@ -14,7 +14,7 @@
  */
 
 import { warn } from '../../log/Log';
-import { BurialPointRequestBody, pluginUsage } from './SpStatisticsHttpBean';
+import { BurialPointRequestBody } from './SpStatisticsHttpBean';
 
 export class SpStatisticsHttpUtil {
   static requestServerInfo: string = '';
@@ -47,7 +47,8 @@ export class SpStatisticsHttpUtil {
       };
       req.open(
         'GET',
-        `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
+        `${window.location.protocol}//${window.location.host.split(':')[0]}:${
+          window.location.port
         }/application/serverInfo`,
         true
       );
@@ -121,7 +122,7 @@ export class SpStatisticsHttpUtil {
           }
         });
       })
-      .catch((err) => { });
+      .catch((err) => {});
     setTimeout(() => {
       fetch(`https://${SpStatisticsHttpUtil.requestServerInfo}/${requestUrl}`, {
         method: 'post',
@@ -133,8 +134,8 @@ export class SpStatisticsHttpUtil {
           visitId: visitId,
         }),
       })
-        .catch((err) => { })
-        .then((resp) => { });
+        .catch((err) => {})
+        .then((resp) => {});
     }, 1800000);
   }
 
@@ -163,21 +164,7 @@ export class SpStatisticsHttpUtil {
       .catch((err) => {
         this.handleRequestException();
       })
-      .then((resp) => { });
-  }
-
-  static recordPluginUsage(requsetBody: pluginUsage) {
-    fetch(`https://${SpStatisticsHttpUtil.requestServerInfo}/recordPluginUsage`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requsetBody),
-    }).then(res => {
-
-    }).catch(err => {
-      this.handleRequestException();
-    });
+      .then((resp) => {});
   }
 
   static getCorrectRequestTime(): number {
@@ -186,38 +173,4 @@ export class SpStatisticsHttpUtil {
     }
     return Date.now() + SpStatisticsHttpUtil.timeDiff;
   }
-
-  // ai对话接口--获取token
-  static async getAItoken() {
-    let token = ''
-    await window.fetch(`https://smartperf.rnd.huawei.com/takeToken`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(async (res) => {
-      let resp = await res.text();
-      let resj = await JSON.parse(resp);
-      token = resj.token;
-    }).catch(() => { });
-    return token;
-  }
-
-  // ai对话接口--问答
-  // @ts-ignore
-  static async askAi(requestBody) {
-    let answer = '';
-    let res = await window.fetch(`https://smartperf.rnd.huawei.com/ask`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    })
-    let resp = await res.text();
-    let resj = await JSON.parse(resp);
-    answer = resj.chatbot_reply;
-    return answer
-  }
 }
-

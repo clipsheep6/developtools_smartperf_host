@@ -23,9 +23,3 @@ export interface BurialPointRequestBody {
 export interface EventData {
   plugin?: Array<string>;
 }
-
-export interface pluginUsage {
-  eventData: {
-    plugin: Array<string>;
-  }
-}

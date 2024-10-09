@@ -21,7 +21,6 @@ import './Extension';
 import { SpSystemTrace } from '../../SpSystemTrace';
 import { SpLtpoChart } from '../../chart/SpLTPO';
 import { isEmpty, isNotEmpty } from './Extension';
-import { SpAiAnalysisPage } from '../../SpAiAnalysisPage';
 
 export class RangeSelect {
   private rowsEL: HTMLDivElement | undefined | null;
@@ -73,7 +72,7 @@ export class RangeSelect {
     this.rangeTraceRow = [];
     this.isMouseDown = true;
     TraceRow.rangeSelectObject = undefined;
-  }
+  } 
 
   mouseUp(mouseEventUp?: MouseEvent): void {
     if (mouseEventUp) {
@@ -109,8 +108,8 @@ export class RangeSelect {
         }
       } else if (
         row.getAttribute('row-type') === 'process' &&
-        row.getAttribute('name')?.startsWith('render_service') &&
-        Array.isArray(row.childrenList)
+        row.getAttribute('name')?.startsWith('render_service') &&  
+        Array.isArray(row.childrenList)  
       ) {
         this.checkRowsName(row.childrenList);
       }
@@ -286,7 +285,6 @@ export class RangeSelect {
           rangeSelect.endNS = RangeSelect.SetNS(it, endX);
         }
         TraceRow.rangeSelectObject = rangeSelect;
-        SpAiAnalysisPage.selectChangeListener(rangeSelect.startNS!, rangeSelect.endNS!);
         it.rangeSelect = true;
         result = true;
       } else {
