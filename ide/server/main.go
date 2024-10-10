@@ -303,6 +303,11 @@ func signatureHdcMsg(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseMsgPublishFile() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("parseMsgPublishFile happen panic, content is %+v\n", r)
+		}
+	}()
 	msgPublishData.Mux.Lock()
 	defer msgPublishData.Mux.Unlock()
 	exist, err := PathExists(msgPublishData.FilePath)
