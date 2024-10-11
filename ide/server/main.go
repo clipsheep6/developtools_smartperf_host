@@ -303,8 +303,13 @@ func signatureHdcMsg(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseMsgPublishFile() {
-	msgPublishData.Mux.RLock()
-	defer msgPublishData.Mux.RUnlock()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("parseMsgPublishFile happen panic, content is %+v\n", r)
+		}
+	}()
+	msgPublishData.Mux.Lock()
+	defer msgPublishData.Mux.Unlock()
 	exist, err := PathExists(msgPublishData.FilePath)
 	if err != nil || !exist {
 		return
@@ -320,9 +325,9 @@ func parseMsgPublishFile() {
 func getMsgPublish(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "text/json")
-	msgPublishData.Mux.Lock()
+	msgPublishData.Mux.RLock()
 	data := msgPublishData.Msg
-	msgPublishData.Mux.Unlock()
+	msgPublishData.Mux.RUnlock()
 	if len(data) == 0 {
 		resp(&w)(false, -1, "msg failed", nil)
 	} else {
@@ -344,7 +349,7 @@ type MsgPublishData struct {
 }
 
 func loopUpdateMsgPublishData() {
-	loopTime := 30 * time.Second
+	loopTime := 5 * time.Minute
 	timer := time.NewTimer(loopTime)
 	for {
 		select {
@@ -366,9 +371,9 @@ func readReqServerConfig() {
 		return
 	}
 	serveInfo = sc.ServeInfo
-	msgPublishData.Mux.RLock()
+	msgPublishData.Mux.Lock()
 	msgPublishData.FilePath = sc.MsgPublishFile
-	msgPublishData.Mux.RUnlock()
+	msgPublishData.Mux.Unlock()
 	go loopUpdateMsgPublishData()
 }
 
