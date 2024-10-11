@@ -53,10 +53,7 @@ import { Utils } from './trace/base/Utils';
 import { BaseStruct } from '../bean/BaseStruct';
 import { GpuCounterStruct, gpuCounterStructOnClick } from '../database/ui-worker/ProcedureWorkerGpuCounter';
 import { HangStructOnClick } from '../database/ui-worker/ProcedureWorkerHang';
-<<<<<<< HEAD
 import { XpowerStruct, XpowerStructOnClick } from '../database/ui-worker/ProcedureWorkerXpower'; 
-=======
->>>>>>> b78932f40115efeeb43e297a6fcaf4af0fed3ac2
 import { SpAiAnalysisPage } from './SpAiAnalysisPage';
 
 function timeoutJudge(sp: SpSystemTrace): number {
