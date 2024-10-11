@@ -7,6 +7,7 @@ import { WebSocketManager } from '../../webSocket/WebSocketManager';
 import { TypeConstants } from '../../webSocket/Constants';
 import { TraceRow } from './trace/base/TraceRow';
 import { SpSystemTrace } from './SpSystemTrace';
+import { Type } from './setting/bean/ProfilerServiceTypes';
 
 @element('sp-ai-analysis')
 export class SpAiAnalysisPage extends BaseElement {
@@ -29,11 +30,12 @@ export class SpAiAnalysisPage extends BaseElement {
     private endTimeEl: HTMLSpanElement | null | undefined;
     private question: string = '';
     private token: string = '';
+    // 是否点击了新建聊天
     private isNewChat: boolean = false;
     isCtrlDown: boolean = false;
-    isRepeatedly: boolean = false;
+    static isRepeatedly: boolean = false;
+    // 拼接下载内容
     private reportContent: string = '';
-    private selectionStartNs: number = 0;
     private md: unknown;
     // 监听选中时间范围变化
     static selectChangeListener(startTime: number, endTime: number) {
@@ -73,10 +75,12 @@ export class SpAiAnalysisPage extends BaseElement {
         this.startTimeEl!.innerHTML = getTimeString(TraceRow.range?.startNS!);
         this.endTimeEl = this.shadowRoot?.querySelector('.endTime');
         this.endTimeEl!.innerHTML = getTimeString(TraceRow.range?.endNS!);
+
         // 发送消息图标点击事件
         this.sendImg?.addEventListener('click', () => {
             this.sendMessage();
         })
+
         // 新建对话按钮点击事件
         this.newChatEl?.addEventListener('click', () => {
             this.isNewChat = true;
@@ -84,6 +88,7 @@ export class SpAiAnalysisPage extends BaseElement {
             this.askQuestion!.innerHTML = '';
             this.createAiChatBox('有什么可以帮助您的吗？');
         })
+
         // 输入框发送消息
         this.inputEl?.addEventListener('keydown', (e) => {
             if (e.key.toLocaleLowerCase() === 'control' || e.keyCode === 17) {
@@ -116,12 +121,14 @@ export class SpAiAnalysisPage extends BaseElement {
             caches.delete(`${window.localStorage.getItem('fileName')}.db`);
             sessionStorage.removeItem('fileName');
         }
+
         // 监听ctrl抬起
         this.inputEl?.addEventListener('keyup', (e) => {
             if (e.key.toLocaleLowerCase() === 'control' || e.keyCode === 17) {
                 this.isCtrlDown = false;
             };
         });
+
         // 下载诊断报告按钮监听
         this.downloadBtn?.addEventListener('click', (e) => {
             let a = document.createElement('a');
@@ -129,6 +136,7 @@ export class SpAiAnalysisPage extends BaseElement {
             a.download = window.sessionStorage.getItem('fileName')! + '诊断报告';
             a.click();
         })
+
         // 诊断按钮
         this.draftBtn?.addEventListener('click', async (e) => {
             // 取消已经存在的诊断
@@ -142,47 +150,21 @@ export class SpAiAnalysisPage extends BaseElement {
                 return;
             }
             // 同一个trace非第一次诊断，无需再发db文件过去
-            if (this.isRepeatedly) {
+            if (SpAiAnalysisPage.isRepeatedly) {
                 this.initiateDiagnosis();
             } else {
-                // 首次诊断，注册
+                // 首次诊断
                 WebSocketManager.getInstance()!.registerMessageListener(TypeConstants.DIAGNOSIS_TYPE, this.webSocketCallBack);
-                // 单个trace第一次诊断，需要发db
                 // 看缓存中有没有db，没有的话拿一个进行诊断并存缓存
                 let fileName = sessionStorage.getItem('fileName');
                 caches.match(`${fileName}.db`).then(async (res) => {
-                    // 如果缓存中有db，直接用
-                    if (res) {
-                        console.log(res);
-                        WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, 1, new TextEncoder().encode(await res.text()));
-                    } else {
-                        // 获取DB文件，调诊断接口，存缓存
-                        threadPool.submit(
-                            'download-db',
-                            '',
-                            {},
-                            (reqBufferDB: Uint8Array) => {
-                                // 将db文件发送给websocket
-                                WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, 1, reqBufferDB);
-                                // 存入缓存
-                                caches.open(`${fileName}.db`).then((cache) => {
-                                    let headers = new Headers();
-                                    headers.append('Content-Type', 'application/octet-stream');
-                                    headers.append('Content-Transfer-Encoding', 'binary')
-                                    return cache
-                                        .put(
-                                            `${fileName}.db`,
-                                            new Response(reqBufferDB, {
-                                                status: 200,
-                                            })
-                                        );
-                                });
-                            },
-                            'download-db'
-                        );
+                    if (!res) {
+                        this.cacheDb(fileName);
                     }
-                })
-            }
+                    WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, TypeConstants.SENDDB_CMD, new TextEncoder().encode(await res!.text()));
+                });
+            };
+            // 隐藏nodata
             this.noDataEl!.style.display = 'none';
             // 加载中的loading模块
             let loadingDiv = document.createElement('div');
@@ -195,7 +177,7 @@ export class SpAiAnalysisPage extends BaseElement {
             this.draftList?.appendChild(loadingItem);
         })
 
-        // 侧边栏诊断点击事件
+        // 侧边栏诊断点击事件 *************优化，考虑多个按钮
         this.reportBar!.addEventListener('click', () => {
             this.reportImg!.src = './../application/img/report_active.png';
             this.chatImg!.src = './../application/img/talk.png';
@@ -226,14 +208,18 @@ export class SpAiAnalysisPage extends BaseElement {
 
     }
 
+    // 点击诊断之后，重置
+    reset() {
+        this.reportContent = '';
+        this.downloadBtn!.style.display = 'none';
+    }
+
     // 发送消息
     async sendMessage() {
-        // @ts-ignore
         if (this.inputEl!.value != '') {
             if (this.isNewChat) {
                 this.isNewChat = false;
             }
-            // @ts-ignore
             this.question = JSON.parse(JSON.stringify(this.inputEl!.value));
             this.createChatBox();
             this.createAiChatBox('AI智能分析中...');
@@ -256,7 +242,7 @@ export class SpAiAnalysisPage extends BaseElement {
             token: this.token,
             question: this.question,
             collection: 'smart_perf_test',
-            scope:'smartperf'
+            scope: 'smartperf'
         };
         let answer = await SpStatisticsHttpUtil.askAi(requestBody);
         if (answer !== '') {
@@ -267,7 +253,7 @@ export class SpAiAnalysisPage extends BaseElement {
                 this.chatWindow!.scrollTop = this.chatWindow!.scrollHeight;
             }
         } else {
-            this.aiAnswerBox!.firstElementChild!.innerHTML = '请求超时！';
+            this.aiAnswerBox!.firstElementChild!.innerHTML = '服务器异常';
             this.chatWindow!.scrollTop = this.chatWindow!.scrollHeight;
         }
     }
@@ -299,7 +285,7 @@ export class SpAiAnalysisPage extends BaseElement {
         this.askQuestion?.appendChild(newMessage);
     }
 
-    // 创建ai聊天对话气泡
+    // 创建ai助手聊天对话气泡
     createAiChatBox(aiText: string) {
         // 生成ai头像
         let headerDiv = document.createElement('div');
@@ -353,9 +339,7 @@ export class SpAiAnalysisPage extends BaseElement {
             let suggestonDiv = document.createElement('div');
             suggestonDiv.className = 'item two';
             let suggestionText = '';
-            if (this.token === '') {
-                this.token = await SpStatisticsHttpUtil.getAItoken();
-            }
+            this.token = await SpStatisticsHttpUtil.getAItoken();
             suggestionText = await this.getSuggestion(dataList[i].description, itemDiv, suggestonDiv);
             this.reportContent += `问题${i + 1}:${dataList[i].type}\n\n时间：${timeList.join(',')}\n\n问题原因：${dataList[i].description}\n\n优化建议：${suggestionText}\n\n\n`;
         }
@@ -379,6 +363,30 @@ export class SpAiAnalysisPage extends BaseElement {
         return suggestion;
     }
 
+    cacheDb(fileName: string | null) {
+        threadPool.submit(
+            'download-db',
+            '',
+            {},
+            (reqBufferDB: Uint8Array) => {
+                // 存入缓存
+                caches.open(`${fileName}.db`).then((cache) => {
+                    let headers = new Headers();
+                    headers.append('Content-Type', 'application/octet-stream');
+                    headers.append('Content-Transfer-Encoding', 'binary')
+                    return cache
+                        .put(
+                            `${fileName}.db`,
+                            new Response(reqBufferDB, {
+                                status: 200,
+                            })
+                        );
+                });
+            },
+            'download-db'
+        );
+    }
+
     // websocket通信回调注册
     webSocketCallBack = (cmd: number, result: Uint8Array) => {
         const decoder = new TextDecoder();
@@ -386,11 +394,12 @@ export class SpAiAnalysisPage extends BaseElement {
         let jsonRes = JSON.parse(jsonString);
         // db文件写入成功
         if (cmd === 2) {
-            this.isRepeatedly = true;
+            SpAiAnalysisPage.isRepeatedly = true;
             this.initiateDiagnosis();
         }
         // 诊断结果，resultCode===0:失败；resultCode===1:成功
         if (cmd === 4) {
+            //     需要处理
             if (jsonRes.resultCode !== 0) {
                 console.log('错误');
             }
@@ -407,7 +416,7 @@ export class SpAiAnalysisPage extends BaseElement {
         }
         let requestBodyString = JSON.stringify(requestBodyObj);
         let requestBody = new TextEncoder().encode(requestBodyString);
-        WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, 3, requestBody);
+        WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, TypeConstants.DIAGNOSIS_CMD, requestBody);
     }
 
     initHtml(): string {

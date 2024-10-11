@@ -325,6 +325,22 @@ export const applicationHtml: string = `
         .page-number-list {
             display: flex;
         }
+
+        #sp-ai-analysis {
+            top:0px;
+            right:0px;
+            position:absolute;
+            z-index:9999;
+            min-width:430px;
+            width:430px;
+            height:740px;
+            box-shadow:3px 0px 14px #000;
+            border-radius:8px;
+            background-color:#fff;
+            padding:10px 10px 10px 5px;
+            user-select:none;
+            box-sizing:border-box;
+        }
         </style>
         <div class="root" style="position: relative;">
             <sp-bubble-ai style="visibility: visible; top:50%;right:2px;position: absolute;z-index: 1000" id="sp-bubbles"></sp-bubble-ai>
@@ -378,7 +394,7 @@ export const applicationHtml: string = `
             <div id="app-content" class="content">
                 <sp-welcome style="visibility:visible;top:0px;left:0px;position:absolute;z-index: 100" id="sp-welcome">
                 </sp-welcome>
-                <sp-ai-analysis style="visibility:hidden;top:0px;right:0px;position:absolute;z-index:9999;width:430px;height:740px;box-shadow:3px 0px 14px #000;border-radius:8px;background-color:#fff;padding:10px 10px 10px 5px;" id="sp-ai-analysis">
+                <sp-ai-analysis id="sp-ai-analysis">
                 </sp-ai-analysis>
                 <sp-system-trace style="visibility:hidden;z-index: 101;" id="sp-system-trace">
                 </sp-system-trace>

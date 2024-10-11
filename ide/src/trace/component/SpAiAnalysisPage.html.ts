@@ -103,7 +103,7 @@ export const SpAiAnalysisPageHtml = `
     }
 
     .usersay {
-        max-width: 240px;
+        max-width: 70%;
         background: #4baf50;
         border-radius: 4px;
         float: right;
@@ -133,7 +133,7 @@ export const SpAiAnalysisPageHtml = `
     }
 
     .systemSay {
-        max-width: 240px;
+        max-width: 70%;
         border-radius: 4px;
         background-color: #fe7300;
         float: left;
@@ -162,10 +162,10 @@ export const SpAiAnalysisPageHtml = `
     }
 
     .chatBox {
-        width: 420px;
         height: 100%;
         padding-left: 5px;
         padding-bottom: 10px;
+        padding-right: 40px;
     }
 
     .chatTitle {
@@ -175,7 +175,6 @@ export const SpAiAnalysisPageHtml = `
     }
 
     .chatWindow {
-        width: 90%;
         height: 92%;
         padding: 0 10px 20px;
         border-radius: 10px;
@@ -187,7 +186,6 @@ export const SpAiAnalysisPageHtml = `
         overflow-y: auto;
         overflow-x:hidden;
         height: 77%;
-        width: 95%;
         padding-right: 10px;
     }
 
@@ -218,7 +216,7 @@ export const SpAiAnalysisPageHtml = `
     .right-box {
         position: absolute;
         display: flex;
-        right: 7%;
+        right: 0;
         top: 10px;
     }
 
@@ -248,7 +246,7 @@ export const SpAiAnalysisPageHtml = `
 
     .inputText {
         height: 100%;
-        width: 94%;
+        width: 100%;
         resize: none;
         padding: 10px;
         padding-right: 5px;
@@ -262,15 +260,14 @@ export const SpAiAnalysisPageHtml = `
     }
 
     .chatInputBox {
-        padding-right: 40px;
-        width: 100%;
+        padding-right: 10px;
         height: 20%;
     }
 
     .sendImg {
         position: absolute;
         bottom: 10px;
-        right: 10%;
+        right: 30px;
         cursor: pointer;
         width: 20px;
         height: 20px;
@@ -286,11 +283,12 @@ export const SpAiAnalysisPageHtml = `
         width: 50px;
         top: 0;
         right: 0;
-        height: 710px;
+        height: 100%;
         padding-top: 50px;
         font-size: 12px;
         background-color: #fcfcfc;
         color: #000;
+        box-sizing:border-box;
     }
 
     .chatBarTitle {
@@ -345,10 +343,6 @@ export const SpAiAnalysisPageHtml = `
         margin-right: 10px;
         background-image: url('./../application/img/logo1.png');
         background-size: cover;
-    }
-
-    .message {
-        clear: both;
     }
 
     .headerImg {
