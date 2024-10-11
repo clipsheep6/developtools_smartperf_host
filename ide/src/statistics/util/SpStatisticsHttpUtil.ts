@@ -162,7 +162,7 @@ export class SpStatisticsHttpUtil {
     })
       .catch((err) => {
       })
-      .then((resp) => { });
+      .then((resp) => {  });
   }
 
   static recordPluginUsage(requsetBody: pluginUsage) {
@@ -176,6 +176,10 @@ export class SpStatisticsHttpUtil {
     }).catch(err => {
       this.handleRequestException();
     });
+  }
+
+  static getNotice() {
+    return fetch(`${document.URL}messagePublish`);
   }
 
   static getCorrectRequestTime(): number {

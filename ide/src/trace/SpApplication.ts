@@ -85,6 +85,7 @@ import './component/SpAiAnalysisPage';
 import { shadowRootInput } from './component/trace/base/shadowRootInput';
 import { WebSocketManager } from '../webSocket/WebSocketManager';
 import { SpAiAnalysisPage } from './component/SpAiAnalysisPage';
+import './component/SpAdvertisement'
 import { toUSVString } from 'util';
 
 @element('sp-application')
