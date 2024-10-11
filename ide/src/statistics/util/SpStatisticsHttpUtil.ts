@@ -14,7 +14,7 @@
  */
 
 import { warn } from '../../log/Log';
-import { BurialPointRequestBody } from './SpStatisticsHttpBean';
+import { BurialPointRequestBody, pluginUsage } from './SpStatisticsHttpBean';
 
 export class SpStatisticsHttpUtil {
   static requestServerInfo: string = '';
@@ -163,7 +163,21 @@ export class SpStatisticsHttpUtil {
       .catch((err) => {
         this.handleRequestException();
       })
-      .then((resp) => { });
+      .then((resp) => {  });
+  }
+
+  static recordPluginUsage(requsetBody: pluginUsage) {
+    fetch(`https://${SpStatisticsHttpUtil.requestServerInfo}/recordPluginUsage`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requsetBody),
+    }).then(res => {
+
+    }).catch(err => {
+      this.handleRequestException();
+    });
   }
 
   static getNotice() {
@@ -176,4 +190,38 @@ export class SpStatisticsHttpUtil {
     }
     return Date.now() + SpStatisticsHttpUtil.timeDiff;
   }
+
+  // ai对话接口--获取token
+  static async getAItoken() {
+    let token = ''
+    await window.fetch(`https://smartperf.rnd.huawei.com/takeToken`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(async (res) => {
+      let resp = await res.text();
+      let resj = await JSON.parse(resp);
+      token = resj.token;
+    }).catch(() => { });
+    return token;
+  }
+
+  // ai对话接口--问答
+  // @ts-ignore
+  static async askAi(requestBody) {
+    let answer = '';
+    let res = await window.fetch(`https://smartperf.rnd.huawei.com/ask`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    })
+    let resp = await res.text();
+    let resj = await JSON.parse(resp);
+    answer = resj.chatbot_reply;
+    return answer
+  }
 }
+

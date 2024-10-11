@@ -136,6 +136,7 @@ import { SpProcessChart } from './chart/SpProcessChart';
 import { LitSearch } from './trace/search/Search';
 import { LitTable } from '../../base-ui/table/lit-table';
 import { HangStruct } from '../database/ui-worker/ProcedureWorkerHang';
+import { SpAiAnalysisPage } from './SpAiAnalysisPage';
 
 function dpr(): number {
   return window.devicePixelRatio || 1;
@@ -226,12 +227,12 @@ export class SpSystemTrace extends BaseElement {
   static currentStartTime: number = 0;
   static retargetIndex: number = 0;
   prevScrollY: number = 0;
-  focusTarget: string = '';
   wakeupListTbl: LitTable | undefined | null;
   _checkclick: boolean = false; //判断点击getWakeupList按钮
   docomList: Array<number> = [];
   repaintList: Array<number> = [];
   presentList: Array<number> = [];
+  static isAiAsk: boolean = false;
 
   set snapshotFile(data: FileInfo) {
     this.snapshotFiles = data;
@@ -559,6 +560,9 @@ export class SpSystemTrace extends BaseElement {
         )
       );
     }
+    if (!TraceRow.rangeSelectObject && !this.isSlectStruct()) {
+      SpAiAnalysisPage.selectChangeListener(TraceRow.range?.startNS!, TraceRow.range?.endNS!)
+    }
     //在rowsEL显示范围内的 trace-row组件将收到时间区间变化通知
     this.linkNodes.forEach((it) => {
       it[0].x = ns2xByTimeShaft(it[0].ns, this.timerShaftEL!);
@@ -568,6 +572,37 @@ export class SpSystemTrace extends BaseElement {
     this.visibleRows.forEach((it) => (it.needRefresh = true));
     this.refreshCanvas(false, 'rangeChange');
   };
+  isSlectStruct() {
+    return CpuStruct.selectCpuStruct ||
+      CpuStruct.wakeupBean ||
+      CpuFreqStruct.selectCpuFreqStruct ||
+      ThreadStruct.selectThreadStruct ||
+      ThreadStruct.isClickPrio ||
+      FuncStruct.selectFuncStruct ||
+      SpHiPerf.selectCpuStruct ||
+      CpuStateStruct.selectStateStruct ||
+      CpuFreqLimitsStruct.selectCpuFreqLimitsStruct ||
+      ClockStruct.selectClockStruct ||
+      IrqStruct.selectIrqStruct ||
+      JankStruct.selectJankStruct ||
+      HeapStruct.selectHeapStruct ||
+      AppStartupStruct.selectStartupStruct ||
+      SoStruct.selectSoStruct ||
+      HeapSnapshotStruct.selectSnapshotStruct ||
+      FrameSpacingStruct.selectFrameSpacingStruct ||
+      FrameAnimationStruct.selectFrameAnimationStruct ||
+      FrameDynamicStruct.selectFrameDynamicStruct ||
+      JsCpuProfilerStruct.selectJsCpuProfilerStruct ||
+      SnapshotStruct.selectSnapshotStruct ||
+      HiPerfCallChartStruct.selectStruct ||
+      AllAppStartupStruct.selectStartupStruct ||
+      LtpoStruct.selectLtpoStruct ||
+      HitchTimeStruct.selectHitchTimeStruct ||
+      SampleStruct.selectSampleStruct ||
+      PerfToolStruct.selectPerfToolStruct ||
+      GpuCounterStruct.selectGpuCounterStruct ||
+      DmaFenceStruct.selectDmaFenceStruct;
+  }
   top: number = 0;
   handler: number = -1;
   rowsElOnScroll = (e: unknown): void => {
@@ -1000,14 +1035,12 @@ export class SpSystemTrace extends BaseElement {
           })
         );
       } else {
-        if (this.focusTarget === '') {
-          this.dispatchEvent(
-            new CustomEvent('trace-next-data', {
-              detail: { down: true },
-              composed: false,
-            })
-          );
-        }
+        this.dispatchEvent(
+          new CustomEvent('trace-next-data', {
+            detail: { down: true },
+            composed: false,
+          })
+        );
       }
     }
   };
@@ -1176,7 +1209,9 @@ export class SpSystemTrace extends BaseElement {
       ...this.favoriteChartListEL!.getAllSelectCollectRows(),
     ];
     this.isSelectClick = true;
-    this.rangeSelect.rangeTraceRow = rows; // @ts-ignore
+    this.rangeSelect.rangeTraceRow = rows;
+    this.rangeSelect.checkRowsName(this.rangeSelect.rangeTraceRow);
+    // @ts-ignore
     let changeTraceRows: Array<TraceRow<unknown>> = [];
     if (this.rangeTraceRow!.length < rows.length) {
       // @ts-ignore
@@ -1298,6 +1333,7 @@ export class SpSystemTrace extends BaseElement {
     });
     this.rangeSelect.rangeTraceRow = [];
     TraceRow.rangeSelectObject = undefined;
+    SpAiAnalysisPage.selectChangeListener(TraceRow.range?.startNS!, TraceRow.range?.endNS!);
     this.selectStructNull();
     this.wakeupListNull();
     this.observerScrollHeightEnable = false;
