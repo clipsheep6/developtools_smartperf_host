@@ -80,6 +80,7 @@ import { SpThirdParty } from './component/SpThirdParty';
 import './component/SpThirdParty';
 import { cancelCurrentTraceRowHighlight } from './component/SpSystemTrace.init';
 import './component/SpBubblesAI';
+import './component/SpAdvertisement'
 
 @element('sp-application')
 export class SpApplication extends BaseElement {

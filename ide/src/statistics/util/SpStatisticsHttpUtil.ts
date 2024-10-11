@@ -47,8 +47,7 @@ export class SpStatisticsHttpUtil {
       };
       req.open(
         'GET',
-        `${window.location.protocol}//${window.location.host.split(':')[0]}:${
-          window.location.port
+        `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
         }/application/serverInfo`,
         true
       );
@@ -122,7 +121,7 @@ export class SpStatisticsHttpUtil {
           }
         });
       })
-      .catch((err) => {});
+      .catch((err) => { });
     setTimeout(() => {
       fetch(`https://${SpStatisticsHttpUtil.requestServerInfo}/${requestUrl}`, {
         method: 'post',
@@ -134,8 +133,8 @@ export class SpStatisticsHttpUtil {
           visitId: visitId,
         }),
       })
-        .catch((err) => {})
-        .then((resp) => {});
+        .catch((err) => { })
+        .then((resp) => { });
     }, 1800000);
   }
 
@@ -164,7 +163,11 @@ export class SpStatisticsHttpUtil {
       .catch((err) => {
         this.handleRequestException();
       })
-      .then((resp) => {});
+      .then((resp) => { });
+  }
+
+  static getNotice() {
+    return fetch(`${document.URL}messagePublish`);
   }
 
   static getCorrectRequestTime(): number {
