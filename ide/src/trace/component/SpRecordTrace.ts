@@ -793,6 +793,9 @@ export class SpRecordTrace extends BaseElement {
         this.MenuItemEbpfHtml = th;
       }
       this.menuGroup!.appendChild(th);
+      if (item.title === 'Ark Ts') { 
+        this.menuGroup!.removeChild(th);
+      }
     });
   }
 
