@@ -54,6 +54,7 @@ import { BaseStruct } from '../bean/BaseStruct';
 import { GpuCounterStruct, gpuCounterStructOnClick } from '../database/ui-worker/ProcedureWorkerGpuCounter';
 import { HangStructOnClick } from '../database/ui-worker/ProcedureWorkerHang';
 import { XpowerStruct, XpowerStructOnClick } from '../database/ui-worker/ProcedureWorkerXpower'; 
+import { SpAiAnalysisPage } from './SpAiAnalysisPage';
 
 function timeoutJudge(sp: SpSystemTrace): number {
   let timeoutJudge = window.setTimeout((): void => {
@@ -417,6 +418,8 @@ function allStructOnClick(clickRowType: string, sp: SpSystemTrace, row?: TraceRo
       }
     })
     .catch((e): void => { });
+  // @ts-ignore
+  SpAiAnalysisPage.selectChangeListener(entry.startTime || entry.startTs, (entry.startTime! || entry.startTs) + entry.dur)
 }
 export default function spSystemTraceOnClickHandler(
   sp: SpSystemTrace,
@@ -610,7 +613,7 @@ export function spSystemTraceDocumentOnMouseOut(sp: SpSystemTrace, ev: MouseEven
 
 export function spSystemTraceDocumentOnKeyPress(this: unknown, sp: SpSystemTrace, ev: KeyboardEvent): void {
   SpSystemTrace.isKeyUp = false;
-  if (!sp.loadTraceCompleted) {
+  if (!sp.loadTraceCompleted || SpSystemTrace.isAiAsk) {
     return;
   }
   let keyPress = ev.key.toLocaleLowerCase();
@@ -838,11 +841,11 @@ export function spSystemTraceDocumentOnKeyUp(sp: SpSystemTrace, ev: KeyboardEven
       );
     } else {
       sp.dispatchEvent(
-          new CustomEvent('trace-next-data', {
-            detail: {},
-            composed: false,
-          })
-        );
+        new CustomEvent('trace-next-data', {
+          detail: {},
+          composed: false,
+        })
+      );
     }
     document.addEventListener('keydown', sp.documentOnKeyDown);
   }
