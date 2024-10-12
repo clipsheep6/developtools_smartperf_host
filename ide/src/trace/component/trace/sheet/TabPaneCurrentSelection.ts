@@ -1256,7 +1256,7 @@ export class TabPaneCurrentSelection extends BaseElement {
       //@ts-ignore
       let currentThread = list.filter((item) => item.name === 'Thread')?.[0].value;//点击的当前线程
       let previouosWakeupThread = Utils.getInstance().getThreadMap().get(fromBean!.tid!) || 'Thread';//唤醒当前线程的上个线程
-      this.topChainStr = `-->${previouosWakeupThread}[${fromBean!.tid}]-->${currentThread}`;
+      this.topChainStr = `-->${previouosWakeupThread} [${fromBean!.tid}]-->${currentThread}`;
       this.getRWakeUpChain(fromBean);
     })
   }
@@ -2074,7 +2074,7 @@ export class TabPaneCurrentSelection extends BaseElement {
         return;
       }
       //@ts-ignore
-      this.topChainStr = `-->${wakeupFrom!.thread}[${wakeupFrom!.tid}]` + this.topChainStr;//链的拼接
+      this.topChainStr = `-->${wakeupFrom!.thread} [${wakeupFrom!.tid}]` + this.topChainStr;//链的拼接
       // @ts-ignore
       this.getRWakeUpChain(wakeupFrom);
     });
