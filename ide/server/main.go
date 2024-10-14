@@ -350,7 +350,7 @@ type MsgPublishData struct {
 
 func loopUpdateMsgPublishData() {
 	loopTime := 5 * time.Minute
-	timer := time.NewTimer(loopTime)
+	timer := time.NewTimer(5 * time.Second)
 	for {
 		select {
 		case <-timer.C:
