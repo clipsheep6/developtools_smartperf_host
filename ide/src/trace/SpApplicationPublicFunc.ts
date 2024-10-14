@@ -398,7 +398,6 @@ export const applicationHtml: string = `
                 </sp-welcome>
                 <sp-ai-analysis id="sp-ai-analysis">
                 </sp-ai-analysis>
-                <sp-advertisement></sp-advertisement>
                 <sp-system-trace style="visibility:hidden;z-index: 101;" id="sp-system-trace">
                 </sp-system-trace>
                 <sp-record-trace style="overflow:auto;width:100%;height:100%;visibility:hidden;top:0px;left:0px;right:0;bottom:0px;position:absolute;z-index: 102" id="sp-record-trace">
