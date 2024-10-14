@@ -162,7 +162,7 @@ export class SpStatisticsHttpUtil {
     })
       .catch((err) => {
       })
-      .then((resp) => {  });
+      .then((resp) => { });
   }
 
   static recordPluginUsage(requsetBody: pluginUsage) {
