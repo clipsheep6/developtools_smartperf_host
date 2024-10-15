@@ -332,6 +332,7 @@ export const applicationHtml: string = `
             position:absolute;
             z-index:9999;
             min-width:430px;
+            max-width:75%;
             width:430px;
             height:740px;
             box-shadow:3px 0px 14px #000;

@@ -179,7 +179,7 @@ export class SpStatisticsHttpUtil {
   }
 
   static getNotice() {
-    return fetch(`${document.URL}messagePublish`);
+    return fetch(`https://${window.location.host}/messagePublish`);
   }
 
   static getCorrectRequestTime(): number {
@@ -192,7 +192,7 @@ export class SpStatisticsHttpUtil {
   // ai对话接口--获取token
   static async getAItoken() {
     let token = ''
-    await window.fetch(`${document.URL}takeToken`, {
+    await window.fetch(`https://${window.location.host}/takeToken`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'
@@ -209,7 +209,7 @@ export class SpStatisticsHttpUtil {
   // @ts-ignore
   static async askAi(requestBody) {
     let answer = '';
-    let res = await window.fetch(`${document.URL}ask`, {
+    let res = await window.fetch(`https://${window.location.host}/ask`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'

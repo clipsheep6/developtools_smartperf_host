@@ -179,8 +179,8 @@ export class SpAiAnalysisPage extends BaseElement {
 
         // 侧边栏诊断点击事件 *************优化，考虑多个按钮
         this.reportBar!.addEventListener('click', () => {
-            this.reportImg!.src = './../application/img/report_active.png';
-            this.chatImg!.src = './../application/img/talk.png';
+            this.reportImg!.src = 'img/report_active.png';
+            this.chatImg!.src = 'img/talk.png';
             this.reportBar!.classList.add('active');
             chatBar!.classList.remove('active');
             //@ts-ignore
@@ -193,8 +193,8 @@ export class SpAiAnalysisPage extends BaseElement {
 
         // 侧边栏聊天点击事件
         chatBar!.addEventListener('click', () => {
-            this.reportImg!.src = './../application/img/report.png';
-            this.chatImg!.src = './../application/img/talk_active.png';
+            this.reportImg!.src = 'img/report.png';
+            this.chatImg!.src = 'img/talk_active.png';
             this.reportBar!.classList.remove('active');
             chatBar!.classList.add('active');
             //@ts-ignore
@@ -290,7 +290,7 @@ export class SpAiAnalysisPage extends BaseElement {
         // 生成ai头像
         let headerDiv = document.createElement('div');
         headerDiv.className = 'aiHeader headerDiv';
-        headerDiv.innerHTML = `<img class='headerImg' src = "./../application/img/logo.png" title=""></img>`
+        headerDiv.innerHTML = `<img class='headerImg' src = "img/logo.png" title=""></img>`
         let newQuestion = document.createElement('div');
         newQuestion.className = "systemSay";
         // @ts-ignore
