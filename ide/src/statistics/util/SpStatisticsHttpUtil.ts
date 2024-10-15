@@ -179,7 +179,7 @@ export class SpStatisticsHttpUtil {
   }
 
   static getNotice() {
-    return fetch(`${document.URL}/messagePublish`);
+    return fetch(`${document.URL}messagePublish`);
   }
 
   static getCorrectRequestTime(): number {
