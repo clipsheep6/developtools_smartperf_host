@@ -48,6 +48,7 @@ import { SpStatisticsHttpUtil } from '../../statistics/util/SpStatisticsHttpUtil
 import { SpArkTs } from './setting/SpArkTs';
 import { SpWebHdcShell } from './setting/SpWebHdcShell';
 import { SpHilogRecord } from './setting/SpHilogRecord';
+import { SpXPowerRecord } from './setting/SpXPowerRecord';
 import { LongTraceDBUtils } from '../database/LongTraceDBUtils';
 import {
   createFpsPluginConfig,
@@ -62,9 +63,11 @@ import {
   createHiSystemEventPluginConfig,
   createArkTsConfig,
   createHiLogConfig, createFFRTPluginConfig,
+  createXPowerConfig,
 } from './SpRecordConfigModel';
 import { SpRecordTraceHtml } from './SpRecordTrace.html';
 import { SpFFRTConfig } from './setting/SpFFRTConfig';
+import { shadowRootInput } from '../../trace/component/trace/base/shadowRootInput';
 
 const DEVICE_NOT_CONNECT =
   '<div>1.请确认抓取设备上是否已勾选并确认总是允许smartPerf-Host调试的弹窗</div>' +
@@ -103,6 +106,7 @@ export class SpRecordTrace extends BaseElement {
   private spRecordTemplate: SpRecordTemplate | undefined;
   private spArkTs: SpArkTs | undefined;
   private spHiLog: SpHilogRecord | undefined;
+  private spXPower: SpXPowerRecord | undefined;
   private spFFRTConfig: SpFFRTConfig | undefined;
   private ftraceSlider: LitSlider | undefined | null;
   private spWebShell: SpWebHdcShell | undefined;
@@ -618,6 +622,7 @@ export class SpRecordTrace extends BaseElement {
     this.spHiSysEvent = new SpHisysEvent();
     this.spArkTs = new SpArkTs();
     this.spHiLog = new SpHilogRecord();
+    this.spXPower = new SpXPowerRecord();
     this.spFFRTConfig = new SpFFRTConfig();
     this.spWebShell = new SpWebHdcShell();
     this.spRecordTemplate = new SpRecordTemplate(this);
@@ -789,6 +794,9 @@ export class SpRecordTrace extends BaseElement {
         this.MenuItemEbpfHtml = th;
       }
       this.menuGroup!.appendChild(th);
+      if (item.title === 'Ark Ts') { 
+        this.menuGroup!.removeChild(th);
+      }
     });
   }
 
@@ -862,6 +870,7 @@ export class SpRecordTrace extends BaseElement {
       clickHandler: (): void => {
         this.appContent!.innerHTML = '';
         this.appContent!.append(configPage);
+        shadowRootInput.preventBubbling(configPage);
         this.freshMenuItemsStatus(title);
         if (clickHandlerFun) {
           clickHandlerFun(this);
@@ -892,6 +901,7 @@ export class SpRecordTrace extends BaseElement {
       this.buildMenuItem('Ark Ts', 'file-config', this.spArkTs!),
       this.buildMenuItem('FFRT', 'file-config', this.spFFRTConfig!),
       this.buildMenuItem('Hilog', 'realIntentionBulb', this.spHiLog!),
+      this.buildMenuItem('Xpower', 'externaltools', this.spXPower!), 
     ];
   }
 
@@ -1396,6 +1406,7 @@ export class SpRecordTrace extends BaseElement {
       createArkTsConfig(this.spArkTs!, this.recordSetting!, request);
       createHiLogConfig(reportingFrequency, this.spHiLog!, request);
       createFFRTPluginConfig(this.spFFRTConfig!, SpRecordTrace.selectVersion, request);
+      createXPowerConfig(this.spXPower!, request);
     }
     return request;
   };
