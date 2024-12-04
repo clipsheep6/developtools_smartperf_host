@@ -377,6 +377,7 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
       `select c.name,
               c.callchain_id  as sampleId,
               c.vaddr_in_file as vaddrInFile,
+              c.offset_to_vaddr as offsetToVaddr,
               c.file_id       as fileId,
               c.depth,
               c.symbol_id     as symbolId
@@ -1054,6 +1055,9 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
       ) {
         let analysisSample = new PerfAnalysisSample(
           threadName,
+          lastCallChain.depth,
+          lastCallChain.vaddrInFile,
+          lastCallChain.offsetToVaddr,
           processName,
           lastCallChain.fileId,
           lastCallChain.fileName,
@@ -1243,6 +1247,7 @@ export class PerfCallChain {
   sampleId: number = 0;
   callChainId: number = 0;
   vaddrInFile: number = 0;
+  offsetToVaddr:number = 0;
   tid: number = 0;
   pid: number = 0;
   name: number | string = 0;
@@ -1314,6 +1319,7 @@ export class PerfCallChainMerageData extends ChartStruct {
   initChildren: PerfCallChainMerageData[] = [];
   type: number = 0;
   vaddrInFile: number = 0;
+  offsetToVaddr:number = 0;
   isSelected: boolean = false;
   searchShow: boolean = true;
   isSearch: boolean = false;
@@ -1365,6 +1371,7 @@ export class PerfCallChainMerageData extends ChartStruct {
       currentNode.tid = sample.tid;
       currentNode.libName = callChain.fileName;
       currentNode.vaddrInFile = callChain.vaddrInFile;
+      currentNode.offsetToVaddr = callChain.offsetToVaddr;
       currentNode.lib = callChain.fileName;
       currentNode.addr = `${'0x'}${callChain.vaddrInFile.toString(16)}`;
       currentNode.canCharge = callChain.canCharge;
@@ -1412,6 +1419,9 @@ export class PerfCmdLine {
 
 class PerfAnalysisSample extends PerfCountSample {
   threadName: string;
+  depth:number;
+  vaddr_in_file:number;
+  offset_to_vaddr:number;
   processName: string;
   libId: number;
   libName: string;
@@ -1420,6 +1430,9 @@ class PerfAnalysisSample extends PerfCountSample {
 
   constructor(
     threadName: string,
+    depth:number,
+    vaddr_in_file:number,
+    offset_to_vaddr:number,
     processName: string,
     libId: number,
     libName: string,
@@ -1428,6 +1441,9 @@ class PerfAnalysisSample extends PerfCountSample {
   ) {
     super();
     this.threadName = threadName;
+    this.depth = depth;
+    this.vaddr_in_file = vaddr_in_file;
+    this.offset_to_vaddr = offset_to_vaddr;
     this.processName = processName;
     this.libId = libId;
     this.libName = libName;
