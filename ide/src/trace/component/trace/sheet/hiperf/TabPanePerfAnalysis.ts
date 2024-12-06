@@ -64,6 +64,8 @@ export class TabPanePerfAnalysis extends BaseElement {
   private tableArray: NodeListOf<LitTable> | undefined | null;
   private isComplete: boolean = true;
   private currentSelectionParam: SelectionParam | undefined | null;
+  private vaddrList: Array<unknown> = [];
+  private clickFuncVaddrList: Array<unknown> = [];
 
   set data(val: SelectionParam) {
     if (val === this.currentSelection) {
@@ -201,6 +203,7 @@ export class TabPanePerfAnalysis extends BaseElement {
     this.addRowClickEventListener(this.perfTableProcess!, this.perfProcessLevelClickEvent.bind(this));
     this.addRowClickEventListener(this.perfTableThread!, this.perfThreadLevelClickEvent.bind(this));
     this.addRowClickEventListener(this.perfTableSo!, this.perfSoLevelClickEvent.bind(this));
+    this.addRowClickEventListener(this.tableFunction!, this.functionClickEvent.bind(this));
   }
 
   private addRowClickEventListener(table: LitTable, clickEvent: Function): void {
@@ -556,6 +559,13 @@ export class TabPanePerfAnalysis extends BaseElement {
     }
     this.titleEl!.textContent = title;
     this.perfAnalysisPie?.hideTip();
+  }
+
+  private functionClickEvent(it: unknown) {
+    this.clickFuncVaddrList = this.vaddrList.filter((item: unknown) => {
+      // @ts-ignore
+      return item.symbolName === it.tableName
+    })
   }
 
   private sortByColumn(): void {
@@ -1111,6 +1121,15 @@ export class TabPanePerfAnalysis extends BaseElement {
       this.progressEL!.loading = false;
       this.getHiperfProcess(val);
     });
+    const args = [
+      {
+        funcName: 'getVaddrToFile',
+        funcArgs: [val],
+      },
+    ];
+    procedurePool.submitWithName('logic0', 'perf-vaddr', args, undefined, (results: Array<unknown>) => {
+      this.vaddrList = results;
+    })
   }
 
   private getDataByWorker(val: SelectionParam, handler: Function): void {
