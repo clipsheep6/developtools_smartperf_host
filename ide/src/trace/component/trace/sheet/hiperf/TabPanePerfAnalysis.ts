@@ -65,6 +65,9 @@ export class TabPanePerfAnalysis extends BaseElement {
   private isComplete: boolean = true;
   private currentSelectionParam: SelectionParam | undefined | null;
   private vaddrList: Array<unknown> = [];
+  private selectedTabProcessId: number = 0;
+  private selectedTabThreadId: number = 0;
+  private selectedTabfileName: string = '';
   private clickFuncVaddrList: Array<unknown> = [];
 
   set data(val: SelectionParam) {
@@ -339,25 +342,25 @@ export class TabPanePerfAnalysis extends BaseElement {
       tip: (perfObj): string => {
         return `<div>
                                 <div>Process:${
-                                  // @ts-ignore
-                                  perfObj.obj.tableName
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.tableName
+          }</div>
                                 <div>Sample Count:${
-                                  // @ts-ignore
-                                  perfObj.obj.count
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.count
+          }</div>
                                 <div>Percent:${
-                                  // @ts-ignore
-                                  perfObj.obj.percent
-                                }%</div> 
+          // @ts-ignore
+          perfObj.obj.percent
+          }%</div> 
                                 <div>Event Count:${
-                                  // @ts-ignore
-                                  perfObj.obj.eventCount
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.eventCount
+          }</div>
                                 <div>Percent:${
-                                  // @ts-ignore
-                                  perfObj.obj.eventPercent
-                                }%</div> 
+          // @ts-ignore
+          perfObj.obj.eventPercent
+          }%</div> 
                             </div>
                                `;
       },
@@ -406,6 +409,8 @@ export class TabPanePerfAnalysis extends BaseElement {
     // @ts-ignore
     this.processName = it.tableName;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabProcessId = it.pid;
   }
 
   private threadPieChart(val: SelectionParam): void {
@@ -477,6 +482,8 @@ export class TabPanePerfAnalysis extends BaseElement {
     // @ts-ignore
     this.threadName = it.tableName;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabThreadId = it.tid;
   }
 
   private initPerfAnalysisPieConfig(): void {
@@ -559,12 +566,20 @@ export class TabPanePerfAnalysis extends BaseElement {
     }
     this.titleEl!.textContent = title;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabfileName = it.tableName;
   }
 
   private functionClickEvent(it: unknown) {
     this.clickFuncVaddrList = this.vaddrList.filter((item: unknown) => {
       // @ts-ignore
-      return item.symbolName === it.tableName
+      return item.process_id === this.selectedTabProcessId &&
+        // @ts-ignore
+        item.thread_id === this.selectedTabThreadId &&
+        // @ts-ignore
+        item.libName === this.selectedTabfileName &&
+        // @ts-ignore
+        item.symbolName === it.tableName
     })
   }
 
@@ -1090,7 +1105,7 @@ export class TabPanePerfAnalysis extends BaseElement {
           // @ts-ignore
           other.percent = ((other.count / this.sumCount!) * 100).toFixed(2);
           // @ts-ignore
-          other.eventCount += res[i].eventCount; 
+          other.eventCount += res[i].eventCount;
           // @ts-ignore
           other.eventPercent = ((other.eventCount / this.sumEventCount!) * 100).toFixed(2);
         }
