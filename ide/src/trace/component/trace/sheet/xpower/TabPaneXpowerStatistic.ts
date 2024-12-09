@@ -17,14 +17,25 @@ import { BaseElement, element } from '../../../../../base-ui/BaseElement';
 import { LitTable } from '../../../../../base-ui/table/lit-table';
 import { SelectionData, SelectionParam } from '../../../../bean/BoxSelection';
 import { resizeObserver } from '../SheetUtils';
+import { TraceRow } from '../../base/TraceRow';
+import { SpSystemTrace } from '../../../SpSystemTrace';
+import { XpowerStatisticStruct } from '../../../../database/ui-worker/ProcedureWorkerXpowerStatistic';
+import { SpChartList } from '../../SpChartList';
 
-@element('tabpane-xpower-counter')
-export class TabPaneXpowerCounter extends BaseElement {
+@element('tabpane-xpower-statistic')
+export class TabPaneXpowerStatistic extends BaseElement {
   private xpowerCounterTbl: LitTable | null | undefined;
   private xpowerCounterRange: HTMLLabelElement | null | undefined;
   private xpowerCounterSource: Array<SelectionData> = [];
+  private systemTrace: SpSystemTrace | undefined | null;
+  private spChartList: SpChartList | undefined | null;
+  private traceRow: TraceRow<XpowerStatisticStruct> | undefined | null;
+  private tabTitle: HTMLDivElement | undefined | null;
+  private checked: boolean[] = [];
+  private checkedValue: string[] = [];
 
   set data(xpowerCounterValue: SelectionParam) {
+    this.init();
     //@ts-ignore
     this.xpowerCounterTbl?.shadowRoot?.querySelector('.table')?.style?.height = `${
       this.parentElement!.clientHeight - 45
@@ -32,13 +43,21 @@ export class TabPaneXpowerCounter extends BaseElement {
     this.xpowerCounterRange!.textContent = `Selected range: ${parseFloat(
       ((xpowerCounterValue.rightNs - xpowerCounterValue.leftNs) / 1000000.0).toFixed(5)
     )} ms`;
+    this.traceRow = this.systemTrace!.shadowRoot?.querySelector<TraceRow<XpowerStatisticStruct>>(
+      "trace-row[row-id='Statistic']"
+    );
+    if (!this.traceRow) {
+      this.spChartList = this.systemTrace!.shadowRoot?.querySelector('div > sp-chart-list');
+      this.traceRow = this.spChartList?.shadowRoot!.querySelector(".root > div > trace-row[row-id='Statistic']");
+    }
+    this.checked = this.traceRow!.rowSettingCheckedBoxList!;
+    this.checkedValue = this.traceRow!.rowSettingCheckBoxList!;
     this.getCounterData(xpowerCounterValue).then();
   }
 
   async getCounterData(xpowerCounterValue: SelectionParam): Promise<void> {
     let dataSource: Array<SelectionData> = [];
-    let collect = xpowerCounterValue.xpowerMapData;
-    let sumCount = 0;
+    let collect = xpowerCounterValue.xpowerStatisticMapData;
     this.xpowerCounterTbl!.loading = true;
     for (let key of collect.keys()) {
       let counters = collect.get(key);
@@ -47,21 +66,46 @@ export class TabPaneXpowerCounter extends BaseElement {
         endNS: xpowerCounterValue.rightNs,
         queryAll: true,
       });
-      let sd = this.createSelectCounterData(key, res || [], xpowerCounterValue.leftNs, xpowerCounterValue.rightNs);
-      sumCount += Number.parseInt(sd.count || '0');
-      dataSource.push(sd);
+      res!.forEach((item) => {
+        // @ts-ignore
+        item.typeStr = SpSystemTrace.DATA_DICT.get(item.type)!;
+      });
+      let xpowerStasticMap = new Map<
+        string,
+        { startTime: number; dur: number; energy: number; type: number; typeStr: string }[]
+      >();
+      // @ts-ignore
+      res.forEach((item: { startTime: number; dur: number; energy: number; type: number; typeStr: string }) => {
+        if (xpowerStasticMap.has(item.typeStr)) {
+          let data = xpowerStasticMap.get(item.typeStr);
+          data!.push(item);
+          xpowerStasticMap.set(item.typeStr, data!);
+        } else {
+          xpowerStasticMap.set(item.typeStr, []);
+          let data = xpowerStasticMap.get(item.typeStr);
+          data!.push(item);
+          xpowerStasticMap.set(item.typeStr, data!);
+        }
+      });
+      xpowerStasticMap.forEach((value, key) => {
+        !this.checked[this.checkedValue.indexOf(key)] && xpowerStasticMap.delete(key);
+      });
+      xpowerStasticMap.forEach((value) => {
+        let sd = this.createSelectCounterData(value);
+        dataSource.push(sd);
+      });
     }
-    let sumData = new SelectionData();
-    sumData.count = sumCount.toString();
-    sumData.process = ' ';
-    dataSource.splice(0, 0, sumData);
     this.xpowerCounterTbl!.loading = false;
     this.xpowerCounterSource = dataSource;
     this.xpowerCounterTbl!.recycleDataSource = dataSource;
   }
 
   initElements(): void {
+    this.systemTrace = document
+      .querySelector('body > sp-application')
+      ?.shadowRoot!.querySelector<SpSystemTrace>('#sp-system-trace');
     this.xpowerCounterTbl = this.shadowRoot?.querySelector<LitTable>('#tb-counter');
+    this.tabTitle = this.xpowerCounterTbl!.shadowRoot?.querySelector('.thead') as HTMLDivElement;
     this.xpowerCounterRange = this.shadowRoot?.querySelector('#time-range');
     this.xpowerCounterTbl!.addEventListener('column-click', (evt): void => {
       // @ts-ignore
@@ -88,73 +132,43 @@ export class TabPaneXpowerCounter extends BaseElement {
         </style>
         <label id="time-range" class="xpower-counter-label" style="width: 100%;height: 20px;text-align: end;font-size: 10pt;">Selected range:0.0 ms</label>
         <lit-table id="tb-counter" style="height: auto">
-            <lit-table-column order title="Name" data-index="name" key="name"  align="flex-start" width="25%">
+            <lit-table-column order title="Name" data-index="name" key="name"  align="flex-start" width="20%">
             </lit-table-column>
-            <lit-table-column data-index="delta" order title="Delta value"  key="delta"  align="flex-start" width="1fr">
+            <lit-table-column data-index="count" order title="Count"  key="count"  align="flex-start" width="1fr">
             </lit-table-column>
-            <lit-table-column title="Rate /s" key="rate" order data-index="rate" align="flex-start" width="1fr">
+            <lit-table-column title="Avg_Energy" key="average" order data-index="average" align="flex-start" width="1fr">
             </lit-table-column>
-            <lit-table-column title="Weighted avg value" order data-index="avgWeight" key="avgWeight"  align="flex-start" width="1fr">
+            <lit-table-column title="Max_Energy" order data-index="max" key="max"  align="flex-start" width="1fr">
             </lit-table-column>
-            <lit-table-column data-index="count" title="Count" order key="count"  align="flex-start" width="1fr">
-            </lit-table-column>
-            <lit-table-column title="First value" data-index="first" order key="first"  align="flex-start" width="1fr">
-            </lit-table-column>
-            <lit-table-column title="Last value" align="flex-start" order data-index="last" key="last" width="1fr">
-            </lit-table-column>
-            <lit-table-column title="Min value" key="min" data-index="min" order align="flex-start" width="1fr">
-            </lit-table-column>
-            <lit-table-column data-index="max" title="Max value" key="max"  order align="flex-start" width="1fr">
+            <lit-table-column data-index="min" title="Min_Energy" order key="min"  align="flex-start" width="1fr">
             </lit-table-column>
         </lit-table>
         `;
   }
 
-  createSelectCounterData(name: string, list: Array<unknown>, leftNs: number, rightNs: number): SelectionData {
+  createSelectCounterData(
+    list: { startTime: number; dur: number; energy: number; type: number; typeStr: string }[]
+  ): SelectionData {
     let selectCounterData = new SelectionData();
     if (list.length > 0) {
-      let range = rightNs - leftNs;
-      let first = list[0];
-      // @ts-ignore
-      selectCounterData.trackId = first.filterId;
-      selectCounterData.name = name;
-      // @ts-ignore
-      selectCounterData.first = `${first.value}`;
-      selectCounterData.count = `${list.length}`;
-      // @ts-ignore
-      selectCounterData.last = `${list[list.length - 1].value}`;
-      selectCounterData.delta = `${(Number(selectCounterData.last) - Number(selectCounterData.first)).toFixed(4)}`; 
-      selectCounterData.rate = (Number(selectCounterData.delta) / ((range * 1.0) / 1000000000)).toFixed(4);
-      // @ts-ignore
-      selectCounterData.min = `${first.value}`;
-      // @ts-ignore
-      selectCounterData.max = `${first.value}`;
-      let weightAvg = 0.0;
-      for (let i = 0; i < list.length; i++) {
-        let counter = list[i];
-        // @ts-ignore
-        if (counter.value < Number(selectCounterData.min)) {
-          // @ts-ignore
-          selectCounterData.min = counter.value.toString();
-        }
-        // @ts-ignore
-        if (counter.value > Number(selectCounterData.max)) {
-          // @ts-ignore
-          selectCounterData.max = counter.value.toString();
-        }
-        // @ts-ignore
-        let start = i === 0 ? leftNs : counter.startNS;
-        // @ts-ignore
-        let end = i === list.length - 1 ? rightNs : list[i + 1].startNS;
-        // @ts-ignore
-        weightAvg += counter.value * (((end - start) * 1.0) / range);
-      }
-      selectCounterData.avgWeight = weightAvg.toFixed(2);
+      selectCounterData.name = list[0].typeStr;
+      selectCounterData.count = list.length.toString();
+      let max = list[0].energy;
+      let min = list[0].energy;
+      let total = 0;
+      list.forEach((item) => {
+        max < item.energy && (max = item.energy);
+        min > item.energy && (min = item.energy);
+        total += item.energy;
+      });
+      selectCounterData.max = max + ' mAh';
+      selectCounterData.min = min + ' mAh';
+      selectCounterData.average = (total / list.length).toFixed(2) + ' mAh';
     }
     return selectCounterData;
   }
 
-  sortByColumn(detail: unknown): void {
+  sortByColumn(detail: { key: string; sort: number }): void {
     // @ts-ignore
     function compare(property, sort, type) {
       return function (xpowerCounterLeftData: SelectionData, xpowerCounterRightData: SelectionData): number {
@@ -180,14 +194,24 @@ export class TabPaneXpowerCounter extends BaseElement {
         }
       };
     }
-    // @ts-ignore
     if (detail.key === 'name') {
-      // @ts-ignore
       this.xpowerCounterSource.sort(compare(detail.key, detail.sort, 'string'));
     } else {
-      // @ts-ignore
       this.xpowerCounterSource.sort(compare(detail.key, detail.sort, 'number'));
     }
     this.xpowerCounterTbl!.recycleDataSource = this.xpowerCounterSource;
+  }
+
+  private init(): void {
+    const thTable = this.tabTitle!.querySelector('.th');
+    const list = thTable!.querySelectorAll('div');
+    if (this.tabTitle!.hasAttribute('sort')) {
+      this.tabTitle!.removeAttribute('sort');
+      list.forEach((item) => {
+        item.querySelectorAll('svg').forEach((svg) => {
+          svg.style.display = 'none';
+        });
+      });
+    }
   }
 }
