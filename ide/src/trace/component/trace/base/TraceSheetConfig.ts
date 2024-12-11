@@ -136,6 +136,7 @@ import { TabPanePerfAsync } from '../sheet/hiperf/TabPerfAsyncList';
 import { TabPaneUserPlugin } from '../sheet/userPlugin/TabPaneUserPlugin';
 import { TabPaneDmaFence } from '../sheet/dma-fence/TabPaneDmaFenceSelect';
 import { TabPaneSliceChild } from '../sheet/process/TabPaneSliceChild';
+import { TabPerfFuncAsm } from '../sheet/hiperf/TabPerfFuncAsm'
 
 export let tabConfig: {
   [key: string]: {
@@ -732,4 +733,8 @@ export let tabConfig: {
     title: '',
     type: TabPaneSliceChild,
   },
+  'tab-perf-func-asm': {
+    title: '',
+    type: TabPerfFuncAsm,
+  }
 };
