@@ -17,29 +17,35 @@ export class TabPerfFuncAsm extends BaseElement {
   private totalCount: number = 0;
   private functionNameElement: HTMLDivElement | null | undefined;
   private totalCountElement: HTMLDivElement | null | undefined;
+  private textFileOffElement: HTMLDivElement | null | undefined;
   private errorMessageElement: HTMLDivElement | null | undefined;
   private funcBaseAddr: bigint = BigInt(0);
   // Key: offset; Value: selfcount
   private funcSampleMap: Map<number, number> = new Map();
   private showUpData: FormattedAsmInstruction[] = [];
   private originalShowUpData: FormattedAsmInstruction[] = [];
-  private currentAsmList: Array<unknown> = [];
   private formattedAsmIntructionArray: FormattedAsmInstruction[] = [];
+  private resizeObserver: ResizeObserver | null = null;
+
   initHtml(): string {
     return TabPerfFuncAsmHtml;
   }
 
   initElements(): void {
     this.assmblerTable = this.shadowRoot!.querySelector<LitTable>(
-      "#perf-function-asm-table"
+        "#perf-function-asm-table"
     );
     this.loadingElement =
-      this.shadowRoot!.querySelector<HTMLElement>("#loading");
+        this.shadowRoot!.querySelector<HTMLElement>("#loading");
     this.functionNameElement =
-      this.shadowRoot!.querySelector<HTMLDivElement>("#function-name");
+        this.shadowRoot!.querySelector<HTMLDivElement>("#function-name");
     this.totalCountElement =
-      this.shadowRoot!.querySelector<HTMLDivElement>("#total-count");
+        this.shadowRoot!.querySelector<HTMLDivElement>("#total-count");
+    this.textFileOffElement =
+        this.shadowRoot!.querySelector<HTMLDivElement>("#text-file-off");
+    this.textFileOffElement!.style.display = 'none';
     this.errorMessageElement = this.shadowRoot!.querySelector<HTMLDivElement>("#error-message");
+
     this.assmblerTable!.style.display = "grid";
 
     this.assmblerTable!.itemTextHandleMap.set("addr", (value: unknown) => {
@@ -58,26 +64,25 @@ export class TabPerfFuncAsm extends BaseElement {
       return (value as string) === "" ? "INVALID" : (value as string);
     });
 
+    this.assmblerTable!.itemTextHandleMap.set("sourceLine", (value: unknown) => {
+      return (value as string) || "";
+    });
+
     this.assmblerTable!.addEventListener("column-click", ((evt: Event) => {
-      const { key, sort } = (evt as CustomEvent).detail;
-      console.log("lbh:sort", sort)
+      const {key, sort} = (evt as CustomEvent).detail;
       if (key === "selfcount") {
         if (sort === 0) {
-          console.log("lbh: sort0")
           this.assmblerTable!.recycleDataSource = this.originalShowUpData;
-          console.log("lbh:sort recycle", this.assmblerTable!.recycleDataSource)
-          console.log("lbh:sort originalShowUpData", this.originalShowUpData)
           this.assmblerTable!.reMeauseHeight();
         } else {
           this.showUpData.sort((a, b) => {
             return sort === 1
-              ? a.selfcount - b.selfcount
-              : b.selfcount - a.selfcount;
+                ? a.selfcount - b.selfcount
+                : b.selfcount - a.selfcount;
           });
           this.assmblerTable!.recycleDataSource = this.showUpData;
           this.assmblerTable!.reMeauseHeight();
         }
-        console.log("after sort: ", this.originalShowUpData)
       } else if (key === "percent") {
         if (sort === 0) {
           this.assmblerTable!.recycleDataSource = this.originalShowUpData;
@@ -98,7 +103,6 @@ export class TabPerfFuncAsm extends BaseElement {
       this.functionNameElement!.innerHTML = `<span class="title-label">Function Name:</span> ${this.functionName}`;
       this.totalCountElement!.innerHTML = `<span class="title-label">Total Count:</span> ${this.totalCount}`;
     }
-    console.log(this.totalCount)
   }
 
   private showLoading(): void {
@@ -127,7 +131,7 @@ export class TabPerfFuncAsm extends BaseElement {
   }
 
   set data(data: PerfFunctionAsmParam) {
-    if (this.functionName === data.functionName) {
+    if (this.functionName === data.functionName || data.functionName === undefined) {
       return;
     }
 
@@ -153,11 +157,16 @@ export class TabPerfFuncAsm extends BaseElement {
           new Promise<void>((resolve, reject) => {
             callback = (cmd: number, e: Uint8Array) => {
               try {
-                console.log('Received cmd:', cmd, 'Expected:', Constants.DISASSEMBLY_QUERY_BACK_CMD);
-                
+
                 if (cmd === Constants.DISASSEMBLY_QUERY_BACK_CMD) {
                   const result = JSON.parse(new TextDecoder().decode(e));
                   if (result.resultCode === 0) {
+                    if (result.anFileOff) {
+                      this.textFileOffElement!.innerHTML = `<span class="title-label">.text Section File Off</span> ${result.anFileOff}`;
+                      this.textFileOffElement!.style.display = 'block';
+                    } else {
+                      this.textFileOffElement!.style.display = 'none';
+                    }
                     this.formatAsmInstruction(JSON.parse(result.resultMessage));
                     this.calcutelateShowUpData();
                     resolve();
@@ -173,7 +182,7 @@ export class TabPerfFuncAsm extends BaseElement {
                 reject(error);
               }
             };
-            
+
             WebSocketManager.getInstance()?.registerCallback(TypeConstants.DISASSEMBLY_TYPE, callback);
           }),
           new Promise((_, reject) => setTimeout(() => {
@@ -182,14 +191,10 @@ export class TabPerfFuncAsm extends BaseElement {
           }, 20000))
         ]);
       } catch (error) {
-        console.error('Error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        this.showError(`Error: can't get assembly code because ${errorMessage},show sample list without assembly code`);
+        this.showError(`Error: can't get assembly code because ${errorMessage}, show sample list without assembly code`);
         this.calcutelateErrorShowUpData();
       } finally {
-        console.log("lbh:finally:originalShowUpData ", this.originalShowUpData)
-        console.log("lbh:finally:funcBaseAddr ", this.funcBaseAddr)
-        console.log("lbh:finally:funcSampleMap ", this.funcSampleMap)
         this.showUpData = [...this.originalShowUpData];
         this.assmblerTable!.recycleDataSource = this.showUpData;
         this.assmblerTable!.reMeauseHeight();
@@ -205,12 +210,10 @@ export class TabPerfFuncAsm extends BaseElement {
         percent: Math.round((selfCount / this.totalCount) * 10000) / 100,
         // 地址计算也使用 BigInt
         addr: Number(BigInt.asUintN(64, this.funcBaseAddr + BigInt(offsetToVaddr))),
-        instruction: ''
+        instruction: '',
+        sourceLine: ''
       })
     })
-    console.log("lbh:calcutelateErrorShowUpData originalShowUpData ", this.originalShowUpData)
-    console.log("lbh:calcutelateErrorShowUpData funcBaseAddr ", this.funcBaseAddr)
-    console.log("lbh:calcutelateErrorShowUpData funcSampleMap ", this.funcSampleMap)
   }
 
   private calculateFuncAsmSapleCount(vaddrList: Array<unknown>): void {
@@ -228,6 +231,7 @@ export class TabPerfFuncAsm extends BaseElement {
       percent: 0,
       addr: parseInt(instructs.addr, 16),
       instruction: instructs.instruction,
+      sourceLine: instructs.sourceLine
     }) as FormattedAsmInstruction);
   }
 
@@ -237,7 +241,6 @@ export class TabPerfFuncAsm extends BaseElement {
     this.funcSampleMap.clear();
     this.showUpData = [];
     this.originalShowUpData = [];
-    this.currentAsmList = [];
     this.formattedAsmIntructionArray = [];
     this.assmblerTable!.recycleDataSource = [];
   }
@@ -252,13 +255,24 @@ export class TabPerfFuncAsm extends BaseElement {
   }
 
   public connectedCallback(): void {
-    new ResizeObserver(() => {
+    super.connectedCallback();
+    // 初始化 ResizeObserver
+    this.resizeObserver = new ResizeObserver(() => {
       if (this.assmblerTable && this.parentElement) {
-        this.assmblerTable.style.height = `${
-          this.parentElement.clientHeight - 50
-        }px`;
-        this.assmblerTable.reMeauseHeight();
+        this.assmblerTable.style.height = `${this.parentElement.clientHeight - 50}px`;
+        this.assmblerTable!.reMeauseHeight();
       }
-    }).observe(this.parentElement!);
+    });
+    this.resizeObserver.observe(this.parentElement!);
+  }
+
+  public disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    // 断开 ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
   }
 }
