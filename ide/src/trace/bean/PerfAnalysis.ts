@@ -24,11 +24,13 @@ export class FormattedAsmInstruction {
     percent:number = 0;
     addr: number = 0;
     instruction: string = '';
+    sourceLine: string = '';
 }
 
 export class OriginAsmInstruction {
   addr:string = '';
   instruction:string = '';
+  sourceLine: string = '';
 }
 
 export class PerfFunctionAsmShowUpData {
