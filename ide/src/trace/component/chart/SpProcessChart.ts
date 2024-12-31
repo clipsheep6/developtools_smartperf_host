@@ -989,6 +989,9 @@ export class SpProcessChart {
       }
       if (type === 'actual') {
         struct.src_slice = this.processSrcSliceMap.get(res[j].id!);
+        if (struct.tid && struct.tid !== struct.pid){
+          struct.name = `${struct.name}-${struct.tid}`
+        }
       }
       struct.cmdline = Utils.getInstance().getProcessMap().get(res[j].pid!); //@ts-ignore
       if (res[j].pid! === renderServiceProcess[0].pid) {
@@ -1144,7 +1147,7 @@ export class SpProcessChart {
 
     differentThreadList.length && this.addDifferentThread(it, pRow, expectedRow, actualRow, soRow, startupRow, differentThreadList, traceId!);
     if (sameThreadList.length) {
-      let sameThreadFolder = await this.initSameThreadFolder(it, pRow, sameThreadList, traceId!);
+      let sameThreadFolder = this.initSameThreadFolder(it, pRow, sameThreadList, traceId!);
       if (sameThreadFolder) {
         pRow.addChildTraceRow(this.sameThreadFolder);
         this.addProcessRowListener(this.sameThreadFolder, actualRow);

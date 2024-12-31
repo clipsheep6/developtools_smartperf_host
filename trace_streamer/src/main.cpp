@@ -210,6 +210,11 @@ void PrintAbilityInfo()
 #else
     enableInfo.append("\n\tarkts");
 #endif
+#ifndef ENABLE_XPOWER
+    disableInfo.append("\n\txpower");
+#else
+    enableInfo.append("\n\txpower");
+#endif
     PrintDefaultAbilityInfo(disableInfo, enableInfo);
     PrintExtendAbilityInfo(disableInfo, enableInfo);
     printf("the enable ability list:%s\n", enableInfo.empty() ? "\n\tnull" : enableInfo.c_str());
@@ -271,10 +276,9 @@ bool SetFileSize(const std::string &traceFilePath)
 }
 int OpenAndParserFile(TraceStreamerSelector &ts, const std::string &traceFilePath)
 {
-    std::string filePath;
-    if (!UnZipFile(traceFilePath, filePath)) {
-        filePath = traceFilePath;
-    }
+    std::string filePath = traceFilePath;
+    UnZipFile(traceFilePath, filePath);
+    UnZlibFile(traceFilePath, filePath);
     if (!SetFileSize(filePath)) {
         return 0;
     }
@@ -745,7 +749,7 @@ int main(int argc, char **argv)
     }
 #if defined(is_linux) || defined(_WIN32)
     if (!traceExportOption.soFilesDir.empty()) {
-        auto values = GetFilesNameFromDir(traceExportOption.soFilesDir);
+        auto values = GetFilesNameFromDir(traceExportOption.soFilesDir, false);
         ts.ReloadSymbolFiles(traceExportOption.soFilesDir, values);
     }
 #endif

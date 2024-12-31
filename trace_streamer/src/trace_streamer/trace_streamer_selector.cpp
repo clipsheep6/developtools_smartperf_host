@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
 #include <regex>
 #include "animation_filter.h"
@@ -33,20 +34,20 @@
 #endif
 #include "irq_filter.h"
 #include "measure_filter.h"
-#include "task_pool_filter.h"
-#include "ptreader_parser.h"
 #include "pbreader_parser.h"
-#ifdef ENABLE_RAWTRACE
-#include "rawtrace_parser.h"
-#endif
 #ifdef ENABLE_HIPERF
 #include "perf_data_filter.h"
 #endif
 #include "process_filter.h"
+#include "ptreader_parser.h"
+#ifdef ENABLE_RAWTRACE
+#include "rawtrace_parser.h"
+#endif
 #include "slice_filter.h"
 #include "stat_filter.h"
 #include "string_help.h"
 #include "system_event_measure_filter.h"
+#include "task_pool_filter.h"
 
 namespace {
 const uint32_t CHUNK_SIZE = 1024 * 1024;
@@ -417,13 +418,23 @@ int32_t TraceStreamerSelector::ExportEbpfReadableText(const std::string &outputN
     return traceDataCache_->ExportEbpfReadableText(outputName, resultCallBack);
 }
 
-bool TraceStreamerSelector::ReloadSymbolFiles(std::string &directory, std::vector<std::string> &symbolsPaths)
+bool TraceStreamerSelector::ReloadSymbolFiles(const std::string &directory, const std::vector<std::string> &fileNames)
 {
-    TS_LOGE("directory is %s", directory.c_str());
-    for (auto file : symbolsPaths) {
-        TS_LOGE("files is %s", file.c_str());
+    bool result = false;
+    bool ret = false;
+    for (auto fileName : fileNames) {
+        std::filesystem::path filePath(fileName);
+        if (std::filesystem::exists(filePath) && std::filesystem::is_regular_file(filePath)) {
+            ret = pbreaderParser_->ReparseSymbolFileAndResymbolization(filePath.parent_path().string(),
+                                                                       filePath.filename().string());
+        } else if (std::filesystem::exists(std::filesystem::path(directory) / fileName)) {
+            ret = pbreaderParser_->ReparseSymbolFileAndResymbolization(directory, fileName);
+        }
+        if (ret) {
+            result = true;
+        }
     }
-    return pbreaderParser_->ReparseSymbolFilesAndResymbolization(directory, symbolsPaths);
+    return result;
 }
 void TraceStreamerSelector::Clear()
 {

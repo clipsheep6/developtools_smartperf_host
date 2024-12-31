@@ -137,6 +137,11 @@ import { LitSearch } from './trace/search/Search';
 import { LitTable } from '../../base-ui/table/lit-table';
 import { HangStruct } from '../database/ui-worker/ProcedureWorkerHang';
 import { SpAiAnalysisPage } from './SpAiAnalysisPage';
+import { XpowerAppDetailStruct } from '../database/ui-worker/ProcedureWorkerXpowerAppDetail';
+import { XpowerStatisticStruct } from '../database/ui-worker/ProcedureWorkerXpowerStatistic';
+import { XpowerWifiStruct } from '../database/ui-worker/ProcedureWorkerXpowerWifi';
+import { XpowerThreadInfoStruct } from '../database/ui-worker/ProcedureWorkerXpowerThreadInfo';
+import { XpowerGpuFreqStruct } from '../database/ui-worker/ProcedureWorkerXpowerGpuFreq';
 
 function dpr(): number {
   return window.devicePixelRatio || 1;
@@ -181,6 +186,8 @@ export class SpSystemTrace extends BaseElement {
   invisibleRows: Array<TraceRow<unknown>> = []; // @ts-ignore
   collectRows: Array<TraceRow<unknown>> = []; // @ts-ignore
   currentRow: TraceRow<unknown> | undefined | null;
+  // @ts-ignore
+  copyCurrentRow: TraceRow<unknown> | undefined | null;
   keyboardEnable = true;
   mouseEventEnable = true;
   currentRowType = ''; /*保存当前鼠标所在行的类型*/
@@ -640,11 +647,14 @@ export class SpSystemTrace extends BaseElement {
       SampleStruct.selectSampleStruct ||
       PerfToolStruct.selectPerfToolStruct ||
       GpuCounterStruct.selectGpuCounterStruct ||
-      DmaFenceStruct.selectDmaFenceStruct;
+      DmaFenceStruct.selectDmaFenceStruct ||
+      XpowerThreadInfoStruct.selectXpowerStruct ||
+      XpowerGpuFreqStruct.selectXpowerStruct
   }
   top: number = 0;
   handler: number = -1;
   rowsElOnScroll = (e: unknown): void => {
+    this.rangeSelect.isMouseDown = false;
     // @ts-ignore
     const currentScrollY = e.target.scrollTop;
     const deltaY = currentScrollY - this.prevScrollY;
@@ -975,7 +985,7 @@ export class SpSystemTrace extends BaseElement {
   documentOnKeyPress = (ev: KeyboardEvent): void => spSystemTraceDocumentOnKeyPress(this, ev);
 
   verticalScrollToRow(): void {
-    if (this.currentRow) {
+    if (this.currentRow && !this.currentRow.folder) {
       //@ts-ignore
       this.currentRow.scrollIntoViewIfNeeded();
     }
@@ -1397,6 +1407,12 @@ export class SpSystemTrace extends BaseElement {
     PerfToolStruct.selectPerfToolStruct = undefined;
     GpuCounterStruct.selectGpuCounterStruct = undefined;
     DmaFenceStruct.selectDmaFenceStruct = undefined;//清空选中slice
+    XpowerAppDetailStruct.selectXpowerStruct = undefined;
+    XpowerStatisticStruct.selectXpowerStruct = undefined;
+    XpowerWifiStruct.selectBytesXpowerStruct = undefined;
+    XpowerWifiStruct.selectPacketsXpowerStruct = undefined;
+    XpowerThreadInfoStruct.selectXpowerStruct = undefined;
+    XpowerGpuFreqStruct.selectXpowerStruct = undefined;
     return this;
   }
 
@@ -1754,6 +1770,8 @@ export class SpSystemTrace extends BaseElement {
   private subRecordExportListener(): void {
     window.subscribe(window.SmartEvent.UI.ExportRecord, (params) => {
       let range = this.timerShaftEL?.rangeRuler?.range;
+      // @ts-ignore
+      let searchVal = document.querySelector("body > sp-application").shadowRoot.querySelector("#lit-search").shadowRoot.querySelector("div.root > input")!.value;
       if (range) {
         let expandRows =
           Array.from(this.rowsEL!.querySelectorAll<TraceRow<BaseStruct>>('trace-row[folder][expansion]')) || [];
@@ -1775,6 +1793,7 @@ export class SpSystemTrace extends BaseElement {
           drawFlag: this.timerShaftEL!.sportRuler!.flagList,
           //下载时存M和shiftM的信息
           markFlag: this.timerShaftEL!.sportRuler!.slicesTimeList,
+          search: searchVal?searchVal:''
         });
         this.downloadRecordFile(data).then(() => { });
       }
@@ -1822,6 +1841,10 @@ export class SpSystemTrace extends BaseElement {
         TraceRow.range!.refresh = true;
         this.refreshCanvas(true);
         this.restoreRecordScrollTop(record.scrollTop, record.favoriteScrollTop);
+        // @ts-ignore
+        document.querySelector("body > sp-application").shadowRoot.querySelector("#lit-search").shadowRoot.querySelector("div.root > input")!.value = record.search?record.search:'';
+        // @ts-ignore
+        document.querySelector("body > sp-application").shadowRoot.querySelector("#lit-search")!.valueChangeHandler!(record.search?record.search:'');
       }
     });
   }
@@ -2018,7 +2041,7 @@ export class SpSystemTrace extends BaseElement {
         // 底部 tab 为 最小化 或者隐藏 时候
         if (this.rowsEL!.scrollHeight > this.scrollH) {
           heightTimeOut = setTimeout(() => {
-            let litTab = this.traceSheetEL?.shadowRoot?.querySelector<LitTabs>("#tabs");
+            let litTab = this.traceSheetEL?.shadowRoot?.querySelector<LitTabs>('#tabs');
             if (this.traceSheetEL?.getAttribute('mode') === 'hidden') {
               this.rowsEL!.scrollTop = this.rowsEL!.scrollTop - data.delta;
             }
@@ -2787,7 +2810,19 @@ export class SpSystemTrace extends BaseElement {
         }
       } else {
         this.tipEL.style.display = 'flex';
-        this.tipEL.style.height = row.style.height;
+        if (
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_STATISTIC ||
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_WIFI_BYTES ||
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_WIFI_PACKETS ||
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_APP_DETAIL_DISPLAY ||
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_THREAD_INFO ||
+          row.rowType === TraceRow.ROW_TYPE_XPOWER_GPU_FREQUENCY
+        ) {
+          this.tipEL.style.height = 'unset';
+          y = row.hoverY + row.getBoundingClientRect().top - this.getBoundingClientRect().top - this.tipEL.clientHeight;
+        } else {
+          this.tipEL.style.height = row.style.height;
+        }
       }
       if (x + this.tipEL.clientWidth > (this.canvasPanel!.clientWidth ?? 0)) {
         this.tipEL.style.transform = `translateX(${x - this.tipEL.clientWidth - 1}px) translateY(${y}px)`;

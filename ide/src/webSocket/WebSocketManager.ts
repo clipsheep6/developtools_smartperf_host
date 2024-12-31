@@ -56,7 +56,7 @@ export class WebSocketManager {
         this.websocket.binaryType = 'arraybuffer';
         this.websocket.onopen = (): void => {
             this.status = GetStatuses.CONNECTED;
-            // 设置心跳定时器
+            // 设置心跳定时器  
             this.sendHeartbeat();
             // 连接后登录
             this.login();
@@ -99,7 +99,7 @@ export class WebSocketManager {
             this.businessMessage(decode)
         }
     }
-
+    
     // 登录
     loginMessage(decode: MessageParam): void {
         if (decode.cmd === Constants.LOGIN_CMD) {
@@ -118,7 +118,7 @@ export class WebSocketManager {
     updateMessage(decode: MessageParam): void {
         if (decode.cmd === Constants.GET_VERSION_CMD) {
             // 小于则升级
-            let targetVersion = '1.0.2';
+            let targetVersion = '1.0.5';
             let currentVersion = new TextDecoder().decode(decode.data);
             let result = this.compareVersion(currentVersion, targetVersion);
             if (result === -1) {
@@ -146,6 +146,11 @@ export class WebSocketManager {
                 callback(decode.cmd, decode.data);
             });
         }
+    }
+
+    // 业务
+    businessMessage(decode: MessageParam): void {
+        this.distributeMap.get(decode.type!)?.messageCallback(decode.cmd, decode.data);
     }
 
     // get版本
@@ -182,7 +187,7 @@ export class WebSocketManager {
             }/application/extend/hi-smart-perf-host-extend-update.zip`;
         fetch(url).then(response => {
             if (!response.ok) {
-                throw new Error("No corresponding upgrade compression package found");
+                throw new Error('No corresponding upgrade compression package found');
             }
             return response.arrayBuffer();
         }).then((arrayBuffer) => {
