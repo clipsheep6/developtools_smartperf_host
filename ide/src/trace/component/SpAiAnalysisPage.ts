@@ -763,6 +763,16 @@ export class SpAiAnalysisPage extends BaseElement {
         this.draftBtn!.style.display = 'inline-block';
     }
 
+    // eventCallBack
+    eventCallBack = async (result: string) => {
+        this.draftList!.innerHTML = '';
+        this.tipsContent!.style.display = 'flex';
+        this.tipContentArr = ['detect'];
+        // @ts-ignore
+        this.abnormalPageTips(this.getStatusesPrompt()[result].prompt, '', 4000, ['detect']);
+        this.draftBtn!.style.display = 'inline-block';
+    }
+
     // 发起诊断
     initiateDiagnosis(): void {
         let requestBodyObj = {

@@ -25,6 +25,8 @@ import { LitCheckBox } from '../../../../../base-ui/checkbox/LitCheckBox';
 import { initSort } from '../SheetUtils';
 import { TabpanePerfProfile } from './TabPerfProfile';
 import { TabPanePerfAnalysisHtml } from './TabPanePerfAnalysis.html';
+import { WebSocketManager } from '../../../../../webSocket/WebSocketManager';
+import { Constants, TypeConstants } from '../../../../../webSocket/Constants';
 
 @element('tabpane-perf-analysis')
 export class TabPanePerfAnalysis extends BaseElement {
@@ -64,6 +66,13 @@ export class TabPanePerfAnalysis extends BaseElement {
   private tableArray: NodeListOf<LitTable> | undefined | null;
   private isComplete: boolean = true;
   private currentSelectionParam: SelectionParam | undefined | null;
+  private vaddrList: Array<unknown> = [];
+  private selectedTabProcessId: number = 0;
+  private selectedTabThreadId: number = 0;
+  private selectedTabfileName: string = '';
+  private clickFuncVaddrList: Array<unknown> = [];
+  private functionListener!: Function | undefined | null;
+  private currentSoName: string = '';
 
   set data(val: SelectionParam) {
     if (val === this.currentSelection) {
@@ -201,6 +210,7 @@ export class TabPanePerfAnalysis extends BaseElement {
     this.addRowClickEventListener(this.perfTableProcess!, this.perfProcessLevelClickEvent.bind(this));
     this.addRowClickEventListener(this.perfTableThread!, this.perfThreadLevelClickEvent.bind(this));
     this.addRowClickEventListener(this.perfTableSo!, this.perfSoLevelClickEvent.bind(this));
+    this.addRowClickEventListener(this.tableFunction!, this.functionClickEvent.bind(this));
   }
 
   private addRowClickEventListener(table: LitTable, clickEvent: Function): void {
@@ -336,25 +346,25 @@ export class TabPanePerfAnalysis extends BaseElement {
       tip: (perfObj): string => {
         return `<div>
                                 <div>Process:${
-                                  // @ts-ignore
-                                  perfObj.obj.tableName
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.tableName
+          }</div>
                                 <div>Sample Count:${
-                                  // @ts-ignore
-                                  perfObj.obj.count
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.count
+          }</div>
                                 <div>Percent:${
-                                  // @ts-ignore
-                                  perfObj.obj.percent
-                                }%</div> 
+          // @ts-ignore
+          perfObj.obj.percent
+          }%</div> 
                                 <div>Event Count:${
-                                  // @ts-ignore
-                                  perfObj.obj.eventCount
-                                }</div>
+          // @ts-ignore
+          perfObj.obj.eventCount
+          }</div>
                                 <div>Percent:${
-                                  // @ts-ignore
-                                  perfObj.obj.eventPercent
-                                }%</div> 
+          // @ts-ignore
+          perfObj.obj.eventPercent
+          }%</div> 
                             </div>
                                `;
       },
@@ -403,6 +413,8 @@ export class TabPanePerfAnalysis extends BaseElement {
     // @ts-ignore
     this.processName = it.tableName;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabProcessId = it.pid;
   }
 
   private threadPieChart(val: SelectionParam): void {
@@ -474,6 +486,8 @@ export class TabPanePerfAnalysis extends BaseElement {
     // @ts-ignore
     this.threadName = it.tableName;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabThreadId = it.tid;
   }
 
   private initPerfAnalysisPieConfig(): void {
@@ -541,6 +555,8 @@ export class TabPanePerfAnalysis extends BaseElement {
   private perfSoLevelClickEvent(it: unknown): void {
     this.reset(this.tableFunction!, true);
     this.showAssignLevel(this.tableFunction!, this.perfTableSo!, 3, this.functionData);
+    // @ts-ignore
+    this.currentSoName = it.tableName;
     this.getHiperfFunction(it);
     let title = '';
     if (this.processName.length > 0) {
@@ -556,6 +572,33 @@ export class TabPanePerfAnalysis extends BaseElement {
     }
     this.titleEl!.textContent = title;
     this.perfAnalysisPie?.hideTip();
+    // @ts-ignore
+    this.selectedTabfileName = it.tableName;
+  }
+
+  private functionClickEvent(it: unknown) {
+    this.clickFuncVaddrList = this.vaddrList.filter((item: unknown) => {
+      // @ts-ignore
+      return item.process_id === this.selectedTabProcessId &&
+        // @ts-ignore
+        item.thread_id === this.selectedTabThreadId &&
+        // @ts-ignore
+        item.libName === this.selectedTabfileName &&
+        // @ts-ignore
+        item.symbolName === it.tableName
+    })
+    if (this.clickFuncVaddrList.length > 0) {
+      const textEncoder = new TextEncoder();
+      const queryData = {
+        elf_name: this.currentSoName,  //@ts-ignore
+        vaddr: this.clickFuncVaddrList[0].vaddrInFile,  //@ts-ignore
+        func: it.tableName
+      };
+      const dataString = JSON.stringify(queryData);
+      const encodedData = textEncoder.encode(dataString);
+      WebSocketManager.getInstance()?.sendMessage(TypeConstants.DISASSEMBLY_TYPE, Constants.DISASSEMBLY_QUERY_CMD, encodedData);
+    }
+    this.functionListener!(it, this.clickFuncVaddrList);
   }
 
   private sortByColumn(): void {
@@ -1080,7 +1123,7 @@ export class TabPanePerfAnalysis extends BaseElement {
           // @ts-ignore
           other.percent = ((other.count / this.sumCount!) * 100).toFixed(2);
           // @ts-ignore
-          other.eventCount += res[i].eventCount; 
+          other.eventCount += res[i].eventCount;
           // @ts-ignore
           other.eventPercent = ((other.eventCount / this.sumEventCount!) * 100).toFixed(2);
         }
@@ -1111,6 +1154,15 @@ export class TabPanePerfAnalysis extends BaseElement {
       this.progressEL!.loading = false;
       this.getHiperfProcess(val);
     });
+    const args = [
+      {
+        funcName: 'getVaddrToFile',
+        funcArgs: [val],
+      },
+    ];
+    procedurePool.submitWithName('logic0', 'perf-vaddr', args, undefined, (results: Array<unknown>) => {
+      this.vaddrList = results;
+    })
   }
 
   private getDataByWorker(val: SelectionParam, handler: Function): void {
@@ -1150,6 +1202,10 @@ export class TabPanePerfAnalysis extends BaseElement {
         this.filterEl!.style.display = 'flex';
       }
     }).observe(this.parentElement!);
+  }
+
+  public addFunctionRowClickEventListener(clickEvent: Function): void {
+    this.functionListener = clickEvent;
   }
 
   initHtml(): string {
