@@ -175,7 +175,10 @@ static std::string GetName(const std::map<int, std::string> &nameMap, int type)
 static std::string GetFieldTypeName(EventFieldType type)
 {
     static std::map<int, std::string> toNames = {
-#define VALUE_NAME(x) {x, #x}
+#define VALUE_NAME(x) \
+    {                 \
+        x, #x         \
+    }
         VALUE_NAME(FIELD_TYPE_INVALID),   VALUE_NAME(FIELD_TYPE_BOOL),         VALUE_NAME(FIELD_TYPE_INT8),
         VALUE_NAME(FIELD_TYPE_UINT8),     VALUE_NAME(FIELD_TYPE_INT16),        VALUE_NAME(FIELD_TYPE_UINT16),
         VALUE_NAME(FIELD_TYPE_INT32),     VALUE_NAME(FIELD_TYPE_UINT32),       VALUE_NAME(FIELD_TYPE_INT64),
@@ -192,7 +195,10 @@ static std::string GetFieldTypeName(EventFieldType type)
 static std::string GetProtoTypeName(ProtoFieldType type)
 {
     static std::map<int, std::string> toNames = {
-#define VALUE_NAME(x) {x, #x}
+#define VALUE_NAME(x) \
+    {                 \
+        x, #x         \
+    }
         VALUE_NAME(PROTO_TYPE_UNKNOWN),  VALUE_NAME(PROTO_TYPE_DOUBLE),   VALUE_NAME(PROTO_TYPE_FLOAT),
         VALUE_NAME(PROTO_TYPE_INT64),    VALUE_NAME(PROTO_TYPE_UINT64),   VALUE_NAME(PROTO_TYPE_INT32),
         VALUE_NAME(PROTO_TYPE_FIXED64),  VALUE_NAME(PROTO_TYPE_FIXED32),  VALUE_NAME(PROTO_TYPE_BOOL),
@@ -611,6 +617,9 @@ bool FtraceProcessor::HandlePage(FtraceCpuDetailMsg &cpuMsg,
     cpuMsg.set_overwrite(curPageHeader_.overwrite);
     curTimestamp_ = curPageHeader_.timestamp;
     endPosOfData_ = curPageHeader_.endpos;
+    if (endPosOfData_ > endPosOfPage_) {
+        return false;
+    }
     while (curPos_ < curPageHeader_.endpos) {
         FtraceEventHeader eventHeader = {};
         TS_CHECK_TRUE(ReadInfo(&curPos_, endPosOfData_, &eventHeader, sizeof(FtraceEventHeader)), false,
