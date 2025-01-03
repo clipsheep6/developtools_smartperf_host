@@ -611,6 +611,9 @@ bool FtraceProcessor::HandlePage(FtraceCpuDetailMsg &cpuMsg,
     cpuMsg.set_overwrite(curPageHeader_.overwrite);
     curTimestamp_ = curPageHeader_.timestamp;
     endPosOfData_ = curPageHeader_.endpos;
+    if (endPosOfData_ > endPosOfPage_) {
+        return false;
+    }
     while (curPos_ < curPageHeader_.endpos) {
         FtraceEventHeader eventHeader = {};
         TS_CHECK_TRUE(ReadInfo(&curPos_, endPosOfData_, &eventHeader, sizeof(FtraceEventHeader)), false,
@@ -659,6 +662,9 @@ void FtraceProcessor::HmProcessPageTraceDataEvents(RmqConsumerData *rmqData,
     EventFormat format = {};
     auto curPtr = rmqData->data;
     auto endPtr = rmqData->data + rmqData->length;
+    if (rmqData->length > DATA_SIZE) {
+        return;
+    }
     while (curPtr < endPtr) {
         event = (struct RmqEntry *)curPtr;
         auto evtSize = event->size;

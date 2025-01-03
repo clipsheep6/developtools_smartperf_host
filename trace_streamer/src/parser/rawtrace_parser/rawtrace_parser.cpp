@@ -286,8 +286,8 @@ bool RawTraceParser::ParseDataRecursively(std::deque<uint8_t>::iterator &package
         packagesCurIter += sizeof(type);
         std::copy(packagesCurIter, packagesCurIter + sizeof(len), reinterpret_cast<uint8_t *>(&len));
         packagesCurIter += sizeof(len);
-        uint32_t restDataLen = std::distance(packagesCurIter, packagesBuffer_.end());
-        TS_CHECK_TRUE_RET(len <= restDataLen && packagesBuffer_.size() > 0, false);
+        int32_t restDataLen = std::distance(packagesCurIter, packagesBuffer_.end());
+        TS_CHECK_TRUE_RET(restDataLen >= 0 && len <= restDataLen && packagesBuffer_.size() > 0, false);
         std::string bufferLine(packagesCurIter, packagesCurIter + len);
         packagesCurIter += len;
         packagesCurIter = packagesBuffer_.erase(packagesBuffer_.begin(), packagesCurIter);

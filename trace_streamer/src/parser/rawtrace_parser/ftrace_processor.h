@@ -29,6 +29,8 @@ namespace SysTuning {
 namespace TraceStreamer {
 using namespace SysTuning::base;
 constexpr uint32_t FTRACE_PAGE_SIZE = 4096;
+// DATA_SIZE = FTRACE_PAGE_SIZE - RmqConsumerData.timestamp-RmqConsumerData.length-RmqConsumerData.coreId所占的长度
+constexpr uint32_t DATA_SIZE = 4079;
 constexpr uint32_t RMQ_ENTRY_ALIGN_MASK = (1 << 2) - 1;
 class FtraceProcessor {
 public:
