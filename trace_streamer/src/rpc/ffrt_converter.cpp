@@ -1,27 +1,14 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+//
+// Created by x00880296 on 2024/11/7.
+//
+
 #include <iomanip>
 #include <iostream>
 #include <future>
 #include <climits>
-#include <sstream>
 #include <charconv>
 #include "ffrt_converter.h"
 
-namespace SysTuning {
-namespace TraceStreamer {
 constexpr uint64_t INITIAL_TEXT_LINE_NUM = 2000000;
 constexpr uint64_t MAX_MOCK_TID = 4294967295;
 constexpr size_t BUFFER_SIZE = 1024 * 1024; // 1MB buffer
@@ -34,10 +21,32 @@ using FfrtWakeLogs = std::unordered_map<int, WakeLogs>;
 using Info = const std::pair<int, std::set<int>>;
 using ConVecStr = const std::vector<std::string>;
 
-static bool WriteOutputFile(std::ofstream &outfile, std::vector<std::string> &context_)
+static bool write_output_file(ConStr& ffrtFile_name, std::vector<std::string>& context_)
 {
+    std::string file_name;
+    std::string file_ext;
+
+    std::string_view contain_name_str = std::string_view(ffrtFile_name).substr(ffrtFile_name.find_last_of("//") + 1);
+    size_t dot_pos = contain_name_str.find('.');
+    if (dot_pos != std::string_view::npos) {
+        file_name = std::string(contain_name_str.substr(0, dot_pos));
+        file_ext = std::string(contain_name_str.substr(dot_pos));
+    } else {
+        file_name = std::string(contain_name_str);
+        file_ext = "";
+    }
+
+    const size_t num_threads = std::thread::hardware_concurrency();
+    const size_t chunk_size = (context_.size() + num_threads - 1) / num_threads;
+
+    // 创建输出文件
+    std::string output_filename = file_name + "_ffrt_recover" + file_ext;
+
+    std::ofstream outfile(output_filename,
+                        std::ios::out | std::ios::binary | std::ios::trunc);
+
     if (!outfile.is_open()) {
-        TS_LOGE("outFile is invalid.");
+        std::cerr << "Failed to open the output file." << std::endl;
         return false;
     }
 
@@ -46,19 +55,17 @@ static bool WriteOutputFile(std::ofstream &outfile, std::vector<std::string> &co
 
     for (const auto& line : context_) {
         outfile.write(line.c_str(), line.size());
-        outfile.put('\n');
+        outfile.put('\n'); // 添加换行符
     }
-
     outfile.close();
-    context_.clear();
     return true;
 }
 
-bool FfrtConverter::RecoverTraceAndGenerateNewFile(ConStr &ffrtFileName, std::ofstream &outFile)
+bool FfrtConverter::RecoverTraceAndGenerateNewFile(ConStr &ffrtFileName)
 {
     std::ifstream ffrtFile(ffrtFileName);
-    if (!ffrtFile.is_open() || !outFile.is_open()) {
-        TS_LOGE("ffrtFile or outFile is invalid.");
+    if (!ffrtFile.is_open()) {
+        printf("ffrtFile is invalid.");
         return false;
     }
 
@@ -84,7 +91,7 @@ bool FfrtConverter::RecoverTraceAndGenerateNewFile(ConStr &ffrtFileName, std::of
         ConvertFrrtThreadToFfrtTaskNohos(ffrtPids, ffrtWakeLogs);
     }
 
-    return WriteOutputFile(outFile, context_);
+    return WriteOutputFile(ffrtFileName, context_);
 }
 
 static uint32_t ExtractProcessId(ConStr& log)
@@ -693,7 +700,7 @@ static std::string MakeWakeupFakeLog(ConStr &log, const FakeLogArgs &fakeLogArgs
     std::stringstream fakeLogStrm;
     fakeLogStrm << log.substr(0, log.find(tracingMarkerKey)) << "sched_wakeup: comm=" <<
                 fakeLogArgs.taskLabel << " pid=" << mockTid << " prio=" <<
-                fakeLogArgs.prio << " target_cpu=" << fakeLogArgs.cpuId << "\n";
+                fakeLogArgs.prio << " target_cpu=" << fakeLogArgs.cpuId;
     return fakeLogStrm.str();
 }
 
@@ -796,7 +803,6 @@ static int FindGreaterThan(const std::vector<int> &vec, int target)
     if (it != vec.end() && *it > target) {
         return std::distance(vec.begin(), it);
     }
-    return vec.size();
 }
 
 static bool HandleQueTaskInfoIn(ConStr &log, int lineno, int pid, QueueTaskInfo &queueTaskInfo)
@@ -1100,8 +1106,6 @@ bool FfrtConverter::HandleFfrtTaskExecute(FakeLogArgs &fakLogArg, WakeLogs &wake
         if (!missLog.empty()) {
             context_[fakLogArg.lineno] = missLog + context_[fakLogArg.lineno];
         }
-        fakLogArg.switchInFakeLog = true;
-        fakLogArg.switchOutFakeLog = false;
         if (wakeLogs.find(fakLogArg.taskRunning) != wakeLogs.end()) {
             int prevIndex = FindGreaterThan(wakeLogs[fakLogArg.taskRunning], fakLogArg.lineno);
             if (prevIndex > 0) {
@@ -1115,30 +1119,16 @@ bool FfrtConverter::HandleFfrtTaskExecute(FakeLogArgs &fakLogArg, WakeLogs &wake
 }
 
 bool FfrtConverter::HandlePreLineno(FakeLogArgs &fakArg, WakeLogs &wakeLogs,
-                                    TaskLabels &taskLabels, ConStr traceBeginMark, ConStr traceEndMark)
+                                    TaskLabels &taskLabels)
 {
     std::string label = ExtractTaskLable(fakArg.log);
     if (HandleFfrtTaskExecute(fakArg, wakeLogs, taskLabels, label)) {
         return true;
     }
     if (fakArg.taskRunning != -1) {
-        if (HandleFfrtTaskCo(fakArg.log, fakArg.lineno, fakArg.switchInFakeLog, fakArg.switchOutFakeLog)) {
-            return true;
-        }
-        if (fakArg.switchInFakeLog && (fakArg.log.find(traceBeginMark) != std::string::npos)) {
-            context_[fakArg.lineno] = "\n";
-            return true;
-        }
-        if (fakArg.switchOutFakeLog && (fakArg.log.find(traceEndMark) != std::string::npos)) {
-            context_[fakArg.lineno] = "\n";
-            return true;
-        }
         if (IsFfrtTaskBlockOrFinish(fakArg.log)) {
             std::string fakeLog = MakeCoyieldFakeLog(fakArg);
             context_[fakArg.lineno] = fakeLog;
-            if (fakArg.switchOutFakeLog) {
-                fakArg.switchOutFakeLog = false;
-            }
             fakArg.taskRunning = -1;
             return true;
         }
@@ -1151,8 +1141,7 @@ bool FfrtConverter::HandlePreLineno(FakeLogArgs &fakArg, WakeLogs &wakeLogs,
 }
 
 void FfrtConverter::ExceTaskLabelOhos(TaskLabels &taskLabels, FfrtWakeLogs &ffrtWakeLogs,
-                                      std::pair<int, FfrtTidMap> pidItem, std::string traceBeginMark,
-                                      std::string traceEndMark)
+                                      std::pair<int, FfrtTidMap> pidItem)
 {
     taskLabels[pidItem.first] = {};
     WakeLogs tmp = {};
@@ -1164,8 +1153,6 @@ void FfrtConverter::ExceTaskLabelOhos(TaskLabels &taskLabels, FfrtWakeLogs &ffrt
         std::vector<int> linenos = tidItem.second.second;
         int prio = 120;
 
-        bool switchInFakeLog = false;
-        bool switchOutFakeLog = false;
         int taskRunning = -1;
 
         for (auto lineno : linenos) {
@@ -1176,19 +1163,17 @@ void FfrtConverter::ExceTaskLabelOhos(TaskLabels &taskLabels, FfrtWakeLogs &ffrt
             std::string cpuId = ExtractCpuId(log);
             std::string timestamp = ExtractTimeStr(log);
             FakeLogArgs fakArg{pidItem.first, tidItem.first, taskRunning, prio, lineno,
-                               switchInFakeLog, switchOutFakeLog, log, tname,
+                               log, tname,
                                taskLabels[pidItem.first][taskRunning], cpuId, timestamp};
-            HandlePreLineno(fakArg, wakeLogs, taskLabels, traceBeginMark, traceEndMark);
+            HandlePreLineno(fakArg, wakeLogs, taskLabels);
         }
     }
 }
 
 void FfrtConverter::GenTaskLabelsOhos(FfrtPids &ffrtPids, FfrtWakeLogs& ffrtWakeLogs, TaskLabels &taskLabels)
 {
-    static std::string traceBeginMark = tracingMarkerKey_ + "B";
-    static std::string traceEndMark = tracingMarkerKey_ + "E";
     for (auto &pidItem : ffrtPids) {
-        ExceTaskLabelOhos(taskLabels, ffrtWakeLogs, pidItem, traceBeginMark, traceEndMark);
+        ExceTaskLabelOhos(taskLabels, ffrtWakeLogs, pidItem);
     }
 }
 
@@ -1237,16 +1222,16 @@ bool FfrtConverter::HandleHFfrtTaskExecute(FakeLogArgs &fakeArgs, WakeLogs &wake
     }
     fakeArgs.taskRunning = gid;
     FakeLogArgs fakArg2{fakeArgs.pid, fakeArgs.tid, fakeArgs.taskRunning, fakeArgs.prio, fakeArgs.lineno,
-                        fakeArgs.switchInFakeLog, fakeArgs.switchOutFakeLog, fakeArgs.log, fakeArgs.tname,
-                        taskLabels[fakeArgs.pid][fakeArgs.taskRunning], fakeArgs.cpuId, fakeArgs.timestamp};
+                        fakeArgs.log, fakeArgs.tname, taskLabels[fakeArgs.pid][fakeArgs.taskRunning],
+                        fakeArgs.cpuId, fakeArgs.timestamp};
     std::string fakeLog = MakeCostartFakeLog(fakArg2);
     context_[fakeArgs.lineno] = fakeLog;
     if (!missLog.empty()) {
         context_[fakeArgs.lineno] = missLog + context_[fakeArgs.lineno];
     }
     FakeLogArgs fakArg3{fakeArgs.pid, fakeArgs.tid, fakeArgs.taskRunning, fakeArgs.prio, fakeArgs.lineno,
-                        fakeArgs.switchInFakeLog, fakeArgs.switchOutFakeLog, fakeArgs.log, fakeArgs.tname,
-                        taskLabels[fakeArgs.pid][fakeArgs.taskRunning], fakeArgs.cpuId, fakeArgs.timestamp};
+                        fakeArgs.log, fakeArgs.tname, taskLabels[fakeArgs.pid][fakeArgs.taskRunning],
+                        fakeArgs.cpuId, fakeArgs.timestamp};
     if (wakeLogs.find(fakeArgs.taskRunning) != wakeLogs.end()) {
         int prevIndex = FindGreaterThan(wakeLogs[fakeArgs.taskRunning], fakeArgs.lineno);
         if (prevIndex > 0) {
@@ -1308,13 +1293,10 @@ bool FfrtConverter::HandlePreLinenoNohos(FakeLogArgs &fakArg, WakeLogs &wakeLogs
         context_[fakArg.lineno] = fakeLog;
         return true;
     }
-    return false;
 }
 void FfrtConverter::ExceTaskLabelNohos(TaskLabels &taskLabels, FfrtWakeLogs &ffrtWakeLogs,
                                        std::pair<int, FfrtTidMap> pidItem, std::unordered_map<int, int> &schedWakeFlag)
 {
-    bool oneF = false;
-    bool twoF = false;
     taskLabels[pidItem.first] = {};
     WakeLogs tmp = {};
     WakeLogs &wakeLogs = (ffrtWakeLogs.find(pidItem.first) != ffrtWakeLogs.end())
@@ -1337,8 +1319,7 @@ void FfrtConverter::ExceTaskLabelNohos(TaskLabels &taskLabels, FfrtWakeLogs &ffr
             std::string label = ExtractTaskLable(log);
 
             FakeLogArgs fakArg{pidItem.first, tidItem.first, taskRunning, prio, lineno,
-                               oneF, twoF, log, tname,
-                               taskLabels[pidItem.first][taskRunning], cpuId, timestamp};
+                               log, tname, taskLabels[pidItem.first][taskRunning], cpuId, timestamp};
             HandlePreLinenoNohos(fakArg, wakeLogs, taskLabels, schedWakeFlag);
         }
     }
@@ -1355,5 +1336,3 @@ void FfrtConverter::ConvertFrrtThreadToFfrtTaskNohos(FfrtPids &ffrtPids, FfrtWak
         ExceTaskLabelNohos(taskLabels, ffrtWakeLogs, pidItem, schedWakeFlag);
     }
 }
-} // namespace TraceStreamer
-} // namespace SysTuning
