@@ -1,30 +1,15 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#ifndef FFRT_CONVERTER_H
-#define FFRT_CONVERTER_H
+//
+// Created by x00880296 on 2024/11/7.
+//
+
+#ifndef TEST2_FFRTCONVERTER_H
+#define TEST2_FFRTCONVERTER_H
 #include <string>
 #include <vector>
 #include <regex>
 #include <fstream>
 #include <set>
-#include <unordered_map>
-#include "ts_common.h"
-namespace SysTuning {
-namespace TraceStreamer {
-
-    using ConStr = const std::string;
+using ConStr = const std::string;
 
 struct tidInfo {
     std::vector<int> begin;
@@ -56,8 +41,6 @@ struct FakeLogArgs {
     int &taskRunning;
     int prio;
     int lineno;
-    bool &switchInFakeLog;
-    bool &switchOutFakeLog;
     std::string &log;
     std::string &tname;
     std::string &taskLabel;
@@ -75,7 +58,7 @@ public:
     FfrtConverter() = default;
     ~FfrtConverter() = default;
 
-    bool RecoverTraceAndGenerateNewFile(ConStr &ffrtFileName, std::ofstream &outFile);
+    bool RecoverTraceAndGenerateNewFile(ConStr &ffrtFileName);
 
 private:
 
@@ -105,8 +88,7 @@ private:
 
     void GenTaskLabelsOhos(FfrtPids &ffrtPids, FfrtWakeLogs& ffrtWakeLogs, TaskLabels &taskLabels);
 
-    bool HandlePreLineno(FakeLogArgs &fakArg, WakeLogs &wakeLogs,
-                         TaskLabels &taskLabels, ConStr traceBeginMark, ConStr traceEndMark);
+    bool HandlePreLineno(FakeLogArgs &fakArg, WakeLogs &wakeLogs, TaskLabels &taskLabels);
 
     void SetTracingMarkerKey(LogInfo logInfo);
 
@@ -116,8 +98,7 @@ private:
 
     void HandleTaskGroups(std::vector<std::vector<tidInfo>> &taskGroups, WakeLogs &wakeLogs);
 
-    void ExceTaskLabelOhos(TaskLabels &taskLabels, FfrtWakeLogs &ffrtWakeLogs, std::pair<int, FfrtTidMap> pidItem,
-                           std::string traceBeginMark, std::string traceEndMark);
+    void ExceTaskLabelOhos(TaskLabels &taskLabels, FfrtWakeLogs &ffrtWakeLogs, std::pair<int, FfrtTidMap> pidItem);
 
     bool HandleHFfrtTaskExecute(FakeLogArgs &fakeArgs, WakeLogs &wakeLogs, TaskLabels &taskLabels,
                                 std::string label, std::unordered_map<int, int> &schedWakeFlag);
@@ -128,6 +109,4 @@ private:
     void ExceTaskLabelNohos(TaskLabels &taskLabels, FfrtWakeLogs &ffrtWakeLogs,
                            std::pair<int, FfrtTidMap> pidItem, std::unordered_map<int, int> &schedWakeFlag);
 };
-} // namespace TraceStreamer
-} // namespace SysTuning
-#endif // FFRT_CONVERTER_H
+#endif // TEST2_FFRTCONVERTER_H
