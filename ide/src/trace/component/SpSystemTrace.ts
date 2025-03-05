@@ -142,6 +142,8 @@ import { XpowerStatisticStruct } from '../database/ui-worker/ProcedureWorkerXpow
 import { XpowerWifiStruct } from '../database/ui-worker/ProcedureWorkerXpowerWifi';
 import { XpowerThreadInfoStruct } from '../database/ui-worker/ProcedureWorkerXpowerThreadInfo';
 import { XpowerGpuFreqStruct } from '../database/ui-worker/ProcedureWorkerXpowerGpuFreq';
+import { LitProgressBar } from '../../base-ui/progress-bar/LitProgressBar';
+import { SnapShotStruct } from '../database/ui-worker/ProcedureWorkerSnaps';
 
 function dpr(): number {
   return window.devicePixelRatio || 1;
@@ -972,6 +974,18 @@ export class SpSystemTrace extends BaseElement {
 
   documentOnMouseOut = (ev: MouseEvent): void => spSystemTraceDocumentOnMouseOut(this, ev);
 
+  documentOnPointercancel = (ev: any): void => {
+    if (ev.pointerType == 'mouse') {
+      this.dispatchEvent(
+        new CustomEvent('abnormal-mouseup', {
+          detail: {
+            value: true,
+          },
+        })
+      );
+    }
+  };
+
   keyPressMap: Map<string, boolean> = new Map([
     ['w', false],
     ['s', false],
@@ -1371,7 +1385,8 @@ export class SpSystemTrace extends BaseElement {
     SampleStruct.hoverSampleStruct = undefined;
     PerfToolStruct.hoverPerfToolStruct = undefined;
     GpuCounterStruct.hoverGpuCounterStruct = undefined;
-    DmaFenceStruct.hoverDmaFenceStruct = undefined;//清空hover slice
+    DmaFenceStruct.hoverDmaFenceStruct = undefined;
+    SnapShotStruct.hoverSnapShotStruct = undefined;
     this.tipEL!.style.display = 'none';
     return this;
   }
@@ -1406,13 +1421,14 @@ export class SpSystemTrace extends BaseElement {
     SampleStruct.selectSampleStruct = undefined;
     PerfToolStruct.selectPerfToolStruct = undefined;
     GpuCounterStruct.selectGpuCounterStruct = undefined;
-    DmaFenceStruct.selectDmaFenceStruct = undefined;//清空选中slice
+    DmaFenceStruct.selectDmaFenceStruct = undefined;
     XpowerAppDetailStruct.selectXpowerStruct = undefined;
     XpowerStatisticStruct.selectXpowerStruct = undefined;
     XpowerWifiStruct.selectBytesXpowerStruct = undefined;
     XpowerWifiStruct.selectPacketsXpowerStruct = undefined;
     XpowerThreadInfoStruct.selectXpowerStruct = undefined;
     XpowerGpuFreqStruct.selectXpowerStruct = undefined;
+    SnapShotStruct.hoverSnapShotStruct = undefined;
     return this;
   }
 
@@ -1760,6 +1776,7 @@ export class SpSystemTrace extends BaseElement {
     this.addEventListener('mousedown', this.documentOnMouseDown);
     this.addEventListener('mouseup', this.documentOnMouseUp);
     this.addEventListener('mouseout', this.documentOnMouseOut);
+    this.addEventListener('pointercancel', this.documentOnPointercancel);
     document.addEventListener('keydown', this.documentOnKeyDown);
     document.addEventListener('keypress', this.documentOnKeyPress);
     document.addEventListener('keyup', this.documentOnKeyUp);
@@ -1810,8 +1827,13 @@ export class SpSystemTrace extends BaseElement {
       a.href = URL.createObjectURL(new Blob([`${markBuf.byteLength}`, mark, buffer])); // @ts-ignore
       a.download = (window as unknown).traceFileName || `${new Date().getTime()}`;
       a.click();
+      window.publish(window.SmartEvent.UI.Loading, { loading: false, text: 'Downloading trace file with mark' });
+    } else {
+      let search = document.querySelector('body > sp-application')!.shadowRoot!.querySelector<LitSearch>('#lit-search');
+      let progressEL = document.querySelector("body > sp-application")!.shadowRoot!.querySelector<LitProgressBar>("div > div.search-vessel > lit-progress-bar");
+      progressEL!.loading = false;
+      search!.setPercent('import the trace file again...', -3);
     }
-    window.publish(window.SmartEvent.UI.Loading, { loading: false, text: 'Downloading trace file with mark' });
   }
 
   private subRecordImportListener(): void {
@@ -2176,6 +2198,7 @@ export class SpSystemTrace extends BaseElement {
     this.removeEventListener('mousedown', this.documentOnMouseDown);
     this.removeEventListener('mouseup', this.documentOnMouseUp);
     this.removeEventListener('mouseout', this.documentOnMouseOut);
+    this.removeEventListener('pointercancel', this.documentOnPointercancel);
     document.removeEventListener('keypress', this.documentOnKeyPress);
     document.removeEventListener('keydown', this.documentOnKeyDown);
     document.removeEventListener('keyup', this.documentOnKeyUp);

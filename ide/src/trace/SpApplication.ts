@@ -17,7 +17,7 @@ import { BaseElement, element } from '../base-ui/BaseElement';
 import '../base-ui/menu/LitMainMenu';
 import '../base-ui/icon/LitIcon';
 import '../base-ui/loading/LitLoading';
-import '../base-ui/like/LitLike'; 
+import '../base-ui/like/LitLike';
 import { SpMetrics } from './component/SpMetrics';
 import { SpHelp } from './component/SpHelp';
 import './component/SpHelp';
@@ -85,11 +85,14 @@ import './component/SpThirdParty';
 import { cancelCurrentTraceRowHighlight } from './component/SpSystemTrace.init';
 import './component/SpBubblesAI';
 import './component/SpAiAnalysisPage';
+import './component/SpSnapShotView';
 import { WebSocketManager } from '../webSocket/WebSocketManager';
 import { SpAiAnalysisPage } from './component/SpAiAnalysisPage';
 import './component/SpAdvertisement';
 import { ShadowRootInput } from './component/trace/base/ShadowRootInput';
 import { SpBubblesAI } from './component/SpBubblesAI';
+import { SpSnapShotView } from './component/SpSnapShotView';
+import { SnapShotStruct } from './database/ui-worker/ProcedureWorkerSnaps';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -178,6 +181,8 @@ export class SpApplication extends BaseElement {
   private currentDataTime: string[] = [];
   static traceType: String = '';
   private isZipFile: boolean = false;
+  isClear: boolean = false;
+  static spSnapShotView: SpSnapShotView | undefined | null;
 
   static get observedAttributes(): Array<string> {
     return ['server', 'sqlite', 'wasm', 'dark', 'vs', 'query-sql', 'subsection'];
@@ -321,6 +326,7 @@ export class SpApplication extends BaseElement {
     this.contentCenterOption = this.shadowRoot?.querySelector<HTMLDivElement>('.content-center-option');
     this.spAiAnalysisPage = this.shadowRoot!.querySelector('#sp-ai-analysis') as SpAiAnalysisPage;
     let xiaoLubanEl: HTMLElement | null = this.shadowRoot!.querySelector<HTMLElement>('#sp-bubbles');
+    SpApplication.spSnapShotView = this.shadowRoot!.querySelector('#sp-snapshot-view') as SpSnapShotView;
     this.initElementsAttr();
     this.initEvents();
     this.initRecordEvents();
@@ -334,8 +340,24 @@ export class SpApplication extends BaseElement {
     this.initElementsEnd();
     this.dragXiaolubanEvents(xiaoLubanEl!);
     this.connectWebSocket();
+    SpApplication.spSnapShotView!.addEventListener('mousemove', () => {
+      this.clearSnapShot();
+    })
+    SpApplication.spSnapShotView!.addEventListener('mouseout', () => {
+      this.clearSnapShot();
+      setTimeout(() => {
+        SnapShotStruct.isClear = false;
+      }, 0);
+    })
 
   }
+
+  private clearSnapShot():void {
+    SnapShotStruct.hoverSnapShotStruct = undefined;
+    SnapShotStruct.isClear = true;
+    this.spSystemTrace?.refreshCanvas(true);
+  }
+
   private dragXiaolubanEvents(xiaoLubanEl: HTMLElement): void {
     document.querySelector('body')!.addEventListener('dragover', function (event) {
       event.preventDefault();
@@ -686,7 +708,7 @@ export class SpApplication extends BaseElement {
   private judgeZip(typeHeader: Blob): void {
     const fileReader = new FileReader();
     fileReader.readAsArrayBuffer(typeHeader);
-    fileReader.onload = (event):void => {
+    fileReader.onload = (event): void => {
       const uint8Array = new Uint8Array(event.target!.result as ArrayBuffer);
       this.isZipFile = isZipFile(uint8Array) || isZlibFile(uint8Array);
       if (this.isZipFile) {
@@ -1997,7 +2019,15 @@ export class SpApplication extends BaseElement {
       this.filterRowConfigClickHandle();
     });
     this.cutTraceFile!.addEventListener('click', (ev) => {
-      this.croppingFile(this.progressEL!, this.litSearch!);
+      this.validateFileCacheLost();
+      if (this.isClear) {
+        let search = document.querySelector('body > sp-application')!.shadowRoot!.querySelector<LitSearch>('#lit-search');
+        let progressEL = document.querySelector("body > sp-application")!.shadowRoot!.querySelector<LitProgressBar>("div > div.search-vessel > lit-progress-bar");
+        progressEL!.loading = false;
+        search!.setPercent('import the trace file again...', -3);
+      } else {
+        this.croppingFile(this.progressEL!, this.litSearch!);
+      }
     });
 
     let aiAnalysis = this.shadowRoot
@@ -2024,7 +2054,6 @@ export class SpApplication extends BaseElement {
   private aiPageResize(): void {
     const resizableDiv = this.spAiAnalysisPage!;
     let isResizing = false;
-
     resizableDiv.addEventListener('mousemove', (e) => {
       if (Math.abs(e.clientX - resizableDiv.getBoundingClientRect().left) < 5) {
         resizableDiv.style.cursor = 'e-resize';
@@ -2035,12 +2064,25 @@ export class SpApplication extends BaseElement {
 
     resizableDiv.addEventListener('mousedown', function (e) {
       isResizing = true;
+      let iframe = document.querySelector('body > sp-application')?.shadowRoot!.querySelector<SpHelp>('#sp-help')?.shadowRoot?.querySelector('#myIframe');
+      // @ts-ignore
+      let iframeWindow = iframe?.contentWindow;
       if (e.clientX - resizableDiv.getBoundingClientRect().left < 5) {
         document.addEventListener('mousemove', changeAiWidth);
+        iframeWindow?.addEventListener('mousemove', iframeChangeAiWidth);
       }
       document.addEventListener('mouseup', mouseUp);
+      iframeWindow?.addEventListener('mouseup', mouseUp);
     });
 
+    function iframeChangeAiWidth(e: unknown): void {
+      let iframe = document.querySelector('body > sp-application')?.shadowRoot!.querySelector<SpHelp>('#sp-help')?.shadowRoot?.querySelector('#myIframe');
+      // @ts-ignore
+      let iframeWindow = iframe?.contentWindow;
+      resizableDiv.style.cursor = 'e-resize';
+      // @ts-ignore
+      resizableDiv.style.width = iframeWindow.innerWidth - e.clientX + 'px';
+    }
 
     function changeAiWidth(e: unknown): void {
       resizableDiv.style.cursor = 'e-resize';
@@ -2052,6 +2094,12 @@ export class SpApplication extends BaseElement {
       isResizing = false;
       document.removeEventListener('mousemove', changeAiWidth);
       document.removeEventListener('mouseup', mouseUp);
+
+      let iframe = document.querySelector('body > sp-application')?.shadowRoot!.querySelector<SpHelp>('#sp-help')?.shadowRoot?.querySelector('#myIframe');
+      // @ts-ignore
+      let iframeWindow = iframe?.contentWindow;
+      iframeWindow?.removeEventListener('mousemove', iframeChangeAiWidth);
+      iframeWindow?.removeEventListener('mouseup', mouseUp);
     }
   }
 
@@ -2254,8 +2302,10 @@ export class SpApplication extends BaseElement {
             }
           });
         });
-        this.cutTraceFile!.style.display = 'none';
+        this.isClear = true;
         this.mainMenu!.menus = this.mainMenu!.menus;
+      } else {
+        this.isClear = false;
       }
     });
   }
@@ -2610,5 +2660,11 @@ export class SpApplication extends BaseElement {
     }
     this.mainMenu!.menus = this.mainMenu!.menus;
     this.filterConfig!.style.visibility = disable ? 'hidden' : 'visible';
+  }
+
+  static displaySnapShot(selectSnapShotStruct: SnapShotStruct | undefined) {
+    this.spSnapShotView!.style.display = 'block';
+    this.spSnapShotView!.style.visibility = 'visible';
+    this.spSnapShotView?.init(selectSnapShotStruct!)
   }
 }

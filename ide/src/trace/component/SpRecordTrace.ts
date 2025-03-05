@@ -74,7 +74,7 @@ import { LitCheckBox } from '../../base-ui/checkbox/LitCheckBox';
 const DEVICE_NOT_CONNECT =
   '<div>1.请确认抓取设备上是否已勾选并确认总是允许smartPerf-Host调试的弹窗</div>' +
   '<div>2.请关闭DevEco Studio,DevEco Testing等会占用hdc端口的应用</div>' +
-  '<div>3.请使用系统管理员权限打开cmd窗口，并执行hdc kill，确保PC端任务管理器中没有hdc进程</div>' +
+  '<div>3.确保PC端任务管理器中没有hdc进程。方法1、请使用系统管理员权限打开cmd窗口，并执行hdc kill；<br/>方法2、打开任务管理器，进入详情信息页面，找到 hdc.exe 然后结束此进程；</div>' +
   '<div>4.若没有效果，请重新插拔一下手机。紧急情况可拷贝trace命令，在cmd窗口离线抓取</div>';
 
 @element('sp-record-trace')
@@ -194,6 +194,7 @@ export class SpRecordTrace extends BaseElement {
         if (devs.length === 0) {
           this.recordButton!.hidden = true;
           this.disconnectButton!.hidden = true;
+          this.cancelButton!.hidden = true;
           this.devicePrompt!.innerText = 'Device not connected';
           this.hintEl!.innerHTML = DEVICE_NOT_CONNECT;
           if (!this.showHint) {
@@ -215,6 +216,7 @@ export class SpRecordTrace extends BaseElement {
               option.selected = true;
               this.recordButton!.hidden = false;
               this.disconnectButton!.hidden = false;
+              this.cancelButton!.hidden = true;
               this.showHint = false;
               this.devicePrompt!.innerText = '';
               this.hintEl!.textContent = '';
@@ -230,6 +232,7 @@ export class SpRecordTrace extends BaseElement {
           }, 3000);
           this.recordButton!.hidden = true;
           this.disconnectButton!.hidden = true;
+          this.cancelButton!.hidden = true;
           this.devicePrompt!.innerText = 'Device not connected';
           this.hintEl!.innerHTML = DEVICE_NOT_CONNECT;
           if (!this.showHint) {
@@ -417,10 +420,12 @@ export class SpRecordTrace extends BaseElement {
     if (this.deviceSelect.options && this.deviceSelect.options.length > 0) {
       this.disconnectButton!.hidden = false;
       this.recordButton.hidden = false;
+      this.cancelButton!.hidden = false;
       this.devicePrompt.innerText = '';
     } else {
       this.disconnectButton!.hidden = true;
       this.recordButton.hidden = true;
+      this.cancelButton!.hidden = true;
       this.devicePrompt.innerText = 'Device not connected';
     }
     this.useExtendCheck = this.shadowRoot?.querySelector('#use-extend-check') as LitCheckBox;
@@ -435,6 +440,7 @@ export class SpRecordTrace extends BaseElement {
       SpRecordTrace.serialNumber = '';
       this.recordButton!.hidden = true;
       this.disconnectButton!.hidden = true;
+      this.cancelButton!.hidden = true;
       // @ts-ignore
       while (this.deviceSelect!.firstChild) {
         this.deviceSelect!.removeChild(this.deviceSelect!.firstChild); // 删除子节点
@@ -458,7 +464,7 @@ export class SpRecordTrace extends BaseElement {
 
   isShowTipFunc(text: string, isShow: boolean): void {
     if (isShow) {
-      let guideSrc = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/?action=help_27`;
+      let guideSrc = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}?action=help_27`;
       this.useExtentTip!.style.display = 'block';
       // @ts-ignore
       this.useExtentTip!.innerHTML = `若要抓取${text}，请勾选 Use local hdc 开关，启动后台扩展服务进行抓取，相关指导: [</span style="cursor: pointer;"><a href=${guideSrc} style="color: blue;" target="_blank">指导</a><span>]`;
@@ -574,6 +580,7 @@ export class SpRecordTrace extends BaseElement {
         if (fileHandler) {
           this.refreshDisableStyle(false, false);
           this.recordButton!.hidden = false;
+          this.cancelButton!.hidden = true;
           fileHandler({
             detail: file,
           });
@@ -583,9 +590,12 @@ export class SpRecordTrace extends BaseElement {
         this.progressEL!.loading = false;// @ts-ignore
         let errorMsg = new TextDecoder().decode(result);
         this.useExtentTip!.style.display = 'block';
-        this.useExtentTip!.innerHTML = errorMsg;
+        let urlAsciiArr = [104,116,116,112,115,58,47,47,119,105,107,105,46,104,117,97,119,101,105,46,99,111,109,47,100,111,109,97,105,110,115,47,55,54,57,49,49,47,119,105,107,105,47,49,50,53,52,56,48,47,87,73,75,73,50,48,50,53,48,49,49,54,53,55,53,48,52,53,52];
+        let exceptGuid = String.fromCodePoint(...urlAsciiArr);//'https://wiki.huawei.com/domains/76911/wiki/125480/WIKI202501165750454'
+        this.useExtentTip!.innerHTML = `抓取trace异常：${errorMsg} 可根据[<span style='cursor:pointer;'><a href=${exceptGuid} syule = 'color:blue;' target='_blank'>常见异常处理</a></span>]解决异常`;
         this.refreshDisableStyle(false, false);
         this.recordButton!.hidden = false;
+        this.cancelButton!.hidden = true;
         this.sp!.search = false;
         this.progressEL!.loading = false;
       } else if (cmd === 4) {
@@ -659,6 +669,7 @@ export class SpRecordTrace extends BaseElement {
           } else {
             this.recordButton!.hidden = true;
             this.disconnectButton!.hidden = true;
+            this.cancelButton!.hidden = true;
             this.devicePrompt!.innerText = 'Device not connected';
             this.hintEl!.innerHTML = DEVICE_NOT_CONNECT;
             if (!this.showHint) {
@@ -673,6 +684,7 @@ export class SpRecordTrace extends BaseElement {
   eventCallBack = (result: string): void => {
     this.recordButton!.hidden = true;
     this.disconnectButton!.hidden = true;
+    this.cancelButton!.hidden = true;
     this.disconnectButtonClickEvent();
     this.useExtentTip!.style.display = 'block';
     // @ts-ignore
@@ -681,7 +693,7 @@ export class SpRecordTrace extends BaseElement {
 
   getStatusesPrompt(): unknown {
     let guideSrc = `https://${window.location.host.split(':')[0]}:${window.location.port
-      }/application/?action=help_27`;
+      }${window.location.pathname}?action=help_27`;
     return {
       unconnected: {
         prompt: `未连接，请启动本地扩展程序再试！[</span style="cursor: pointer;"><a href=${guideSrc} style="color: blue;" target="_blank">指导</a><span>]`
@@ -721,6 +733,7 @@ export class SpRecordTrace extends BaseElement {
           this.usbSerialNum.shift();
           this.recordButton!.hidden = true;
           this.disconnectButton!.hidden = true;
+          this.cancelButton!.hidden = true;
           this.devicePrompt!.innerText = 'Device not connected';
           this.deviceSelect!.style!.border = '2px solid red';
           setTimeout(() => {
@@ -748,6 +761,7 @@ export class SpRecordTrace extends BaseElement {
             option.selected = true;
             this.recordButton!.hidden = false;
             this.disconnectButton!.hidden = false;
+            this.cancelButton!.hidden = true;
             this.devicePrompt!.innerText = '';
             this.hintEl!.textContent = '';
             // @ts-ignore
@@ -768,6 +782,7 @@ export class SpRecordTrace extends BaseElement {
           }, 3000);
           this.recordButton!.hidden = true;
           this.disconnectButton!.hidden = true;
+          this.cancelButton!.hidden = true;
           this.devicePrompt!.innerText = 'Device not connected';
           this.useExtentTip!.style.display = 'block';
           this.useExtentTip!.innerHTML = '手机连接有问题，请重新插拔一下手机，或者请使用系统管理员权限打开cmd窗口，并执行hdc shell';
@@ -797,10 +812,12 @@ export class SpRecordTrace extends BaseElement {
     if (this.deviceSelect!.options.length > 0) {
       this.recordButton!.hidden = false;
       this.disconnectButton!.hidden = false;
+      this.cancelButton!.hidden = false;
       this.devicePrompt!.innerText = '';
     } else {
       this.recordButton!.hidden = true;
       this.disconnectButton!.hidden = true;
+      this.cancelButton!.hidden = true;
       this.devicePrompt!.innerText = 'Device not connected';
     }
 
@@ -880,6 +897,7 @@ export class SpRecordTrace extends BaseElement {
           if (options.length <= 0) {
             this.recordButton!.hidden = true;
             this.disconnectButton!.hidden = true;
+            this.cancelButton!.hidden = true;
             this.devicePrompt!.innerText = 'Device not connected';
             this.sp!.search = false;
             SpRecordTrace.serialNumber = '';
@@ -973,7 +991,7 @@ export class SpRecordTrace extends BaseElement {
       let option = document.createElement('option');
       option.className = 'select';
       option.selected = supportVersion === '5.0+';
-      option.textContent =`OpenHarmony-${supportVersion}`;
+      option.textContent = `OpenHarmony-${supportVersion}`;
       option.setAttribute('device-version', supportVersion);
       this.deviceVersion!.append(option);
       SpRecordTrace.selectVersion = '5.0+';
@@ -1238,6 +1256,7 @@ export class SpRecordTrace extends BaseElement {
           } else {
             this.recordButton!.hidden = true;
             this.disconnectButton!.hidden = true;
+            this.cancelButton!.hidden = true;
             this.devicePrompt!.innerText = 'Device not connected';
             SpRecordTrace.serialNumber = '';
           }
@@ -1320,6 +1339,7 @@ export class SpRecordTrace extends BaseElement {
               this.litSearch!.clear();
               this.litSearch!.setPercent(`tracing  ${this.recordSetting!.maxDur * 1000}ms`, -1);
               this.buttonDisable(true);
+              this.cancelButton!.hidden = false;
               this.freshMenuDisable(true);
               this.freshConfigMenuDisable(true);
               if (SpApplication.isLongTrace) {
@@ -1811,6 +1831,7 @@ export class SpRecordTrace extends BaseElement {
         this.deviceSelect!.appendChild(option);
         this.recordButton!.hidden = false;
         this.disconnectButton!.hidden = false;
+        this.cancelButton!.hidden = false;
         this.devicePrompt!.innerText = '';
       }
       if (SpRecordTrace.selectVersion && SpRecordTrace.selectVersion !== '') {
