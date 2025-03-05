@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>quickstart_extensions</title>
+    <title>quickstart_limit</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -786,33 +786,81 @@
 
 <body for="html-export" id="body" style="margin:0">
     <div class="smartperf smartperf-preview" style="min-height: 99vh;">
-        <h1 class="mume-header fontColor">扩展程序安装指导</h1>
-        <p class="fontColor">HiSmartPerf扩展服务在浏览器之外为HiSmartPerf网站提供AI诊断、trace抓取等能力。
-            该扩展服务主体使用node.js实现，采用插件化设计理念方便后续功能扩展。扩展服务主要提供一个WebSocket服务端，
-            HiSmartPerf网站做客户端通过WebSocket连接服务端后获取服务。</p>
-        <h2 class="mume-header fontColor" id="header-index-1">获取扩展服务包</h2>
-        <span>点击这里下载：</span>
-        <span id="download-container" style="color: #0192da;cursor: pointer;">hi-smart-perf-host-extend.zip</span>
+        <h1 class="mume-header fontColor">约束与限制</h1>
+        <h2 class="mume-header fontColor">Htrace（ftrace插件抓取的trace）</h2>
         <p class="fontColor">
-            附件解压后的文件目录为：
-            <br />
-            <img src="../figures/Extensions/expandservicecatalog.jpg" alt="GitHub Logo" />
+            <img src="../figures/Limit/htrace.jpg" alt="GitHub Logo" />
         </p>
-        <h2 class="mume-header fontColor" id="header-index-2">开启扩展服务</h2>
-        <p class="fontColor">
-            在hi-smart-perf-host-extend目录下，找到start.bat脚本，双击打开，即可开启扩展服务。
-            <br />
-            <img src="../figures/Extensions/expandserviceccmd.jpg" alt="GitHub Logo" />
-        </p>
-        <p style="color: red;" class="fontColor">注： 如果先打开SP-host网站，再打开扩展服务，网站会在30秒内自动连接扩展服务，
-            如无法连接，可尝试刷新浏览器，依旧无法连接可联系工具接口人帮助定位</p>
-        <h2 class="mume-header fontColor" id="header-index-2">关闭扩展服务</h2>
-        <p class="fontColor">
-            在hi-smart-perf-host-extend目录下，找到stop.bat文件，右键选择以管理员身份运行，即可关闭扩展服务。
-        </p>
-        <p class="fontColor" style="font-weight: bold">
-            备注：当前扩展服务版本为1.1.0，如果本地存在以其他方式安装的非正式版本，请手动关闭扩展服务，并重新按照该指导安装
-        </p>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+linux内核6.6.30版本后抓取的htrace不支持解析；
+</pre>
+            </li>
+            <li>
+                <pre class="smartperf-text fontColor light">
+只支持抓取全进程，不支持抓取开机启动的trace。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Native Memory</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+不支持抓取全进程，最多可以选择抓取四个进程。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Hiperf</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+默认使用-a参数抓取全进程；user版本无法抓取全进程，无法使用-a参数，需要手动选取进程。
+</pre>
+            </li>
+            <li>
+                <pre class="smartperf-text fontColor light">
+从OpenHarmony SDK 5.0.0.40 开始，user版本仅支持对debug应用进行调试。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Ebpf</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+仅支持linux内核，鸿蒙内核不支持抓取。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">VM Tracker</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+不支持抓取全进程。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Ark Ts</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+仅支持使用扩展服务包抓取，web端抓取和离线抓取都不支持；
+</pre>
+            </li>
+            <li>
+                <pre class="smartperf-text fontColor light">
+因安全原因，仅支持抓取未上架应用(即debug签名的应用)。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Hilog</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+支持抓取全进程。
+</pre>
+            </li>
+        </ul>
     </div>
 
     <script>
@@ -839,21 +887,6 @@
                 let targetElement = document.getElementById(targetId);
                 targetElement.scrollIntoView({ behavior: 'smooth' });
             }
-            // 假设这是你的文件的 URL  
-            const fileUrl = `https://${window.location.host.split(':')[0]}:${window.location.port
-                }/application/extend/hi-smart-perf-host-extend.zip`;
-            const fileName = 'hi-smart-perf-host-extend';
-            // 创建一个隐藏的 a 元素  
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = fileUrl;
-            a.download = fileName; // 设置下载的文件名  
-            document.getElementById('download-container').appendChild(a);
-            document.getElementById('download-container').addEventListener('click', () => {
-                // 触发点击事件以下载文件  
-                a.click();
-            })
-
         };
     </script>
 </body>
