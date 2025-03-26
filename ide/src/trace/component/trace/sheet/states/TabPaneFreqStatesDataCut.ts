@@ -154,8 +154,10 @@ export class TabPaneFreqStatesDataCut extends BaseElement {
           for (let i = 0; i < this.funcNameCycleArr!.length; i++) {
             if (
               ((stateItem.ts > this.funcNameCycleArr![i].cycleStartTime && stateItem.ts < this.funcNameCycleArr![i].endTime) ||
-                (stateItem.ts + stateItem.dur! > this.funcNameCycleArr![i].cycleStartTime && stateItem.ts + stateItem.dur! < this.funcNameCycleArr![i].endTime) ||
-                (this.funcNameCycleArr![i].cycleStartTime > stateItem.ts && this.funcNameCycleArr![i].endTime < stateItem.ts + stateItem.dur!)) &&
+                (stateItem.ts + stateItem.dur! > this.funcNameCycleArr![i].cycleStartTime && 
+                stateItem.ts + stateItem.dur! < this.funcNameCycleArr![i].endTime) ||
+                (this.funcNameCycleArr![i].cycleStartTime > stateItem.ts
+                && this.funcNameCycleArr![i].endTime < stateItem.ts + stateItem.dur!)) &&
               (stateItem.state === 'S' ||
                 stateItem.state === 'R' ||
                 stateItem.state === 'D' ||
@@ -220,8 +222,10 @@ export class TabPaneFreqStatesDataCut extends BaseElement {
           for (let i = 0; i < this.funcNameCycleArr!.length; i++) {
             if (
               ((stateItem.ts > this.funcNameCycleArr![i].cycleStartTime && stateItem.ts < this.funcNameCycleArr![i].endTime) ||
-                (stateItem.ts + stateItem.dur! > this.funcNameCycleArr![i].cycleStartTime && stateItem.ts + stateItem.dur! < this.funcNameCycleArr![i].endTime) ||
-                (this.funcNameCycleArr![i].cycleStartTime > stateItem.ts && this.funcNameCycleArr![i].endTime < stateItem.ts + stateItem.dur!)) &&
+                (stateItem.ts + stateItem.dur! > this.funcNameCycleArr![i].cycleStartTime
+                && stateItem.ts + stateItem.dur! < this.funcNameCycleArr![i].endTime) ||
+                (this.funcNameCycleArr![i].cycleStartTime > stateItem.ts &&
+                this.funcNameCycleArr![i].endTime < stateItem.ts + stateItem.dur!)) &&
               (stateItem.state === 'S' ||
                 stateItem.state === 'R' ||
                 stateItem.state === 'D' ||

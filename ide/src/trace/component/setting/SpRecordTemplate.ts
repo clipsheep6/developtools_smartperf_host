@@ -81,9 +81,9 @@ export class SpRecordTemplate extends BaseElement {
   static HIPERF_DEFAULT_RECORD_ARGS =
     '-f 1000 -a  --cpu-limit 100 -e hw-cpu-cycles,sched:sched_waking' +
     ' --call-stack dwarf --clockid monotonic --offcpu -m 256';
-  static HIPERF_NAPI_RECORD_ARGS_BEFORE = '';  
-  static HIPERF_NAPI_RECORD_ARGS_APP = '-f 1000 --app'  
-  static HIPERF_NAPI_RECORD_ARGS_PID = '-f 1000 -p'  
+  static HIPERF_NAPI_RECORD_ARGS_BEFORE = '';
+  static HIPERF_NAPI_RECORD_ARGS_APP = '-f 1000 --app';
+  static HIPERF_NAPI_RECORD_ARGS_PID = '-f 1000 -p';
   static HIPERF_NAPI_RECORD_ARGS_AFTER = '--cpu-limit 100 -e hw-cpu-cycles --call-stack dwarf --clockid monotonic -m 256';
   private frameTimeline: LitSwitch | undefined | null;
   private schedulingAnalysis: LitSwitch | undefined | null;
@@ -92,7 +92,7 @@ export class SpRecordTemplate extends BaseElement {
   private dynamicEffectEl: LitSwitch | undefined | null;
   private packageName: LitSelectV | null | undefined;
   private napiEl: LitSwitch | undefined | null;
-  private isNum:boolean = false;
+  private isNum: boolean = false;
 
   initElements(): void {
     this.frameTimeline = this.shadowRoot?.querySelector<LitSwitch>('#frame_timeline');
@@ -217,91 +217,91 @@ export class SpRecordTemplate extends BaseElement {
     };
   }
 
-  private getDesiredString(str: string) {
+  private getDesiredString(str: string):string {
     if (/^\d+$/.test(str)) {
-        this.isNum = true;
+      this.isNum = true;
         return str;
     }
     if (str.includes(',')) {
-        this.isNum = /^\d+$/.test(str.split(',')[0]) ? true : false;
+      this.isNum = /^\d+$/.test(str.split(',')[0]) ? true : false;
         return str.split(',')[0];
     }
     this.isNum = false;
     return str;
 }
 
-private initNapiSwitchOption(): void {
-  let litSwitch = this.shadowRoot?.querySelector('#Napi') as LitSwitch;
-  let packageInput = this.packageName!.shadowRoot?.querySelector('input') as HTMLInputElement;
-  this.packageName!.setAttribute('disabled', '');
-  litSwitch.addEventListener('change', (event: Event): void => {
-    // @ts-ignore
-    let detail = event.detail;
-    if (detail.checked) {
-      this.packageName!.removeAttribute('disabled');
-      packageInput.addEventListener('mousedown', (): void => {
-        packageInput.readOnly = false;
-        this.packageMouseDownHandler();
-      });
-    } else {
-      packageInput.readOnly = true;
-      this.packageName!.setAttribute('disabled', '');
-      return;
-    }
-  });
-}
-
-private packageMouseDownHandler(): void {
-  this.packageName!.dataSource([], '');
-  Cmd.getPackage().then((packageList: string[]): void => {
-    let finalDataList = packageList.map(str => str.replace(/\t/g, ''));
-    if (finalDataList.length > 0) {
-      this.packageName!.dataSource(finalDataList, '',true);
-    } else {
-      this.packageName!.dataSource([], '');
-    }
-  }).catch(error => {
-    console.error('Error fetching package list:', error);
-    this.packageName!.dataSource([], '');
-  });
-}
-
-private createNativeConfig(): ProfilerPluginConfig<NativePluginConfig> {
-  let newVal = this.getDesiredString(this.packageName?.value!);
-  let native: NativePluginConfig = {
-    pid: undefined,
-    process_name: undefined,
-    save_file: false,
-    smb_pages: 16384,
-    max_stack_depth: 20,
-    string_compressed: true,
-    fp_unwind: false,
-    blocked: true,
-    callframe_compress: true,
-    record_accurately: true,
-    offline_symbolization: true,
-    startup_mode: false,
-    js_stack_report: 2,
-    max_js_stack_depth: 5,
-    filter_napi_name: "info",
-    memtrace_enable: true,
-    malloc_disable: true,
-  };
-  if (this.isNum === true) {
-    native.pid = Number(newVal); 
-    delete native.process_name;
-  } else {
-    native.process_name = newVal; 
-    delete native.pid;
+  private initNapiSwitchOption(): void {
+    let litSwitch = this.shadowRoot?.querySelector('#Napi') as LitSwitch;
+    let packageInput = this.packageName!.shadowRoot?.querySelector('input') as HTMLInputElement;
+    this.packageName!.setAttribute('disabled', '');
+    litSwitch.addEventListener('change', (event: Event): void => {
+      // @ts-ignore
+      let detail = event.detail;
+      if (detail.checked) {
+        this.packageName!.removeAttribute('disabled');
+        packageInput.addEventListener('mousedown', (): void => {
+          packageInput.readOnly = false;
+          this.packageMouseDownHandler();
+        });
+      } else {
+        packageInput.readOnly = true;
+        this.packageName!.setAttribute('disabled', '');
+        return;
+      }
+    });
   }
 
-  return {
-    pluginName: 'nativehook',
-    sampleInterval: 5000,
-    configData: native,
-    is_protobuf_serialize: false
-  };
-}
+  private packageMouseDownHandler(): void {
+    this.packageName!.dataSource([], '');
+    Cmd.getPackage().then((packageList: string[]): void => {
+      let finalDataList = packageList.map(str => str.replace(/\t/g, ''));
+      if (finalDataList.length > 0) {
+        this.packageName!.dataSource(finalDataList, '', true);
+      } else {
+        this.packageName!.dataSource([], '');
+      }
+    }).catch(error => {
+      console.error('Error fetching package list:', error);
+      this.packageName!.dataSource([], '');
+    });
+  }
+
+  private createNativeConfig(): ProfilerPluginConfig<NativePluginConfig> {
+    let newVal = this.getDesiredString(this.packageName?.value!);
+    let native: NativePluginConfig = {
+      pid: undefined,
+      process_name: undefined,
+      save_file: false,
+      smb_pages: 16384,
+      max_stack_depth: 20,
+      string_compressed: true,
+      fp_unwind: false,
+      blocked: true,
+      callframe_compress: true,
+      record_accurately: true,
+      offline_symbolization: true,
+      startup_mode: false,
+      js_stack_report: 2,
+      max_js_stack_depth: 5,
+      filter_napi_name: 'info',
+      memtrace_enable: true,
+      malloc_disable: true,
+    };
+    if (this.isNum === true) {
+      native.pid = Number(newVal);
+      delete native.process_name;
+    } else {
+      native.process_name = newVal;
+      delete native.pid;
+    }
+
+    return {
+      pluginName: 'nativehook',
+      sampleInterval: 5000,
+      configData: native,
+      is_protobuf_serialize: false
+    };
+  }
 
   initHtml(): string {
     return SpRecordTemplateHtml;

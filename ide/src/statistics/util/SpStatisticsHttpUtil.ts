@@ -217,7 +217,7 @@ export class SpStatisticsHttpUtil {
   }
 
   // ai对话接口--获取token
-  static async getAItoken(params:string): Promise<AiResponse> {
+  static async getAItoken(params: string): Promise<AiResponse> {
     let controller = new AbortController();
     let response: AiResponse = {
       status: 0,
@@ -247,7 +247,7 @@ export class SpStatisticsHttpUtil {
 
   // ai对话接口--问答
   // @ts-ignore
-  static askAi(requestBody,params:string): Promise<AiResponse> {
+  static askAi(requestBody, params: string): Promise<AiResponse> {
     return new Promise((resolve, reject) => {
       let controller = new AbortController();
       let date = Date.now();
