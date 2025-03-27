@@ -104,10 +104,10 @@ import { XpowerThreadInfoStruct } from '../../../database/ui-worker/ProcedureWor
 import { TabPaneXpowerThreadInfoSelection } from '../sheet/xpower/TabPaneXpowerThreadInfoSelection';
 import { TabPaneXpowerGpuFreqSelection } from '../sheet/xpower/TabPaneXpowerGpuFreqSelection';
 import { XpowerGpuFreqStruct } from '../../../database/ui-worker/ProcedureWorkerXpowerGpuFreq';
-import { WebSocketManager} from "../../../../webSocket/WebSocketManager";
-import { Constants, TypeConstants} from "../../../../webSocket/Constants";
+import { WebSocketManager } from '../../../../webSocket/WebSocketManager';
+import { Constants, TypeConstants } from '../../../../webSocket/Constants';
 import { PerfFunctionAsmParam } from '../../../bean/PerfAnalysis';
-import { info,error } from '../../../../log/Log';
+import { info, error } from '../../../../log/Log';
 
 
 @element('trace-sheet')
@@ -307,13 +307,13 @@ export class TraceSheet extends BaseElement {
 
   private functionAnalysisListener(evt: unknown, vaddrList: Array<unknown>): void {
     // @ts-ignore
-    this.currentPaneID = "box-perf-analysis";
+    this.currentPaneID = 'box-perf-analysis';
     //隐藏除了当前Tab页的其他Tab页
-    this.shadowRoot!.querySelectorAll<LitTabpane>("lit-tabpane").forEach(
+    this.shadowRoot!.querySelectorAll<LitTabpane>('lit-tabpane').forEach(
       (it): boolean =>
         it.id !== this.currentPaneID ? (it.hidden = true) : (it.hidden = false)
     );
-    let asmPane = this.getPaneByID("tab-perf-func-asm"); //通过Id找到需要展示的Tab页
+    let asmPane = this.getPaneByID('tab-perf-func-asm'); //通过Id找到需要展示的Tab页
     asmPane.closeable = true;
     asmPane.hidden = false;
     // @ts-ignore
@@ -428,19 +428,17 @@ export class TraceSheet extends BaseElement {
     this.initNavElements(tabsPackUp!, borderTop, initialHeight);
     this.exportBt = this.shadowRoot?.querySelector<LitIcon>('#export-btn');
     tabsOpenUp!.onclick = (): void => {
-      this.tabs!.style.height = `${
-        window.innerHeight - this.search!.offsetHeight - this.timerShaft!.offsetHeight - borderTop
-      }px`;
+      this.tabs!.style.height = `${window.innerHeight - this.search!.offsetHeight - this.timerShaft!.offsetHeight - borderTop
+        }px`;
       let litTabpane: NodeListOf<HTMLDivElement> | undefined | null =
         this.shadowRoot?.querySelectorAll('#tabs > lit-tabpane');
       litTabpane!.forEach((node: HTMLDivElement): void => {
-        node!.style.height = `${
-          window.innerHeight -
+        node!.style.height = `${window.innerHeight -
           this.search!.offsetHeight -
           this.timerShaft!.offsetHeight -
           this.navRoot!.offsetHeight -
           borderTop
-        }px`;
+          }px`;
         initialHeight.node = node!.style.height;
       });
       initialHeight.tabs = this.tabs!.style.height;
@@ -536,7 +534,7 @@ export class TraceSheet extends BaseElement {
         // 只要没有移动到边界区域都会进入该条件
         that.navRoot!.offsetHeight <= newHeight &&
         that.search!.offsetHeight + that.timerShaft!.offsetHeight + borderTop + that.spacer!.offsetHeight <=
-          window.innerHeight - newHeight
+        window.innerHeight - newHeight
       ) {
         that.tabs!.style.height = `${newHeight}px`;
         litTabpane!.style.height = `${newHeight - that.navRoot!.offsetHeight}px`;
@@ -551,21 +549,19 @@ export class TraceSheet extends BaseElement {
         window.innerHeight - newHeight
       ) {
         // 该条件在面板高度置顶时触发
-        that.tabs!.style.height = `${
-          window.innerHeight -
+        that.tabs!.style.height = `${window.innerHeight -
           that.search!.offsetHeight -
           that.timerShaft!.offsetHeight -
           borderTop -
           that.spacer!.offsetHeight
-        }px`;
-        litTabpane!.style.height = `${
-          window.innerHeight -
+          }px`;
+        litTabpane!.style.height = `${window.innerHeight -
           that.search!.offsetHeight -
           that.timerShaft!.offsetHeight -
           that.navRoot!.offsetHeight -
           borderTop -
           that.spacer!.offsetHeight
-        }px`;
+          }px`;
         tabsPackUp!.name = 'down';
       }
       that.tabPaneHeight = litTabpane!.style.height;
@@ -579,7 +575,7 @@ export class TraceSheet extends BaseElement {
 
   private importClickEvent(): void {
     let importFileBt: HTMLInputElement | undefined | null =
-        this.shadowRoot?.querySelector<HTMLInputElement>('#import-file');
+      this.shadowRoot?.querySelector<HTMLInputElement>('#import-file');
     importFileBt!.addEventListener('change', (event): void => {
       let files = importFileBt?.files;
       if (files) {
@@ -591,24 +587,24 @@ export class TraceSheet extends BaseElement {
           importFileBt!.disabled = true;
           window.publish(window.SmartEvent.UI.Loading, { loading: true, text: 'Import So File' });
           this.uploadSoOrAN(fileList).then(r =>
-              threadPool.submit(
-                  'upload-so',
-                  '',
-                  fileList,
-                  (res: unknown) => {
-                    importFileBt!.disabled = false; // @ts-ignore
-                    if (res.result === 'ok') {
-                      window.publish(window.SmartEvent.UI.UploadSOFile, {});
-                    } else {
-                      // @ts-ignore
-                      const failedList = res.failedArray.join(',');
-                      window.publish(window.SmartEvent.UI.Error, `parse so file ${failedList} failed!`);
-                    }
-                  },
-                  'upload-so'
-              )).finally(() => {
-                fileList.length = 0;
-              })
+            threadPool.submit(
+              'upload-so',
+              '',
+              fileList,
+              (res: unknown) => {
+                importFileBt!.disabled = false; // @ts-ignore
+                if (res.result === 'ok') {
+                  window.publish(window.SmartEvent.UI.UploadSOFile, {});
+                } else {
+                  // @ts-ignore
+                  const failedList = res.failedArray.join(',');
+                  window.publish(window.SmartEvent.UI.Error, `parse so file ${failedList} failed!`);
+                }
+              },
+              'upload-so'
+            )).finally(() => {
+              fileList.length = 0;
+            });
         }
       }
       importFileBt!.files = null;
@@ -661,7 +657,7 @@ export class TraceSheet extends BaseElement {
             wsInstance!.unregisterCallback(TypeConstants.DISASSEMBLY_TYPE, onAckReceived);
             reject(new Error('等待 ACK 超时：文件 ${fileName}，索引 ${bufferIndex})'));
           }, 10000);
-          function onAckReceived(cmd: number, result: Uint8Array) {
+          function onAckReceived(cmd: number, result: Uint8Array): void {
             const decoder = new TextDecoder();
             const jsonString = decoder.decode(result);
             let jsonRes = JSON.parse(jsonString);
@@ -673,7 +669,7 @@ export class TraceSheet extends BaseElement {
                   bufferIndex++;
                   // 当收到对应分片的 ACK 时，resolve Promise，继续上传下一个分片
                   resolve();
-                }else{
+                } else {
                   // 上传失败，拒绝 Promise 并返回
                   reject(new Error(`Upload failed for file: ${fileName}, index: ${jsonRes.bufferIndex})`));
                 }

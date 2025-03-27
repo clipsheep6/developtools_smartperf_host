@@ -872,7 +872,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     this.currentSelectionTbl!.dataSource = list;
   }
 
-  async setXpowerData(data: XpowerStruct): Promise<void> {  
+  async setXpowerData(data: XpowerStruct): Promise<void> {
     if (SpApplication.traceType.indexOf('SQLite') === -1) {
       await this.setRealTime();
     }
@@ -947,7 +947,7 @@ export class TabPaneCurrentSelection extends BaseElement {
     data.rx !== 0 && vals.push({
       name: 'receiver',
       bytes: data.rx,
-      value: data.rx  + ' B',
+      value: data.rx + ' B',
     });
     // @ts-ignore
     vals.sort(compare('value', 2, 'bytes'));

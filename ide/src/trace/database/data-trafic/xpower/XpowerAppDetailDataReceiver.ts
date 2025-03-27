@@ -109,7 +109,7 @@ function fillArrays(arrays: { [key: string]: Float64Array }, res: unknown[], dat
     if ((data as unknown).params.trafic === TraficEnum.ProtoBuffer) { // @ts-ignore
       it = (it as unknown).xpowerAppDetailData;
     } // @ts-ignore
-    arrays['startTime'][i] = (it as unknown).startTime;
+    arrays.startTime[i] = (it as unknown).startTime;
     keysCopy.forEach((key) => { // @ts-ignore
       arrays[key][i] = (it as unknown)[key];
     });
@@ -125,38 +125,38 @@ function arrayBufferHandler(data: unknown, res: unknown[], transfer: boolean): v
       action: (data as unknown).action,
       results: transfer
         ? {
-            startTime: arrays.startTime.buffer, 
-            c1hz: arrays.c1hz.buffer,
-            c5hz: arrays.c5hz.buffer,
-            c10hz: arrays.c10hz.buffer,
-            c15hz: arrays.c15hz.buffer,
-            c24hz: arrays.c24hz.buffer,
-            c30hz: arrays.c30hz.buffer,
-            c45hz: arrays.c45hz.buffer,
-            c60hz: arrays.c60hz.buffer,
-            c90hz: arrays.c90hz.buffer,
-            c120hz: arrays.c120hz.buffer,
-            c180hz: arrays.c180hz.buffer,
-          }
+          startTime: arrays.startTime.buffer,
+          c1hz: arrays.c1hz.buffer,
+          c5hz: arrays.c5hz.buffer,
+          c10hz: arrays.c10hz.buffer,
+          c15hz: arrays.c15hz.buffer,
+          c24hz: arrays.c24hz.buffer,
+          c30hz: arrays.c30hz.buffer,
+          c45hz: arrays.c45hz.buffer,
+          c60hz: arrays.c60hz.buffer,
+          c90hz: arrays.c90hz.buffer,
+          c120hz: arrays.c120hz.buffer,
+          c180hz: arrays.c180hz.buffer,
+        }
         : {},
       len: res.length,
       transfer: transfer,
     },
     transfer
       ? [
-          arrays.startTime.buffer,
-          arrays.c1hz.buffer,
-          arrays.c5hz.buffer,
-          arrays.c10hz.buffer,
-          arrays.c15hz.buffer,
-          arrays.c24hz.buffer,
-          arrays.c30hz.buffer,
-          arrays.c45hz.buffer,
-          arrays.c60hz.buffer,
-          arrays.c90hz.buffer,
-          arrays.c120hz.buffer,
-          arrays.c180hz.buffer,
-        ]
+        arrays.startTime.buffer,
+        arrays.c1hz.buffer,
+        arrays.c5hz.buffer,
+        arrays.c10hz.buffer,
+        arrays.c15hz.buffer,
+        arrays.c24hz.buffer,
+        arrays.c30hz.buffer,
+        arrays.c45hz.buffer,
+        arrays.c60hz.buffer,
+        arrays.c90hz.buffer,
+        arrays.c120hz.buffer,
+        arrays.c180hz.buffer,
+      ]
       : []
   );
 }
