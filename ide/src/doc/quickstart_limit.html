@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>quickstart_ffrt</title>
+    <title>quickstart_limit</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -786,145 +786,78 @@
 
 <body for="html-export" id="body" style="margin:0">
     <div class="smartperf smartperf-preview" style="min-height: 99vh;">
-        <h1 class="mume-header fontColor">FFRT抓取和展示说明</h1>
-
-        <p class="fontColor">FFRT分析模块可以帮助系统调优人员进行FFRT 线程调优检测。</p>
-        <h2 class="mume-header fontColor">FFRT的抓取</h2>
-
-        <h4 class="mume-header fontColor" id="header-index-1">FFRT的抓取配置参数</h4>
-
+        <h1 class="mume-header fontColor">约束与限制</h1>
+        <h2 class="mume-header fontColor">Htrace（ftrace插件抓取的trace）</h2>
         <p class="fontColor">
-            选择Record new trace，进入FFRT 配置页面，打开Start FFRT Record开关，抓取FFRT数据。
-            <br />
-            <img src="../figures/FFRT/ffrtconfig.jpg" alt="GitHub Logo" />
-        </p>
-        <p class="fontColor">
-            配置项说明：
+            <img src="../figures/Limit/htrace.jpg" alt="GitHub Logo" />
         </p>
         <ul class="fontColor">
             <li>
                 <pre class="smartperf-text fontColor light">
-Process：进程。
+linux内核6.6.30版本后抓取的htrace不支持解析；
 </pre>
             </li>
             <li>
                 <pre class="smartperf-text fontColor light">
-Startup Process：冷启动进程。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Restart Process：热启动进程。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Use Block：采用Block模式，默认开启。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Smb Pages Size：Smb配置大小，默认16384。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-flush interval：刷新间隔，默认为5。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Clock Id：时钟id，默认为BOOTTIME。
+只支持抓取全进程，不支持抓取开机启动的trace。
 </pre>
             </li>
         </ul>
-        <h3 class="mume-header fontColor" id="header-index-2">FFRT展示说明</h3>
-
-        <p class="fontColor">
-            将抓取的trace文件导入到HiSmartPerf工具中，查看对应信息。
-            <br />
-            <img src="../figures/FFRT/ffrtrow.jpg" alt="GitHub Logo" />
-        </p>
-        <h3 class="mume-header fontColor" id="header-index-3">FFRT泳道图的点选功能</h3>
-
-        <p class="fontColor">
-            可以对泳道的各个slice进行点选，点选后在最下方的弹出层中会展示点选数据的统计的tab页。
-            <br />
-            <img src="../figures/FFRT/ffrtcurrentselectiontab.jpg" alt="GitHub Logo" />
-        </p>
+        <h2 class="mume-header fontColor">Native Memory</h2>
         <ul class="fontColor">
             <li>
                 <pre class="smartperf-text fontColor light">
-Name：名称。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Process：进程名。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Thread：线程名。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-StartTime(Relative)：开始时间（相对时间）。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-StartTime(Absolute)：开始时间（绝对时间）。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Duration：持续时间。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-depth：深度。
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-Information：trace点信息。
+不支持抓取全进程，最多可以选择抓取四个进程。
 </pre>
             </li>
         </ul>
-        <h3 class="mume-header fontColor" id="header-index-3">FFRT泳道图的框选功能</h3>
-
-        <p class="fontColor">
-            框选FFRT的泳道图，展示Slices tab页。
-            <br />
-            <img src="../figures/FFRT/ffrtslicestab.jpg" alt="GitHub Logo" />
-        </p>
+        <h2 class="mume-header fontColor">Hiperf</h2>
         <ul class="fontColor">
             <li>
                 <pre class="smartperf-text fontColor light">
-Name：名称。
+默认使用-a参数抓取全进程；user版本无法抓取全进程，无法使用-a参数，需要手动选取进程。
 </pre>
             </li>
             <li>
                 <pre class="smartperf-text fontColor light">
-Wall duration(ms)：总持续时长。  
+从OpenHarmony SDK 5.0.0.40 开始，user版本仅支持对debug应用进行调试。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Ebpf</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+仅支持linux内核，鸿蒙内核不支持抓取。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">VM Tracker</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+不支持抓取全进程。
+</pre>
+            </li>
+        </ul>
+        <h2 class="mume-header fontColor">Ark Ts</h2>
+        <ul class="fontColor">
+            <li>
+                <pre class="smartperf-text fontColor light">
+仅支持使用扩展服务包抓取，web端抓取和离线抓取都不支持；
 </pre>
             </li>
             <li>
                 <pre class="smartperf-text fontColor light">
-Avg Wall duration(ms)：平均持续时长。   
+因安全原因，仅支持抓取未上架应用(即debug签名的应用)。
 </pre>
             </li>
+        </ul>
+        <h2 class="mume-header fontColor">Hilog</h2>
+        <ul class="fontColor">
             <li>
                 <pre class="smartperf-text fontColor light">
-Occurrences：发生次数。   
-</pre>
-            </li>
-            <li>
-                <pre class="smartperf-text fontColor light">
-selfTime(ms)：自身时长。
+支持抓取全进程。
 </pre>
             </li>
         </ul>
