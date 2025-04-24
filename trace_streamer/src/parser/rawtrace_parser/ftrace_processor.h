@@ -86,6 +86,7 @@ public:
 
     bool HandleFtraceEvent(FtraceEvent &ftraceEvent, uint8_t data[], size_t dataSize, const EventFormat &format);
     bool HandleFtraceCommonFields(FtraceEvent &ftraceEvent, uint8_t data[], size_t dataSize, const EventFormat &format);
+    std::unordered_map<int32_t, std::string> &GetTidToName();
 
 private:
     std::regex fixedCharArrayRegex_;

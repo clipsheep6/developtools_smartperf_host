@@ -244,6 +244,25 @@ std::tuple<uint32_t, TraceStdtype::Process *> ProcessFilter::CreateProcessMaybe(
 
     return std::make_tuple(internalPid, process);
 }
+void ProcessFilter::UpdateProcessNameByNameToTid(std::unordered_map<int32_t, std::string> &tidToName)
+{
+    auto processList = traceDataCache_->GetConstProcessData();
+    auto size = processList.size();
+    for (auto row = 0; row < size; row++) {
+        if (!processList[row].cmdLine_.empty()) {
+            continue;
+        }
+        auto process = traceDataCache_->GetProcessData(row);
+        if (!process) {
+            continue;
+        }
+        auto it = tidToName.find(process->pid_);
+        if (it != tidToName.end()) {
+            auto res = UpdateOrCreateProcessWithName(process->pid_, it->second.c_str());
+            TS_LOGI("Update process name %s to tid %d", it->second.c_str(), process->pid_);
+        }
+    }
+}
 void ProcessFilter::Clear()
 {
     tidMappingSet_.clear();
