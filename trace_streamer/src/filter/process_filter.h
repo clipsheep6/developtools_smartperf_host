@@ -44,6 +44,7 @@ public:
     void AddCpuStateCount(uint32_t itid);
     void AddProcessSliceNum(uint32_t ipid);
     void Clear();
+    void UpdateProcessNameByNameToTid(std::unordered_map<int32_t, std::string> &tidToName);
 
 private:
     std::tuple<uint32_t, TraceStdtype::Process *> CreateProcessMaybe(uint32_t pid, uint64_t startT);
