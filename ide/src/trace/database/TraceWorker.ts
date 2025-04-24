@@ -313,6 +313,7 @@ function initModuleCallBackAndFun(): void {
   let tlvResultCallback = (heapPtr: number, size: number, type: number, isEnd: number): void => {
     //@ts-ignore
     let out: Uint8Array = wasmModule.HEAPU8.slice(heapPtr, heapPtr + size);
+    //@ts-ignore
     protoDataMap.set(type, BatchSphData.decode(out).values);
   };
   //@ts-ignore
