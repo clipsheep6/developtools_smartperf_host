@@ -41,6 +41,8 @@ void RawTraceParser::WaitForParserEnd()
     restCommDataCnt_ = 0;
     hasGotHeader_ = false;
     curCpuCoreNum_ = 0;
+    auto tidToName = ftraceProcessor_->GetTidToName();
+    streamFilters_->processFilter_->UpdateProcessNameByNameToTid(tidToName);
     ClearRawTraceData();
     TS_LOGI("Parser raw trace end!");
 }
