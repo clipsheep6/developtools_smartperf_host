@@ -244,12 +244,14 @@ export class SpRecordSetting extends BaseElement {
       rootEl.removeChild(longTraceMaxSlide);
     }
     this.outputPath!.value = 'hiprofiler_data.htrace';
+    this.snapShotNumber!.style.display = 'grid';
   }
 
   private longTraceModelRadioHandler(rootEl: HTMLDivElement, longTraceMaxSlide: HTMLDivElement): void {
     SpApplication.isLongTrace = true;
     rootEl.appendChild(longTraceMaxSlide);
     this.outputPath!.value = 'long_trace';
+    this.snapShotNumber!.style.display = 'none';
   }
 
   private maxSizeInputHandler(maxSizeSliders: LitSlider, maxSizeParentElement: Element): void {
