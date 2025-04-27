@@ -118,6 +118,10 @@ export class SpRecordTrace extends BaseElement {
   private stop = 'StopRecord';
   private nowChildItem: HTMLElement | undefined;
   private longTraceList: Array<string> = [];
+  private fileList: Array<{
+    fileName: string,
+    file: File
+  }> = [];
   private refreshDeviceTimer: number | undefined;
   private hintEl: HTMLSpanElement | undefined;
   private selectedTemplate: Map<string, number> = new Map();
@@ -532,6 +536,7 @@ export class SpRecordTrace extends BaseElement {
     let isCheckSnapshot = this.spArkTs!.radioBoxType === 0 ? true : false; // 是否check snapshot
     let isCheckTimeLine = this.spArkTs!.radioBoxType === 1 ? true : false; // 是否 check timeline
 
+    let isLongTrace = SpApplication.isLongTrace;
     let maxDur = this.recordSetting!.maxDur; // 抓取trace的时长
     let snapShotDur = this.recordSetting!.snapShot;//截图
     SpRecordTrace.snapShotDuration = snapShotDur;
@@ -542,6 +547,7 @@ export class SpRecordTrace extends BaseElement {
     let enableCpuProfiler = this.spArkTs!.isStartCpuProfiler;
 
     let params: unknown = {
+      isLongTrace: isLongTrace,
       isRecordArkTs: isRecordArkTs,
       isRecordHitrace: isRecordHitrace,
       type: '',
@@ -613,11 +619,87 @@ export class SpRecordTrace extends BaseElement {
         this.litSearch!.setPercent('Tracing htrace down', -1);
       } else if (cmd === 8) {
         this.litSearch!.setPercent('Downloading Hitrace file...', -1);
+      } else if (cmd === 9) {// @ts-ignore
+        let re = JSON.parse(new TextDecoder('utf-8').decode(result));
+        let binaryString = window.atob(re.data);
+        let len = binaryString.length;
+        let bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        re.data = bytes.buffer;
+        let fileInfo = {
+          fileName: re.fileName,
+          file: new File([re.data], re.fileName)
+        };
+        this.fileList.push(fileInfo);
+        this.longTraceList.push(fileInfo.fileName);
+        if (this.fileList.length === re.total) {
+          this.openLongTraceHandle();
+        }
       }
     };
     WebSocketManager.getInstance()!.registerMessageListener(TypeConstants.ARKTS_TYPE, onmessageCallBack, this.eventCallBack);
     WebSocketManager.getInstance()!.sendMessage(TypeConstants.ARKTS_TYPE, 1, encoder.encode(JSON.stringify(params)));
   };
+
+  async openLongTraceHandle() {
+    this.fileList.sort((a, b) => {
+      const getNumber = (name: string) => {
+        const match = name.match(/_(\d+)\.htrace$/);
+        return match ? parseInt(match[1]) : 0;
+      };
+      return getNumber(a.fileName) - getNumber(b.fileName);
+    });
+    let timStamp = new Date().getTime();
+    this.sp!.longTraceHeadMessageList = [];
+    for (const fileInfo of this.fileList) {
+      await this.saveLongTrace(fileInfo.file, timStamp);
+    }
+    await this.openLongTrace(timStamp);
+    this.fileList = [];
+    this.longTraceList = [];
+  }
+
+  async saveLongTrace(file: File, timStamp: number) {
+    let traceTypePage = this.getLongTraceTypePage();
+    let types = this.sp!.fileTypeList.filter(type =>
+      file.name.toLowerCase().includes(type.toLowerCase())
+    );
+    let pageNumber = 0;
+    let fileType = types[0] || 'trace';
+    if (types.length === 0) {
+      let searchNumber = Number(
+        file.name.substring(
+          file.name.lastIndexOf('_') + 1,
+          file.name.lastIndexOf('.')
+        )
+      ) - 1;
+      pageNumber = traceTypePage.lastIndexOf(searchNumber);
+    }
+    this.litSearch!.setPercent(`downloading ${fileType} file`, 101);
+    await this.saveIndexDBByLongTrace(file, fileType, pageNumber, timStamp);
+  }
+
+  async openLongTrace(timStamp: number) {
+    let main = this.parentNode!.parentNode!.querySelector('lit-main-menu') as LitMainMenu;
+    let children = main.menus as Array<MenuGroup>;
+    let child = children[1].children as Array<MenuItem>;
+    let fileHandler = child[0].clickHandler;
+    if (fileHandler && !SpRecordTrace.cancelRecord) {
+      this.freshConfigMenuDisable(false);
+      this.freshMenuDisable(false);
+      this.buttonDisable(false);
+      this.recordButtonDisable(false);
+      fileHandler({
+        detail: {
+          timeStamp: timStamp
+        }
+      }, true);
+    } else {
+      SpRecordTrace.cancelRecord = false;
+    }
+  }
 
   recordTempAddProbe = (ev: CustomEventInit<{ elementId: string }>): void => {
     if (
