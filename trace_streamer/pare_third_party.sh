@@ -30,7 +30,7 @@ cd third_party
 
 if [ ! -f "sqlite/BUILD.gn" ];then
     rm -rf sqlite
-    git clone  git@gitee.com:openharmony/third_party_sqlite.git
+    git clone  https://gitee.com/openharmony/third_party_sqlite.git
     if [ -d "third_party_sqlite" ];then
         mv third_party_sqlite sqlite
         cd sqlite
@@ -41,7 +41,7 @@ if [ ! -f "sqlite/BUILD.gn" ];then
 fi
 if [ ! -f "protobuf/BUILD.gn" ];then
     rm -rf protobuf
-    git clone  git@gitee.com:openharmony/third_party_protobuf.git
+    git clone  https://gitee.com/openharmony/third_party_protobuf.git
     if [ -d "third_party_protobuf" ];then
         mv third_party_protobuf protobuf
         cd protobuf
@@ -53,7 +53,7 @@ fi
 
 if [ ! -f "zlib/BUILD.gn" ];then
     rm -rf zlib
-    git clone --depth=1 git@gitee.com:openharmony/third_party_zlib.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_zlib.git
     if [ -d "third_party_zlib" ];then
         mv third_party_zlib zlib
         $cp ../prebuilts/patch_zlib/zlibbuild.gn zlib/BUILD.gn
@@ -62,7 +62,7 @@ fi
 
 if [ ! -f "bzip2/BUILD.gn" ];then
     rm -rf bzip2
-    git clone --depth=1 git@gitee.com:openharmony/third_party_bzip2.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_bzip2.git
     if [ -d "third_party_bzip2" ];then
         mv third_party_bzip2 bzip2
         $cp ../prebuilts/patch_bzip2/bzip2build.gn bzip2/BUILD.gn
@@ -74,7 +74,7 @@ fi
 
 if [ ! -f "googletest/BUILD.gn" ];then
     rm -rf googletest
-    git clone --depth=1 git@gitee.com:openharmony/third_party_googletest.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_googletest.git
     if [ -d "third_party_googletest" ];then
         mv third_party_googletest googletest
         $cp ../prebuilts/patch_googletest/googletestbuild.gn ../third_party/googletest/BUILD.gn
@@ -84,7 +84,7 @@ fi
 
 if [ ! -f "json/BUILD.gn" ];then
     rm -rf json
-    git clone --depth=1 git@gitee.com:openharmony/third_party_json.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_json.git
     if [ -d "third_party_json" ];then
         mv third_party_json json
     fi
@@ -92,7 +92,7 @@ fi
 
 if [ ! -f "libunwind/BUILD.gn" ];then
     rm -rf libunwind
-    git clone  git@gitee.com:openharmony/third_party_libunwind.git
+    git clone  https://gitee.com/openharmony/third_party_libunwind.git
     if [ -d "third_party_libunwind" ];then
         mv third_party_libunwind libunwind
         cd libunwind
@@ -113,7 +113,7 @@ fi
 if [ ! -d "perf_include/hiviewdfx/faultloggerd" ];then
    rm -rf hiviewdfx_faultloggerd perf_include/hiviewdfx/faultloggerd
    mkdir -p perf_include/hiviewdfx/faultloggerd/interfaces/innerkits
-   git clone git@gitee.com:openharmony/hiviewdfx_faultloggerd.git
+   git clone https://gitee.com/openharmony/hiviewdfx_faultloggerd.git
    cd hiviewdfx_faultloggerd
    git reset --hard 7296f69c0d418cd9353638f3117296e4b494e4e5
    cd ..
@@ -151,7 +151,7 @@ if [ ! -d "perf_include/hiviewdfx/faultloggerd" ];then
 fi
 if [ ! -f "hiperf/BUILD.gn" ];then
     rm -rf hiperf developtools_hiperf
-    git clone git@gitee.com:openharmony/developtools_hiperf.git
+    git clone https://gitee.com/openharmony/developtools_hiperf.git
     cd developtools_hiperf
     git reset --hard 9d189f41d76c1ae6e8e12238aef5ef5b8cdbc09f
     cd ..
@@ -189,13 +189,13 @@ fi
 
 if [ ! -f "bounds_checking_function/BUILD.gn" ];then
     rm -rf bounds_checking_function
-    git clone --depth=1 git@gitee.com:openharmony/third_party_bounds_checking_function.git bounds_checking_function
+    git clone --depth=1 https://gitee.com/openharmony/third_party_bounds_checking_function.git bounds_checking_function
     $cp ../prebuilts/patch_bounds_checking_function/bounds_checking_functionbuild.gn bounds_checking_function/BUILD.gn
 fi
 
 if [ ! -d "commonlibrary" ];then
     rm -rf commonlibrary
-    git clone --depth=1 git@gitee.com:openharmony/commonlibrary_c_utils.git
+    git clone --depth=1 https://gitee.com/openharmony/commonlibrary_c_utils.git
     if [ -d "commonlibrary_c_utils" ];then
         mv commonlibrary_c_utils commonlibrary
         rm -rf commonlibrary_c_utils
@@ -204,7 +204,7 @@ fi
 
 if [ ! -f "profiler/device/plugins/ftrace_plugin/include/ftrace_common_type.h" ];then
     rm -rf profiler
-    git clone --depth=1 git@gitee.com:openharmony/developtools_profiler.git
+    git clone --depth=1 https://gitee.com/openharmony/developtools_profiler.git
     if [ -d "developtools_profiler" ];then
         mkdir -p profiler/device/plugins/ftrace_plugin/include
         $cp developtools_profiler/device/plugins/ftrace_plugin/include/ftrace_common_type.h profiler/device/plugins/ftrace_plugin/include
@@ -215,7 +215,7 @@ fi
 
 if [ ! -d "llvm-project" ];then
     rm -rf llvm-project
-    git clone --depth=1 git@gitee.com:openharmony/third_party_llvm-project.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_llvm-project.git
     if [ -d "third_party_llvm-project" ];then
         mv third_party_llvm-project llvm-project
         cd llvm-project
