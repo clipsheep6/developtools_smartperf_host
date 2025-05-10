@@ -27,6 +27,7 @@ import { TabpanePerfProfile } from './TabPerfProfile';
 import { TabPanePerfAnalysisHtml } from './TabPanePerfAnalysis.html';
 import { WebSocketManager } from '../../../../../webSocket/WebSocketManager';
 import { Constants, TypeConstants } from '../../../../../webSocket/Constants';
+import { SpStatisticsHttpUtil } from '../../../../../statistics/util/SpStatisticsHttpUtil';
 
 @element('tabpane-perf-analysis')
 export class TabPanePerfAnalysis extends BaseElement {
@@ -591,6 +592,10 @@ export class TabPanePerfAnalysis extends BaseElement {
   }
 
   private functionClickEvent(it: unknown) {
+    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+      event: 'hiperf_func',
+      action: 'hiperf_func',
+    });
     // @ts-ignore
     this.perfAnalysisHeadTips?.innerHTML = '';
     if (this.selectedTabfileName.indexOf('.an') === -1 && this.selectedTabfileName.indexOf('.so') === -1) {

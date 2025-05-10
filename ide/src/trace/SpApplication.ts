@@ -1756,6 +1756,10 @@ export class SpApplication extends BaseElement {
             if (attribute === 'Convert trace') {
               let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
               querySelectors.forEach((item) => {
+                SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                  event: 'convert_systrace',
+                  action: 'convert_systrace',
+                });
                 if (item.getAttribute('title') === 'Convert to .systrace') {
                   item!.setAttribute('icon', 'convert-loading');
                   item!.classList.add('pending');
