@@ -232,6 +232,7 @@ export class FrameChart extends BaseElement {
   private clearOtherDisplayInfo(node: ChartStruct): void {
     for (const children of node.children) {
       if (children.isChartSelect) {
+        children.isChartSelect = false;
         this.clearOtherDisplayInfo(children);
         continue;
       }
@@ -737,9 +738,9 @@ export class FrameChart extends BaseElement {
       this.setSelectStatusRecursive(ChartStruct.lastSelectFuncStruct!, false);
     }
     // 递归设置点选的parent，children为点选状态
+    this.calDrawArgs(false);
     this.setSelectStatusRecursive(ChartStruct.selectFuncStruct!, true);
 
-    this.calDrawArgs(false);
     this.calculateChartData();
   }
 
