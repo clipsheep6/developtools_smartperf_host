@@ -2257,7 +2257,7 @@ export class SpSystemTrace extends BaseElement {
     complete?: ((res: { status: boolean; msg: string }) => void) | undefined
   ): void {
     this.observerScrollHeightEnable = false;
-    this.init({ url: url }, '', progress, false).then((res) => {
+    this.init({ url: url }, '', '', progress, false).then((res) => {
       if (complete) {
         // @ts-ignore
         complete(res);
@@ -2271,6 +2271,7 @@ export class SpSystemTrace extends BaseElement {
   loadDatabaseArrayBuffer(
     buf: ArrayBuffer,
     thirdPartyWasmConfigUrl: string,
+    configUrl:string,
     progress: (name: string, percent: number) => void,
     isDistributed: boolean,
     complete?: ((res: { status: boolean; msg: string }) => void) | undefined,
@@ -2284,7 +2285,7 @@ export class SpSystemTrace extends BaseElement {
     } else {
       this.timerShaftEL?.removeAttribute('distributed');
     }
-    this.init({ buf, buf2, fileName1, fileName2 }, thirdPartyWasmConfigUrl, progress, isDistributed).then((res) => {
+    this.init({ buf, buf2, fileName1, fileName2 }, thirdPartyWasmConfigUrl, configUrl, progress, isDistributed).then((res) => {
       // @ts-ignore
       this.rowsEL?.querySelectorAll('trace-row').forEach((it: unknown) => this.observer.observe(it));
       if (complete) {
@@ -2748,10 +2749,11 @@ export class SpSystemTrace extends BaseElement {
   init = async (
     param: { buf?: ArrayBuffer; url?: string; buf2?: ArrayBuffer; fileName1?: string; fileName2?: string },
     wasmConfigUri: string,
+    configUrl: string,
     progress: Function,
     isDistributed: boolean
   ): Promise<unknown> => {
-    return spSystemTraceInit(this, param, wasmConfigUri, progress, isDistributed);
+    return spSystemTraceInit(this, param, wasmConfigUri, configUrl, progress, isDistributed);
   };
   // @ts-ignore
   extracted(it: TraceRow<unknown>) {

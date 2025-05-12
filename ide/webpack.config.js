@@ -148,6 +148,10 @@ const config = {
           to: 'doc',
         },
         {
+          from: './src/config',
+          to: 'config',
+        },
+        {
           from: './src/base-ui/icon.svg',
           to: 'base-ui/icon.svg',
         },
