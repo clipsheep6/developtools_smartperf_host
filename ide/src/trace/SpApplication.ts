@@ -1758,11 +1758,13 @@ export class SpApplication extends BaseElement {
             if (attribute === 'Convert trace') {
               let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
               querySelectors.forEach((item) => {
-                SpStatisticsHttpUtil.addOrdinaryVisitAction({
-                  event: 'convert_systrace',
-                  action: 'convert_systrace',
-                });
                 if (item.getAttribute('title') === 'Convert to .systrace') {
+                  if(fileName.indexOf('.htrace')>0){
+                    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                      event: 'convert_systrace',
+                      action: 'convert_systrace',
+                    });
+                  }
                   item!.setAttribute('icon', 'convert-loading');
                   item!.classList.add('pending');
                   item!.style.fontKerning = '';
