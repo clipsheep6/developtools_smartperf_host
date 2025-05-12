@@ -47,6 +47,8 @@ export const processList: Map<number, Array<unknown>> = new Map();
 export const memList: Map<number, Array<unknown>> = new Map();
 //线程状态 泳道图 memory 模式缓存
 export const threadStateList: Map<string, Array<unknown>> = new Map();
+//线程系统调用 泳道图 memory数据缓存
+export const threadSysCallList: Map<number, Array<unknown>> = new Map();
 //进程下卡顿丢帧 泳道图 memory 模式缓存
 export const processFrameList: Map<string, Array<unknown>> = new Map();
 //hiSysEvent 泳道图 memory 模式缓存
@@ -78,6 +80,7 @@ export function clearMemoryCache(data: unknown, proc: Function): void {
   processList.clear();
   memList.clear();
   threadStateList.clear();
+  threadSysCallList.clear();
   processFrameList.clear();
   lostFrameList.clear();
   hitchTimeList.clear();
