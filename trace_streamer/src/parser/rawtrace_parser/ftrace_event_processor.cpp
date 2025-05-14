@@ -312,7 +312,11 @@ bool FtraceEventProcessor::SchedWaking(FtraceEvent &ftraceEvent, uint8_t data[],
     auto schedWakingMsg = ftraceEvent.mutable_sched_waking_format();
     schedWakingMsg->set_comm(FtraceFieldProcessor::HandleStrField(format.fields, index++, data, size));
     schedWakingMsg->set_pid(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
-    schedWakingMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+    if (format.fields[index].size == NEW_SCHED_PRIO_SIZE) {
+        schedWakingMsg->set_prio(FtraceFieldProcessor::HandleIntField<int16_t>(format.fields, index++, data, size));
+    } else {
+        schedWakingMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+    }
     schedWakingMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     schedWakingMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     return true;
@@ -326,7 +330,11 @@ bool FtraceEventProcessor::SchedWakeupNew(FtraceEvent &ftraceEvent,
     auto wakeupNewMsg = ftraceEvent.mutable_sched_wakeup_new_format();
     wakeupNewMsg->set_comm(FtraceFieldProcessor::HandleStrField(format.fields, index++, data, size));
     wakeupNewMsg->set_pid(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
-    wakeupNewMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+    if (format.fields[index].size == NEW_SCHED_PRIO_SIZE) {
+        wakeupNewMsg->set_prio(FtraceFieldProcessor::HandleIntField<int16_t>(format.fields, index++, data, size));
+    } else {
+        wakeupNewMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+    }
     wakeupNewMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     wakeupNewMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     return true;
