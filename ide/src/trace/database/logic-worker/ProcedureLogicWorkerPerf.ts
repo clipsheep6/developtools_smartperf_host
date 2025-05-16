@@ -1452,7 +1452,7 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
       let callChains = [...this.callChainData[sample.sampleId]];
       const lastCallChain = callChains[callChains.length - 1];
       const threadName = this.threadData[sample.tid].threadName || 'Thread';
-      const processName = this.threadData[sample.pid].threadName || 'Process';
+      const processName = this.threadData[sample.pid] ? this.threadData[sample.pid].threadName : 'Process';
       const funcName = this.dataCache.dataDict.get(lastCallChain.name as number);
       if (
         //@ts-ignore

@@ -64,7 +64,7 @@ export class SpHisysEvent extends BaseElement {
   }
 
   get sysEventConfigPath(): string {
-    return '/system/etc/hiview/hisysevent.def';
+    return '//data/system/hiview/unzip_configs/sys_event_def/hisysevent.def';
   }
 
   initElements(): void {
