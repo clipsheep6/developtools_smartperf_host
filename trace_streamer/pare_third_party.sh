@@ -57,9 +57,6 @@ fi
 
 if [ ! -f "bzip2/BUILD.gn" ];then
     git clone --depth=1 git@gitee.com:openharmony/third_party_bzip2.git bzip2
-    cd bzip2
-    ./install.sh $(pwd)
-    cd ..
 fi
 
 if [ ! -f "googletest/BUILD.gn" ];then
