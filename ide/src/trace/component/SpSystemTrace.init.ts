@@ -1212,6 +1212,7 @@ async function spSystemTraceInitBuffer(
       systemParseConfig.config = parseConfigObj.config;
       systemParseConfigJson = JSON.stringify(systemParseConfig);
     } catch (e) {
+	  systemParseConfigJson = parseConfig;
       error('systemParseConfigJsonFailed', e);
     }
     let { status, msg, sdkConfigMap } = await threadPool.initSqlite(param.buf, systemParseConfigJson, configJson, progress);
