@@ -837,8 +837,7 @@ bool RpcServer::SplitFile(std::string timeSnaps)
 
 bool RpcServer::ParserConfig(std::string parserConfigJson)
 {
-    json jMessage = json::parse(parserConfigJson);
-    jsonns::ParserConfig parserConfig = jMessage.at("config");
+    TS_LOGI("parserConfigJson=%s", parserConfigJson.c_str());
     ts_->SetConfigFile(parserConfigJson);
     ffrtConvertEnabled_ = ts_->GetFfrtConfig();
     startParseTime_ =
