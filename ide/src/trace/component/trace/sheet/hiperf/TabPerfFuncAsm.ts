@@ -22,6 +22,7 @@ import {
 } from '../../../../bean/PerfAnalysis';
 import { WebSocketManager } from '../../../../../webSocket/WebSocketManager';
 import { Constants, TypeConstants } from '../../../../../webSocket/Constants';
+import { SpStatisticsHttpUtil } from '../../../../../statistics/util/SpStatisticsHttpUtil';
 
 @element('tab-perf-func-asm')
 export class TabPerfFuncAsm extends BaseElement {
@@ -170,6 +171,10 @@ export class TabPerfFuncAsm extends BaseElement {
                 if (cmd === Constants.DISASSEMBLY_QUERY_BACK_CMD) {
                   const result = JSON.parse(new TextDecoder().decode(e));
                   if (result.resultCode === 0) {
+                    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                      event: 'hiperf_func',
+                      action: 'hiperf_func',
+                    });
                     if (result.anFileOff) {
                       this.textFileOffElement!.innerHTML = `<span class="title-label">.text section:</span> ${result.anFileOff}`;
                       this.textFileOffElement!.style.display = 'block';
