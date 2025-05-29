@@ -299,11 +299,12 @@ bool FtraceEventProcessor::SchedWakeup(FtraceEvent &ftraceEvent, uint8_t data[],
     schedWakeupMsg->set_pid(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     if (format.fields[index].size == NEW_SCHED_PRIO_SIZE) {
         schedWakeupMsg->set_prio(FtraceFieldProcessor::HandleIntField<int16_t>(format.fields, index++, data, size));
+        schedWakeupMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     } else {
         schedWakeupMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        schedWakeupMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        schedWakeupMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     }
-    schedWakeupMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
-    schedWakeupMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     return true;
 }
 bool FtraceEventProcessor::SchedWaking(FtraceEvent &ftraceEvent, uint8_t data[], size_t size, const EventFormat &format)
@@ -314,11 +315,12 @@ bool FtraceEventProcessor::SchedWaking(FtraceEvent &ftraceEvent, uint8_t data[],
     schedWakingMsg->set_pid(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     if (format.fields[index].size == NEW_SCHED_PRIO_SIZE) {
         schedWakingMsg->set_prio(FtraceFieldProcessor::HandleIntField<int16_t>(format.fields, index++, data, size));
+        schedWakingMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     } else {
         schedWakingMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        schedWakingMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        schedWakingMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     }
-    schedWakingMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
-    schedWakingMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     return true;
 }
 bool FtraceEventProcessor::SchedWakeupNew(FtraceEvent &ftraceEvent,
@@ -332,11 +334,12 @@ bool FtraceEventProcessor::SchedWakeupNew(FtraceEvent &ftraceEvent,
     wakeupNewMsg->set_pid(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     if (format.fields[index].size == NEW_SCHED_PRIO_SIZE) {
         wakeupNewMsg->set_prio(FtraceFieldProcessor::HandleIntField<int16_t>(format.fields, index++, data, size));
+        wakeupNewMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     } else {
         wakeupNewMsg->set_prio(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        wakeupNewMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
+        wakeupNewMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     }
-    wakeupNewMsg->set_success(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
-    wakeupNewMsg->set_target_cpu(FtraceFieldProcessor::HandleIntField<int32_t>(format.fields, index++, data, size));
     return true;
 }
 bool FtraceEventProcessor::SchedProcessExit(FtraceEvent &ftraceEvent,
