@@ -1,5 +1,21 @@
+diff --git a/common/dfxutil/dfx_util.cpp b/common/dfxutil/dfx_util.cpp
+index a90f4303..9429fd43 100644
+--- a/common/dfxutil/dfx_util.cpp
++++ b/common/dfxutil/dfx_util.cpp
+@@ -229,7 +229,11 @@ bool ReadFdToString(int fd, std::string& content)
+ void CloseFd(int &fd)
+ {
+     if (fd > 0) {
++#if is_ohos
+         fdsan_close_with_tag(fd, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
++#else
++        close(fd);
++#endif
+         fd = -1;
+     }
+ }
 diff --git a/common/dfxutil/string_view_util.h b/common/dfxutil/string_view_util.h
-index b44a59ea775b368b93391ce19b440f617c309477..7dbd3568df9035edea91e920bf12fa5c58fe116f 100644
+index b44a59ea..7dbd3568 100644
 --- a/common/dfxutil/string_view_util.h
 +++ b/common/dfxutil/string_view_util.h
 @@ -24,6 +24,24 @@
@@ -106,7 +122,7 @@ index b44a59ea775b368b93391ce19b440f617c309477..7dbd3568df9035edea91e920bf12fa5c
  } // namespace HiviewDFX
  } // namespace OHOS
 diff --git a/interfaces/common/byte_order.h b/interfaces/common/byte_order.h
-index 3c40993ec56288deec6e40420a97d182587e9b62..a55d9db076a6fe1476a52a102fb968adb08073d7 100644
+index 3c40993e..a55d9db0 100644
 --- a/interfaces/common/byte_order.h
 +++ b/interfaces/common/byte_order.h
 @@ -16,7 +16,7 @@
@@ -119,7 +135,7 @@ index 3c40993ec56288deec6e40420a97d182587e9b62..a55d9db076a6fe1476a52a102fb968ad
  #define UNWIND_BIG_ENDIAN 4321
  #define UNWIND_BYTE_ORDER -1 // Unknown
 diff --git a/interfaces/innerkits/unwinder/include/dfx_elf_define.h b/interfaces/innerkits/unwinder/include/dfx_elf_define.h
-index 6bc9394912c193417cbfe588551b07c255fce62a..a71d76b5641ec347f014736173137cf1115c446b 100644
+index 6bc93949..a71d76b5 100644
 --- a/interfaces/innerkits/unwinder/include/dfx_elf_define.h
 +++ b/interfaces/innerkits/unwinder/include/dfx_elf_define.h
 @@ -17,7 +17,7 @@
@@ -132,7 +148,7 @@ index 6bc9394912c193417cbfe588551b07c255fce62a..a71d76b5641ec347f014736173137cf1
  #include <link.h>
  #endif
 diff --git a/interfaces/innerkits/unwinder/include/dfx_elf_parser.h b/interfaces/innerkits/unwinder/include/dfx_elf_parser.h
-index b4c84437735176d28f7756930a8027152fc08155..86a4bdd197918e6246edf683eec2d213b1414803 100644
+index b4c84437..86a4bdd1 100644
 --- a/interfaces/innerkits/unwinder/include/dfx_elf_parser.h
 +++ b/interfaces/innerkits/unwinder/include/dfx_elf_parser.h
 @@ -16,7 +16,7 @@
@@ -145,7 +161,7 @@ index b4c84437735176d28f7756930a8027152fc08155..86a4bdd197918e6246edf683eec2d213
  #else
  #include <elf.h>
 diff --git a/interfaces/innerkits/unwinder/src/elf/dfx_elf.cpp b/interfaces/innerkits/unwinder/src/elf/dfx_elf.cpp
-index 9398e59acea6722bb1bfebcd0f312ee826a6f5a1..d071f2b934610fb15a921972a9eb97f3c646506f 100644
+index 9398e59a..d071f2b9 100644
 --- a/interfaces/innerkits/unwinder/src/elf/dfx_elf.cpp
 +++ b/interfaces/innerkits/unwinder/src/elf/dfx_elf.cpp
 @@ -20,7 +20,7 @@
@@ -157,3 +173,53 @@ index 9398e59acea6722bb1bfebcd0f312ee826a6f5a1..d071f2b934610fb15a921972a9eb97f3
  #include "dfx_nonlinux_define.h"
  #else
  #include <elf.h>
+diff --git a/interfaces/innerkits/unwinder/src/elf/elf_factory.cpp b/interfaces/innerkits/unwinder/src/elf/elf_factory.cpp
+index cbe67062..52ced531 100644
+--- a/interfaces/innerkits/unwinder/src/elf/elf_factory.cpp
++++ b/interfaces/innerkits/unwinder/src/elf/elf_factory.cpp
+@@ -151,8 +151,10 @@ std::shared_ptr<DfxElf> RegularElfFactory::Create()
+         DFXLOGE("Failed to open file: %{public}s, errno(%{public}d)", filePath_.c_str(), errno);
+         return regularElf;
+     }
++#if is_ohos
+     uint64_t ownerTag = fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN);
+     fdsan_exchange_owner_tag(fd, 0, ownerTag);
++#endif
+     do {
+         auto size = static_cast<size_t>(GetFileSize(fd));
+         auto mMap = std::make_shared<DfxMmap>();
+@@ -162,7 +164,11 @@ std::shared_ptr<DfxElf> RegularElfFactory::Create()
+         }
+         regularElf->SetMmap(mMap);
+     } while (false);
++#if is_ohos
+     fdsan_close_with_tag(fd, ownerTag);
++#else
++    close(fd);
++#endif
+     return regularElf;
+ }
+ 
+@@ -215,8 +221,10 @@ std::shared_ptr<DfxElf> CompressHapElfFactory::Create()
+         DFXLOGE("Failed to open hap file, errno(%{public}d)", errno);
+         return nullptr;
+     }
++#if is_ohos
+     uint64_t ownerTag = fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN);
+     fdsan_exchange_owner_tag(fd, 0, ownerTag);
++#endif
+     std::shared_ptr<DfxElf> compressHapElf = nullptr;
+     do {
+         size_t elfSize = 0;
+@@ -237,7 +245,11 @@ std::shared_ptr<DfxElf> CompressHapElfFactory::Create()
+             break;
+         }
+     } while (false);
++#if is_ohos
+     fdsan_close_with_tag(fd, ownerTag);
++#else
++    close(fd);
++#endif
+     return compressHapElf;
+ }
+ 
