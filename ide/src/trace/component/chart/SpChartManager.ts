@@ -62,7 +62,7 @@ import { SpUserFileChart } from './SpUserPluginChart';
 import { SpImportUserPluginsChart } from './SpImportUserPluginsChart';
 import { queryDmaFenceIdAndCat } from '../../database/sql/dmaFence.sql';
 import { queryAllFuncNames } from '../../database/sql/Func.sql';
-import {SpSnapShotChart} from './spSnapShotChart';
+import { SpSnapShotChart } from './spSnapShotChart';
 import { SpRecordTrace } from '../SpRecordTrace';
 
 export class SpChartManager {
@@ -197,7 +197,7 @@ export class SpChartManager {
     await this.initCpu(progress);
     await this.logChart.init();
     await this.spHiSysEvent.init();
-    if (SpRecordTrace.snapShotList.length > 0) {
+    if (SpRecordTrace.snapShotList.length > 0 && SpRecordTrace.isSnapShotCapture) {
       await this.spSnapShotChart.init();
     }
     let idAndNameArr = await queryDmaFenceIdAndCat();
