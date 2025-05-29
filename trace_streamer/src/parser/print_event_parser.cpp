@@ -375,6 +375,19 @@ bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string &args, c
 {
     // H:MarshRSTransactionData cmdCount:20 transactionFlag:[3799,8] isUni:1
     std::smatch match;
+    if (std::regex_search(args, match, newTransFlagPattern_)) {
+        std::string mainTheadId = match.str(1);
+        std::string flag2 = match.str(2);
+        std::string currentThread = match.str(3);
+        std::string timeFlag = match.str(4);
+        auto mainThreadId =
+            streamFilters_->processFilter_->GetInternalTid(base::StrToInt<uint32_t>(mainTheadId).value());
+        auto currentThreadId =
+            streamFilters_->processFilter_->GetInternalTid(base::StrToInt<uint32_t>(currentThread).value());
+        auto timeId = base::StrToInt<uint64_t>(timeFlag).value();
+        return streamFilters_->frameFilter_->BeginRSTransactionData(
+            currentThreadId, base::StrToInt<uint32_t>(flag2).value(), mainThreadId, timeId);
+    }
     if (std::regex_search(args, match, transFlagPattern_)) {
         std::string mainTheadId = match.str(1);
         std::string flag2 = match.str(2);
@@ -385,19 +398,6 @@ bool PrintEventParser::OnRwTransaction(size_t callStackRow, std::string &args, c
         auto currentThreadId = streamFilters_->processFilter_->GetInternalTid(line.pid);
         return streamFilters_->frameFilter_->BeginRSTransactionData(
             currentThreadId, base::StrToInt<uint32_t>(flag2).value(), mainThreadId);
-    }
-    if (std::regex_search(args, match, newTransFlagPattern_)) {
-        std::string mainTheadId = match.str(1);
-        std::string currentThread = match.str(2);
-        std::string flag2 = match.str(3);
-        std::string timeFlag = match.str(4);
-        auto mainThreadId =
-            streamFilters_->processFilter_->GetInternalTid(base::StrToInt<uint32_t>(mainTheadId).value());
-        auto currentThreadId =
-            streamFilters_->processFilter_->GetInternalTid(base::StrToInt<uint32_t>(currentThread).value());
-        auto timeId = base::StrToInt<uint64_t>(timeFlag).value();
-        return streamFilters_->frameFilter_->BeginRSTransactionData(
-            currentThreadId, base::StrToInt<uint32_t>(flag2).value(), mainThreadId, timeId);
     }
     return true;
 }
