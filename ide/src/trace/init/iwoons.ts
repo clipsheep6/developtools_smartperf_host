@@ -5879,3 +5879,508 @@ export class TimerShaftElement extends BaseElement {
     }
     this._rangeRuler.frame.width = width;
   }
+  SpSegmentationChart.cpuRow!.dataList = [];
+  SpSegmentationChart.cpuRow!.dataListCache = [];
+  SpSegmentationChart.cpuRow!.isComplete = false;
+  // @ts-ignore
+  SpSegmentationChart.cpuRow!.supplier = (): Promise<Array<FreqChartDataStruct>> =>
+    new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(data));
+}
+function setGpuData(data: Array<FreqChartDataStruct>): void {
+  let currentMaxValue = 0;
+  data.map((v: FreqChartDataStruct) => {
+    if (v.value && v.value > currentMaxValue!) {
+      currentMaxValue = v.value;
+    }
+  });
+  CpuFreqExtendStruct.hoverType = 'GPU-FREQ';
+  CpuFreqExtendStruct.gpuMaxValue = currentMaxValue;
+  SpSegmentationChart.GpuRow!.dataList = [];
+  SpSegmentationChart.GpuRow!.dataListCache = [];
+  SpSegmentationChart.GpuRow!.isComplete = false;
+  // @ts-ignore
+  SpSegmentationChart.GpuRow!.supplier = (): Promise<Array<FreqChartDataStruct>> =>
+    new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(data));
+}
+function setSchedData(data: Array<FreqChartDataStruct>): void {
+  let currentMaxValue = 0;
+  data.map((v: FreqChartDataStruct) => {
+    if (v.value && v.value > currentMaxValue!) {
+      currentMaxValue = v.value;
+    }
+  });
+  CpuFreqExtendStruct.hoverType = 'SCHED-SWITCH';
+  CpuFreqExtendStruct.schedMaxValue = currentMaxValue!;
+  SpSegmentationChart.schedRow!.dataList = [];
+  SpSegmentationChart.schedRow!.dataListCache = [];
+  SpSegmentationChart.schedRow!.isComplete = false;
+  // @ts-ignore
+  SpSegmentationChart.schedRow!.supplier = (): Promise<Array<FreqChartDataStruct>> =>
+    new Promise<Array<FreqChartDataStruct>>((resolve) => resolve(data));
+}
+function setBinderData(data: Array<Array<FreqChartDataStruct>>, binderList: Array<FreqChartDataStruct>): void {
+  data.map((v: Array<FreqChartDataStruct>) => {
+    // 统计每一竖列的最大count
+    let listCount = 0;
+    v.map((t: FreqChartDataStruct) => {
+      listCount += t.value;
+      if (t.name === 'binder transaction') {
+        t.depth = t.value;
+      }
+      if (t.name === 'binder transaction async') {
+        t.depth =
+          t.value +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder transaction';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder transaction';
+            })[0].value
+            : 0);
+      }
+      if (t.name === 'binder reply') {
+        t.depth =
+          t.value +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder transaction';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder transaction';
+            })[0].value
+            : 0) +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder transaction async';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder transaction async';
+            })[0].value
+            : 0);
+      }
+      if (t.name === 'binder async rcv') {
+        t.depth =
+          t.value +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder transaction';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder transaction';
+            })[0].value
+            : 0) +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder transaction async';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder transaction async';
+            })[0].value
+            : 0) +
+          (v.filter((i: FreqChartDataStruct) => {
+            return i.name === 'binder reply';
+          }).length > 0
+            ? v.filter((i: FreqChartDataStruct) => {
+              return i.name === 'binder reply';
+            })[0].value
+            : 0);
+      }
+      binderList.push(t);
+    });
+    BinderStruct.maxHeight =
+      BinderStruct.maxHeight > listCount ? BinderStruct.maxHeight : JSON.parse(JSON.stringify(listCount));
+    listCount = 0;
+  });
+}
+
+class HeightLine {
+  key: string = '';
+  cycle: number = -1;
+}
+/*
+ * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { convertJSON, LogicHandler } from './ProcedureLogicWorkerCommon';
+
+interface SPT {
+  title: string;
+  count: number;
+  wallDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  avgDuration: string;
+  children: Array<SPT>;
+  state: string;
+  pid: number;
+  tid: number;
+}
+
+export class ProcedureLogicWorkerSPT extends LogicHandler {
+  threadSlice: Array<ThreadSlice> = [];
+  currentEventId: string = '';
+
+  clearAll(): void {
+    this.threadSlice.length = 0;
+  }
+
+  handle(data: unknown): void {
+    //@ts-ignore
+    this.currentEventId = data.id;
+    //@ts-ignore
+    if (data && data.type) {
+      //@ts-ignore
+      switch (data.type) {
+        case 'spt-init':
+          this.sptInit(data);
+          break;
+        case 'spt-getPTS':
+          //@ts-ignore
+          this.sptGetPTS(data.params);
+          break;
+        case 'spt-getSPT':
+          //@ts-ignore
+          this.sptGetSPT(data.params);
+          break;
+        case 'spt-getCpuPriority':
+          this.sptGetCpuPriority();
+          break;
+        case 'spt-getCpuPriorityByTime':
+          //@ts-ignore
+          this.sptGetCpuPriorityByTime(data.params);
+          break;
+      }
+    }
+  }
+  private sptInit(data: unknown): void {
+    //@ts-ignore
+    if (data.params.list) {
+      //@ts-ignore
+      this.threadSlice = convertJSON(data.params.list);
+      self.postMessage({
+        id: this.currentEventId,
+        action: 'spt-init',
+        results: [],
+      });
+    } else {
+      this.getThreadState();
+    }
+  }
+
+  private sptGetPTS(params: { leftNs: number; rightNs: number; cpus: Array<number> }): void {
+    self.postMessage({
+      id: this.currentEventId,
+      action: 'spt-getPTS',
+      results: this.getPTSData(params.leftNs, params.rightNs, params.cpus),
+    });
+  }
+  private sptGetSPT(params: { leftNs: number; rightNs: number; cpus: Array<number> }): void {
+    self.postMessage({
+      id: this.currentEventId,
+      action: 'spt-getSPT',
+      results: this.getSPTData(params.leftNs, params.rightNs, params.cpus),
+    });
+  }
+  private sptGetCpuPriority(): void {
+    self.postMessage({
+      id: this.currentEventId,
+      action: 'spt-getCpuPriority',
+      results: this.threadSlice,
+    });
+  }
+  private sptGetCpuPriorityByTime(params: { leftNs: number; rightNs: number; cpus: Array<number> }): void {
+    const result = this.threadSlice.filter((item: ThreadSlice) => {
+      return !(item.endTs! < params.leftNs || item.startTs! > params.rightNs);
+    });
+    self.postMessage({
+      id: this.currentEventId,
+      action: 'spt-getCpuPriorityByTime',
+      results: result,
+    });
+  }
+  queryData(queryName: string, sql: string, args: unknown): void {
+    self.postMessage({
+      id: this.currentEventId,
+      type: queryName,
+      isQuery: true,
+      args: args,
+      sql: sql,
+    });
+  }
+
+  getThreadState(): void {
+    this.queryData(
+      'spt-init',
+      `
+    select
+       state,
+       dur,
+       (ts - start_ts) as startTs,
+       (ts - start_ts + dur) as endTs,
+       cpu,
+       tid,
+       itid as itId,
+       arg_setid as argSetID,
+       pid
+from thread_state,trace_range where dur > 0 and (ts - start_ts) >= 0;
+`,
+      {}
+    );
+  }
+
+  private getPTSData(ptsLeftNs: number, ptsRightNs: number, cpus: Array<number>): unknown[] {
+    let ptsFilter = this.threadSlice.filter(
+      (it) =>
+        Math.max(ptsLeftNs, it.startTs!) < Math.min(ptsRightNs, it.startTs! + it.dur!) &&
+        (it.cpu === null || it.cpu === undefined || cpus.includes(it.cpu))
+    );
+    let group: unknown = {};
+    ptsFilter.forEach((slice) => {
+      let title = `S-${slice.state}`;
+      let item = this.setStateData(slice, title) as SPT;
+      //@ts-ignore
+      if (group[`${slice.pid}`]) {
+        //@ts-ignore
+        let process = group[`${slice.pid}`] as SPT;
+        process.count += 1;
+        process.wallDuration += slice.dur!;
+        process.minDuration = Math.min(process.minDuration, slice.dur!);
+        process.maxDuration = Math.max(process.maxDuration, slice.dur!);
+        process.avgDuration = (process.wallDuration / process.count).toFixed(2);
+        let thread = process.children.find((child: SPT) => child.title === `T-${slice.tid}`);
+        if (thread) {
+          thread.count += 1;
+          thread.wallDuration += slice.dur!;
+          thread.minDuration = Math.min(thread.minDuration, slice.dur!);
+          thread.maxDuration = Math.max(thread.maxDuration, slice.dur!);
+          thread.avgDuration = (thread.wallDuration / thread.count).toFixed(2);
+          let state = thread.children.find((child: SPT) => child.title === `S-${slice.state}`);
+          if (state) {
+            state.count += 1;
+            state.wallDuration += slice.dur!;
+            state.minDuration = Math.min(state.minDuration, slice.dur!);
+            state.maxDuration = Math.max(state.maxDuration, slice.dur!);
+            state.avgDuration = (state.wallDuration / state.count).toFixed(2);
+          } else {
+            thread.children.push(item);
+          }
+        } else {
+          let processChild = this.setThreadData(slice, item) as SPT;
+          process.children.push(processChild);
+        }
+      } else {
+        //@ts-ignore
+        group[`${slice.pid}`] = this.setProcessData(slice, item);
+      }
+    });
+    //@ts-ignore
+    return Object.values(group);
+  }
+  private setStateData(slice: ThreadSlice, title: string): unknown {
+    return {
+      title: title,
+      count: 1,
+      state: slice.state,
+      tid: slice.tid,
+      pid: slice.pid,
+      minDuration: slice.dur || 0,
+      maxDuration: slice.dur || 0,
+      wallDuration: slice.dur || 0,
+      avgDuration: `${slice.dur}`,
+    };
+  }
+  private setProcessData(slice: ThreadSlice, item: SPT): unknown {
+    return {
+      title: `P-${slice.pid}`,
+      count: 1,
+      pid: slice.pid,
+      minDuration: slice.dur || 0,
+      maxDuration: slice.dur || 0,
+      wallDuration: slice.dur || 0,
+      avgDuration: `${slice.dur}`,
+      children: [
+        {
+          title: `T-${slice.tid}`,
+          count: 1,
+          pid: slice.pid,
+          tid: slice.tid,
+          minDuration: slice.dur || 0,
+          maxDuration: slice.dur || 0,
+          wallDuration: slice.dur || 0,
+          avgDuration: `${slice.dur}`,
+          children: [item],
+        },
+      ],
+    };
+  }
+  private setThreadData(slice: ThreadSlice, item: SPT): unknown {
+    return {
+      title: `T-${slice.tid}`,
+      count: 1,
+      tid: slice.tid,
+      pid: slice.pid,
+      minDuration: slice.dur || 0,
+      maxDuration: slice.dur || 0,
+      wallDuration: slice.dur || 0,
+      avgDuration: `${slice.dur}`,
+      children: [item],
+    };
+  }
+  private getSPTData(sptLeftNs: number, sptRightNs: number, cpus: Array<number>): unknown {
+    let sptFilter = this.threadSlice.filter(
+      (it) =>
+        Math.max(sptLeftNs, it.startTs!) < Math.min(sptRightNs, it.startTs! + it.dur!) &&
+        (it.cpu === null || it.cpu === undefined || cpus.includes(it.cpu))
+    );
+    let group: unknown = {};
+    sptFilter.forEach((slice) => {
+      let item = {
+        title: `T-${slice.tid}`,
+        count: 1,
+        state: slice.state,
+        pid: slice.pid,
+        tid: slice.tid,
+        minDuration: slice.dur || 0,
+        maxDuration: slice.dur || 0,
+        wallDuration: slice.dur || 0,
+        avgDuration: `${slice.dur}`,
+      } as SPT;
+      //@ts-ignore
+      if (group[`${slice.state}`]) {
+        this.setSPTData(group, slice, item);
+      } else {
+        //@ts-ignore
+        group[`${slice.state}`] = {
+          title: `S-${slice.state}`,
+          count: 1,
+          state: slice.state,
+          minDuration: slice.dur || 0,
+          maxDuration: slice.dur || 0,
+          wallDuration: slice.dur || 0,
+          avgDuration: `${slice.dur}`,
+          children: [
+            {
+              title: `P-${slice.pid}`,
+              count: 1,
+              state: slice.state,
+              pid: slice.pid,
+              minDuration: slice.dur || 0,
+              maxDuration: slice.dur || 0,
+              wallDuration: slice.dur || 0,
+              avgDuration: `${slice.dur}`,
+              children: [item],
+            },
+          ],
+        };
+      }
+    });
+    //@ts-ignore
+    return Object.values(group);
+  }
+  private setSPTData(group: unknown, slice: ThreadSlice, item: SPT): void {
+    //@ts-ignore
+    let state = group[`${slice.state}`];
+    state.count += 1;
+    state.wallDuration += slice.dur;
+    state.minDuration = Math.min(state.minDuration, slice.dur!);
+    state.maxDuration = Math.max(state.maxDuration, slice.dur!);
+    state.avgDuration = (state.wallDuration / state.count).toFixed(2);
+    let process = state.children.find((child: SPT) => child.title === `P-${slice.pid}`);
+    if (process) {
+      process.count += 1;
+      process.wallDuration += slice.dur;
+      process.minDuration = Math.min(process.minDuration, slice.dur!);
+      process.maxDuration = Math.max(process.maxDuration, slice.dur!);
+      process.avgDuration = (process.wallDuration / process.count).toFixed(2);
+      let thread = process.children.find((child: SPT) => child.title === `T-${slice.tid}`);
+      if (thread) {
+        thread.count += 1;
+        thread.wallDuration += slice.dur;
+        thread.minDuration = Math.min(thread.minDuration, slice.dur!);
+        thread.maxDuration = Math.max(thread.maxDuration, slice.dur!);
+        thread.avgDuration = (thread.wallDuration / thread.count).toFixed(2);
+      } else {
+        process.children.push(item);
+      }
+    } else {
+      state.children.push({
+        title: `P-${slice.pid}`,
+        count: 1,
+        state: slice.state,
+        pid: slice.pid,
+        minDuration: slice.dur || 0,
+        maxDuration: slice.dur || 0,
+        wallDuration: slice.dur || 0,
+        avgDuration: `${slice.dur}`,
+        children: [item],
+      });
+    }
+  }
+}
+
+export class ThreadSlice {
+  state?: string;
+  dur?: number;
+  startTs?: number;
+  endTs?: number;
+  cpu?: number | null;
+  tid?: number;
+  pid?: number;
+  itId?: number;
+  priorityType?: string;
+  end_state?: string;
+  priority?: number;
+  argSetID?: number;
+}
+/*
+ * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { BaseElement, element } from '../../../base-ui/BaseElement';
+import { TimeRuler } from './timer-shaft/TimeRuler';
+import { Rect } from './timer-shaft/Rect';
+import { RangeRuler, TimeRange } from './timer-shaft/RangeRuler';
+import { SlicesTime, SportRuler } from './timer-shaft/SportRuler';
+import { procedurePool } from '../../database/Procedure';
+import { Flag } from './timer-shaft/Flag';
+import { info } from '../../../log/Log';
+import { TraceSheet } from './base/TraceSheet';
+import { SelectionParam } from '../../bean/BoxSelection';
+import { type SpSystemTrace, CurrentSlicesTime } from '../SpSystemTrace';
+import './timer-shaft/CollapseButton';
+import { TimerShaftElementHtml } from './TimerShaftElement.html';
+import { SpChartList } from './SpChartList';
+//随机生成十六位进制颜色
+//@ts-ignore
+export function randomRgbColor(): string {
+  let r = Math.floor(Math.random() * 255);
+  let g = Math.floor(Math.random() * 255);
+  let b = Math.floor(Math.random() * 255);
+  if (r * 0.299 + g * 0.587 + b * 0.114 < 192) {
+    let r16 = r.toString(16).length === 1 && r.toString(16) <= 'f' ? 0 + r.toString(16) : r.toString(16);
+    let g16 = g.toString(16).length === 1 && g.toString(16) <= 'f' ? 0 + g.toString(16) : g.toString(16);
+    let b16 = b.toString(16).length === 1 && b.toString(16) <= 'f' ? 0 + b.toString(16) : b.toString(16);
+    let color = '#' + r16 + g16 + b16;
+    return color;
+  } else {
+    randomRgbColor();
+  }
+}
