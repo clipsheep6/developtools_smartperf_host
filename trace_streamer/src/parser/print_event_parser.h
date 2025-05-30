@@ -100,7 +100,7 @@ private:
     const std::regex uiVsyncTaskPattern_ = std::regex("\\[(\\w+):(\\d+)\\]");
     const std::regex transFlagPattern_ = std::regex(R"(transactionFlag:\[(\d+),(\d+)\])");
     const std::regex newTransFlagPattern_ =
-        std::regex(R"(transactionFlag:\[(\d+),\s*(\d+),\s*(\d+)\],\s*timestamp:(\d+))");
+          std::regex(R"(transactionFlag:\[(\d+),(\d+)\],\s*tid:(\d+),\s*timestamp:(\d+))");
     const std::regex mainProcessCmdPattern_ = std::regex("\\[(\\d+),(\\d+)\\]");
     const std::regex distributeMatcher_ = std::regex(R"(H:\[([a-z0-9]+),([a-z0-9]+),([a-z0-9]+)\]#([CS]?)##(.*))");
     std::vector<uint64_t> frameCallIds_ = {};
