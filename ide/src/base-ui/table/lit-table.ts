@@ -1649,7 +1649,7 @@ export class LitTable extends HTMLElement {
             (child as HTMLElement).title = rowObject.data.time + 'ns';
           } else {
             //@ts-ignore
-            (child as HTMLElement).title = text;
+            (child as HTMLElement).title = text.replace(/&lt;/g,'<').replace(/&gt;/g,'>');
           }
         }
       }
