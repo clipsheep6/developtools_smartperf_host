@@ -84,6 +84,7 @@ fi
 if [ ! -d "hiviewdfx/faultloggerd" ];then
    git clone --depth=1 git@gitee.com:openharmony/hiviewdfx_faultloggerd.git hiviewdfx/faultloggerd/
    cd hiviewdfx/faultloggerd
+   perl -pi -e 's/\r$//' interfaces/innerkits/unwinder/src/elf/dfx_elf.cpp
    $patch -p1  < ../../../prebuilts/patch_hiperf/hiviewdfx_faultloggerd.patch
    cd ../../
 fi
