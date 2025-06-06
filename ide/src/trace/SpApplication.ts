@@ -182,6 +182,7 @@ export class SpApplication extends BaseElement {
   static traceType: String = '';
   private isZipFile: boolean = false;
   isClear: boolean = false;
+  isOpenTrace: boolean = false;
   static spSnapShotView: SpSnapShotView | undefined | null;
 
   static get observedAttributes(): Array<string> {
@@ -649,6 +650,7 @@ export class SpApplication extends BaseElement {
 
   private openTraceFile(ev: File): void {
     SpApplication.isTraceLoaded = false;
+    this.isOpenTrace = true;
     this.returnOriginalUrl();
     this.removeAttribute('custom-color');
     this.chartFilter!.setAttribute('hidden', '');
@@ -1757,6 +1759,12 @@ export class SpApplication extends BaseElement {
               let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
               querySelectors.forEach((item) => {
                 if (item.getAttribute('title') === 'Convert to .systrace') {
+                  if(fileName.indexOf('.htrace')>0){
+                    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                      event: 'convert_systrace',
+                      action: 'convert_systrace',
+                    });
+                  }
                   item!.setAttribute('icon', 'convert-loading');
                   item!.classList.add('pending');
                   item!.style.fontKerning = '';
@@ -2056,7 +2064,7 @@ export class SpApplication extends BaseElement {
     });
     this.cutTraceFile!.addEventListener('click', (ev) => {
       this.validateFileCacheLost();
-      if (this.isClear) {
+      if (this.isClear && !this.isOpenTrace) {
         let search = document.querySelector('body > sp-application')!.shadowRoot!.querySelector<LitSearch>('#lit-search');
         let progressEL = document.querySelector("body > sp-application")!.shadowRoot!.querySelector<LitProgressBar>("div > div.search-vessel > lit-progress-bar");
         progressEL!.loading = false;
@@ -2339,6 +2347,7 @@ export class SpApplication extends BaseElement {
           });
         });
         this.isClear = true;
+        this.isOpenTrace = false;
         this.mainMenu!.menus = this.mainMenu!.menus;
       } else {
         this.isClear = false;

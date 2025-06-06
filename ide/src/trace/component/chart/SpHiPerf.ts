@@ -480,7 +480,7 @@ export class SpHiPerf {
       let array = this.group[key] as Array<PerfThread>;
       let process = array.filter((th): boolean => th.pid === th.tid)[0];
       let row = TraceRow.skeleton<HiPerfProcessStruct>();
-      row.rowId = `${process.pid}-Perf-Process`;
+      row.rowId = `${process ? process.pid : Number(key)}-Perf-Process`;
       row.index = index;
       row.rowType = TraceRow.ROW_TYPE_HIPERF_PROCESS;
       row.rowParentId = 'HiPerf';
@@ -491,14 +491,14 @@ export class SpHiPerf {
         row.addTemplateTypes('AppStartup');
       }
       row.addTemplateTypes('HiPerf');
-      row.name = `${process.processName || 'Process'} [${process.pid}]`;
+      row.name = `${process ? process.processName : 'Process'} [${process ? process.pid : Number(key)}]`;
       row.folderPaddingLeft = 6;
       row.style.height = '40px';
       row.favoriteChangeHandler = this.trace.favoriteChangeHandler;
       row.selectChangeHandler = this.trace.selectChangeHandler; //@ts-ignore
       row.supplierFrame = (): Promise<unknown> => {
         return hiperfProcessDataSender(
-          process.pid,
+          process ? process.pid : Number(key),
           row.drawType,
           this.maxCpuId + 1,
           SpHiPerf.stringResult?.fValue || 1,
