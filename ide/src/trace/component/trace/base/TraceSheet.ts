@@ -16,7 +16,13 @@
 import { BaseElement, element } from '../../../../base-ui/BaseElement';
 import { type LitTabs } from '../../../../base-ui/tabs/lit-tabs';
 import { LitTabpane } from '../../../../base-ui/tabs/lit-tabpane';
-import { BoxJumpParam, SelectionParam, SliceBoxJumpParam } from '../../../bean/BoxSelection';
+import { 
+  BoxJumpParam, 
+  SelectionParam,
+  SysCallBoxJumpParam,
+  SliceBoxJumpParam, 
+  PerfSampleBoxJumpParam
+} from '../../../bean/BoxSelection';
 import { type TabPaneCurrentSelection } from '../sheet/TabPaneCurrentSelection';
 import { type TabPaneFlag } from '../timer-shaft/TabPaneFlag';
 import { type Flag } from '../timer-shaft/Flag';
@@ -28,6 +34,7 @@ import { type CpuStruct } from '../../../database/ui-worker/cpu/ProcedureWorkerC
 import { CpuFreqStruct } from '../../../database/ui-worker/ProcedureWorkerFreq';
 import { CpuFreqLimitsStruct } from '../../../database/ui-worker/cpu/ProcedureWorkerCpuFreqLimits';
 import { type ThreadStruct } from '../../../database/ui-worker/ProcedureWorkerThread';
+import { type ThreadSysCallStruct } from '../../../database/ui-worker/ProcedureWorkerThreadSysCall';
 import { type FuncStruct } from '../../../database/ui-worker/ProcedureWorkerFunc';
 import { ProcessMemStruct } from '../../../database/ui-worker/ProcedureWorkerMem';
 import { CpuStateStruct } from '../../../database/ui-worker/cpu/ProcedureWorkerCpuState';
@@ -110,6 +117,8 @@ import { PerfFunctionAsmParam } from '../../../bean/PerfAnalysis';
 import { info, error } from '../../../../log/Log';
 import { XpowerThreadCountStruct } from '../../../database/ui-worker/ProcedureWorkerXpowerThreadCount';
 import { XpowerGpuFreqCountStruct } from '../../../database/ui-worker/ProcedureWorkerXpowerGpuFreqCount';
+import { TabPaneSysCallChild } from '../sheet/process/TabPaneSysCallChild';
+import { TabPanePerfSampleChild } from '../sheet/hiperf/TabPerfSampleChild';
 
 
 @element('trace-sheet')
@@ -119,6 +128,7 @@ export class TraceSheet extends BaseElement {
   private switchDiv: LitPopover | undefined | null;
   private processTree: LitTree | undefined | null;
   private importDiv: HTMLDivElement | undefined | null;
+  private symbolDiv: HTMLDivElement | undefined | null;
   private exportBt: LitIcon | undefined | null;
   private nav: HTMLDivElement | undefined | null;
   private tabs: HTMLDivElement | undefined | null;
@@ -195,6 +205,7 @@ export class TraceSheet extends BaseElement {
       e.preventDefault();
     });
     this.importDiv = this.shadowRoot?.querySelector('#import_div');
+    this.symbolDiv = this.shadowRoot?.querySelector('#symbol_div');
     this.switchDiv = this.shadowRoot?.querySelector('#select-process');
     this.processTree = this.shadowRoot?.querySelector('#processTree');
     this.optionsDiv = this.shadowRoot?.querySelector('#options');
@@ -300,6 +311,14 @@ export class TraceSheet extends BaseElement {
     // @ts-ignore
     this.getComponentByID<unknown>('box-slices')?.addEventListener('td-click', (evt: unknown) => {
       this.tdSliceClickHandler(evt);
+    });
+    // @ts-ignore
+    this.getComponentByID<unknown>('box-thread-syscall')?.addEventListener('td-click', (evt: unknown) => {
+      this.tdSysCallClickHandler(evt);
+    });
+    // @ts-ignore
+    this.getComponentByID<unknown>('box-perf-profile')?.addEventListener('td-click', (evt: unknown) => {
+      this.tdPerfSampleClickHandler(evt);
     });
   }
 
@@ -609,19 +628,32 @@ export class TraceSheet extends BaseElement {
     let importFileBt: HTMLInputElement | undefined | null =
       this.shadowRoot?.querySelector<HTMLInputElement>('#import-file');
     importFileBt!.addEventListener('change', (event): void => {
-      let files = importFileBt?.files;
-      if (files) {
-        let fileList: Array<File> = [];
-        for (let file of files) {
-          fileList.push(file);
+      WebSocketManager.instance = null;
+      WebSocketManager.getInstance();
+      let timerOut = window.setTimeout(() => {
+        window.clearTimeout(timerOut);
+        let errorTipHtml = document.querySelector('body > sp-application')?.shadowRoot?.querySelector('#sp-system-trace')
+        ?.shadowRoot?.querySelector('div > trace-sheet')?.shadowRoot?.querySelector('#box-perf-analysis > tabpane-perf-analysis')?.shadowRoot?.querySelector('#SO-err-tips');
+        let connected = document.querySelector('body > sp-application')
+        ?.shadowRoot?.querySelector('#main-menu')?.shadowRoot?.querySelector('div.bottom > div.extend_connect') as HTMLDivElement;
+        if (connected && connected.style.backgroundColor !== 'green') {
+          errorTipHtml!.innerHTML = 'Please check if the extension service is enabled and try again!';
+          importFileBt!.files = null;
+          importFileBt!.value = '';
+          return;
         }
-        if (fileList.length > 0) {
-          importFileBt!.disabled = true;
-          this.loadSoComplete = false;
-          window.publish(window.SmartEvent.UI.Loading, { loading: true, text: 'Import So File' });
-          this.uploadSoOrAN(fileList).then(r => {
-            // @ts-ignore
-            document.querySelector('body > sp-application').shadowRoot.querySelector('#sp-system-trace').shadowRoot.querySelector('div > trace-sheet').shadowRoot.querySelector('#box-perf-analysis > tabpane-perf-analysis').shadowRoot.querySelector('#SO-err-tips')?.innerHTML = '';
+        let files = importFileBt?.files;
+        if (files) {
+          let fileList: Array<File> = [];
+          for (let file of files) {
+            fileList.push(file);
+          }
+          if (fileList.length > 0) {
+            importFileBt!.disabled = true;
+            this.loadSoComplete = false;
+            window.publish(window.SmartEvent.UI.Loading, { loading: true, text: 'Import So File' });
+            this.uploadSoOrAN(fileList).then(r => {
+            errorTipHtml!.innerHTML = '';
             let soFileList = fileList.filter(item => !item.name.includes('.an'));
             if (soFileList.length === 0) {
               window.publish(window.SmartEvent.UI.UploadSOFile, {});
@@ -653,7 +685,57 @@ export class TraceSheet extends BaseElement {
       }
       importFileBt!.files = null;
       importFileBt!.value = '';
+      }, 500)
     });
+    this.addClickEventToSoSymbolImport();
+  }
+
+  private addClickEventToSoSymbolImport(): void{
+    let symbolBt: HTMLInputElement | undefined | null =
+      this.shadowRoot?.querySelector<HTMLInputElement>('#so-symbolization');
+      symbolBt!.addEventListener('change', (event): void => {
+      let files = symbolBt?.files;
+      if (files) {
+        let fileList: Array<File> = [];
+        for (let file of files) {
+          fileList.push(file);
+        }
+        if (fileList.length > 0) {
+          symbolBt!.disabled = true;
+          window.publish(window.SmartEvent.UI.Loading, { loading: true, text: 'Import So File' });
+          // @ts-ignore
+          document.querySelector('body > sp-application').shadowRoot.querySelector('#sp-system-trace').shadowRoot.querySelector('div > trace-sheet').shadowRoot.querySelector('#box-perf-analysis > tabpane-perf-analysis').shadowRoot.querySelector('#SO-err-tips')?.innerHTML = '';
+          let soFileList = fileList.filter(item => item.name.includes('.so'));
+          if (soFileList.length === 0) {
+            window.publish(window.SmartEvent.UI.UploadSOFile, {});
+            symbolBt!.disabled = false;
+            return;
+          }
+          threadPool.submit(
+            'upload-so',
+            '',
+            soFileList,
+            (res: unknown) => {
+              symbolBt!.disabled = false;
+              setTimeout(() => {
+                // @ts-ignore
+              if (res.result === 'ok') {
+                window.publish(window.SmartEvent.UI.UploadSOFile, {});
+              } else {
+                // @ts-ignore
+                const failedList = res.failedArray.join(',');
+                window.publish(window.SmartEvent.UI.Error, `parse so file ${failedList} failed!`);
+              }
+              }, 500);
+            },
+            'upload-so'
+          );
+        }
+        fileList.length = 0;
+      }
+      symbolBt!.files = null;
+      symbolBt!.value = '';
+    })
   }
 
   private async uploadSoOrAN(fileList: Array<File>): Promise<void> {
@@ -728,21 +810,21 @@ export class TraceSheet extends BaseElement {
         let blob: Blob | null = file.slice(writeSize, writeSize + sliceLen);
         let buffer: ArrayBuffer | null = await blob.arrayBuffer();
         let data: Uint8Array | null = new Uint8Array(buffer);
-
-        const dataObject = {
+		const dataObject = {
           file_name: fileName,
           buffer_index: bufferIndex,
           buffer_size: sliceLen,
           total_size: file.size,
-          is_last: writeSize + sliceLen >= file.size,
-          buffer: Array.from(data),
+          is_last: writeSize + sliceLen >= file.size
         };
-
-
         const dataString = JSON.stringify(dataObject);
+		const jsonStr = `${dataString.length}|${dataString}`;
         const textEncoder = new TextEncoder();
-        const encodedData = textEncoder.encode(dataString);
-        wsInstance!.sendMessage(TypeConstants.DISASSEMBLY_TYPE, Constants.DISASSEMBLY_SAVE_CMD, encodedData);
+        const jsonData = textEncoder.encode(jsonStr);
+        let mergeData: Uint8Array = new Uint8Array(jsonData.length + data.length);
+        mergeData.set(jsonData);
+        mergeData.set(data, jsonData.length);
+        wsInstance!.sendMessage(TypeConstants.DISASSEMBLY_TYPE, Constants.DISASSEMBLY_SAVE_CMD, mergeData);
         writeSize += sliceLen;
         // 等待服务器端确认当前分片的 ACK
         await waitForAck();
@@ -836,9 +918,16 @@ export class TraceSheet extends BaseElement {
                               </div>
                               <lit-icon name="setting" size="20" id="setting"></lit-icon>
                         </lit-popover>
-                        <div title="Import SO" id="import_div" style="width: 20px;height: 20px;display: flex;flex-direction: row;margin-right: 10px">
+                        <div title="So Symbolization" id="import_div" style="width: 20px;height: 20px;display: flex;flex-direction: row;margin-right: 10px">
                             <input id="import-file" style="display: none;pointer-events: none" type="file" webkitdirectory>
                             <label style="width: 20px;height: 20px;cursor: pointer;" for="import-file">
+                                <lit-icon id="import-btn" name="so-symbol" style="pointer-events: none" size="20">
+                                </lit-icon>
+                            </label>
+                        </div>
+                        <div title="Import SO" id="symbol_div" style="width: 20px;height: 20px;display: flex;flex-direction: row;margin-right: 10px">
+                            <input id="so-symbolization" style="display: none;pointer-events: none" type="file" webkitdirectory>
+                            <label style="width: 20px;height: 20px;cursor: pointer;" for="so-symbolization">
                                 <lit-icon id="import-btn" name="copy-csv" style="pointer-events: none" size="20">
                                 </lit-icon>
                             </label>
@@ -870,6 +959,9 @@ export class TraceSheet extends BaseElement {
       scrollPrio,
       callback
     );
+
+  displaySysCallData = (data: ThreadSysCallStruct) => 
+    this.displayTab<TabPaneCurrentSelection>('current-selection').setSysCallData(data);
   displayMemData = (data: ProcessMemStruct): void =>
     this.displayTab<TabPaneCurrentSelection>('current-selection').setMemData(data);
   displayHangData = (data: HangStruct, sp: SpSystemTrace, scrollCallback: Function): Promise<void> =>
@@ -1252,6 +1344,7 @@ export class TraceSheet extends BaseElement {
           param.nativeMemoryCurrentIPid = ipid;
         }
       }
+      param.isImportSo = true;
       this.rangeSelect(param, true);
       return true;
     } else {
@@ -1274,8 +1367,10 @@ export class TraceSheet extends BaseElement {
         selection.threadIds.length > 0)
     ) {
       this.importDiv!.style.display = 'flex';
+      this.symbolDiv!.style.display = 'flex';
     } else {
       this.importDiv!.style.display = 'none';
+      this.symbolDiv!.style.display = 'none';
     }
   }
   isProcessEqual(treeData: Array<{ pid: number; ipid: number }>): boolean {
@@ -1380,6 +1475,72 @@ export class TraceSheet extends BaseElement {
     param.isJumpPage = true; // @ts-ignore
     param.currentId = e.target.parentElement.id; //根据父Tab页的标题，确认子Tab页的dur是否需要处理
     (pane.children.item(0) as TabPaneBoxChild).data = param;
+  }
+
+  tdSysCallClickHandler(e: unknown): void {
+    // @ts-ignore
+    this.currentPaneID = e.target.parentElement.id;
+    //隐藏除了当前Tab页的其他Tab页
+    this.shadowRoot!.querySelectorAll<LitTabpane>('lit-tabpane').forEach((it): boolean =>
+      it.id !== this.currentPaneID ? (it.hidden = true) : (it.hidden = false)
+    ); //todo：看能不能优化
+    let pane = this.getPaneByID('box-thread-syscall-child'); //通过Id找到需要展示的Tab页
+    pane.closeable = true; //关闭的ican显示
+    pane.hidden = false;
+    this.litTabs!.activeByKey(pane.key); //显示key值对应的Tab页
+    // @ts-ignore
+    pane.tab = e.detail.name; //设置Tab页标题，有的标题可直接用，有的标题需在此转换成需要展示的字符串
+    let param = new SysCallBoxJumpParam();
+    param.traceId = this.selection!.traceId;
+    param.leftNs = this.selection!.leftNs;
+    param.rightNs = this.selection!.rightNs;
+    // @ts-ignore
+    const level = e.detail.level;
+    if (level === 'Process') {
+      // @ts-ignore
+      param.processId = [e.detail.id];
+    } else if (level === 'Thread'){
+      // @ts-ignore
+      param.processId = [e.detail.parentId];
+      // @ts-ignore
+      param.threadId = [e.detail.id];
+    } else {
+      // @ts-ignore
+      param.threadId = [e.detail.parentId];
+      // @ts-ignore
+      param.sysCallId = e.detail.id;
+    }  
+    param.isJumpPage = true; // @ts-ignore
+    (pane.children.item(0) as TabPaneSysCallChild).data = param;
+  }
+
+  tdPerfSampleClickHandler(e: unknown): void {
+    // @ts-ignore
+    this.currentPaneID = e.target.parentElement.id;
+    //隐藏除了当前Tab页的其他Tab页
+    this.shadowRoot!.querySelectorAll<LitTabpane>('lit-tabpane').forEach((it): boolean =>
+      it.id !== this.currentPaneID ? (it.hidden = true) : (it.hidden = false)
+    ); //todo：看能不能优化
+    let pane = this.getPaneByID('box-perf-sample-child'); //通过Id找到需要展示的Tab页
+    pane.closeable = true; //关闭的ican显示
+    pane.hidden = false;
+    this.litTabs!.activeByKey(pane.key); //显示key值对应的Tab页
+    // @ts-ignore
+    pane.tab = e.detail.symbol; //设置Tab页标题，有的标题可直接用，有的标题需在此转换成需要展示的字符串
+    let param = new PerfSampleBoxJumpParam();
+    param.traceId = this.selection!.traceId;
+    param.leftNs = this.selection!.leftNs;
+    param.rightNs = this.selection!.rightNs;
+    //@ts-ignore
+    param.pid = e.detail.pid;
+    //@ts-ignore
+    param.tid = e.detail.tid;
+    //@ts-ignore
+    param.count = e.detail.dur || 0;
+    //@ts-ignore
+    param.tsArr = e.detail.tsArray || [];
+    param.isJumpPage = true;
+    (pane.children.item(0) as TabPanePerfSampleChild).data = param;
   }
 
   //Slice Tab点击Occurrences列下的td进行跳转

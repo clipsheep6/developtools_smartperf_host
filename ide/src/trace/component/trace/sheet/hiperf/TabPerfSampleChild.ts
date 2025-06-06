@@ -15,7 +15,7 @@
 
 import { BaseElement, element } from '../../../../../base-ui/BaseElement';
 import { LitTable } from '../../../../../base-ui/table/lit-table';
-import { SelectionParam } from '../../../../bean/BoxSelection';
+import { PerfSampleBoxJumpParam, SelectionParam } from '../../../../bean/BoxSelection';
 import { perfDataQuery } from '../../../chart/PerfDataQuery';
 import { PerfFile, PerfSample, PerfThread } from '../../../../bean/PerfProfile';
 import { Utils } from '../../base/Utils';
@@ -25,11 +25,13 @@ import { SpSystemTrace } from '../../../SpSystemTrace';
 import {
   queryPerfProcess,
   queryPerfSampleCallChain,
+  queryPerfSampleChildListByTree,
   queryPerfSampleListByTimeRange,
 } from '../../../../database/sql/Perf.sql';
 
-@element('tabpane-perf-sample')
-export class TabPanePerfSample extends BaseElement {
+@element('tabpane-perf-sample-child')
+export class TabPanePerfSampleChild extends BaseElement {
+  private param: PerfSampleBoxJumpParam | null | undefined;
   private perfSampleTbl: LitTable | null | undefined;
   private tblData: LitTable | null | undefined;
   private perfSampleSource: Array<PerfSample> = [];
@@ -37,7 +39,11 @@ export class TabPanePerfSample extends BaseElement {
   private sortKey: string = 'timeString';
   private sortType: number = 0;
 
-  set data(perfSampleSelection: SelectionParam | null | undefined) {
+  set data(sampleChildParam: PerfSampleBoxJumpParam | null | undefined) {
+    if (sampleChildParam === this.param || !sampleChildParam?.isJumpPage) {
+      return;
+    }
+    this.param = sampleChildParam;
     this.perfSampleTbl!.style.visibility = 'visible';
     // @ts-ignore
     this.perfSampleTbl?.shadowRoot?.querySelector('.table')?.style?.height = `${
@@ -47,27 +53,31 @@ export class TabPanePerfSample extends BaseElement {
     // @ts-ignore
     this.tblData?.shadowRoot?.querySelector('.table')?.style?.height = `${this.parentElement!.clientHeight - 25}px`;
     this.tblData!.recycleDataSource = [];
-    if (perfSampleSelection) {
+    if (sampleChildParam) {
       Promise.all([
         queryPerfProcess(),
-        queryPerfSampleListByTimeRange(
-          perfSampleSelection.leftNs,
-          perfSampleSelection.rightNs,
-          perfSampleSelection.perfAll ? [] : perfSampleSelection.perfCpus,
-          perfSampleSelection.perfAll ? [] : perfSampleSelection.perfProcess,
-          perfSampleSelection.perfAll ? [] : perfSampleSelection.perfThread,
-          perfSampleSelection.perfEventTypeId
+        queryPerfSampleChildListByTree(
+          sampleChildParam.leftNs,
+          sampleChildParam.rightNs,
+          sampleChildParam.pid,
+          sampleChildParam.tid,
         ),
       ]).then((results) => {
         let processes = results[0] as Array<PerfThread>;
         log(`queryPerfProcess size : ${processes.length}`);
         let samples = results[1] as Array<PerfSample>;
-        log(`queryPerfSampleListByTimeRange size : ${samples.length}`);
+        log(`queryPerfSampleChildListByTree size : ${samples.length}`);
         this.processMap.clear();
         for (let process of processes) {
           this.processMap.set(process.pid, process);
         }
-        this.initPerfSampleData(samples);
+        
+        this.initPerfSampleData(samples.filter(it => {
+          if (sampleChildParam.tsArr && sampleChildParam.tsArr.length > 0) {
+            return sampleChildParam.tsArr.some(ts => it.time === ts)
+          }
+          return true; 
+        }));
       });
     }
   }
@@ -106,7 +116,7 @@ export class TabPanePerfSample extends BaseElement {
   setRightTableData(sample: PerfSample): void {
     queryPerfSampleCallChain(sample.sampleId).then((result) => {
       for (let stack of result) {
-         if (stack.sourceId !== undefined) {
+        if (stack.sourceId !== undefined) {
           stack.sourceFile = SpSystemTrace.DATA_DICT.get(stack.sourceId) || '';
         }
         if (typeof stack.symbol === 'number') {
@@ -115,7 +125,7 @@ export class TabPanePerfSample extends BaseElement {
         if (stack.sourceFile && stack.lineNumber !== undefined) {
           stack.symbol = `${stack.symbol}[${stack.sourceFile}(${stack.lineNumber})]`;
         }
-        //@ts-ignore
+        // @ts-ignore
         let files = (perfDataQuery.filesData[stack.fileId] ?? []) as Array<PerfFile>;
         stack.path = files[stack.symbolId]?.path || '';
         stack.type = stack.path.endsWith('.so.1') || stack.path.endsWith('.dll') || stack.path.endsWith('.so') ? 0 : 1;
@@ -127,10 +137,20 @@ export class TabPanePerfSample extends BaseElement {
   initElements(): void {
     this.perfSampleTbl = this.shadowRoot?.querySelector<LitTable>('#tb-perf-sample');
     this.tblData = this.shadowRoot?.querySelector<LitTable>('#tb-stack-data');
+    //监听row的点击事件，在对应起始时间上画标记棋子,并设置调用栈数据
     this.perfSampleTbl!.addEventListener('row-click', (e) => {
       // @ts-ignore
       let data = e.detail.data as PerfSample;
       this.setRightTableData(data);
+      // @ts-ignore
+      data.isSelected = true;
+      this.perfSampleTbl!.clearAllSelection(data);
+      this.perfSampleTbl!.setCurrentSelection(data);
+      document.dispatchEvent(
+        new CustomEvent('triangle-flag', {
+          detail: { time: [data.time], type: 'triangle' },
+        })
+      );
     });
     this.perfSampleTbl!.addEventListener('column-click', (evt) => {
       // @ts-ignore

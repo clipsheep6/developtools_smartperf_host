@@ -30,6 +30,7 @@ import { TabPaneNMStatstics } from '../sheet/native-memory/TabPaneNMStatstics';
 import { TabPaneNMemory } from '../sheet/native-memory/TabPaneNMemory';
 import { TabPaneNMSampleList } from '../sheet/native-memory/TabPaneNMSampleList';
 import { TabpanePerfProfile } from '../sheet/hiperf/TabPerfProfile';
+import { TabPanePerfSampleChild } from '../sheet/hiperf/TabPerfSampleChild';
 import { TabPanePerfSample } from '../sheet/hiperf/TabPerfSampleList';
 import { TabPaneLiveProcesses } from '../sheet/ability/TabPaneLiveProcesses';
 import { TabPaneHistoryProcesses } from '../sheet/ability/TabPaneHistoryProcesses';
@@ -91,6 +92,7 @@ import { TabPaneIOTierStatisticsAnalysis } from '../sheet/file-system/TabPaneIOT
 import { TabPaneVirtualMemoryStatisticsAnalysis } from '../sheet/file-system/TabPaneVirtualMemoryStatisticsAnalysis';
 import { TabPaneCurrent } from '../sheet/TabPaneCurrent';
 import { TabPaneStartup } from '../sheet/process/TabPaneStartup';
+import { TabPaneSysCall } from '../sheet/process/TabPaneSysCall';
 import { TabPaneStaticInit } from '../sheet/process/TabPaneStaticInit';
 import { TabPaneTaskFrames } from '../sheet/task/TabPaneTaskFrames';
 import { TabPaneFrameDynamic } from '../sheet/frame/TabPaneFrameDynamic';
@@ -151,6 +153,7 @@ import { TabPanePerfAsync } from '../sheet/hiperf/TabPerfAsyncList';
 import { TabPaneUserPlugin } from '../sheet/userPlugin/TabPaneUserPlugin';
 import { TabPaneDmaFence } from '../sheet/dma-fence/TabPaneDmaFenceSelect';
 import { TabPaneSliceChild } from '../sheet/process/TabPaneSliceChild';
+import { TabPaneSysCallChild } from '../sheet/process/TabPaneSysCallChild';
 import { TabPerfFuncAsm } from '../sheet/hiperf/TabPerfFuncAsm';
 
 export let tabConfig: {
@@ -216,6 +219,15 @@ export let tabConfig: {
     type: TabPaneStartup,
     require: (param: SelectionParam) => param.processIds.length > 0 && param.startup,
   },
+  'box-thread-syscall': {
+    title: 'SysCall Event',
+    type: TabPaneSysCall,
+    require: (param: SelectionParam) => param.processSysCallIds.length > 0 || param.threadSysCallIds.length > 0,
+  },
+  'box-thread-syscall-child': {
+    title: '',
+    type: TabPaneSysCallChild,
+  },
   'box-process-static-init': {
     title: 'Static Initialization',
     type: TabPaneStaticInit,
@@ -250,6 +262,10 @@ export let tabConfig: {
     title: 'Sample List',
     type: TabPanePerfSample,
     require: (param: SelectionParam) => param.perfSampleIds.length > 0,
+  },
+  'box-perf-sample-child': {
+    title: '',
+    type: TabPanePerfSampleChild
   },
   'box-perf-async': {
     title: 'Async Call Profile',
