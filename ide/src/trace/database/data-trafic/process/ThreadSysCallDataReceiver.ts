@@ -12,22 +12,46 @@
 // limitations under the License.
 
 import { Args } from '../CommonArgs';
+import { threadSysCallList } from '../utils/AllMemoryCache';
+import { filterDataByGroup } from '../utils/DataFilter';
 import { TraficEnum } from '../utils/QueryEnum';
 
 export const chartThreadSysCallDataSql = (args: Args):unknown => {
-  return `SELECT syscall_number as id, itid, ts - ${args.recordStartNS} as startTs, dur
+  return `SELECT syscall_number as id, itid, ts - ${args.recordStartNS} as startTs, max(dur) as dur,
+  ((ts - ${args.recordStartNS}) / (${Math.floor((args.endNS - args.startNS) / args.width)})) AS px
           from syscall
           where itid = ${args.itid} 
              and startTs + dur >= ${Math.floor(args.startNS)}
              and startTs <= ${Math.floor(args.endNS)}
+          group by px
           `;
 };
 
+export const sysCallMemSql = (args: Args): unknown => {
+  return `select syscall_number as id, (ts - ${args.recordStartNS}) as startTs, dur from syscall where itid = ${args.itid}`
+}
+
 export function threadSysCallDataReceiver(data: unknown, proc: Function): void {
   //@ts-ignore
-  let sql = chartThreadSysCallDataSql(data.params);
-  let res = proc(sql); //@ts-ignore
-  arrayBufferHandler(data, res, data.params.trafic !== TraficEnum.SharedArrayBuffer, false);
+  let itid: number = data.params.itid;
+  let arr: unknown[] = [];
+  if (threadSysCallList.has(itid)) {
+    arr = threadSysCallList.get(itid) || [];
+  } else {
+    //@ts-ignore
+    let sql = sysCallMemSql(data.params);
+    arr = proc(sql); //@ts-ignore
+    threadSysCallList.set(itid, arr);
+  }
+  let res = filterDataByGroup(
+    arr,
+    'startTs',
+    'dur', //@ts-ignore
+    data.params.startNS, //@ts-ignore
+    data.params.endNS, //@ts-ignore
+    data.params.width
+  );
+  arrayBufferHandler(data, res, true, false);
 }
 
 function arrayBufferHandler(data: unknown, res: unknown[], transfer: boolean, isEmpty: boolean): void {
@@ -42,7 +66,7 @@ function arrayBufferHandler(data: unknown, res: unknown[], transfer: boolean, is
     startTs[i] = it.startTs; //@ts-ignore
     dur[i] = it.dur; //@ts-ignore
     id[i] = it.id; //@ts-ignore
-    itid[i] = it.itid; //@ts-ignore
+    itid[i] = data.params.itid; //@ts-ignore
   });
   (self as unknown as Worker).postMessage(
     {

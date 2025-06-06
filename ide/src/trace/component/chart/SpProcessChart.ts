@@ -620,7 +620,9 @@ export class SpProcessChart {
     processRow.rowType = TraceRow.ROW_TYPE_PROCESS;
     processRow.rowParentId = '';
     processRow.style.height = '40px';
-    this.processRowSettingConfig(processRow);
+    if (FlagsConfig.getFlagsConfigEnableStatus('System Calls')) {
+      this.processRowSettingConfig(processRow);
+    }
     processRow.folder = true;
     if (
       //@ts-ignore

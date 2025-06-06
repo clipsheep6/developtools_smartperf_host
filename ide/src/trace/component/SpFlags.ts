@@ -15,6 +15,9 @@
 
 import { BaseElement, element } from '../../base-ui/BaseElement';
 import { SpFlagHtml } from './SpFlag.html';
+import { LitSelectV } from '../../base-ui/select/LitSelectV';
+import { SysCallMap } from './trace/base/SysCallUtils';
+
 const NUM = '000000';
 //vsync二级下拉选框对应的value和content
 const VSYNC_CONTENT = [
@@ -46,13 +49,74 @@ const CONFIG_STATE: unknown = {
 export class SpFlags extends BaseElement {
   private bodyEl: HTMLElement | undefined | null;
   private xiaoLubanEl: Element | null | undefined;
+  private systemCallSelect: LitSelectV | undefined | null;
+  private systemCallInput: HTMLInputElement | undefined | null;
+  private systemCallEventId: number[] = [];
+  private systemCallSwitch: HTMLSelectElement | undefined | null;
+
+
+  connectedCallback(): void {
+    this.systemCallSelect?.addEventListener('blur', this.systemCallSelectBlurHandler);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.systemCallSelect?.removeEventListener('blur', this.systemCallSelectBlurHandler);
+  }
 
   initElements(): void {
     let parentElement = this.parentNode as HTMLElement;
     parentElement.style.overflow = 'hidden';
     this.bodyEl = this.shadowRoot?.querySelector('.body');
     this.initConfigList();
+    this.systemCallSelect = this.shadowRoot?.querySelector<LitSelectV>("lit-select-v[title='SystemCall']");
+    this.systemCallSwitch = this.shadowRoot?.querySelector("select[title='System Calls']");
+    this.systemCallInput = this.systemCallSelect!.shadowRoot?.querySelector('input') as HTMLInputElement;
+    this.updateSystemCallSelect();
   }
+
+   private updateSystemCallSelect(): void {
+    const selectedArr = FlagsConfig.getSystemcallEventId('SystemParsing');
+    let checkAll = true;
+    systemCallConfigList[0].selectArray = Array.from(SysCallMap.entries())
+          .map(([id, name]) => {
+            if (!selectedArr.includes(id)) {
+              checkAll = false;
+            }
+            return `${name}`;
+          });
+    this.systemCallSelect?.dataSource(systemCallConfigList[0].selectArray, 'ALL-SystemCall');
+    this.systemCallSelect?.setIgnoreValues(['ALL-SystemCall']);
+    if (this.systemCallSwitch?.title === 'System Calls' && this.systemCallSwitch.selectedOptions[0].value === 'Enabled') {
+      this.systemCallSelect?.removeAttribute('disabled');
+      const arr = checkAll ? ['ALL-SystemCall' ] : [];
+      FlagsConfig.getSystemcallEventId('SystemParsing').forEach(it => arr.push(SysCallMap.get(it) || ''));
+      this.systemCallSelect?.setSelectedOptions(arr);
+    } else {
+      this.systemCallSelect?.setAttribute('disabled', 'disabled');
+      this.systemCallSelect?.setSelectedOptions([]);
+    }
+  }
+
+  private systemCallSelectBlurHandler = () => {
+    let systemCallSelectOptions = this.systemCallSelect!.shadowRoot?.querySelectorAll('.option');
+    this.systemCallEventId = [];
+    systemCallSelectOptions!.forEach((option) => {
+      if (option.hasAttribute('selected')) {
+        const systemCallEventItem = Array.from(SysCallMap.entries())
+            .find(([id, name]) => name === option.getAttribute('value'));
+        if (systemCallEventItem) {
+          this.handleSystemCallEventId(systemCallEventItem[0]);
+        }
+      }
+    });
+    FlagsConfig.updateSystemcallEventId(this.systemCallEventId, 'SystemParsing');
+    return this.systemCallEventId;
+  };
+
+  private handleSystemCallEventId = (systemCallEventId: number): void => {
+    this.systemCallEventId.push(systemCallEventId);
+  };
 
   initHtml(): string {
     return SpFlagHtml;
@@ -100,6 +164,16 @@ export class SpFlags extends BaseElement {
         } else {
           userIdInput!.style.border = '1px solid #ccc';
           this.xiaoLubanEl?.removeAttribute('enabled');
+        }
+      }
+      if (configSelect.title === 'System Calls') {
+        if (configSelect.selectedOptions[0].value === 'Enabled') {
+          this.systemCallSelect?.removeAttribute('disabled');
+        } else {
+          this.systemCallSelect?.setAttribute('disabled', 'disabled');
+          this.systemCallEventId = [];
+          FlagsConfig.updateSystemcallEventId([], 'SystemParsing');
+          this.systemCallSelect?.setSelectedOptions([]);
         }
       }
     });
@@ -226,8 +300,49 @@ export class SpFlags extends BaseElement {
         configFooterDiv.appendChild(userIdInputEl);
         configDiv.appendChild(configFooterDiv);
       }
+      if (config.title === 'System Calls') {
+        let configFooterDiv = document.createElement('div');
+        configFooterDiv.className = 'config_footer';
+        let systemCallConfigEl = document.createElement('div');
+        systemCallConfigEl.className = 'system-call-config';
+        systemCallConfigList.forEach((config) => {
+          let systemCallConfigDiv = document.createElement('div');
+          if (config.hidden) {
+            systemCallConfigDiv.className = 'systemCall-config-div hidden';
+          } else {
+            systemCallConfigDiv.className = 'systemCall-config-div';
+          }
+          switch (config.type) {
+            case 'select-multiple':
+              this.configTypeBySelectMultiple(config, systemCallConfigDiv);
+              break;
+            default:
+              break;
+          }
+          systemCallConfigEl.appendChild(systemCallConfigDiv);
+        })
+        configFooterDiv.appendChild(systemCallConfigEl);
+        configDiv.appendChild(configFooterDiv);
+      }
       this.bodyEl!.appendChild(configDiv);
     });
+  }
+
+  private configTypeBySelectMultiple(config: unknown, systemCallConfigDiv: HTMLDivElement): void {
+    let html = '';
+    //@ts-ignore
+    let placeholder = config.selectArray[0];
+    html += `<lit-select-v default-value='' rounded='' class='systemCall-config-select config' 
+mode='multiple' canInsert='' title='${
+        //@ts-ignore
+        config.title
+    }' rounded placement = 'bottom' placeholder='${placeholder}'>`;
+    //@ts-ignore
+    config.selectArray.forEach((value: string) => {
+      html += `<lit-select-option value='${value}'>${value}</lit-select-option>`;
+    });
+    html += '</lit-select-v>';
+    systemCallConfigDiv.innerHTML = systemCallConfigDiv.innerHTML + html;
   }
 
   private createPersonOption(list: unknown, key: string, config: unknown): HTMLDivElement {
@@ -279,6 +394,7 @@ export type Params = {
 
 export class FlagsConfig {
   static FLAGS_CONFIG_KEY = 'FlagsConfig';
+  static SYSTEM_PRASE = 'SystemParsing';
   static DEFAULT_CONFIG: Array<FlagConfigItem> = [
     {
       title: 'TaskPool',
@@ -359,6 +475,12 @@ export class FlagsConfig {
       switchOptions: [{ option: 'Enabled' }, { option: 'Disabled', selected: true }],
       describeContent: 'Start AI',
       addInfo: { userId: '' },
+    },
+    {
+      title: 'System Calls',
+      switchOptions: [{ option: 'Enabled' }, { option: 'Disabled', selected: true }],
+      describeContent: 'Start System Call Parsing',
+      addInfo: { userId: '' },
     }
   ];
 
@@ -417,6 +539,11 @@ export class FlagsConfig {
       });
       // @ts-ignore
       parseConfig[configItem.title] = selectedOption[0].option === 'Enabled' ? 1 : 0;
+      // @ts-ignore
+      if (configItem.title === 'System Calls') {
+        // @ts-ignore
+        parseConfig[configItem.title] =  selectedOption[0].option === 'Enabled' ? FlagsConfig.getSystemcallEventId('SystemParsing').join(';') : '';
+      }
     });
     return JSON.stringify({ config: parseConfig });
   }
@@ -471,6 +598,20 @@ export class FlagsConfig {
     flagConfigObj[key] = value;
     window.localStorage.setItem(FlagsConfig.FLAGS_CONFIG_KEY, JSON.stringify(flagConfigObj));
   }
+
+
+  static getSystemcallEventId(value: string): number[] {
+    let list = window.localStorage.getItem(FlagsConfig.SYSTEM_PRASE);
+    return JSON.parse(list!) || [];
+  }
+
+  static updateSystemcallEventId(systemCallEventId: number[], value: unknown): void {
+    let systemCallEventIdArray:number[] = [];
+    if (systemCallEventId !== null) {
+      systemCallEventIdArray = systemCallEventId;
+    }
+    window.localStorage.setItem(FlagsConfig.SYSTEM_PRASE, JSON.stringify(systemCallEventIdArray));
+  }
 }
 
 export interface FlagConfigItem {
@@ -484,3 +625,12 @@ export interface OptionItem {
   option: string;
   selected?: boolean;
 }
+
+const systemCallConfigList = [
+  {
+    title: 'SystemCall',
+    des: '',
+    hidden: true,
+    type: 'select-multiple',
+    selectArray: [''],
+  }]

@@ -1190,6 +1190,7 @@ async function spSystemTraceInitBuffer(
   sp: SpSystemTrace,
   param: { buf?: ArrayBuffer; Url?: string; buf2?: ArrayBuffer },
   wasmConfigUri: string,
+  configUri: string,
   progress: Function
 ): Promise<{
   status: boolean;
@@ -1203,13 +1204,24 @@ async function spSystemTraceInitBuffer(
       error('getWasmConfigFailed', e);
     }
     let parseConfig = FlagsConfig.getSpTraceStreamParseConfig();
-    let { status, msg, sdkConfigMap } = await threadPool.initSqlite(param.buf, parseConfig, configJson, progress);
+    let systemParseConfigJson = '';
+    try {
+      systemParseConfigJson = await fetch(configUri).then((res) => res.text());
+      let systemParseConfig = JSON.parse(systemParseConfigJson);
+      let parseConfigObj = JSON.parse(parseConfig);
+      systemParseConfig.config = parseConfigObj.config;
+      systemParseConfigJson = JSON.stringify(systemParseConfig);
+    } catch (e) {
+	  systemParseConfigJson = parseConfig;
+      error('systemParseConfigJsonFailed', e);
+    }
+    let { status, msg, sdkConfigMap } = await threadPool.initSqlite(param.buf, systemParseConfigJson, configJson, progress);
     if (!status) {
       return { status: false, msg: msg };
     }
     SpSystemTrace.SDK_CONFIG_MAP = sdkConfigMap;
     if (param.buf2) {
-      let { status, msg } = await threadPool2.initSqlite(param.buf2, parseConfig, configJson, progress);
+      let { status, msg } = await threadPool2.initSqlite(param.buf2, systemParseConfigJson, configJson, progress);
       if (!status) {
         return { status: false, msg: msg };
       }
@@ -1223,6 +1235,7 @@ async function spSystemTraceInitUrl(
   sp: SpSystemTrace,
   param: { buf?: ArrayBuffer; url?: string },
   wasmConfigUri: string,
+  configUri: string,
   progress: Function
 ): Promise<{
   status: boolean;
@@ -1243,16 +1256,17 @@ export async function spSystemTraceInit(
   sp: SpSystemTrace,
   param: { buf?: ArrayBuffer; url?: string; buf2?: ArrayBuffer; fileName1?: string; fileName2?: string },
   wasmConfigUri: string,
+  configUri: string,
   progress: Function,
   isDistributed: boolean
 ): Promise<unknown> {
   progress('Load database', 6);
   sp.rowsPaneEL!.scroll({ top: 0, left: 0 });
-  let rsBuf = await spSystemTraceInitBuffer(sp, param, wasmConfigUri, progress);
+  let rsBuf = await spSystemTraceInitBuffer(sp, param, wasmConfigUri, configUri, progress);
   if (rsBuf) {
     return rsBuf;
   }
-  let rsUrl = await spSystemTraceInitUrl(sp, param, wasmConfigUri, progress);
+  let rsUrl = await spSystemTraceInitUrl(sp, param, wasmConfigUri, configUri, progress);
   if (rsUrl) {
     return rsUrl;
   }

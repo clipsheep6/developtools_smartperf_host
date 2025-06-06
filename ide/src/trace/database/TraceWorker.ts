@@ -333,7 +333,7 @@ function parseThirdWasmByOpenAction(e: MessageEvent): void {
   if (parseConfig !== '') {
     let parseConfigArray = enc.encode(parseConfig);
     //@ts-ignore
-    let parseConfigAddr = wasmModule._InitializeParseConfig(1024);
+    let parseConfigAddr = wasmModule._InitializeParseConfig(parseConfigArray.length);
     //@ts-ignore
     wasmModule.HEAPU8.set(parseConfigArray, parseConfigAddr);
     //@ts-ignore

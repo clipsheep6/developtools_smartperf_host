@@ -1116,7 +1116,7 @@ export class SpApplication extends BaseElement {
         let data = this.markPositionHandler(reader.result as ArrayBuffer);
         this.spSystemTrace!.loadDatabaseArrayBuffer(
           data,
-          '',
+          '', '',
           (command: string, _: number) => {
             this.setProgress(command);
           },
@@ -1175,6 +1175,7 @@ export class SpApplication extends BaseElement {
       }
       Promise.all([threadPool.init(traceType), threadPool2.init(traceType)]).then(() => {
         let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+        let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/config/config.json`;
         Promise.all([file1.arrayBuffer(), file2.arrayBuffer()]).then((bufArr) => {
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
           SpApplication.loadingProgress = 0;
@@ -1184,7 +1185,7 @@ export class SpApplication extends BaseElement {
           info('initData start Parse Data');
           this.spSystemTrace!.loadDatabaseArrayBuffer(
             buf1,
-            wasmUrl,
+            wasmUrl, configUrl,
             (command: string, _: number) => this.setProgress(command),
             true,
             completeHandler,
@@ -1240,13 +1241,14 @@ export class SpApplication extends BaseElement {
           info('read file onloadend');
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
           let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+          let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/config/config.json`;
           SpApplication.loadingProgress = 0;
           SpApplication.progressStep = 3;
           let data = this.markPositionHandler(reader.result as ArrayBuffer);
           info('initData start Parse Data');
           this.spSystemTrace!.loadDatabaseArrayBuffer(
             data,
-            wasmUrl,
+            wasmUrl,configUrl,
             (command: string, _: number) => this.setProgress(command),
             false,
             completeHandler

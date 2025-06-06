@@ -106,6 +106,9 @@ export const SpFlagHtml = `<style>
           border: 1px solid #ccc;
           padding-left: 10px;
         }
+        .systemCall-config-select {
+          width: 100%;
+        }
         </style>
         <div class="sp-flags-vessel">
          <div class="body">
