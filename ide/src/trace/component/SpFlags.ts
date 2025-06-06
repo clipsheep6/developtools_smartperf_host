@@ -56,13 +56,11 @@ export class SpFlags extends BaseElement {
 
 
   connectedCallback(): void {
-    this.systemCallInput?.addEventListener('mousedown', this.systemCallSelectMousedownHandler);
     this.systemCallSelect?.addEventListener('blur', this.systemCallSelectBlurHandler);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.systemCallInput?.removeEventListener('mousedown', this.systemCallSelectMousedownHandler);
     this.systemCallSelect?.removeEventListener('blur', this.systemCallSelectBlurHandler);
   }
 
@@ -78,12 +76,25 @@ export class SpFlags extends BaseElement {
   }
 
    private updateSystemCallSelect(): void {
+    const selectedArr = FlagsConfig.getSystemcallEventId('SystemParsing');
+    let checkAll = true;
+    systemCallConfigList[0].selectArray = Array.from(SysCallMap.entries())
+          .map(([id, name]) => {
+            if (!selectedArr.includes(id)) {
+              checkAll = false;
+            }
+            return `${name}`;
+          });
+    this.systemCallSelect?.dataSource(systemCallConfigList[0].selectArray, 'ALL-SystemCall');
+    this.systemCallSelect?.setIgnoreValues(['ALL-SystemCall']);
     if (this.systemCallSwitch?.title === 'System Calls' && this.systemCallSwitch.selectedOptions[0].value === 'Enabled') {
       this.systemCallSelect?.removeAttribute('disabled');
-      this.systemCallSelect?.dataSource([], '');
+      const arr = checkAll ? ['ALL-SystemCall' ] : [];
+      FlagsConfig.getSystemcallEventId('SystemParsing').forEach(it => arr.push(SysCallMap.get(it) || ''));
+      this.systemCallSelect?.setSelectedOptions(arr);
     } else {
       this.systemCallSelect?.setAttribute('disabled', 'disabled');
-      this.systemCallSelect?.dataSource([], '');
+      this.systemCallSelect?.setSelectedOptions([]);
     }
   }
 
@@ -105,13 +116,6 @@ export class SpFlags extends BaseElement {
 
   private handleSystemCallEventId = (systemCallEventId: number): void => {
     this.systemCallEventId.push(systemCallEventId);
-  };
-
-  private systemCallSelectMousedownHandler = (): void => {
-    if (this.systemCallSwitch)
-      systemCallConfigList[0].selectArray = Array.from(SysCallMap.entries())
-          .map(([id, name]) => `${name}`);
-    this.systemCallSelect?.dataSource(systemCallConfigList[0].selectArray, 'ALL-SystemCall')
   };
 
   initHtml(): string {
@@ -162,10 +166,15 @@ export class SpFlags extends BaseElement {
           this.xiaoLubanEl?.removeAttribute('enabled');
         }
       }
-      if (configSelect.title === 'System Calls' && configSelect.selectedOptions[0].value === 'Enabled') {
-        this.systemCallSelect?.removeAttribute('disabled');
-      } else {
-        this.systemCallSelect?.setAttribute('disabled', 'disabled');
+      if (configSelect.title === 'System Calls') {
+        if (configSelect.selectedOptions[0].value === 'Enabled') {
+          this.systemCallSelect?.removeAttribute('disabled');
+        } else {
+          this.systemCallSelect?.setAttribute('disabled', 'disabled');
+          this.systemCallEventId = [];
+          FlagsConfig.updateSystemcallEventId([], 'SystemParsing');
+          this.systemCallSelect?.setSelectedOptions([]);
+        }
       }
     });
     let userIdInput: HTMLInputElement | null | undefined = this.shadowRoot?.querySelector('#user_id_input');
@@ -593,13 +602,12 @@ export class FlagsConfig {
 
   static getSystemcallEventId(value: string): number[] {
     let list = window.localStorage.getItem(FlagsConfig.SYSTEM_PRASE);
-    return JSON.parse(list!);
+    return JSON.parse(list!) || [];
   }
 
   static updateSystemcallEventId(systemCallEventId: number[], value: unknown): void {
-    let systemcallEventId = window.localStorage.getItem(FlagsConfig.SYSTEM_PRASE);
     let systemCallEventIdArray:number[] = [];
-    if (systemcallEventId !== null) {
+    if (systemCallEventId !== null) {
       systemCallEventIdArray = systemCallEventId;
     }
     window.localStorage.setItem(FlagsConfig.SYSTEM_PRASE, JSON.stringify(systemCallEventIdArray));
