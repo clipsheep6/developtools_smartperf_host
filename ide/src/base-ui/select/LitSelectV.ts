@@ -20,6 +20,7 @@ import { selectHtmlStr, selectVHtmlStr } from './LitSelectHtml';
 @element('lit-select-v')
 export class LitSelectV extends BaseElement {
   showItems: Array<string> = [];
+  ignoreValues: Array<string> = [];
   itemValue: Array<string> = [];
   customItem: Array<string> = [];
   private focused: unknown;
@@ -147,6 +148,28 @@ export class LitSelectV extends BaseElement {
     }
   }
 
+  setIgnoreValues(values: string[]) {
+    this.ignoreValues = values;
+  }
+
+  setSelectedOptions(selectArray: Array<string>) {
+    let allSelected = true;
+    this.shadowRoot?.querySelectorAll('lit-select-option').forEach((a) => {
+      if (selectArray.includes(a.textContent!)) {
+        a.setAttribute('selected', '');
+      } else {
+        allSelected = false;
+        a.removeAttribute('selected');
+      }
+    });
+    this.all = allSelected;
+    selectArray.forEach((i) => {
+      this.showItems.push(i);
+    }); 
+    // @ts-ignore
+    this.selectVInputEl.value = selectArray.filter(it => !this.ignoreValues.includes(it));
+  }
+
   initDataItem(selectVDataItem: Array<string>): void {
     selectVDataItem.forEach((item) => {
       let selectVOption = document.createElement('lit-select-option');
@@ -263,7 +286,7 @@ export class LitSelectV extends BaseElement {
           let number = this.showItems.indexOf(a.textContent!);
           if (number > -1) {
             this.showItems!.splice(number, 1); // @ts-ignore
-            this.selectVInputEl!.value = this.showItems;
+            this.selectVInputEl!.value = this.showItems.filter(it => !this.ignoreValues.includes(it));
           }
           this.all = false;
           querySelector.removeAttribute('selected');
@@ -274,7 +297,7 @@ export class LitSelectV extends BaseElement {
           let value = this.showItems.indexOf(a.textContent!);
           if (index > -1 && value === -1) {
             this.showItems.push(a.textContent!); // @ts-ignore
-            this.selectVInputEl!.value = this.showItems;
+            this.selectVInputEl!.value = this.showItems.filter(it => !this.ignoreValues.includes(it));
           }
           if (this.showItems.length >= this.itemValue.length) {
             querySelector.setAttribute('selected', '');
@@ -344,10 +367,11 @@ export class LitSelectV extends BaseElement {
         });
         if (this.customItem.length > 0) {
           // @ts-ignore
-          this.selectVInputEl.value = this.customItem.concat(this.showItems);
+          this.selectVInputEl.value = this.customItem.concat(this.showItems)
+            .filter(it => !this.ignoreValues.includes(it));
         } else {
           // @ts-ignore
-          this.selectVInputEl.value = this.showItems;
+          this.selectVInputEl.value = this.showItems.filter(it => !this.ignoreValues.includes(it));
         }
       });
     });
@@ -363,7 +387,7 @@ export class LitSelectV extends BaseElement {
         this.itemValue.forEach((i) => {
           this.showItems.push(i);
         }); // @ts-ignore
-        this.selectVInputEl.value = this.itemValue;
+        this.selectVInputEl.value = this.itemValue.filter(it => !this.ignoreValues.includes(it));;
       } else {
         this.shadowRoot?.querySelectorAll('lit-select-option').forEach((i) => {
           i.removeAttribute('selected');

@@ -1045,7 +1045,7 @@ export class TraceRow<T extends BaseStruct> extends HTMLElement {
     }
     this._rowSettingCheckBoxList && this._rowSettingCheckBoxList.forEach((item) => {
       checkboxHtml += `<div class="checkboxItem" style="margin-bottom: 2px;">
-      <lit-check-box class="lit-checkbox" ${ appendAll ? 'checked' : '' } style="margin-left: ${appendAll ? 20 : 5}px;" not-close value="${item}"></lit-check-box>
+      <lit-check-box class="lit-checkbox" ${ appendAll ? 'checked' : '' } style="margin-left: ${appendAll ? 20 : 5}px;color:#000" not-close value="${item}"></lit-check-box>
       </div>`;
     });
     this._rowSettingCheckedBoxList = new Array(this._rowSettingCheckBoxList?.length).fill(appendAll);
