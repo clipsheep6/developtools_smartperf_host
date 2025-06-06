@@ -62,6 +62,12 @@ export class VmTrackerChart {
   static gpuWindowModule: number | null = null; //ns
   private smapsRecordTab: TabPaneSmapsRecord | undefined | null;
   private scratchId = -1;
+  private isExistsPurgeableTotal: Array<unknown> = [];
+  private isExistsPurgeablePin: Array<unknown> = [];
+  private isExistsGpuMemory: Array<unknown> = [];
+  private isExistsGpuResource: Array<unknown> = [];
+  private isExistsGraph: Array<unknown> = [];
+  private isExistsGl: Array<unknown> = [];
   constructor(trace: SpSystemTrace) {
     this.trace = trace;
   }
@@ -78,14 +84,31 @@ export class VmTrackerChart {
         }
       }
     }
-    await this.initVmTrackerFolder();
-    await this.initSMapsFolder();
-    const rowNameList: Array<string> = ['Dirty', 'Swapped', 'RSS', 'PSS', 'USS'];
-    for (const rowName of rowNameList) {
-      await this.initSmapsRows(rowName);
-    }
+    const result = await querySmapsExits();
+    this.isExistsPurgeableTotal = await queryisExistsPurgeableData(this.memoryConfig.iPid, false);
+    this.isExistsPurgeablePin = await queryisExistsPurgeableData(this.memoryConfig.iPid, true);
+    this.isExistsGpuMemory = await queryisExistsGpuMemoryData(this.memoryConfig.iPid);
+    this.isExistsGpuResource = await queryisExistsGpuResourceData(this.scratchId);
+    this.isExistsGraph = await queryisExistsGpuData(MemoryConfig.getInstance().iPid, "'mem.graph_pss'");
+    this.isExistsGl = await queryisExistsGpuData(MemoryConfig.getInstance().iPid, "'mem.gl_pss'");
     const isExistsShm = await queryisExistsShmData(this.memoryConfig.iPid);
     const isExistsDma = await queryisExistsDmaData(this.memoryConfig.iPid);
+    //@ts-ignore
+    if (result.length === 0 && isExistsShm[0].data_exists === 0 && isExistsDma[0].data_exists === 0 && this.isExistsPurgeableTotal[0].data_exists === 0 &&
+      //@ts-ignore
+      this.isExistsPurgeablePin[0].data_exists === 0 && this.isExistsGpuMemory[0].data_exists === 0 && this.isExistsGpuResource[0].data_exists === 0 &&
+      //@ts-ignore
+      this.isExistsGraph[0].data_exists === 0 && this.isExistsGl[0].data_exists === 0) {
+      return;
+    }
+    await this.initVmTrackerFolder();
+    if (result.length > 0) {
+      await this.initSMapsFolder();
+      const rowNameList: Array<string> = ['Dirty', 'Swapped', 'RSS', 'PSS', 'USS'];
+      for (const rowName of rowNameList) {
+        await this.initSmapsRows(rowName);
+      }
+    }
     //@ts-ignore
     if (isExistsShm[0].data_exists) {
       await this.initShmRows();
@@ -99,37 +122,33 @@ export class VmTrackerChart {
   }
 
   private async initGpuData(): Promise<void> {
-    const isExistsGpuMemory = await queryisExistsGpuMemoryData(this.memoryConfig.iPid);
-    const isExistsGpuResource = await queryisExistsGpuResourceData(this.scratchId);
-    const isExistsGraph = await queryisExistsGpuData(MemoryConfig.getInstance().iPid, "'mem.graph_pss'");
-    const isExistsGl = await queryisExistsGpuData(MemoryConfig.getInstance().iPid, "'mem.gl_pss'");
     if (
       // @ts-ignore
-      isExistsGpuMemory[0].data_exists ||
+      this.isExistsGpuMemory[0].data_exists ||
       // @ts-ignore
-      isExistsGpuResource[0].data_exists ||
+      this.isExistsGpuResource[0].data_exists ||
       // @ts-ignore
-      isExistsGraph[0].data_exists ||
+      this.isExistsGraph[0].data_exists ||
       // @ts-ignore
-      isExistsGl[0].data_exists
+      this.isExistsGl[0].data_exists
     ) {
       await this.initGpuFolder();
       //   @ts-ignore
-      if (isExistsGpuMemory[0].data_exists) {
+      if (this.isExistsGpuMemory[0].data_exists) {
         await this.initGpuMemoryRow();
       }
       // @ts-ignore
-      if (isExistsGpuResource[0].data_exists) {
+      if (this.isExistsGpuResource[0].data_exists) {
         await this.initGpuResourceRow(this.scratchId);
       } else {
         this.smapsRecordTab!.GLESHostCache = [];
       }
       // @ts-ignore
-      if (isExistsGraph[0].data_exists) {
+      if (this.isExistsGraph[0].data_exists) {
         await this.addGpuGraphRow();
       }
       // @ts-ignore
-      if (isExistsGl[0].data_exists) {
+      if (this.isExistsGl[0].data_exists) {
         await this.addGpuGLRow();
         await this.addGpuTotalRow();
         await this.addGpuWindowRow();
@@ -334,12 +353,11 @@ export class VmTrackerChart {
 
   private initPurgeableVM = async (): Promise<void> => {
     let time = new Date().getTime();
-    const isExistsPurgeableTotal = await queryisExistsPurgeableData(this.memoryConfig.iPid, false);
-    const isExistsPurgeablePin = await queryisExistsPurgeableData(this.memoryConfig.iPid, true); //@ts-ignore
-    if (isExistsPurgeableTotal[0].data_exists) {
+    //@ts-ignore
+    if (this.isExistsPurgeableTotal[0].data_exists) {
       await this.initPurgeableTotal();
     } //@ts-ignore
-    if (isExistsPurgeablePin[0].data_exists) {
+    if (this.isExistsPurgeablePin[0].data_exists) {
       await this.initPurgeablePin();
     }
     let durTime = new Date().getTime() - time;

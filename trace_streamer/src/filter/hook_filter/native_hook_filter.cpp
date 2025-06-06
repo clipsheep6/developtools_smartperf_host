@@ -32,6 +32,7 @@ NativeHookFilter::NativeHookFilter(TraceDataCache *dataCache, const TraceStreame
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib64/libc++.so"));
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib/ld-musl-aarch64.so.1"));
     invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib/ld-musl-arm.so.1"));
+    invalidLibPathIndexs_.insert(traceDataCache_->dataDict_.GetStringIndex("/system/lib64/libdfmalloc.z.so"));
     hookPluginData_->set_name("nativehook");
     commHookData_.datas = std::make_unique<BatchNativeHookData>();
     addrToAllocEventRow_ = traceDataCache_->GetNativeHookData()->GetAddrToAllocEventRow();
