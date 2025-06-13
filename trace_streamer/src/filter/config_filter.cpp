@@ -153,7 +153,7 @@ SwitchConfig::SwitchConfig(const json &config)
     binderRunnableConfigEnabled_ = config.value("BinderRunnable", 0) == 1;
     HMKernelTraceEnabled_ = config.value("HMKernel", 0) == 1;
     rawTraceCutStartTsEnabled_ = config.value("RawTraceCutStartTs", 0) == 1;
-    ffrtConvertEnabled_ = config.value("FFRTConvert", 0) == 1;
+    ffrtConvertEnabled_ = config.value("FfrtConvert", 0) == 1;
     std::string syscalls = config.value("System Calls", "");
     UpdateSyscallsTsSet(syscalls);
     TS_LOGI(
