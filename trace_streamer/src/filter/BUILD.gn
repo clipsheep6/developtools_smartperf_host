@@ -50,6 +50,7 @@ config("filter_cfg") {
     "${THIRD_PARTY}/hiviewdfx/faultloggerd/interfaces/nonlinux",
     "${THIRD_PARTY}/hiviewdfx/faultloggerd/interfaces/common",
     "${THIRD_PARTY}/hiviewdfx/faultloggerd/common/dfxutil",
+    "${THIRD_PARTY}/hiviewdfx/faultloggerd/common/dfxlog",
     "${PERF_DIR}/hiperf/include/nonlinux",
     "${THIRD_PARTY}/libbpf/include/uapi",
     "${THIRD_PARTY}/bounds_checking_function/include",
