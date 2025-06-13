@@ -47,4 +47,5 @@ export class TypeConstants {
     static USB_GET_EVENT = 4;
     static USB_GET_APP = 5;
     static USB_GET_VERSION = 6;
+    static USB_GET_HISYSTEM = 7;
 }
