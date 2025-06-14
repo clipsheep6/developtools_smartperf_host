@@ -114,6 +114,7 @@ export class SpRecordTrace extends BaseElement {
   private spWebShell: SpWebHdcShell | undefined;
   private menuGroup: LitMainMenuGroup | undefined | null;
   private appContent: HTMLElement | undefined | null;
+  private optionNum: number = 0;
   private record = 'Record';
   private stop = 'StopRecord';
   private nowChildItem: HTMLElement | undefined;
@@ -597,7 +598,7 @@ export class SpRecordTrace extends BaseElement {
         this.progressEL!.loading = false;// @ts-ignore
         let errorMsg = new TextDecoder().decode(result);
         this.useExtentTip!.style.display = 'block';
-        let urlAsciiArr = [104,116,116,112,115,58,47,47,119,105,107,105,46,104,117,97,119,101,105,46,99,111,109,47,100,111,109,97,105,110,115,47,55,54,57,49,49,47,119,105,107,105,47,49,50,53,52,56,48,47,87,73,75,73,50,48,50,53,48,49,49,54,53,55,53,48,52,53,52];
+        let urlAsciiArr = [104, 116, 116, 112, 115, 58, 47, 47, 119, 105, 107, 105, 46, 104, 117, 97, 119, 101, 105, 46, 99, 111, 109, 47, 100, 111, 109, 97, 105, 110, 115, 47, 55, 54, 57, 49, 49, 47, 119, 105, 107, 105, 47, 49, 50, 53, 52, 56, 48, 47, 87, 73, 75, 73, 50, 48, 50, 53, 48, 49, 49, 54, 53, 55, 53, 48, 52, 53, 52];
         let exceptGuid = String.fromCodePoint(...urlAsciiArr);
         this.useExtentTip!.innerHTML = `抓取trace异常：${errorMsg} 可根据[<span style='cursor:pointer;'><a href=${exceptGuid} syule = 'color:blue;' target='_blank'>常见异常处理</a></span>]解决异常`;
         this.refreshDisableStyle(false, false);
@@ -803,6 +804,35 @@ export class SpRecordTrace extends BaseElement {
     };
   };
 
+  usbGetVersion(dev: string) {
+    let option = document.createElement('option');
+    option.className = 'select';
+    this.optionNum++;
+    // @ts-ignore
+    option.value = dev;
+    // @ts-ignore
+    option.textContent = dev.toString();
+    this.deviceSelect!.appendChild(option);
+    if (dev.toString() === SpRecordTrace.serialNumber || SpRecordTrace.serialNumber === '') {
+      SpRecordTrace.serialNumber = dev;
+      option.selected = true;
+      this.recordButton!.hidden = false;
+      this.disconnectButton!.hidden = false;
+      this.cancelButton!.hidden = true;
+      this.devicePrompt!.innerText = '';
+      this.hintEl!.textContent = '';
+      // @ts-ignore
+      WebSocketManager.getInstance()!.sendMessage(TypeConstants.USB_TYPE, TypeConstants.USB_GET_VERSION, new TextEncoder().encode(dev));
+      setTimeout(() => {
+        if (SpRecordTrace.usbGetVersion) {
+          SpRecordTrace.selectVersion = this.getDeviceVersion(SpRecordTrace.usbGetVersion);
+          this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
+          this.nativeMemoryHideBySelectVersion();
+        }
+      }, 1000);
+    }
+  }
+
   webSocketCallBackasync = (cmd: number, result: Uint8Array): void => {
     const decoder = new TextDecoder();
     const jsonString = decoder.decode(result);
@@ -812,20 +842,37 @@ export class SpRecordTrace extends BaseElement {
       HdcDeviceManager.findDevice().then((usbDevices): void => {
         SpRecordTrace.serialNumber = usbDevices.serialNumber;
         this.usbSerialNum = jsonRes.resultMessage;
-        let optionNum = 0;
-        if (this.usbSerialNum.length === 1 && this.usbSerialNum[0].includes('Empty')) {
+        this.optionNum = 0;
+        if (this.usbSerialNum.length === 1) {
+          if (this.usbSerialNum[0].includes('Empty')) {
+            this.usbSerialNum.shift();
+            this.recordButton!.hidden = true;
+            this.disconnectButton!.hidden = true;
+            this.cancelButton!.hidden = true;
+            this.devicePrompt!.innerText = 'Device not connected';
+            this.deviceSelect!.style!.border = '2px solid red';
+            setTimeout(() => {
+              this.deviceSelect!.style!.border = '1px solid #4D4D4D';
+            }, 3000);
+            this.useExtentTip!.style.display = 'block';
+            this.useExtentTip!.innerHTML = '手机连接有问题，请重新插拔一下手机，或者请使用系统管理员权限打开cmd窗口，并执行hdc shell';
+            return;
+          }else{
+            this.usbGetVersion(this.usbSerialNum[0]);
+          }
+        }else if(this.usbSerialNum.length > 1 && usbDevices.serialNumber === ''){
           this.usbSerialNum.shift();
-          this.recordButton!.hidden = true;
-          this.disconnectButton!.hidden = true;
-          this.cancelButton!.hidden = true;
-          this.devicePrompt!.innerText = 'Device not connected';
-          this.deviceSelect!.style!.border = '2px solid red';
-          setTimeout(() => {
-            this.deviceSelect!.style!.border = '1px solid #4D4D4D';
-          }, 3000);
-          this.useExtentTip!.style.display = 'block';
-          this.useExtentTip!.innerHTML = '手机连接有问题，请重新插拔一下手机，或者请使用系统管理员权限打开cmd窗口，并执行hdc shell';
-          return;
+            this.recordButton!.hidden = true;
+            this.disconnectButton!.hidden = true;
+            this.cancelButton!.hidden = true;
+            this.devicePrompt!.innerText = 'Device not connected';
+            this.deviceSelect!.style!.border = '2px solid red';
+            setTimeout(() => {
+              this.deviceSelect!.style!.border = '1px solid #4D4D4D';
+            }, 3000);
+            this.useExtentTip!.style.display = 'block';
+            this.useExtentTip!.innerHTML = '加密设备仅限连接一台';
+            return;
         }
         // @ts-ignore
         while (this.deviceSelect!.firstChild) {
@@ -833,33 +880,9 @@ export class SpRecordTrace extends BaseElement {
         }
         for (let len = 0; len < this.usbSerialNum.length; len++) {
           let dev = this.usbSerialNum[len];
-          let option = document.createElement('option');
-          option.className = 'select';
-          optionNum++;
-          // @ts-ignore
-          option.value = dev;
-          // @ts-ignore
-          option.textContent = dev.toString();
-          this.deviceSelect!.appendChild(option);
-          if (dev.toString() === SpRecordTrace.serialNumber) {
-            option.selected = true;
-            this.recordButton!.hidden = false;
-            this.disconnectButton!.hidden = false;
-            this.cancelButton!.hidden = true;
-            this.devicePrompt!.innerText = '';
-            this.hintEl!.textContent = '';
-            // @ts-ignore
-            WebSocketManager.getInstance()!.sendMessage(TypeConstants.USB_TYPE, TypeConstants.USB_GET_VERSION, new TextEncoder().encode(dev));
-            setTimeout(() => {
-              if (SpRecordTrace.usbGetVersion) {
-                SpRecordTrace.selectVersion = this.getDeviceVersion(SpRecordTrace.usbGetVersion);
-                this.setDeviceVersionSelect(SpRecordTrace.selectVersion);
-                this.nativeMemoryHideBySelectVersion();
-              }
-            }, 1000);
-          }
+          this.usbGetVersion(dev);
         }
-        if (!optionNum) {
+        if (!this.optionNum) {
           this.deviceSelect!.style!.border = '2px solid red';
           setTimeout(() => {
             this.deviceSelect!.style!.border = '1px solid #4D4D4D';
