@@ -281,8 +281,16 @@ export class SpApplication extends BaseElement {
   }
 
   initPlugin(): void {
-    SpStatisticsHttpUtil.initStatisticsServerConfig();
-    SpStatisticsHttpUtil.addUserVisitAction('visit');
+    let url = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
+      }${window.location.pathname}serverInfo`;
+    fetch(url, { method: 'GET' }).then((res) => {
+      if (res.headers) {
+        const headers = res.headers;
+        SpStatisticsHttpUtil.requestServerInfo = headers.get('request_info')!;
+        SpStatisticsHttpUtil.initStatisticsServerConfig();
+        SpStatisticsHttpUtil.addUserVisitAction('visit');
+      }
+    })
     LongTraceDBUtils.getInstance().createDBAndTable().then();
   }
 
@@ -1174,8 +1182,8 @@ export class SpApplication extends BaseElement {
         traceType = 'sqlite';
       }
       Promise.all([threadPool.init(traceType), threadPool2.init(traceType)]).then(() => {
-        let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
-        let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/config/config.json`;
+        let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}wasm.json`;
+        let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}config/config.json`;
         Promise.all([file1.arrayBuffer(), file2.arrayBuffer()]).then((bufArr) => {
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
           SpApplication.loadingProgress = 0;
@@ -1240,15 +1248,15 @@ export class SpApplication extends BaseElement {
         reader.onloadend = (ev): void => {
           info('read file onloadend');
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
-          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
-          let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/config/config.json`;
+          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}wasm.json`;
+          let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}config/config.json`;
           SpApplication.loadingProgress = 0;
           SpApplication.progressStep = 3;
           let data = this.markPositionHandler(reader.result as ArrayBuffer);
           info('initData start Parse Data');
           this.spSystemTrace!.loadDatabaseArrayBuffer(
             data,
-            wasmUrl,configUrl,
+            wasmUrl, configUrl,
             (command: string, _: number) => this.setProgress(command),
             false,
             completeHandler
@@ -1761,7 +1769,7 @@ export class SpApplication extends BaseElement {
               let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
               querySelectors.forEach((item) => {
                 if (item.getAttribute('title') === 'Convert to .systrace') {
-                  if(fileName.indexOf('.htrace')>0){
+                  if (fileName.indexOf('.htrace') > 0) {
                     SpStatisticsHttpUtil.addOrdinaryVisitAction({
                       event: 'convert_systrace',
                       action: 'convert_systrace',
@@ -2556,7 +2564,7 @@ export class SpApplication extends BaseElement {
               openUrl(arrayBuf, fileName, showFileName, arrayBuf.byteLength);
             });
           } else {
-            let api = `${window.location.origin}/application/download-file`;
+            let api = `${window.location.origin}${window.location.pathname}download-file`;
             fetch(api, {
               method: 'POST',
               headers: {
@@ -2578,7 +2586,7 @@ export class SpApplication extends BaseElement {
           }
         })
         .catch((e) => {
-          let api = `${window.location.origin}/application/download-file`;
+          let api = `${window.location.origin}${window.location.pathname}download-file`;
           fetch(api, {
             method: 'POST',
             headers: {

@@ -78,7 +78,7 @@ export class HdcClient implements DataListener {
           continue;
         case AuthType.AUTH_SIGNATURE:
           const hdcMsgUrl = this.isSigna ? 'signatureHdcMsg' : 'encryptHdcMsg';
-          const response = await fetch(`${window.location.origin}/application/${hdcMsgUrl}?message=` + returnBuf);
+          const response = await fetch(`${window.location.origin}${window.location.pathname}${hdcMsgUrl}?message=` + returnBuf);
           const dataBody = await response.json();
           let signatureHdcMsg = '';
           if (dataBody.success) {
@@ -95,7 +95,7 @@ export class HdcClient implements DataListener {
           } else {
             this.isSigna = false;
           }
-          const responsePub = await fetch(`${window.location.origin}/application/hdcPublicKey`);
+          const responsePub = await fetch(`${window.location.origin}${window.location.pathname}hdcPublicKey`);
           const data = await responsePub.json();
           const publicKey = data.success && (`smartPerf-Host` + String.fromCharCode(12) + data.data.publicKey);
           await this.handShakeConnect(AuthType.AUTH_PUBLICKEY, publicKey);
