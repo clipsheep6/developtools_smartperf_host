@@ -1330,7 +1330,7 @@ export async function spSystemTraceInit(
   SpStatisticsHttpUtil.recordPluginUsage();
   // trace文件加载完毕,将动效json文件读取并存入缓存
   let funDetailUrl = `https://${window.location.host.split(':')[0]}:${window.location.port
-    }/application/doc/funDetail.json`;
+    }${window.location.pathname}doc/funDetail.json`;
   let xhr = new XMLHttpRequest();
   // 创建XMLHttpRequest对象
   xhr.open('GET', funDetailUrl);

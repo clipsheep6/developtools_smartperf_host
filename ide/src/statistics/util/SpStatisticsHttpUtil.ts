@@ -22,7 +22,6 @@ export class SpStatisticsHttpUtil {
   static timeDiff: number = 0;
   static retryCount: number = 0;
   static retryMaxCount: number = 5;
-  static pauseRetry: boolean = false;
   static retryRestTimeOut: boolean = false;
   static recordPlugin: Array<string> = [];
   static controllersMap: Map<number, AbortController> = new Map<number, AbortController>();
@@ -30,42 +29,16 @@ export class SpStatisticsHttpUtil {
 
   static initStatisticsServerConfig(): void {
     if (SpStatisticsHttpUtil.requestServerInfo === '') {
-      SpStatisticsHttpUtil.requestServerInfo = SpStatisticsHttpUtil.getRequestServerInfo();
+      return;
     }
     if (SpStatisticsHttpUtil.serverTime === 0) {
       SpStatisticsHttpUtil.getServerTime();
     }
   }
 
-  static getRequestServerInfo(): string {
-    try {
-      let req = new XMLHttpRequest();
-      req.onreadystatechange = (): void => {
-        if (req.readyState === 4 && req.status === 200) {
-          let requestInfo = req.getResponseHeader('request_info');
-          if (requestInfo && requestInfo.length > 0) {
-            SpStatisticsHttpUtil.requestServerInfo = requestInfo;
-          }
-        }
-      };
-      req.open(
-        'GET',
-        `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
-        }/application/serverInfo`,
-        true
-      );
-      req.send(null);
-    } catch {
-      warn('Connect Server Failed');
-    }
-    return '';
-  }
 
   static getServerTime(): void {
     if (SpStatisticsHttpUtil.requestServerInfo === '') {
-      SpStatisticsHttpUtil.requestServerInfo = SpStatisticsHttpUtil.getRequestServerInfo();
-    }
-    if (SpStatisticsHttpUtil.pauseRetry) {
       return;
     }
     fetch(`https://${SpStatisticsHttpUtil.requestServerInfo}/serverTime`)
@@ -77,26 +50,9 @@ export class SpStatisticsHttpUtil {
           }
         });
       })
-      .catch((e) => {
-        this.handleRequestException();
-      });
+      .catch((e) => {});
   }
 
-  private static handleRequestException(): void {
-    if (SpStatisticsHttpUtil.retryCount >= SpStatisticsHttpUtil.retryMaxCount) {
-      SpStatisticsHttpUtil.pauseRetry = true;
-      if (SpStatisticsHttpUtil.retryRestTimeOut) {
-        return;
-      }
-      SpStatisticsHttpUtil.retryRestTimeOut = true;
-      setTimeout(() => {
-        SpStatisticsHttpUtil.retryCount = 0;
-        SpStatisticsHttpUtil.pauseRetry = false;
-        SpStatisticsHttpUtil.retryRestTimeOut = false;
-      }, 600000);
-    }
-    ++SpStatisticsHttpUtil.retryCount;
-  }
 
   static addUserVisitAction(requestUrl: string): void {
     // @ts-ignore
@@ -104,9 +60,6 @@ export class SpStatisticsHttpUtil {
       return;
     }
     if (SpStatisticsHttpUtil.requestServerInfo === '') {
-      SpStatisticsHttpUtil.requestServerInfo = SpStatisticsHttpUtil.getRequestServerInfo();
-    }
-    if (SpStatisticsHttpUtil.pauseRetry) {
       return;
     }
     let visitId = 0;
@@ -147,9 +100,6 @@ export class SpStatisticsHttpUtil {
       return;
     }
     if (SpStatisticsHttpUtil.requestServerInfo === '') {
-      SpStatisticsHttpUtil.requestServerInfo = SpStatisticsHttpUtil.getRequestServerInfo();
-    }
-    if (SpStatisticsHttpUtil.pauseRetry) {
       return;
     }
     requestBody.ts = SpStatisticsHttpUtil.getCorrectRequestTime();
