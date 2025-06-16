@@ -270,6 +270,9 @@ void PrintEventParser::ParseSplitTraceMetaData(const std::string &dataStr, Trace
         TS_LOGD("traceMetaDatas size: %zu, dataStr: %s", traceMetaDatas.size(), dataStr.c_str());
         return;
     }
+    if (!isAsynEvent) {
+        outPoint.name_ = std::move(traceMetaDatas[0]);
+    }
 
     std::string &marker = traceMetaDatas[1];
     if (!marker.empty()) {
