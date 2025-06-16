@@ -471,7 +471,7 @@ export function clearTraceFileCache(): void {
 }
 
 export function postLog(filename: string, fileSize: string): void {
-  fetch(`https://${window.location.host.split(':')[0]}:${window.location.port}/logger`, {
+  fetch(`https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}logger`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

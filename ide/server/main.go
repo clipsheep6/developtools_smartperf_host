@@ -173,7 +173,7 @@ func main() {
 		mime.TypeByExtension(".js")
 		mime.AddExtensionType(".js", "application/javascript")
 		log.Println(mime.TypeByExtension(".js"))
-		mux.HandleFunc("/logger", consoleHandler)
+		mux.HandleFunc("/application/logger", consoleHandler)
 		mux.Handle("/application/upload/", http.StripPrefix("/application/upload/", http.FileServer(http.Dir(filepath.FromSlash(exPath+"/upload")))))
 		mux.HandleFunc("/application/download-file", downloadHandler)
 		mux.HandleFunc("/application/serverInfo", serverInfo)

@@ -149,9 +149,9 @@ export class SpSdkConfig extends BaseElement {
   private initSdkWasm(): void {
     try {
       let spApplication = document.querySelector<HTMLElement>('sp-application');
-      let wasmJsonUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+      let wasmJsonUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}wasm.json`;
       if (spApplication!.hasAttribute('vs')) {
-        wasmJsonUrl = `http://${window.location.host.split(':')[0]}:${window.location.port}/wasm.json`;
+        wasmJsonUrl = `http://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}/wasm.json`;
       }
       fetch(wasmJsonUrl)
         .then((res): void => {
