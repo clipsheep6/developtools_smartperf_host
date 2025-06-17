@@ -441,7 +441,7 @@ export class TraceRowConfig extends BaseElement {
 
   private initSwitchClickListener(): void {
     let jsonUrl = `https://${window.location.host.split(':')[0]}:${window.location.port
-      }/application/trace/config/custom_temp_config.json`;
+      }${window.location.pathname}trace/config/custom_temp_config.json`;
     this.switchButton!.addEventListener('click', () => {
       // @ts-ignore
       this.inputElement?.value = '';
