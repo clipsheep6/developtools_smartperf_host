@@ -17,6 +17,8 @@
 #include <hwext/gtest-tag.h>
 #include <unordered_map>
 
+#define private public
+#include "config_filter.h"
 #include "print_event_parser.h"
 #include "task_pool_filter.h"
 #include "trace_streamer_filters.h"
@@ -30,6 +32,7 @@ public:
     void SetUp()
     {
         stream_.InitFilter();
+        stream_.streamFilters_->configFilter_->switchConfig_.taskPoolConfigEnabled_ = true;
     }
     void TearDown() {}
 

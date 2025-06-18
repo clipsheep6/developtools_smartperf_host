@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "cpu_plugin_result.pb.h"
 #include "cpu_plugin_result.pbreader.h"
 #include "cpu_data_parser/pbreader_cpu_data_parser.h"

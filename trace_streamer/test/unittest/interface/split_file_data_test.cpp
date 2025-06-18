@@ -20,6 +20,7 @@
 #include <string>
 #include <unistd.h>
 
+#define private public
 #include "ptreader_parser.h"
 #include "file.h"
 #include "pbreader_parser.h"

@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "hilog_parser/pbreader_hilog_parser.h"
 #include "hilog_plugin_result.pb.h"
 #include "hilog_plugin_result.pbreader.h"

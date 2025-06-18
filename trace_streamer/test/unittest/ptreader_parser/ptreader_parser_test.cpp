@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#define private public
 #include "parser/ptreader_parser/ptreader_parser.h"
 #include "parser/common_types.h"
 #include "string_help.h"

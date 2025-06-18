@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "app_start_filter.h"
 #include "ptreader_parser.h"
 #include "slice_filter.h"

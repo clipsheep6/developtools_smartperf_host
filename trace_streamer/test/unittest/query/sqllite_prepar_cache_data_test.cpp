@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "export_test.h"
 #include "file.h"
 #include "sph_data.pb.h"

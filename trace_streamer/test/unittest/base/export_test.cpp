@@ -21,6 +21,7 @@
 #include <string>
 #include <unistd.h>
 
+#define private public
 #include "export_test.h"
 #include "file.h"
 #include "trace_streamer_selector.h"

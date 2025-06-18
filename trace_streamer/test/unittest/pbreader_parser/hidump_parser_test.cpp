@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <string>
 
+#define private public
 #include "hidump_parser/pbreader_hidump_parser.h"
 #include "hidump_plugin_result.pb.h"
 #include "hidump_plugin_result.pbreader.h"

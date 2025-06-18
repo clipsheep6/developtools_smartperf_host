@@ -13,6 +13,7 @@
 
 #####################hydra-fuzz###################
 import("//build/ohos.gni")
+import("//build/ts.gni")
 import("../../../build/test.gni")
 import("../../test_ts.gni")
 
@@ -60,8 +61,8 @@ ohos_fuzztest("ts_selector_fuzz_test") {
     "--coverage",
   ]
   deps = [
-    "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-    "${THIRD_PARTY}/protobuf:protobuf_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
     "../../../src:trace_streamer_source",
     "../../../src/proto_reader:proto_reader",
   ]

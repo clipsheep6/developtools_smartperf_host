@@ -21,6 +21,7 @@
 #include <string>
 #include <unistd.h>
 
+#define private public
 #include "file.h"
 #include "test.pb.h"
 #include "test.pbreader.h"

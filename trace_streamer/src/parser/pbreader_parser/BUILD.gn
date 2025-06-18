@@ -32,7 +32,7 @@ ohos_source_set("pbreader_parser_src") {
     "../../trace_streamer",
     "../../metrics",
     "${THIRD_PARTY}/bounds_checking_function/include",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "${THIRD_PARTY}/sqlite/include",
     "${THIRD_PARTY}/json/single_include/nlohmann",
     "../../filter",
@@ -127,9 +127,9 @@ ohos_source_set("pbreader_parser_src") {
         [ "${EXTEND_SRC}/parser/pbreader_stream_parser:stream_extend_parser" ]
   }
   public_deps += [
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
     "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/services:ts_all_type_cpp_standard",
-    "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-    "${THIRD_PARTY}/protobuf:protobuf_static",
     "../hiperf_parser:libz",
   ]
 }

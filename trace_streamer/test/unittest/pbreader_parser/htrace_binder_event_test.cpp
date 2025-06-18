@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "binder_filter.h"
 #include "htrace_cpu_detail_parser.h"
 #include "trace_plugin_result.pb.h"

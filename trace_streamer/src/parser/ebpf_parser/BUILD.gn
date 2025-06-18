@@ -28,7 +28,7 @@ config("ebpf_parser_cfg") {
     "../../cfg",
     "../../trace_streamer",
     "../../proto_reader/include",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "${THIRD_PARTY}/sqlite/include",
     "${THIRD_PARTY}/bounds_checking_function/include",
   ]
@@ -80,7 +80,7 @@ ohos_static_library("ebpf_parser") {
     "../hiperf_parser:ts_hiperf_src",
   ]
   deps = [
-    "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-    "${THIRD_PARTY}/protobuf:protobuf_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
   ]
 }

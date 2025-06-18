@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "frame_filter.h"
 #include "process_filter.h"
 #include "trace_streamer_selector.h"
@@ -72,9 +73,11 @@ HWTEST_F(FrameFilterTest, AppVsyncNoFrameNum, TestSize.Level1)
                                                           CALLSTACK_SLICE_ID);
     const uint64_t END_TS = 10;
     auto res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, itid);
+    EXPECT_TRUE(res);
+    res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, itid);
     EXPECT_FALSE(res);
-    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[0], 2);                // actural frame, no frameNum
-    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[1], 2);                // expect frame, no frameNum
+    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[0], 0);                // actural frame, no frameNum
+    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[1], INVALID_UINT8);    // expect frame, no frameNum
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->TimeStampData()[0], START_TS); // actural frame
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->TimeStampData()[1], EXPECTED_START);       // expect frame
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Durs()[0], END_TS - START_TS);             // actural frame
@@ -350,28 +353,30 @@ HWTEST_F(FrameFilterTest, SliceFromAppToRS, TestSize.Level1)
                 stream_.traceDataCache_->GetFrameSliceData()->IdsData()[0]);
 }
 
-HWTEST_F(FrameFilterTest, AppUVTraceNoVsyncIdAndFrameNum, TestSize.Level1)
+HWTEST_F(FrameFilterTest, AppParallelTraceNoVsyncIdAndFrameNum, TestSize.Level1)
 {
     TS_LOGI("test6-9");
     // no vsyncId and frameNum
-    // app ---------------H:UVTrace------------------End---uint64_t ts,
+    // app ---------------H:ParallelTrace------------------End---uint64_t ts,
     BytraceLine line = {START_TS, TID1};
     line.tgid = PID1;
     auto itid = stream_.streamFilters_->processFilter_->GetOrCreateThreadWithPid(TID1, PID1);
-    stream_.streamFilters_->frameFilter_->BeginUVTraceEvent(line, CALLSTACK_SLICE_ID);
+    // BeginParallelTraceEvent 用于开始一个并发/并行的追踪事件
+    // BeginUVTraceEvent 用于开始一个普通的追踪事件（函数没有）----
+    stream_.streamFilters_->frameFilter_->BeginParallelTraceEvent(line, CALLSTACK_SLICE_ID);
     const uint64_t END_TS = 10;
     auto res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, itid);
-    EXPECT_FALSE(res);
-    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[0], INVALID_DATA);     // actural frame, no frameNum
+    EXPECT_TRUE(res);
+    EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[0], 0);                // actural frame, no frameNum
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->TimeStampData()[0], START_TS); // actural frame
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Durs()[0], END_TS - START_TS); // actural frame
 }
 
-HWTEST_F(FrameFilterTest, AppUVTraceNoFrameNum, TestSize.Level1)
+HWTEST_F(FrameFilterTest, AppParallelTraceNoFrameNum, TestSize.Level1)
 {
     TS_LOGI("test6-10");
     // no frameNum
-    // app ---------------H:UVTrace------------------End---uint64_t ts,
+    // app ---------------H:ParallelTrace------------------End---uint64_t ts,
     BytraceLine mainThreadLine = {0, PID1};
     mainThreadLine.tgid = PID1;
     const uint64_t SON_START_TS = 6;
@@ -381,24 +386,25 @@ HWTEST_F(FrameFilterTest, AppUVTraceNoFrameNum, TestSize.Level1)
     auto itid = stream_.streamFilters_->processFilter_->GetOrCreateThreadWithPid(TID1, PID1);
     stream_.streamFilters_->frameFilter_->BeginVsyncEvent(mainThreadLine, EXPECTED_START, EXPECTED_END, VSYNC_ID,
                                                           CALLSTACK_SLICE_ID);
-    stream_.streamFilters_->frameFilter_->BeginUVTraceEvent(line, CALLSTACK_SLICE_ID);
-    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID);
+    stream_.streamFilters_->frameFilter_->BeginParallelTraceEvent(line, CALLSTACK_SLICE_ID);
+    uint64_t timeId = 0;
+    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID, timeId);
     const uint64_t SON_END_TS = 9;
     auto res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(SON_END_TS, itid);
-    EXPECT_FALSE(res);
+    EXPECT_TRUE(res);
     const uint64_t END_TS = 10;
     res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, mainThreadId);
-    EXPECT_FALSE(res);
+    EXPECT_TRUE(res);
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[SON_THREAD_DATA_INDEX],
-              INVALID_DATA); // actural frame, no frameNum
+              0); // actural frame, no frameNum
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Durs()[SON_THREAD_DATA_INDEX],
               SON_END_TS - SON_START_TS); // actural frame
 }
 
-HWTEST_F(FrameFilterTest, AppUVTraceNormal, TestSize.Level1)
+HWTEST_F(FrameFilterTest, AppParallelTraceNormal, TestSize.Level1)
 {
     TS_LOGI("test6-11");
-    // app ---------------H:UVTrace------------------End---uint64_t ts,
+    // app ---------------H:ParallelTrace------------------End---uint64_t ts,
     const uint64_t SON_START_TS = 6;
     BytraceLine line = {SON_START_TS, TID1};
     line.tgid = PID1;
@@ -408,8 +414,9 @@ HWTEST_F(FrameFilterTest, AppUVTraceNormal, TestSize.Level1)
     auto mainThreadId = stream_.streamFilters_->processFilter_->GetOrCreateThreadWithPid(PID1, PID1);
     stream_.streamFilters_->frameFilter_->BeginVsyncEvent(mainThreadLine, EXPECTED_START, EXPECTED_END, VSYNC_ID,
                                                           CALLSTACK_SLICE_ID2);
-    stream_.streamFilters_->frameFilter_->BeginUVTraceEvent(line, CALLSTACK_SLICE_ID2);
-    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID);
+    stream_.streamFilters_->frameFilter_->BeginParallelTraceEvent(line, CALLSTACK_SLICE_ID2);
+    uint64_t timeId = 0;
+    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID, timeId);
     const uint32_t FRAME_NUM = 1;
     stream_.streamFilters_->frameFilter_->BeginRSTransactionData(sonThreadId, FRAME_NUM, mainThreadId);
     const uint64_t SON_END_TS = 8;
@@ -417,14 +424,14 @@ HWTEST_F(FrameFilterTest, AppUVTraceNormal, TestSize.Level1)
     EXPECT_TRUE(res);
     const uint64_t END_TS = 9;
     res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, mainThreadId);
-    EXPECT_FALSE(res);
+    EXPECT_TRUE(res);
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[SON_THREAD_DATA_INDEX],
               0); // actural frame, no frameNum
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Durs()[SON_THREAD_DATA_INDEX],
               SON_END_TS - SON_START_TS); // actural frame
 }
 
-HWTEST_F(FrameFilterTest, AppUVTraceTimeout, TestSize.Level1)
+HWTEST_F(FrameFilterTest, AppParallelTraceTimeout, TestSize.Level1)
 {
     TS_LOGI("test6-12");
     // app subthread actual frame timeout
@@ -438,8 +445,9 @@ HWTEST_F(FrameFilterTest, AppUVTraceTimeout, TestSize.Level1)
     auto mainThreadId = stream_.streamFilters_->processFilter_->GetOrCreateThreadWithPid(PID1, PID1);
     stream_.streamFilters_->frameFilter_->BeginVsyncEvent(mainThreadLine, EXPECTED_START, EXPECTED_END, VSYNC_ID,
                                                           CALLSTACK_SLICE_ID);
-    stream_.streamFilters_->frameFilter_->BeginUVTraceEvent(line, CALLSTACK_SLICE_ID2);
-    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID);
+    stream_.streamFilters_->frameFilter_->BeginParallelTraceEvent(line, CALLSTACK_SLICE_ID2);
+    uint64_t timeId = 0;
+    stream_.streamFilters_->frameFilter_->UpdateVsyncId(line, VSYNC_ID, timeId);
     const uint32_t FRAME_NUM = 2;
     stream_.streamFilters_->frameFilter_->BeginRSTransactionData(sonThreadId, FRAME_NUM, mainThreadId);
     const uint64_t SON_END_TS = 11;
@@ -447,7 +455,7 @@ HWTEST_F(FrameFilterTest, AppUVTraceTimeout, TestSize.Level1)
     EXPECT_TRUE(res);
     const uint64_t END_TS = 9;
     res = stream_.streamFilters_->frameFilter_->EndVsyncEvent(END_TS, mainThreadId);
-    EXPECT_FALSE(res);
+    EXPECT_TRUE(res);
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Flags()[SON_THREAD_DATA_INDEX],
               1); // actural frame, no frameNum
     EXPECT_EQ(stream_.traceDataCache_->GetFrameSliceData()->Durs()[SON_THREAD_DATA_INDEX],
