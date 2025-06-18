@@ -17,6 +17,7 @@ import("../../build/ts.gni")
 config("parser_base_cfg") {
   include_dirs = [
     "${THIRD_PARTY}/protobuf/src",
+    "${THIRD_PARTY}/protobuf/third_party/abseil-cpp",
     "${THIRD_PARTY}/sqlite/include",
     "${SRC}/base",
     "${SRC}/cfg",

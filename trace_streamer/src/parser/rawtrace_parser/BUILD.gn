@@ -78,9 +78,9 @@ ohos_static_library("rawtrace_parser") {
   }
 
   public_deps = [
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
     "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/services:ts_all_type_cpp_standard",
     "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/types/plugins/ftrace_data/${device_kernel_version}:ts_ftrace_data_cpp",
-    "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-    "${THIRD_PARTY}/protobuf:protobuf_static",
   ]
 }

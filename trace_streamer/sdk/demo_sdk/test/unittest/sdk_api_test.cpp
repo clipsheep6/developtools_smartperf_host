@@ -15,6 +15,7 @@
 
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
+#define private public
 #include "gpu_counter_object_table.h"
 #include "gpu_counter_table.h"
 #include "mock_plugin_result.pb.h"
@@ -245,7 +246,7 @@ HWTEST_F(SDKApiTest, CurrentDataForCounterObjectWithManuallyTableName, TestSize.
 {
     TS_LOGI("test1-7");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", "second_table", " ", " ");
+    auto ret = SDKSetTableName(" ", "second_table", " ", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -288,7 +289,7 @@ HWTEST_F(SDKApiTest, WrongDataForCounterObjectWithManuallyTableName, TestSize.Le
 {
     TS_LOGI("test1-9");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", "second_table", " ", " ");
+    auto ret = SDKSetTableName(" ", "second_table", " ", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -310,7 +311,7 @@ HWTEST_F(SDKApiTest, WrongDataForCounterObject, TestSize.Level1)
 {
     TS_LOGI("test1-10");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", "second_table", " ", " ");
+    auto ret = SDKSetTableName(" ", "second_table", " ", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -353,7 +354,7 @@ HWTEST_F(SDKApiTest, CurrentDataForCounterWithManuallyTableName, TestSize.Level1
 {
     TS_LOGI("test1-12");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName("first_table", " ", " ", " ");
+    auto ret = SDKSetTableName("first_table", " ", " ", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -396,7 +397,7 @@ HWTEST_F(SDKApiTest, WrongDataForCounterWithManuallyTableName, TestSize.Level1)
 {
     TS_LOGI("test1-14");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName("first_table", " ", " ", " ");
+    auto ret = SDKSetTableName("first_table", " ", " ", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -460,7 +461,7 @@ HWTEST_F(SDKApiTest, CurrentDataForSliceObjectWithManuallyTableName, TestSize.Le
 {
     TS_LOGI("test1-17");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", " ", " ", "fourth_table");
+    auto ret = SDKSetTableName(" ", " ", " ", "fourth_table");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -503,7 +504,7 @@ HWTEST_F(SDKApiTest, WrongDataForSliceObjectWithManuallyTableName, TestSize.Leve
 {
     TS_LOGI("test1-19");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", " ", " ", "fourth_table");
+    auto ret = SDKSetTableName(" ", " ", " ", "fourth_table");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -525,7 +526,7 @@ HWTEST_F(SDKApiTest, WrongDataForSliceObject, TestSize.Level1)
 {
     TS_LOGI("test1-20");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", " ", " ", "fourth_table");
+    auto ret = SDKSetTableName(" ", " ", " ", "fourth_table");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -568,7 +569,7 @@ HWTEST_F(SDKApiTest, CurrentDataForSliceWithManuallyTableName, TestSize.Level1)
 {
     TS_LOGI("test1-22");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", " ", "third_table", " ");
+    auto ret = SDKSetTableName(" ", " ", "third_table", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();
@@ -611,7 +612,7 @@ HWTEST_F(SDKApiTest, WrongDataForSliceWithManuallyTableName, TestSize.Level1)
 {
     TS_LOGI("test1-24");
     SetRpcServer(rpcServer);
-    auto ret = SDK_SetTableName(" ", " ", "third_table", " ");
+    auto ret = SDKSetTableName(" ", " ", "third_table", " ");
     ret = rpcServer->demoTs_->sdkDataParser_->GetJsonConfig(QueryResultCallback);
     EXPECT_EQ(0, ret);
     ret = rpcServer->demoTs_->sdkDataParser_->CreateTableByJson();

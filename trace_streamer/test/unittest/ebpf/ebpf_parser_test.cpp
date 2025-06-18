@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "ebpf_data_parser.h"
 #include "ebpf_stdtype.h"
 #include "pbreader_file_header.h"

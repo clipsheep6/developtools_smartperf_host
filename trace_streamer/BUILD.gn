@@ -19,7 +19,7 @@ group("trace_streamer") {
     deps = [ "test:fuzztest" ]
     testonly = true
   } else if (is_protoc) {
-    deps = [ "${THIRD_PARTY}/protobuf:protoc" ]
+    deps = [ "src/protos:protoc" ]
   } else if (is_spb) {
     deps = [
       "src/proto_reader/protoc_plugin:protoreader_plugin(${host_toolchain})",

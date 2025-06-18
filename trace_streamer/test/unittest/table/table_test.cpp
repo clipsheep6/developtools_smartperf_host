@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "mem_parser/pbreader_mem_parser.h"
 #include "rpc_server.h"
 #include "trace_data_cache.h"
@@ -1200,13 +1201,15 @@ HWTEST_F(TableTest, SyscallTableTest, TestSize.Level1)
 {
     TS_LOGI("test31-39");
     std::string sqlSelect = "select * from syscall";
-    int64_t sysCallNum = 1;
-    DataIndex type = stream_.traceDataCache_->GetDataIndex("type");
-    uint64_t ipid = 1;
-    uint64_t timeStamp = 1663869124160;
-    int64_t ret = 1;
+    SyscallInfoRow syscallInfoRow;
+    syscallInfoRow.ts = 1663869124160;
+    syscallInfoRow.dur = 1;
+    syscallInfoRow.itid = 1;
+    syscallInfoRow.number = 1;
+    syscallInfoRow.args = stream_.traceDataCache_->GetDataIndex("(1,2,3)");
+    syscallInfoRow.ret = 1;
 
-    stream_.traceDataCache_->GetSysCallData()->AppendSysCallData(sysCallNum, type, ipid, timeStamp, ret);
+    stream_.traceDataCache_->GetSysCallData()->AppendSysCallData(syscallInfoRow);
     EXPECT_EQ(stream_.traceDataCache_->SearchDatabase(sqlSelect, false), 1);
 }
 /**

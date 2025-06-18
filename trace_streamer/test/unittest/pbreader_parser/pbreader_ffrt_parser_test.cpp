@@ -15,6 +15,7 @@
 
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
+#define private public
 #include "export_test.h"
 #include "ffrt_profiler_config.pb.h"
 #include "ffrt_profiler_result.pb.h"

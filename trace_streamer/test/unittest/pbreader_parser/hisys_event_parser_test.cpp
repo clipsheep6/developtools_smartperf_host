@@ -15,6 +15,7 @@
 
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
+#define private public
 #include "hi_sysevent_filter/hi_sysevent_measure_filter.h"
 #include "hisysevent_parser/pbreader_hisysevent_parser.h"
 #include "string_to_numerical.h"

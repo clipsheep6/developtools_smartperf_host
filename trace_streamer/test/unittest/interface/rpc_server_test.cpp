@@ -16,6 +16,8 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
+#include "config_filter.h"
 #include "rpc/rpc_server.h"
 #include "print_event_parser.h"
 
@@ -108,7 +110,7 @@ HWTEST_F(RpcServerTest, ParserConfig, TestSize.Level1)
 
     RpcServer rpcServer;
     auto ret = rpcServer.ParserConfig(json);
-    EXPECT_EQ(rpcServer.ts_->traceDataCache_->taskPoolTraceEnabled_, true);
+    EXPECT_EQ(rpcServer.ts_->streamFilters_->configFilter_->switchConfig_.taskPoolConfigEnabled_, true);
     PrintEventParser printEvent(rpcServer.ts_->traceDataCache_.get(), rpcServer.ts_->streamFilters_.get());
     printEvent.ParsePrintEvent(comm, ts, pid, event, line);
     auto res = rpcServer.ts_->traceDataCache_->GetConstTaskPoolData().prioritys_[0];
