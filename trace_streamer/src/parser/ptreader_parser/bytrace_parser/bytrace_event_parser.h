@@ -97,7 +97,7 @@ private:
     static const uint32_t MIN_CPU_IDLE_ARGS_COUNT = 2;
     static const uint32_t MIN_CPU_FREQUENCY_ARGS_COUNT = 2;
     static const uint32_t MIN_PROCESS_EXIT_ARGS_COUNT = 2;
-    static const uint32_t MIN_CLOCK_SET_RATE_ARGS_COUNT = 2;
+    static const uint32_t MIN_CLOCK_SET_RATE_ARGS_COUNT = 3;
     static const uint32_t MIN_CLOCK_ENABLE_ARGS_COUNT = 3;
     static const uint32_t MIN_CLOCK_DISABLE_ARGS_COUNT = 3;
     static const uint32_t MIN_IRQ_HANDLER_ENTRY_ARGS_COUNT = 2;
