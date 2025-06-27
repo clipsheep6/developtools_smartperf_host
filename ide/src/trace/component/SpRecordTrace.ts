@@ -139,6 +139,7 @@ export class SpRecordTrace extends BaseElement {
   public static usbGetEvent: string;
   public static usbGetApp: string;
   private static usbGetVersion: string;
+  public static usbGetHisystem: string;
   static snapShotList: Array<unknown> = [];
   static snapShotDuration: number = 0;
   static isSnapShotCapture: boolean = false;
@@ -906,6 +907,8 @@ export class SpRecordTrace extends BaseElement {
       SpRecordTrace.usbGetApp = jsonRes.resultMessage;
     } else if (cmd === TypeConstants.USB_GET_VERSION) {
       SpRecordTrace.usbGetVersion = jsonRes.resultMessage;
+    } else if (cmd === TypeConstants.USB_GET_HISYSTEM) {
+      SpRecordTrace.usbGetHisystem = jsonRes.resultMessage;
     }
   };
 
