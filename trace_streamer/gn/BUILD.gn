@@ -139,7 +139,7 @@ config("default") {
 
   if (target_os == "windows") {
     cflags += [ "-D target_cpu_x86_64" ]
-  } else if (is_linux || is_mac) {
+  } else if (is_linux || is_mac || is_ohos) {
     cflags += [
       "-Wa,--noexecstack",
       "-fcolor-diagnostics",
@@ -152,7 +152,7 @@ config("default") {
         "-fstack-protector-all",
         "-D_FORTIFY_SOURCE=2 -O2",
         "-D target_cpu_x64",
-        "-D target_cpu_x86_64",
+        "-D target_cpu_x86_64", # for hiperf
         "-DHAVE_CONFIG_H",
         "-DCC_IS_CLANG",
       ]
@@ -203,7 +203,7 @@ config("default") {
     libs += [ "ws2_32" ]
     cflags += [ "-Wno-attributes" ]
   }
-  if (is_linux) {
+  if (is_linux || is_ohos) {
     cflags += [ "-D is_linux=true" ]
   }
   if (is_mac) {
@@ -231,10 +231,15 @@ config("release") {
   ldflags = [ "-fstack-protector" ]
   if (!is_mac) {
     ldflags += [ "-Wl,-O3" ]
-    if (!is_win) {
+    if (!is_win && !is_ohos) {
       ldflags += [
         "-fuse-ld=gold",
         "-Wl,--gc-sections",
+      ]
+    } else if (is_ohos) {
+      ldflags += [
+        "-fuse-ld=${TOOLS_DIR}/ohos-sdk/linux/native/llvm/bin/ld.lld",
+        "-lgcc",
       ]
     }
   }
@@ -266,10 +271,19 @@ config("executable") {
       "-Wl,--disable-new-dtags",
       "-Wl,-z,noexecstack",
       "-lrt",
-      "-fuse-ld=gold",
       "-Wl,-z,now",
       "-Wl,-z,relro",
     ]
+    if (is_ohos) {
+      ldflags += [
+        "-fuse-ld=${TOOLS_DIR}/ohos-sdk/linux/native/llvm/bin/ld.lld",
+        "-lgcc",
+      ]
+    } else {
+      ldflags += [
+        "-fuse-ld=gold",
+      ]
+    }
   }
   if (!is_mac && !use_wasm) {
     ldflags += [ "-fpie" ]
@@ -318,7 +332,7 @@ config("ts_config") {
     libs = [ "wsock32" ]
     libs += [ "ws2_32" ]
   }
-  if (is_linux) {
+  if (is_linux || is_ohos) {
     cflags += [ "-D is_linux=1" ]
   }
   if (!use_wasm && !is_win && !is_mac && !is_test && !is_mingw) {

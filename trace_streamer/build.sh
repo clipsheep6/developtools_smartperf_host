@@ -16,6 +16,7 @@ PARAMS=$*
 SOURCE="${BASH_SOURCE[0]}"
 cd "$(dirname "${SOURCE}")"
 . build/build_stanalone_plugins.sh
+. build/dl_ohos_sdk.sh
 set_enable_plugin_array "true"
 set_enable_extend_plugin_array "false"
 set_enable_macro_switch_array "false"
@@ -59,6 +60,10 @@ if [ "$#" -ne "0" ];then
             use_local_emsdk="false"
         fi
         target="$1"
+    fi
+    if [ "$1" == "ohos" ];then
+        prepare_ohos
+        target_os="$1"
     fi
     if [ "$1" == "test" ];then
         target="test"

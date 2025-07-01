@@ -16,7 +16,7 @@
 #ifndef OFFLINE_SYMBOLIZATION_FILTER_H
 #define OFFLINE_SYMBOLIZATION_FILTER_H
 #include "double_map.h"
-#ifndef is_linux
+#if is_mingw || is_mac
 #include "dfx_nonlinux_define.h"
 #else
 #include <elf.h>
