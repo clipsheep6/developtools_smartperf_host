@@ -27,6 +27,15 @@ declare_args() {
     extra_asmflags = ""
     asm = "gcc.exe"
     pic = ""
+  } else if (target_os == "ohos") {
+    # --target=arm-linux-ohos for arm32, or --target=aarch64-linux-ohos for arm64
+    OHOS_TARGET_ARCH = "--target=arm-linux-ohos"
+    cc = "../../tools/ohos-sdk/linux/native/llvm/bin/clang $OHOS_TARGET_ARCH"
+    cxx = "../../tools/ohos-sdk/linux/native/llvm/bin/clang++ $OHOS_TARGET_ARCH"
+    pic = "-fPIC"
+    rebuild_string = ""
+    extra_asmflags = ""
+    asm = "../../tools/ohos-sdk/linux/native/llvm/bin/clang"
   }
   if (use_wasm == true) {
     print("make_wasm")
@@ -168,6 +177,9 @@ toolchain("gcc_like") {
   }
   tool("alink") {
     rspfile = "{{output}}.rsp"  # this must be defined
+    if (is_ohos) {
+      ar = "../../tools/ohos-sdk/linux/native/llvm/bin/llvm-ar"
+    }
     if (is_mac) {
       rspfile_content = "{{inputs_newline}}"
       command = "rm -f {{output}} && libtool -static {{arflags}} -filelist $rspfile -o {{output}}"

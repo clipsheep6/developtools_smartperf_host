@@ -15,7 +15,7 @@
 
 #ifndef EBPF_SPLITTER_H
 #define EBPF_SPLITTER_H
-#ifndef is_linux
+#if is_mingw || is_mac
 #include "dfx_nonlinux_define.h"
 #else
 #include <elf.h>
