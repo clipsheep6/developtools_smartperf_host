@@ -50,8 +50,10 @@ export class SpClockChart {
     // heca_freq Frequency移动到数组末尾
     const index = clockList.findIndex(item => item.name === 'heca_freq Frequency');
     if (index !== -1) {
-      const [item] = clockList.splice(index, 1); 
-      clockList.push(item); 
+      const item = clockList.splice(index, 1);
+      if (item && item.length) {
+        clockList.push(item[0]);
+      }
     }
     await this.initDmaFence(folder);
     await this.initData(folder, clockList, traceId);
