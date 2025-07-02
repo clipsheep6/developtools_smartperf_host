@@ -53,6 +53,7 @@ const HttpPort = 9000
 
 var exPath string
 var serveInfo string
+var aiInfo string
 var msgPublishData MsgPublishData
 var hdcPublicKey string
 var hdcPrivateKey *rsa.PrivateKey
@@ -177,6 +178,7 @@ func main() {
 		mux.Handle("/application/upload/", http.StripPrefix("/application/upload/", http.FileServer(http.Dir(filepath.FromSlash(exPath+"/upload")))))
 		mux.HandleFunc("/application/download-file", downloadHandler)
 		mux.HandleFunc("/application/serverInfo", serverInfo)
+		mux.HandleFunc("/application/getAiInfo", getAiInfo)
 		mux.HandleFunc("/application/hdcPublicKey", getHdcPublicKey)
 		mux.HandleFunc("/application/encryptHdcMsg", encryptHdcMsg)
 		mux.HandleFunc("/application/signatureHdcMsg", signatureHdcMsg)
@@ -254,6 +256,12 @@ func consoleHandler(w http.ResponseWriter, r *http.Request) {
 func serverInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("request_info", serveInfo)
+	w.WriteHeader(200)
+}
+
+func getAiInfo(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("ai_info", aiInfo)
 	w.WriteHeader(200)
 }
 
@@ -340,6 +348,7 @@ func getMsgPublish(w http.ResponseWriter, r *http.Request) {
 type ServerConfig struct {
 	ServeInfo      string `json:"ServeInfo"`
 	MsgPublishFile string `json:"MsgPublishFile"`
+	AiInfo         string
 }
 
 type MsgPublishData struct {
@@ -371,6 +380,7 @@ func readReqServerConfig() {
 		return
 	}
 	serveInfo = sc.ServeInfo
+	aiInfo = sc.AiInfo
 	msgPublishData.Mux.Lock()
 	msgPublishData.FilePath = sc.MsgPublishFile
 	msgPublishData.Mux.Unlock()
