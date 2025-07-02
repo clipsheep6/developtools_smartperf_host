@@ -47,8 +47,14 @@ export class SpClockChart {
     } else {
       this.trace.rowsEL?.appendChild(folder);
     }
-    await this.initData(folder, clockList, traceId);
+    // heca_freq Frequency移动到数组末尾
+    const index = clockList.findIndex(item => item.name === 'heca_freq Frequency');
+    if (index !== -1) {
+      const [item] = clockList.splice(index, 1); 
+      clockList.push(item); 
+    }
     await this.initDmaFence(folder);
+    await this.initData(folder, clockList, traceId);
   }
 
   private clockSupplierFrame(
