@@ -29,7 +29,7 @@ import { Utils } from '../../base/Utils';
 const UNIT: number = 1000000.0;
 const NUM_DIGITS: number = 3;
 const CORE_NUM: number = 12;
-const SMALL_CPU_NUM: Array<number> = [0, 1, 2, 3];
+const LITTLE_CPU_NUM: Array<number> = [0, 1, 2, 3];
 const MID_CPU_NUM12: Array<number> = [4, 5, 6, 7, 8, 9];
 const BIG_CPU_NUM12: Array<number> = [10, 11];
 
@@ -45,7 +45,7 @@ export class TabPaneTimeParallel extends BaseElement {
     private rightEndNs: number = 0;
     private midCores: Array<number> = [];
     private bigCores: Array<number> = [];
-    private smallCores: Array<number> = [];
+    private littleCores: Array<number> = [];
     private initStatus: boolean = true;
 
     set data(threadStatesParam: SelectionParam) {
@@ -70,7 +70,7 @@ export class TabPaneTimeParallel extends BaseElement {
             if (this.initStatus) {
                 this.initDefaultConfig();
                 this.initStatus = false;
-                this.bottomFilterEl!.setCoreConfigList(Utils.getInstance().getWinCpuCount(), this.smallCores, this.midCores, this.bigCores);
+                this.bottomFilterEl!.setCoreConfigList(Utils.getInstance().getWinCpuCount(), this.littleCores, this.midCores, this.bigCores);
             }
         };
         this.litPopoverEl!.querySelector<HTMLDivElement>('.confirm-button')!.addEventListener('click', (e: unknown) => {
@@ -85,7 +85,7 @@ export class TabPaneTimeParallel extends BaseElement {
         // @ts-ignore
         this.litPopoverEl!.visible = false;
         //当大中小核未分组时，默认查询所有核
-        if (!this.midCores.length && !this.bigCores.length && !this.smallCores.length) {
+        if (!this.midCores.length && !this.bigCores.length && !this.littleCores.length) {
             this.assignAllCore();
         } else {
             this.assignGroupCore();
@@ -142,11 +142,11 @@ export class TabPaneTimeParallel extends BaseElement {
     initDefaultConfig(): void {
         if (this.initStatus) {
             if (Utils.getInstance().getWinCpuCount() === CORE_NUM) {
-                this.smallCores = [...SMALL_CPU_NUM];
+                this.littleCores = [...LITTLE_CPU_NUM];
                 this.midCores = [...MID_CPU_NUM12];
                 this.bigCores = [...BIG_CPU_NUM12];
             } else {
-                this.smallCores = [];
+                this.littleCores = [];
                 this.midCores = [];
                 this.bigCores = [];
             }
@@ -168,7 +168,7 @@ export class TabPaneTimeParallel extends BaseElement {
         let cpuObj: Object = {
             'B': this.bigCores,
             'M': this.midCores,
-            'S': this.smallCores
+            'L': this.littleCores
         };
         for (const [key, val] of Object.entries(cpuObj)) {
             if (val.length) {

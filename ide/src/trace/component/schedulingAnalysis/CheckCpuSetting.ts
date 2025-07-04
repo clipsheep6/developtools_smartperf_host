@@ -24,14 +24,14 @@ export class CpuSetting {
   cpu: number = 0;
   big: boolean = false;
   middle: boolean = true;
-  small: boolean = false;
+  little: boolean = false;
 }
 
 @element('check-cpu-setting')
 export class CheckCpuSetting extends BaseElement {
   static mid_cores: number[] = [];
   static big_cores: number[] = [];
-  static small_cores: number[] = [];
+  static little_cores: number[] = [];
   static init_setting: boolean = false;
 
   private table: HTMLDivElement | null | undefined;
@@ -68,7 +68,7 @@ export class CheckCpuSetting extends BaseElement {
         // @ts-ignore
         middle: CheckCpuSetting.mid_cores.includes(i),
         // @ts-ignore
-        small: CheckCpuSetting.small_cores.includes(i),
+        little: CheckCpuSetting.little_cores.includes(i),
       };
       data.push(obj);
       this.createTableLine(obj);
@@ -79,7 +79,7 @@ export class CheckCpuSetting extends BaseElement {
     if (!CheckCpuSetting.init_setting) {
       CheckCpuSetting.mid_cores = [];
       CheckCpuSetting.big_cores = [];
-      CheckCpuSetting.small_cores = [];
+      CheckCpuSetting.little_cores = [];
       for (let i = 0; i < SpSchedulingAnalysis.cpuCount; i++) {
         CheckCpuSetting.mid_cores.push(i);
       }
@@ -94,33 +94,33 @@ export class CheckCpuSetting extends BaseElement {
     bigCheckBox.checked = cpuSetting.big;
     let midCheckBox: LitCheckBox = new LitCheckBox();
     midCheckBox.checked = cpuSetting.middle;
-    let smallCheckBox: LitCheckBox = new LitCheckBox();
-    smallCheckBox.checked = cpuSetting.small;
+    let littleCheckBox: LitCheckBox = new LitCheckBox();
+    littleCheckBox.checked = cpuSetting.little;
     bigCheckBox.addEventListener('change', (): void => {
       midCheckBox.checked = false;
-      smallCheckBox.checked = false;
+      littleCheckBox.checked = false;
       cpuSetting.big = true;
       CheckCpuSetting.big_cores.push(cpuSetting.cpu);
       CheckCpuSetting.mid_cores = CheckCpuSetting.mid_cores.filter((it): boolean => it !== cpuSetting.cpu);
-      CheckCpuSetting.small_cores = CheckCpuSetting.small_cores.filter((it): boolean => it !== cpuSetting.cpu);
+      CheckCpuSetting.little_cores = CheckCpuSetting.little_cores.filter((it): boolean => it !== cpuSetting.cpu);
     });
     midCheckBox.addEventListener('change', (): void => {
       bigCheckBox.checked = false;
-      smallCheckBox.checked = false;
+      littleCheckBox.checked = false;
       cpuSetting.middle = true;
       CheckCpuSetting.mid_cores.push(cpuSetting.cpu);
       CheckCpuSetting.big_cores = CheckCpuSetting.big_cores.filter((it): boolean => it !== cpuSetting.cpu);
-      CheckCpuSetting.small_cores = CheckCpuSetting.small_cores.filter((it): boolean => it !== cpuSetting.cpu);
+      CheckCpuSetting.little_cores = CheckCpuSetting.little_cores.filter((it): boolean => it !== cpuSetting.cpu);
     });
-    smallCheckBox.addEventListener('change', (): void => {
+    littleCheckBox.addEventListener('change', (): void => {
       midCheckBox.checked = false;
       bigCheckBox.checked = false;
-      cpuSetting.small = true;
-      CheckCpuSetting.small_cores.push(cpuSetting.cpu);
+      cpuSetting.little = true;
+      CheckCpuSetting.little_cores.push(cpuSetting.cpu);
       CheckCpuSetting.mid_cores = CheckCpuSetting.mid_cores.filter((it): boolean => it !== cpuSetting.cpu);
       CheckCpuSetting.big_cores = CheckCpuSetting.big_cores.filter((it): boolean => it !== cpuSetting.cpu);
     });
-    this.table?.append(...[div, bigCheckBox, midCheckBox, smallCheckBox]);
+    this.table?.append(...[div, bigCheckBox, midCheckBox, littleCheckBox]);
   }
 
   createHeaderDiv(): void {
@@ -139,14 +139,14 @@ export class CheckCpuSetting extends BaseElement {
     let column4 = document.createElement('div');
     column4.className = 'setting_line';
     column4.style.fontWeight = 'bold';
-    column4.textContent = 'small';
+    column4.textContent = 'little';
     this.table?.append(...[column1, column2, column3, column4]);
   }
 
   static resetCpuSettings(): void {
     CheckCpuSetting.init_setting = false;
     CheckCpuSetting.big_cores = [];
-    CheckCpuSetting.small_cores = [];
+    CheckCpuSetting.little_cores = [];
     CheckCpuSetting.mid_cores = [];
   }
 

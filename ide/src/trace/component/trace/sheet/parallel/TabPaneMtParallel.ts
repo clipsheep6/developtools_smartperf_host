@@ -30,7 +30,7 @@ import { Utils } from '../../base/Utils';
 const UNIT: number = 1000000.0;
 const NUM_DIGITS: number = 3;
 const CORE_NUM: number = 12;
-const SMALL_CPU_NUM: Array<number> = [0, 1, 2, 3];
+const LITTLE_CPU_NUM: Array<number> = [0, 1, 2, 3];
 const MID_CPU_NUM12: Array<number> = [4, 5, 6, 7, 8, 9];
 const BIG_CPU_NUM12: Array<number> = [10, 11];
 const CORE_JSON = {
@@ -41,7 +41,7 @@ const CORE_JSON = {
 };
 export class CpuStatus {
     cpu: number = 0;
-    small: boolean = false;
+    little: boolean = false;
     medium: boolean = false;
     big: boolean = false;
 }
@@ -58,7 +58,7 @@ export class TabPaneMtParallel extends BaseElement {
     private rightEndNs: number = 0;
     private midCores: Array<number> = [];
     private bigCores: Array<number> = [];
-    private smallCores: Array<number> = [];
+    private littleCores: Array<number> = [];
     private isCreateCpu: boolean = true;
     private isCreateGroup: boolean = true;
     private coreTypeMap: Map<string, unknown> = new Map<string, unknown>();
@@ -94,7 +94,7 @@ export class TabPaneMtParallel extends BaseElement {
             if (this.isCreateCpu) {
                 this.initDefaultConfig();
                 this.isCreateCpu = false;
-                this.bottomFilterEl!.setCoreConfigList(Utils.getInstance().getWinCpuCount(), this.smallCores, this.midCores, this.bigCores);
+                this.bottomFilterEl!.setCoreConfigList(Utils.getInstance().getWinCpuCount(), this.littleCores, this.midCores, this.bigCores);
             };
         };
         this.litSettingPopoverEl!.querySelector<HTMLDivElement>('.confirm-button')!.addEventListener('click', (e: unknown) => {
@@ -171,7 +171,7 @@ export class TabPaneMtParallel extends BaseElement {
     updateDataSource(flag: boolean): void {
         let param = flag ? this.bufferGroupMap.size !== 0 : Utils.getInstance().getWinCpuCount() === CORE_NUM;
         let value = flag ? this.bufferGroupMap : new Map(Object.entries(CORE_JSON));
-        if ((this.midCores.length || this.bigCores.length || this.smallCores.length) && param) {
+        if ((this.midCores.length || this.bigCores.length || this.littleCores.length) && param) {
             this.coreTypeMap.clear();
             this.dataSourceMap.clear();
             this.parallelTable!.loading = true;
@@ -186,7 +186,7 @@ export class TabPaneMtParallel extends BaseElement {
         }
     }
     async getMtParallelData(obj: Map<string, unknown>) :Promise<void> {
-        let cpuObj: unknown = { 'B': this.bigCores, 'M': this.midCores, 'S': this.smallCores };
+        let cpuObj: unknown = { 'B': this.bigCores, 'M': this.midCores, 'L': this.littleCores };
         let processIds: Array<number> = [...new Set(this.selectionParam!.processIds)];
         for (const [key, cpuGroup] of obj.entries()) {
             //判断配的的组是否在同一个核分类中，如果在，返回是那个核分类，反之，返回null
@@ -384,11 +384,11 @@ export class TabPaneMtParallel extends BaseElement {
     initDefaultConfig(): void {
         if (this.isCreateCpu) {
             if (Utils.getInstance().getWinCpuCount() === CORE_NUM) {
-                this.smallCores = [...SMALL_CPU_NUM];
+                this.littleCores = [...LITTLE_CPU_NUM];
                 this.midCores = [...MID_CPU_NUM12];
                 this.bigCores = [...BIG_CPU_NUM12];
             } else {
-                this.smallCores = [];
+                this.littleCores = [];
                 this.midCores = [];
                 this.bigCores = [];
             }
@@ -424,7 +424,7 @@ export class TabPaneMtParallel extends BaseElement {
                 disabled:
                     Utils.getInstance().getWinCpuCount() === CORE_NUM && str !== 'cut' && this.isReset ?
                         !(switchArr.includes(i)) :
-                        !([...this.smallCores, ...this.midCores, ...this.bigCores].includes(i))
+                        !([...this.littleCores, ...this.midCores, ...this.bigCores].includes(i))
             };
             this.creatGroupLineDIv(obj);
         }

@@ -80,23 +80,23 @@ export const Top20ThreadCpuUsageHtml = `
                     <div style="height: 30px;width: 100%;display: flex;flex-direction: row;align-items: center;justify-content: center">
                         <div class="labels"><div style="width: 20px;height: 10px;background-color: #2f72f8;margin-right: 5px"></div>big</div>
                         <div class="labels"><div style="width: 20px;height: 10px;background-color: #ffab67;margin-right: 5px"></div>mid</div>
-                        <div class="labels"><div style="width: 20px;height: 10px;background-color: #a285d2;margin-right: 5px"></div>small</div>
+                        <div class="labels"><div style="width: 20px;height: 10px;background-color: #a285d2;margin-right: 5px"></div>little</div>
                     </div>
                 </div>
                 <div class="tb_cpu_usage" >
                     <lit-table id="tb-thread-usage" hideDownload style="height: 360px;margin: 5px 15px"></lit-table>
                 </div>
             </div>
-            <div class="content_grid" id="small">
+            <div class="content_grid" id="little">
                 <div class="chart_div">
                     <div style="line-height: 40px;height: 40px;width: 100%;text-align: center;">Top20线程小核占用率</div>
                     <lit-chart-column id="chart_2" style="width:100%;height:300px"></lit-chart-column>
                     <div style="height: 30px;width: 100%;display: flex;flex-direction: row;align-items: center;justify-content: center">
-                        <div class="labels"><div style="width: 20px;height: 10px;background-color: #0a59f7;margin-right: 5px"></div>small</div>
+                        <div class="labels"><div style="width: 20px;height: 10px;background-color: #0a59f7;margin-right: 5px"></div>little</div>
                     </div>
                 </div>
                 <div  class="tb_cpu_usage">
-                    <lit-table id="tb-thread-small" hideDownload style="height: 360px;margin: 5px 15px "></lit-table>
+                    <lit-table id="tb-thread-little" hideDownload style="height: 360px;margin: 5px 15px "></lit-table>
                 </div>
             </div>
             <div class="content_grid" id="mid">
