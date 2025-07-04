@@ -169,9 +169,9 @@ export class SpAiAnalysisPage extends BaseElement {
 
         // 给右边栏添加点击事件
         // @ts-ignore
-        rightBarGroup.forEach((barItem: unknown, index: number) => {    
+        rightBarGroup.forEach((barItem: unknown, index: number) => {
             // @ts-ignore
-            barItem.barEl.addEventListener('click', (ev: Event) => {    
+            barItem.barEl.addEventListener('click', (ev: Event) => {
                 // @ts-ignore
                 if (barItem.isMustLoadedTrace && !SpApplication.isTraceLoaded) {
                     let importTraceTips = '请先导入trace，再使用诊断功能';
@@ -180,26 +180,26 @@ export class SpAiAnalysisPage extends BaseElement {
                     return;
                 }
                 // this.tipsContent!.style.display = this.isNodata && barItem.barFlag === 'detect' ? 'flex' : 'none';
-                this.tipsContainer!.style.display = 'none';    
+                this.tipsContainer!.style.display = 'none';
                 // @ts-ignore
-                this.showPageFlag = barItem.barFlag;    
+                this.showPageFlag = barItem.barFlag;
                 // @ts-ignore
-                barItem.imgEl.src = barItem.activeImg;    
+                barItem.imgEl.src = barItem.activeImg;
                 // @ts-ignore
-                barItem.barEl.classList.add('active');    
+                barItem.barEl.classList.add('active');
                 // @ts-ignore
-                barItem.showPage.style.display = 'block';    
+                barItem.showPage.style.display = 'block';
                 // @ts-ignore
                 if (this.tipContentArr.indexOf(barItem.barFlag) > -1) {
                     this.tipsContainer!.style.display = 'flex';
-                }    
+                }
                 // @ts-ignore
                 for (let i = 0; i < rightBarGroup.length; i++) {
-                    if (i !== index) {    
+                    if (i !== index) {
                         // @ts-ignore
-                        rightBarGroup[i].barEl.classList.remove('active');    
+                        rightBarGroup[i].barEl.classList.remove('active');
                         // @ts-ignore
-                        rightBarGroup[i].imgEl.src = rightBarGroup[i].img;    
+                        rightBarGroup[i].imgEl.src = rightBarGroup[i].img;
                         // @ts-ignore
                         rightBarGroup[i].showPage.style.display = 'none';
                     }
@@ -396,26 +396,21 @@ export class SpAiAnalysisPage extends BaseElement {
             this.createChatBox();
             this.createAiChatBox('AI智能分析中...');
             this.q_a_window!.scrollTop = this.q_a_window!.scrollHeight;
-            // 没有token
-            if (this.chatToken === '') {
-                await this.getToken90Min('aiTakeToken', true);
-            }
-            if (this.chatToken !== '') {
-                this.answer();
-            }
+            this.answer();
         }
     }
 
     // ai对话
     async answer(): Promise<void> {
         let requestBody = {
-            token: this.chatToken,
-            question: this.question,
-            collection: 'smart_perf_test',
-            scope: 'smartperf'
+            'inputs': {},
+            'query': this.question,
+            'response_mode': 'blocking',
+            'conversation_id': '',
+            'user': 'abc-123'
         };
 
-        await SpStatisticsHttpUtil.askAi(requestBody, 'aiAsk').then(res => {
+        await SpStatisticsHttpUtil.askAi(requestBody, 'difyAsk').then(res => {
             if (res.status === 200) {
                 SpStatisticsHttpUtil.generalRecord('AI_statistic', 'large_model_q&a', []);
             }
