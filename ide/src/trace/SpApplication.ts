@@ -291,6 +291,19 @@ export class SpApplication extends BaseElement {
         SpStatisticsHttpUtil.addUserVisitAction('visit');
       }
     })
+    let aiurl = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
+      }${window.location.pathname}getAiInfo`;
+    fetch(aiurl, { method: 'GET' }).then((res) => {
+      if (res.headers) {
+        const headers = res.headers;
+        let aiAnalysisShow = this.shadowRoot
+        ?.querySelector('lit-main-menu')!
+        .shadowRoot!.querySelector('.ai_analysis') as HTMLDivElement;
+        if (headers.get('ai_info') !== '') {
+          aiAnalysisShow.style.display = '';
+        }
+      }
+    })
     LongTraceDBUtils.getInstance().createDBAndTable().then();
   }
 

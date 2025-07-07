@@ -36,7 +36,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
   private table: LitTable | null | undefined;
   private tableBig: LitTable | null | undefined;
   private tableMid: LitTable | null | undefined;
-  private tableSmall: LitTable | null | undefined;
+  private tableLittle: LitTable | null | undefined;
   private chartTotal: LitChartColumn | null | undefined;
   private chart2: LitChartColumn | null | undefined;
   private chart3: LitChartColumn | null | undefined;
@@ -49,10 +49,10 @@ export class Top20ThreadCpuUsage extends BaseElement {
   private data: Array<unknown> = [];
   private dataBig: Array<unknown> = [];
   private dataMid: Array<unknown> = [];
-  private dataSmall: Array<unknown> = [];
+  private dataLittle: Array<unknown> = [];
   private sort: unknown = {
     total: { key: '', sort: 0 },
-    small: { key: '', sort: 0 },
+    little: { key: '', sort: 0 },
     mid: { key: '', sort: 0 },
     big: { key: '', sort: 0 },
   };
@@ -82,9 +82,9 @@ export class Top20ThreadCpuUsage extends BaseElement {
                 <lit-table-column width="100px" title="middle core" data-index="midTimeStr" key="midTimeStr" align="flex-start" order></lit-table-column>
                 <lit-table-column width="100px" title="%" data-index="midPercent" key="midPercent" align="flex-start" order></lit-table-column>
         `;
-  private smallColumn = `
-                <lit-table-column width="100px" title="small core" data-index="smallTimeStr" key="smallTimeStr" align="flex-start" order></lit-table-column>
-                <lit-table-column width="100px" title="%" data-index="smallPercent" key="smallPercent" align="flex-start" order></lit-table-column>
+  private littleColumn = `
+                <lit-table-column width="100px" title="little core" data-index="littleTimeStr" key="littleTimeStr" align="flex-start" order></lit-table-column>
+                <lit-table-column width="100px" title="%" data-index="littlePercent" key="littlePercent" align="flex-start" order></lit-table-column>
         `;
 
   initElements(): void {
@@ -93,14 +93,14 @@ export class Top20ThreadCpuUsage extends BaseElement {
     this.table = this.shadowRoot!.querySelector<LitTable>('#tb-thread-usage');
     this.tableBig = this.shadowRoot!.querySelector<LitTable>('#tb-thread-big');
     this.tableMid = this.shadowRoot!.querySelector<LitTable>('#tb-thread-mid');
-    this.tableSmall = this.shadowRoot!.querySelector<LitTable>('#tb-thread-small');
+    this.tableLittle = this.shadowRoot!.querySelector<LitTable>('#tb-thread-little');
     this.chartTotal = this.shadowRoot!.querySelector<LitChartColumn>('#chart_total');
     this.chart2 = this.shadowRoot!.querySelector<LitChartColumn>('#chart_2');
     this.chart3 = this.shadowRoot!.querySelector<LitChartColumn>('#chart_3');
     this.chart4 = this.shadowRoot!.querySelector<LitChartColumn>('#chart_4');
     this.map = new Map<string, { chart: LitChartColumn; table: LitTable }>();
     this.map.set('total', { chart: this.chartTotal!, table: this.table! });
-    this.map.set('small', { chart: this.chart2!, table: this.tableSmall! });
+    this.map.set('little', { chart: this.chart2!, table: this.tableLittle! });
     this.map.set('mid', { chart: this.chart3!, table: this.tableMid! });
     this.map.set('big', { chart: this.chart4!, table: this.tableBig! });
     this.setting = this.shadowRoot!.querySelector<HTMLDivElement>('#setting');
@@ -110,8 +110,8 @@ export class Top20ThreadCpuUsage extends BaseElement {
       //@ts-ignore
       (this.shadowRoot!.querySelector('#total')! as unknown).style.display = 'grid';
       //@ts-ignore
-      (this.shadowRoot!.querySelector('#small')! as unknown).style.display =
-        CheckCpuSetting.small_cores.length > 0 ? 'grid' : 'none';
+      (this.shadowRoot!.querySelector('#little')! as unknown).style.display =
+        CheckCpuSetting.little_cores.length > 0 ? 'grid' : 'none';
       //@ts-ignore
       (this.shadowRoot!.querySelector('#mid')! as unknown).style.display =
         CheckCpuSetting.mid_cores.length > 0 ? 'grid' : 'none';
@@ -153,9 +153,9 @@ export class Top20ThreadCpuUsage extends BaseElement {
         if (key === 'total') {
           //@ts-ignore
           this.sortByColumn(evt.detail, tab, this.data);
-        } else if (key === 'small') {
+        } else if (key === 'little') {
           //@ts-ignore
-          this.sortByColumn(evt.detail, tab, this.dataSmall);
+          this.sortByColumn(evt.detail, tab, this.dataLittle);
         } else if (key === 'mid') {
           //@ts-ignore
           this.sortByColumn(evt.detail, tab, this.dataMid);
@@ -211,8 +211,8 @@ export class Top20ThreadCpuUsage extends BaseElement {
       key = 'big';
     } else if (key === 'midTimeStr') {
       key = 'mid';
-    } else if (key === 'smallTimeStr') {
-      key = 'small';
+    } else if (key === 'littleTimeStr') {
+      key = 'little';
     } else if (
       key === 'bigPercent' ||
       key === 'ratio' ||
@@ -296,7 +296,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
             //@ts-ignore
             mid: it.mid,
             //@ts-ignore
-            small: it.small,
+            little: it.little,
             no: index + 1,
             visible: 1,
             //@ts-ignore
@@ -304,13 +304,13 @@ export class Top20ThreadCpuUsage extends BaseElement {
             //@ts-ignore
             midPercent: it.midPercent,
             //@ts-ignore
-            smallPercent: it.smallPercent,
+            littlePercent: it.littlePercent,
             //@ts-ignore
             bigTimeStr: it.bigTimeStr,
             //@ts-ignore
             midTimeStr: it.midTimeStr,
             //@ts-ignore
-            smallTimeStr: it.smallTimeStr,
+            littleTimeStr: it.littleTimeStr,
             hideHandler: (): void => {
               //@ts-ignore
               let arr = source.filter((o) => o.visible === 1);
@@ -333,8 +333,8 @@ export class Top20ThreadCpuUsage extends BaseElement {
   private assignmentData(key: string, source: unknown[], obj: { chart: LitChartColumn; table: LitTable }): void {
     if (key === 'total') {
       this.data = source;
-    } else if (key === 'small') {
-      this.dataSmall = source;
+    } else if (key === 'little') {
+      this.dataLittle = source;
     } else if (key === 'mid') {
       this.dataMid = source;
     } else if (key === 'big') {
@@ -362,7 +362,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
           return '#2f72f8'; //@ts-ignore
         } else if (a.size === 'middle core') {
           return '#ffab67'; //@ts-ignore
-        } else if (a.size === 'small core') {
+        } else if (a.size === 'little core') {
           return '#a285d2';
         } else {
           return '#0a59f7';
@@ -450,10 +450,10 @@ export class Top20ThreadCpuUsage extends BaseElement {
           pName: obj.pName, //@ts-ignore
           tid: obj.tid, //@ts-ignore
           tName: obj.tName, //@ts-ignore
-          total: obj.small,
-          size: 'small core', //@ts-ignore
+          total: obj.little,
+          size: 'little core', //@ts-ignore
           no: obj.no, //@ts-ignore
-          timeStr: obj.smallTimeStr,
+          timeStr: obj.littleTimeStr,
         });
       } else {
         data.push({
@@ -479,7 +479,7 @@ export class Top20ThreadCpuUsage extends BaseElement {
       {
         bigCores: CheckCpuSetting.big_cores,
         midCores: CheckCpuSetting.mid_cores,
-        smallCores: CheckCpuSetting.small_cores,
+        littleCores: CheckCpuSetting.little_cores,
       },
       undefined,
       handler
@@ -490,13 +490,13 @@ export class Top20ThreadCpuUsage extends BaseElement {
 
   getTableColumns(type: string): string {
     if (type === 'total') {
-      return `${this.publicColumns}${this.bigColumn}${this.midColumn}${this.smallColumn}`;
+      return `${this.publicColumns}${this.bigColumn}${this.midColumn}${this.littleColumn}`;
     } else if (type === 'big') {
       return `${this.publicColumns}${this.bigColumn}`;
     } else if (type === 'mid') {
       return `${this.publicColumns}${this.midColumn}`;
-    } else if (type === 'small') {
-      return `${this.publicColumns}${this.smallColumn}`;
+    } else if (type === 'little') {
+      return `${this.publicColumns}${this.littleColumn}`;
     } else {
       return '';
     }

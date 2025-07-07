@@ -24,7 +24,7 @@ export class ProcedureLogicWorkerSchedulingAnalysis extends LogicHandler {
   freq: number = 0;
   bigCores: Array<number> = [];
   midCores: Array<number> = [];
-  smallCores: Array<number> = [];
+  littleCores: Array<number> = [];
   cpuFreqMap: Map<number, Array<CpuMeasure>> = new Map<number, Array<CpuMeasure>>();
   cpuIdle0Map: Map<number, Array<CpuMeasure>> = new Map<number, Array<CpuMeasure>>();
   threadMap: Map<number, string> = new Map<number, string>();
@@ -34,7 +34,7 @@ export class ProcedureLogicWorkerSchedulingAnalysis extends LogicHandler {
   clearAll(): void {
     this.bigCores.length = 0;
     this.midCores.length = 0;
-    this.smallCores.length = 0;
+    this.littleCores.length = 0;
     this.cpuAnalysisMap.clear();
     this.threadMap.clear();
     this.processMap.clear();
@@ -283,9 +283,9 @@ export class ProcedureLogicWorkerSchedulingAnalysis extends LogicHandler {
       //@ts-ignore
       this.midCores = data.params.midCores || [];
       //@ts-ignore
-      this.smallCores = data.params.smallCores || [];
+      this.littleCores = data.params.littleCores || [];
       //@ts-ignore
-      this.queryThreadCpuUsage(data.params.bigCores || [], data.params.midCores || [], data.params.smallCores || []);
+      this.queryThreadCpuUsage(data.params.bigCores || [], data.params.midCores || [], data.params.littleCores || []);
     }
   }
   private schedulingThreadRunTime(data: { id: string; action: string; params: unknown }): void {
@@ -526,7 +526,7 @@ where cmf.name = 'cpu_idle' and value != 0
     );
   }
 
-  queryThreadCpuUsage(bigCores: number[], midCores: number[], smallCores: number[]): void {
+  queryThreadCpuUsage(bigCores: number[], midCores: number[], littleCores: number[]): void {
     let sql = `
         select A.pid,A.tid,A.cpu,
        sum(A.dur) as total
@@ -919,7 +919,7 @@ where cpu not null
       })
       .slice(0, 20);
   }
-  private filterThreadCpuUsageArr(arr: unknown, sumBig: number, sumMid: number, sumSmall: number): void {
+  private filterThreadCpuUsageArr(arr: unknown, sumBig: number, sumMid: number, sumLittle: number): void {
     //@ts-ignore
     return arr.reduce((group: unknown, item: { total: number; pid: number; tid: number; cpu: number }) => {
       const { tid } = item;
@@ -934,9 +934,9 @@ where cpu not null
         cpuType = 'mid';
         sumMid += item.total;
       }
-      if (this.smallCores.includes(item.cpu)) {
-        cpuType = 'small';
-        sumSmall += item.total;
+      if (this.littleCores.includes(item.cpu)) {
+        cpuType = 'little';
+        sumLittle += item.total;
       }
       if (tidObj) {
         //@ts-ignore
@@ -944,7 +944,7 @@ where cpu not null
         //@ts-ignore
         tidObj.mid += cpuType === 'mid' ? item.total : 0;
         //@ts-ignore
-        tidObj.small += cpuType === 'small' ? item.total : 0;
+        tidObj.little += cpuType === 'little' ? item.total : 0;
         //@ts-ignore
         tidObj.total += item.total;
         //@ts-ignore
@@ -959,7 +959,7 @@ where cpu not null
           total: item.total,
           big: cpuType === 'big' ? item.total : 0,
           mid: cpuType === 'mid' ? item.total : 0,
-          small: cpuType === 'small' ? item.total : 0,
+          little: cpuType === 'little' ? item.total : 0,
         };
         //@ts-ignore
         group[`${tid}`][`cpu${item.cpu}`] = item.total;
@@ -971,8 +971,8 @@ where cpu not null
   private handlerThreadCpuUsageData(arr: Array<ThreadCpuUsage>): Map<string, ThreadCpuUsage[]> {
     let sumBig = 0;
     let sumMid = 0;
-    let sumSmall = 0;
-    let reduceObj = this.filterThreadCpuUsageArr(arr, sumBig, sumMid, sumSmall);
+    let sumLittle = 0;
+    let reduceObj = this.filterThreadCpuUsageArr(arr, sumBig, sumMid, sumLittle);
     // @ts-ignore
     let source: unknown[] = Object.values(reduceObj);
     for (let obj of source) {
@@ -981,13 +981,13 @@ where cpu not null
       // @ts-ignore
       obj.midPercent = sumMid === 0 ? '0' : ((obj.mid / sumMid) * 100).toFixed(2);
       // @ts-ignore
-      obj.smallPercent = sumSmall === 0 ? '0' : ((obj.small / sumSmall) * 100).toFixed(2);
+      obj.littlePercent = sumLittle === 0 ? '0' : ((obj.little / sumLittle) * 100).toFixed(2);
       // @ts-ignore
       obj.bigTimeStr = getProbablyTime(obj.big);
       // @ts-ignore
       obj.midTimeStr = getProbablyTime(obj.mid);
       // @ts-ignore
-      obj.smallTimeStr = getProbablyTime(obj.small);
+      obj.littleTimeStr = getProbablyTime(obj.little);
     }
     let map: Map<string, Array<ThreadCpuUsage>> = new Map<string, Array<ThreadCpuUsage>>();
     // @ts-ignore
@@ -997,7 +997,7 @@ where cpu not null
     // @ts-ignore
     map.set('mid', source.sort((a, b) => b.mid - a.mid).slice(0, 20));
     // @ts-ignore
-    map.set('small', source.sort((a, b) => b.small - a.small).slice(0, 20));
+    map.set('little', source.sort((a, b) => b.little - a.little).slice(0, 20));
     // @ts-ignore
     return map;
   }
@@ -1115,13 +1115,13 @@ export class ThreadCpuUsage {
   total: number = 0;
   big: number = 0;
   mid: number = 0;
-  small: number = 0;
+  little: number = 0;
   bigPercent: string = '';
   bigTimeStr: string = '';
   midPercent: string = '';
   midTimeStr: string = '';
-  smallPercent: string = '';
-  smallTimeStr: string = '';
+  littlePercent: string = '';
+  littleTimeStr: string = '';
 }
 
 export class FreqThread {
