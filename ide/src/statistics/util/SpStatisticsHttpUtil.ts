@@ -216,7 +216,8 @@ export class SpStatisticsHttpUtil {
         method: 'post',
         signal: controller.signal,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer app-6mUvoj5WO5hRaMVLBzV0oCVI'
         },
         body: JSON.stringify(requestBody)
       }).then(async res => {
@@ -224,7 +225,7 @@ export class SpStatisticsHttpUtil {
         if (res.status === 200) {
           let resp = await res.text();
           let resj = await JSON.parse(resp);
-          response.data = resj.reason && resj.reason === 'ok' ? resj.chatbot_reply : '服务器异常，请稍后再试';
+          response.data = resj.event && resj.event === 'message' ? resj.answer : '服务器异常，请稍后再试';
         }
         else {
           response.data = '服务器请求失败';
