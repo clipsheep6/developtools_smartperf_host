@@ -217,7 +217,7 @@ export class SpStatisticsHttpUtil {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer app-KzQMtbV8efNFh3C33kCbte27'
+          'Authorization': 'Bearer app-6mUvoj5WO5hRaMVLBzV0oCVI'
         },
         body: JSON.stringify(requestBody)
       }).then(async res => {
