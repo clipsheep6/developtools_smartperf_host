@@ -34,8 +34,8 @@ ohos_source_set("lib") {
   ]
   deps = [
     ":trace_streamer_sdk",
-    "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-    "${THIRD_PARTY}/protobuf:protobuf_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
   ]
   include_dirs = [
     "${SRC}/base",
@@ -108,9 +108,9 @@ ohos_source_set("trace_streamer_sdk") {
     "${THIRD_PARTY}/bounds_checking_function/include",
   ]
   deps = [
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}:ts_sqlite",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/parser/hiperf_parser:libsec_static",
     "${SRC}/base:base",
-    "${THIRD_PARTY}/bounds_checking_function:libsec_static",
-    "${THIRD_PARTY}/sqlite:sqlite",
     "plugin:sdk_plugin",
   ]
   public_deps = [ "protos/types/plugins/mock_data:mock_data_cpp" ]

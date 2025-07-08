@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "rpc/rpc_server.h"
 #include "wasm_func.cpp"
 

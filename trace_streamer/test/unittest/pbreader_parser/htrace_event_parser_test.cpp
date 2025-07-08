@@ -18,6 +18,8 @@
 #include <hwext/gtest-tag.h>
 #include <unordered_map>
 
+#define private public
+#include "config_filter.h"
 #include "cpu_filter.h"
 #include "htrace_cpu_detail_parser.h"
 #include "parser/common_types.h"
@@ -42,6 +44,7 @@ public:
     void SetUp()
     {
         stream_.InitFilter();
+        stream_.streamFilters_->configFilter_->switchConfig_.UpdateSyscallsTsSet("145;146;147");
     }
 
     void TearDown() {}

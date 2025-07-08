@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <string>
 
+#define private public
 #include "parser/common_types.h"
 #include "pbreader_xpower_parser.h"
 #include "trace_streamer_selector.h"

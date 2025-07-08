@@ -25,7 +25,7 @@ ohos_source_set("table") {
     "${SRC}/trace_data",
     "${SRC}/include",
     "${SRC}",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "${THIRD_PARTY}/bounds_checking_function/include",
   ]
   include_dirs += [

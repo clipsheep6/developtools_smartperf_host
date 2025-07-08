@@ -17,13 +17,13 @@ ohos_executable("protoreader_plugin") {
   part_name = "${OHOS_PROFILER_PART_NAME}"
   sources = [ "proto_reader_plugin.cpp" ]
   deps = [
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static(${host_toolchain})",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protoc_lib(${host_toolchain})",
     "${SRC}/base:string_help",
-    "${THIRD_PARTY}/protobuf:protobuf_static(${host_toolchain})",
-    "${THIRD_PARTY}/protobuf:protoc_lib(${host_toolchain})",
   ]
   include_dirs = [
     "${SRC}/base",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "//third_party/bounds_checking_function/include",
   ]
 }

@@ -14,7 +14,7 @@
 import("//build/ohos.gni")
 import("../../../build/ts.gni")
 
-# THIRD_PARTY for bzip2
+# for third part bzip2
 config("bzip2_config") {
   include_dirs = [ "${THIRD_PARTY}/bzip2" ]
 }
@@ -43,7 +43,7 @@ ohos_source_set("libbz2") {
   subsystem_name = "thirdparty"
 }
 
-# THIRD_PARTY for zlib
+# for third part zlib
 config("zlib_config") {
   cflags = [
     "-Wno-incompatible-pointer-types",
@@ -87,7 +87,7 @@ ohos_source_set("libz") {
   subsystem_name = "thirdparty"
 }
 
-# THIRD_PARTY for bounds_checking_function
+# for third part bounds_checking_function
 sources_libsec_with_ts_common = [
   "${THIRD_PARTY}/bounds_checking_function/src/fscanf_s.c",
   "${THIRD_PARTY}/bounds_checking_function/src/fwscanf_s.c",
@@ -144,7 +144,7 @@ ohos_source_set("libsec_static") {
   ]
 }
 
-# THIRD_PARTY for hiviewdfx faultloggerd
+# for third part hiviewdfx faultloggerd
 config("faultloggerd_config") {
   cflags = [
     "-D ALWAYSTRUE",
@@ -188,7 +188,7 @@ ohos_source_set("libfaultloggerd") {
   subsystem_name = "thirdparty"
 }
 
-# THIRD_PARTY for hiperf
+# for third part hiperf
 sources_platform_with_ts_common = [
   "${PERF_DIR}/hiperf/src/dwarf_encoding.cpp",
   "${PERF_DIR}/hiperf/src/option.cpp",
@@ -281,7 +281,7 @@ config("hiperf_parser_cfg") {
     "../../proto_reader/include",
     "${THIRD_PARTY}/bounds_checking_function/include",
     "${THIRD_PARTY}/sqlite/include",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "${COMMON_LIBRARY}/c_utils/base/include",
     "${THIRD_PARTY}/googletest/googletest/include",
   ]
@@ -326,8 +326,8 @@ if (enable_hiperf) {
     ]
     public_deps = [
       ":ts_hiperf_src",
-      "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-      "${THIRD_PARTY}/protobuf:protobuf_static",
+      "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_lite_static",
+      "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protobuf_static",
     ]
     if (enable_addr2line) {
       public_deps += [

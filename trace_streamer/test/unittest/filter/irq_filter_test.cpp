@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "args_filter.h"
 #include "irq_filter.h"
 #include "slice_filter.h"

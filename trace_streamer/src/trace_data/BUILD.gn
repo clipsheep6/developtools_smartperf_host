@@ -78,7 +78,7 @@ ohos_source_set("trace_data") {
     "${SRC}/table/native_hook/include",
     "${SRC}/table/xpower/include",
     ".",
-    "${THIRD_PARTY}/protobuf/src",
+    "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos/src",
     "${THIRD_PARTY}/bounds_checking_function/include",
     "${THIRD_PARTY}/json/single_include/nlohmann",
     "${THIRD_PARTY}/hiviewdfx/faultloggerd/interfaces/nonlinux",

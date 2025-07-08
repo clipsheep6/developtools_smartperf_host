@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "mem_parser/pbreader_mem_parser.h"
 #include "memory_plugin_result.pb.h"
 #include "memory_plugin_result.pbreader.h"
