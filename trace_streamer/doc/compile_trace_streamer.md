@@ -15,6 +15,7 @@ TraceStreamer可以编译为命令行下的可执行程序，或者WebAssembly�
 |linux |clang/clang++| 16.0.6 |
 | macx |clang/clang++| 14.0.3 |
 |windows |gcc.exe/g++.exe| gcc version 12.1.0 (x86_64-posix-sjlj-rev3, Built by MinGW-W64 project)|
+|ohos(linux下编译) |ohos-sdk clang/clang++| 15.0.4 |
 |wasm(linux下编译) |emcc/em++| 3.1.12|
 
 对于wasm环境（目前只支持linux下编译），build.sh会自行配置环境。
@@ -32,6 +33,7 @@ TraceStreamer可以编译为命令行下的可执行程序，或者WebAssembly�
 |linux |out/linux| out/linux_debug| trace_streamer
 | macx |out/macx| out/macx_debug |trace_streamer
 |windows |out/windows| out/windows_debug|trace_streamer
+|ohos(linux下编译) |out/ohos| out/ohos_debug|trace_streamer
 |wasm(linux下编译) |-|out/wasm|trace_streamer_builtin.wasm和trace_streamer_builtin.js
 
 #### 快速编译WebAssembly版本
