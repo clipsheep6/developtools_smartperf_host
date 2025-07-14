@@ -63,10 +63,15 @@ export const chartClockDataSql = (args: Args): string => {
 export const chartClockDataSqlMem = (args: Args): string => {
   if (args.sqlType === 'clockFrequency') {
     return `
-        with freq as (  select measure.filter_id, measure.ts, measure.type, measure.value from clock_event_filter
-                                                                                                   left join measure
-                        where clock_event_filter.name = '${args.clockName}' and clock_event_filter.type = 'clock_set_rate' and clock_event_filter.id = measure.filter_id
-                        order by measure.ts)
+        with freq as (  select 
+          m.filter_id,
+          m.ts,
+          m.type,
+          m.value from clock_event_filter as c
+          left join measure as m on c.id = m.filter_id
+          where c.name = '${args.clockName}' 
+          and c.type = 'clock_set_rate'
+          order by m.ts)
         select freq.filter_id as filterId,freq.ts - r.start_ts as startNs,freq.type,freq.value from freq,trace_range r order by startNs;
     `;
   } else if (args.sqlType === 'clockState') {
