@@ -24,6 +24,7 @@ export class Utils {
   static currentTraceMode: TraceMode = TraceMode.NORMAL;
   static distributedTrace: string[] = [];
   static isRangeSelectRefresh: boolean = false;
+  static currentTraceName: string = '';
   static DMAFENCECAT_MAP: Map<
     number,
     {

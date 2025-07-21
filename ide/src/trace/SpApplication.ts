@@ -67,6 +67,7 @@ import './component/SpKeyboard';
 import { parseKeyPathJson } from './component/Utils';
 import { Utils } from './component/trace/base/Utils';
 import {
+  addExportDBToParentEvent,
   applicationHtml,
   clearTraceFileCache,
   findFreeSizeAlgorithm,
@@ -76,7 +77,7 @@ import {
   isZlibFile,
   postLog,
   readTraceFileBuffer,
-  TraceMode,
+  TraceMode
 } from './SpApplicationPublicFunc';
 import { queryExistFtrace } from './database/sql/SqlLite.sql';
 import '../base-ui/chart/scatter/LitChartScatter';
@@ -1351,16 +1352,19 @@ export class SpApplication extends BaseElement {
       SpApplication.isTraceLoaded = true;
       if (!isDistributed) {
         this.importConfigDiv!.style.display = Utils.getInstance().getSchedSliceMap().size > 0 ? 'block' : 'none';
-      }
+      } 
       this.showContent(this.spSystemTrace!);
       this.litSearch!.setPercent('', 101);
       this.chartFilter!.setAttribute('mode', '');
       this.freshMenuDisable(false);
+      Utils.currentTraceName = fileName;
     } else {
+      
       info('loadDatabaseArrayBuffer failed');
       //@ts-ignore
       this.litSearch!.setPercent(res.msg || 'This File is not supported!', -1);
       this.resetMenus();
+      Utils.currentTraceName = '';
       this.freshMenuDisable(false);
     }
     this.progressEL!.loading = false;
@@ -2116,6 +2120,7 @@ export class SpApplication extends BaseElement {
 
     // 鼠标拖动改变大小
     this.aiPageResize();
+    addExportDBToParentEvent();
   }
 
   private aiPageResize(): void {
