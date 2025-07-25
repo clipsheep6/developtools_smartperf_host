@@ -11,7 +11,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-domain: SMARTPERF
+domain: SMARTPERF_DEVICE
 
 HITRACE_USAGE:
   __BASE: {type: BEHAVIOR, level: CRITICAL, tag: usageStats, desc: hitrace usage statistics}

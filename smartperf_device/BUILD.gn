@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("../build/config.gni")
+import("./build/config.gni")
 
 group("SmartPerf") {
   deps = []
