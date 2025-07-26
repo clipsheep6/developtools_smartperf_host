@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-import { getThreadPoolTraceBufferCacheKey } from './database/SqlLite';
+import { Utils as TraceUtil } from './component/trace/base/Utils';
+import { getThreadPoolTraceBufferCacheKey, threadPool } from './database/SqlLite';
 
 export enum TraceMode {
   NORMAL,
@@ -471,7 +472,7 @@ export function clearTraceFileCache(): void {
 }
 
 export function postLog(filename: string, fileSize: string): void {
-  fetch(`https://${window.location.host.split(':')[0]}:${window.location.port}/logger`, {
+  fetch(`https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}logger`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -590,4 +591,27 @@ export function isZlibFile(uint8Array: Uint8Array): boolean {
     }
   }
   return true;
+}
+
+/**
+ * 外部交互，向外传输db文件
+ */
+export function addExportDBToParentEvent() {
+  window.addEventListener('message', e => {
+    if (e.data.name == 'exportDbToParent') {
+      threadPool.submit('download-db', '', {}, async (reqBufferDB: ArrayBuffer) => {
+        if (reqBufferDB && reqBufferDB.byteLength > 0) {
+          window.parent.postMessage({
+            name: `${(TraceUtil.currentTraceName || 'trace').split('.')[0]}.db`,
+            data: reqBufferDB
+          }, '*');
+        } else {
+          window.parent.postMessage({
+            name: `暂无数据`,
+            data: null
+          }, '*');
+        }
+      }, 'download-db');
+    }
+  });
 }

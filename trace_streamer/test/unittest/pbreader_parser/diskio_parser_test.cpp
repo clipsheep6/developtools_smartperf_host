@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "diskio_plugin_result.pb.h"
 #include "diskio_plugin_result.pbreader.h"
 #include "disk_io_parser/pbreader_disk_io_parser.h"

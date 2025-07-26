@@ -67,6 +67,7 @@ import './component/SpKeyboard';
 import { parseKeyPathJson } from './component/Utils';
 import { Utils } from './component/trace/base/Utils';
 import {
+  addExportDBToParentEvent,
   applicationHtml,
   clearTraceFileCache,
   findFreeSizeAlgorithm,
@@ -76,7 +77,7 @@ import {
   isZlibFile,
   postLog,
   readTraceFileBuffer,
-  TraceMode,
+  TraceMode
 } from './SpApplicationPublicFunc';
 import { queryExistFtrace } from './database/sql/SqlLite.sql';
 import '../base-ui/chart/scatter/LitChartScatter';
@@ -182,6 +183,7 @@ export class SpApplication extends BaseElement {
   static traceType: String = '';
   private isZipFile: boolean = false;
   isClear: boolean = false;
+  isOpenTrace: boolean = false;
   static spSnapShotView: SpSnapShotView | undefined | null;
 
   static get observedAttributes(): Array<string> {
@@ -280,8 +282,29 @@ export class SpApplication extends BaseElement {
   }
 
   initPlugin(): void {
-    SpStatisticsHttpUtil.initStatisticsServerConfig();
-    SpStatisticsHttpUtil.addUserVisitAction('visit');
+    let url = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
+      }${window.location.pathname}serverInfo`;
+    fetch(url, { method: 'GET' }).then((res) => {
+      if (res.headers) {
+        const headers = res.headers;
+        SpStatisticsHttpUtil.requestServerInfo = headers.get('request_info')!;
+        SpStatisticsHttpUtil.initStatisticsServerConfig();
+        SpStatisticsHttpUtil.addUserVisitAction('visit');
+      }
+    })
+    let aiurl = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
+      }${window.location.pathname}getAiInfo`;
+    fetch(aiurl, { method: 'GET' }).then((res) => {
+      if (res.headers) {
+        const headers = res.headers;
+        let aiAnalysisShow = this.shadowRoot
+        ?.querySelector('lit-main-menu')!
+        .shadowRoot!.querySelector('.ai_analysis') as HTMLDivElement;
+        if (headers.get('ai_info') !== '') {
+          aiAnalysisShow.style.display = '';
+        }
+      }
+    })
     LongTraceDBUtils.getInstance().createDBAndTable().then();
   }
 
@@ -649,6 +672,7 @@ export class SpApplication extends BaseElement {
 
   private openTraceFile(ev: File): void {
     SpApplication.isTraceLoaded = false;
+    this.isOpenTrace = true;
     this.returnOriginalUrl();
     this.removeAttribute('custom-color');
     this.chartFilter!.setAttribute('hidden', '');
@@ -1114,7 +1138,7 @@ export class SpApplication extends BaseElement {
         let data = this.markPositionHandler(reader.result as ArrayBuffer);
         this.spSystemTrace!.loadDatabaseArrayBuffer(
           data,
-          '',
+          '', '',
           (command: string, _: number) => {
             this.setProgress(command);
           },
@@ -1172,7 +1196,8 @@ export class SpApplication extends BaseElement {
         traceType = 'sqlite';
       }
       Promise.all([threadPool.init(traceType), threadPool2.init(traceType)]).then(() => {
-        let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+        let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}wasm.json`;
+        let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}config/config.json`;
         Promise.all([file1.arrayBuffer(), file2.arrayBuffer()]).then((bufArr) => {
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
           SpApplication.loadingProgress = 0;
@@ -1182,7 +1207,7 @@ export class SpApplication extends BaseElement {
           info('initData start Parse Data');
           this.spSystemTrace!.loadDatabaseArrayBuffer(
             buf1,
-            wasmUrl,
+            wasmUrl, configUrl,
             (command: string, _: number) => this.setProgress(command),
             true,
             completeHandler,
@@ -1237,14 +1262,15 @@ export class SpApplication extends BaseElement {
         reader.onloadend = (ev): void => {
           info('read file onloadend');
           this.litSearch!.setPercent('ArrayBuffer loaded  ', 2);
-          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}/application/wasm.json`;
+          let wasmUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}wasm.json`;
+          let configUrl = `https://${window.location.host.split(':')[0]}:${window.location.port}${window.location.pathname}config/config.json`;
           SpApplication.loadingProgress = 0;
           SpApplication.progressStep = 3;
           let data = this.markPositionHandler(reader.result as ArrayBuffer);
           info('initData start Parse Data');
           this.spSystemTrace!.loadDatabaseArrayBuffer(
             data,
-            wasmUrl,
+            wasmUrl, configUrl,
             (command: string, _: number) => this.setProgress(command),
             false,
             completeHandler
@@ -1326,16 +1352,19 @@ export class SpApplication extends BaseElement {
       SpApplication.isTraceLoaded = true;
       if (!isDistributed) {
         this.importConfigDiv!.style.display = Utils.getInstance().getSchedSliceMap().size > 0 ? 'block' : 'none';
-      }
+      } 
       this.showContent(this.spSystemTrace!);
       this.litSearch!.setPercent('', 101);
       this.chartFilter!.setAttribute('mode', '');
       this.freshMenuDisable(false);
+      Utils.currentTraceName = fileName;
     } else {
+      
       info('loadDatabaseArrayBuffer failed');
       //@ts-ignore
       this.litSearch!.setPercent(res.msg || 'This File is not supported!', -1);
       this.resetMenus();
+      Utils.currentTraceName = '';
       this.freshMenuDisable(false);
     }
     this.progressEL!.loading = false;
@@ -1757,6 +1786,12 @@ export class SpApplication extends BaseElement {
               let querySelectors = menuGroup.querySelectorAll<LitMainMenuItem>('lit-main-menu-item');
               querySelectors.forEach((item) => {
                 if (item.getAttribute('title') === 'Convert to .systrace') {
+                  if (fileName.indexOf('.htrace') > 0) {
+                    SpStatisticsHttpUtil.addOrdinaryVisitAction({
+                      event: 'convert_systrace',
+                      action: 'convert_systrace',
+                    });
+                  }
                   item!.setAttribute('icon', 'convert-loading');
                   item!.classList.add('pending');
                   item!.style.fontKerning = '';
@@ -2056,7 +2091,7 @@ export class SpApplication extends BaseElement {
     });
     this.cutTraceFile!.addEventListener('click', (ev) => {
       this.validateFileCacheLost();
-      if (this.isClear) {
+      if (this.isClear && !this.isOpenTrace) {
         let search = document.querySelector('body > sp-application')!.shadowRoot!.querySelector<LitSearch>('#lit-search');
         let progressEL = document.querySelector("body > sp-application")!.shadowRoot!.querySelector<LitProgressBar>("div > div.search-vessel > lit-progress-bar");
         progressEL!.loading = false;
@@ -2085,6 +2120,7 @@ export class SpApplication extends BaseElement {
 
     // 鼠标拖动改变大小
     this.aiPageResize();
+    addExportDBToParentEvent();
   }
 
   private aiPageResize(): void {
@@ -2339,6 +2375,7 @@ export class SpApplication extends BaseElement {
           });
         });
         this.isClear = true;
+        this.isOpenTrace = false;
         this.mainMenu!.menus = this.mainMenu!.menus;
       } else {
         this.isClear = false;
@@ -2545,7 +2582,7 @@ export class SpApplication extends BaseElement {
               openUrl(arrayBuf, fileName, showFileName, arrayBuf.byteLength);
             });
           } else {
-            let api = `${window.location.origin}/application/download-file`;
+            let api = `${window.location.origin}${window.location.pathname}download-file`;
             fetch(api, {
               method: 'POST',
               headers: {
@@ -2567,7 +2604,7 @@ export class SpApplication extends BaseElement {
           }
         })
         .catch((e) => {
-          let api = `${window.location.origin}/application/download-file`;
+          let api = `${window.location.origin}${window.location.pathname}download-file`;
           fetch(api, {
             method: 'POST',
             headers: {

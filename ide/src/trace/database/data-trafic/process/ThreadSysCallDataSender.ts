@@ -73,7 +73,7 @@ function arrayBufferHandler(buffers: unknown, len: number, tid: number, pid: num
       dur: dur[i],
       id: id[i],
       itid: itid[i],
-      name: SysCallMap.get(id[i]),
+      name: SysCallMap.get(id[i]) || 'unknown event',
       tid: tid,
       pid: pid,
     } as ThreadSysCallStruct);

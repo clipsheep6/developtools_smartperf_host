@@ -38,11 +38,10 @@ export class WebSocketManager {
     private sessionId: number | null | undefined;
     private session: bigint | null | undefined;
     private heartbeatInterval: number | null | undefined;
-    private status: string = GetStatuses.UNCONNECTED;
+    public status: string = GetStatuses.UNCONNECTED;
     private cacheInfo: Map<number, unknown> = new Map<number, unknown>();
     private reconnect: number = -1;
     private connectStatus: HTMLElement | null | undefined;
-    static disaStatus: string = GetStatuses.UNCONNECTED;
 
     constructor() {
         if (WebSocketManager.instance) {
@@ -58,8 +57,6 @@ export class WebSocketManager {
         this.connectStatus = document.querySelector("body > sp-application").shadowRoot.querySelector("#main-menu").shadowRoot.querySelector("div.bottom > div.extend_connect");
         this.websocket = new WebSocket(this.url);
         this.websocket.binaryType = 'arraybuffer';
-        // @ts-ignore
-        setInterval(this.checkConnectionStatus(this.websocket), 5000);
         this.websocket.onopen = (): void => {
             this.status = GetStatuses.CONNECTED;
             // 设置心跳定时器
@@ -80,11 +77,12 @@ export class WebSocketManager {
 
         this.websocket.onerror = (error): void => {
             console.error('error:', error);
+            this.extendTips(false);
         };
 
         this.websocket.onclose = (event): void => {
             this.status = GetStatuses.UNCONNECTED;
-            this.checkConnectionStatus(this.websocket);
+            this.extendTips(false);
             this.finalStatus();
             //初始化标志位
             this.initLoginInfo();
@@ -92,19 +90,6 @@ export class WebSocketManager {
         };
     }
 
-    /**
-     * 实时监听websockets连接状态
-     */
-    checkConnectionStatus(websocket: WebSocket | null | undefined) {
-        // @ts-ignore
-        if (websocket?.readyState === websocket?.OPEN) {
-            // @ts-ignore
-            this.connectStatus?.style.backgroundColor = 'green';
-        } else {
-            // @ts-ignore
-            this.connectStatus?.style.backgroundColor = 'red';
-        }
-    }
 
     /**
      * 接收webSocket返回的buffer数据
@@ -117,9 +102,22 @@ export class WebSocketManager {
         } else if (decode.type === TypeConstants.UPDATE_TYPE) {// 升级
             this.updateMessage(decode);
         } else {// type其他
+            this.businessMessage(decode);
+        }
+    }
+
+    // 扩展服务连接状态提示
+    extendTips(flag: boolean): void {
+        if(flag) {
             // @ts-ignore
             this.connectStatus?.style.backgroundColor = 'green';
-            this.businessMessage(decode);
+            // @ts-ignore
+            this.connectStatus?.title = 'The extended service is connected.';
+        }else{
+            // @ts-ignore
+            this.connectStatus?.style.backgroundColor = 'red';
+            // @ts-ignore
+            this.connectStatus?.title = 'The extended service is not connected.';
         }
     }
 
@@ -129,8 +127,6 @@ export class WebSocketManager {
             this.status = GetStatuses.LOGINED;
             this.sessionId = decode.session_id;
             this.session = decode.session;
-            // @ts-ignore
-            this.connectStatus?.style.backgroundColor = 'green';
             //检查版本
             this.getVersion();
         } else if (decode.cmd === Constants.SESSION_EXCEED) { // session满了
@@ -143,7 +139,7 @@ export class WebSocketManager {
     updateMessage(decode: MessageParam): void {
         if (decode.cmd === Constants.GET_VERSION_CMD) {
             // 小于则升级
-            let targetVersion = '1.1.2';
+            let targetVersion = '1.1.4';
             let currentVersion = new TextDecoder().decode(decode.data);
             let result = this.compareVersion(currentVersion, targetVersion);
             if (result === -1) {
@@ -152,6 +148,7 @@ export class WebSocketManager {
                 return;
             }
             this.status = GetStatuses.READY;
+            this.extendTips(true);
             this.finalStatus();
         } else if (decode.cmd === Constants.UPDATE_SUCCESS_CMD) { // 升级成功
             this.status = GetStatuses.UPGRADESUCCESS;
@@ -204,7 +201,7 @@ export class WebSocketManager {
     updateVersion(): void {
         // 扩展程序升级
         let url = `https://${window.location.host.split(':')[0]}:${window.location.port
-            }/application/extend/hi-smart-perf-host-extend-update.zip`;
+            }${window.location.pathname}extend/hi-smart-perf-host-extend-update.zip`;
         fetch(url).then(response => {
             if (!response.ok) {
                 throw new Error('No corresponding upgrade compression package found');
@@ -237,7 +234,7 @@ export class WebSocketManager {
      * listener是不同模块传来接收数据的函数
      * 模块调用
     */
-registerMessageListener(type: number, callback: Function, eventCallBack: Function, allowMultipleCallback: boolean = false): void {
+    registerMessageListener(type: number, callback: Function, eventCallBack: Function, allowMultipleCallback: boolean = false): void {
         let callbackObj = this.distributeMap.get(type);
         if (!callbackObj) {
             callbackObj = {
@@ -282,7 +279,6 @@ registerMessageListener(type: number, callback: Function, eventCallBack: Functio
         } else {
             this.send(type, cmd, data);
         }
-        WebSocketManager.disaStatus = this.status;
     }
 
     send(type: number, cmd?: number, data?: Uint8Array): void {
@@ -302,9 +298,6 @@ registerMessageListener(type: number, callback: Function, eventCallBack: Functio
     sendHeartbeat(): void {
         this.heartbeatInterval = window.setInterval(() => {
             if (this.status === GetStatuses.READY) {
-                WebSocketManager.disaStatus = GetStatuses.READY;
-                // @ts-ignore
-                this.connectStatus?.style.backgroundColor = 'green';
                 this.send(TypeConstants.HEARTBEAT_TYPE, undefined, undefined);
             }
         }, Constants.INTERVAL_TIME);
@@ -360,16 +353,10 @@ registerMessageListener(type: number, callback: Function, eventCallBack: Functio
     finalStatus(): void {
         if (this.reconnect !== -1) {
             if (this.status === GetStatuses.READY) {
-                WebSocketManager.disaStatus = GetStatuses.READY;
-                // @ts-ignore
-                this.connectStatus?.style.backgroundColor = 'green';
                 // @ts-ignore
                 this.sendMessage(this.reconnect, this.cacheInfo.get(this.reconnect)!.cmd, this.cacheInfo.get(this.reconnect)!.data);
                 return;
             }
-            WebSocketManager.disaStatus = GetStatuses.UNCONNECTED;
-            // @ts-ignore
-            this.connectStatus?.style.backgroundColor = 'red';
             this.distributeMap.get(this.reconnect)!.eventCallBack(this.status);
         }
         this.reconnect = -1;

@@ -17,6 +17,7 @@ if (use_wasm) {
   import("//gn/wasm.gni")
 }
 
+# for third part sqlite
 ohos_source_set("ts_sqlite") {
   subsystem_name = "${OHOS_PROFILER_SUBSYS_NAME}"
   part_name = "${OHOS_PROFILER_PART_NAME}"
@@ -115,7 +116,7 @@ ohos_source_set("trace_streamer_source") {
   public_deps = []
   if (!use_wasm && !is_test && !is_fuzz) {
     public_deps += [
-      "${OHOS_PROFILER_3RDPARTY_PROTOBUF_DIR}:protoc(${host_toolchain})",
+      "${OHOS_TRACE_STREAMER_PROTOS_DIR}/protos:protoc(${host_toolchain})",
       "proto_reader/protoc_plugin:protoreader_plugin(${host_toolchain})",
     ]
   }

@@ -694,7 +694,7 @@ export class TabPanePerfAnalysis extends BaseElement {
       encodedData = textEncoder.encode(dataString);
       WebSocketManager.getInstance()?.registerMessageListener(TypeConstants.DISASSEMBLY_TYPE, this.callback, () => { }, true);
       WebSocketManager.getInstance()?.sendMessage(TypeConstants.DISASSEMBLY_TYPE, Constants.DISASSEMBLY_QUERY_ELF_CMD, encodedData);
-      if (WebSocketManager.disaStatus !== 'ready') {
+      if (WebSocketManager.getInstance()!.status !== 'ready') {
         // @ts-ignore
         this.perfAnalysisHeadTips?.innerHTML = 'Request timed out.Install the extended service according to the help document.';
         return;

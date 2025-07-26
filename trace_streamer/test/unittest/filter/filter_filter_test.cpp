@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "filter_filter.h"
 #include "trace_data_cache.h"
 #include "trace_streamer_filters.h"

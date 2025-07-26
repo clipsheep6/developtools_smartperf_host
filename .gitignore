@@ -15,6 +15,7 @@ trace_streamer/third_party
 trace_streamer/tools
 trace_streamer/compile_commands.json
 trace_streamer/*.tar.gz
+trace_streamer/*.tar.xz
 trace_streamer/*.zip
 ts_tmp.perf.data
 trace_streamer/.cache

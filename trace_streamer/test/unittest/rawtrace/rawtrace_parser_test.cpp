@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#define private public
 #include "export_test.h"
 #include "file.h"
 #include "rawtrace_parser.h"

@@ -21,6 +21,7 @@
 #include <string>
 #include <unistd.h>
 
+#define private public
 #include "file.h"
 #include "arkts/pbreader_js_memory_parser.h"
 #include "arkts/pbreader_js_cpu_profiler_parser.h"

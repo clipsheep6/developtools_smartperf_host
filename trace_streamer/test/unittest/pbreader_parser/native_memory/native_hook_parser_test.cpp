@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "export_test.h"
 #include "file.h"
 #include "native_hook_parser/pbreader_native_hook_parser.h"

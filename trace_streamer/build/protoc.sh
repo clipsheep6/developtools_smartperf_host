@@ -23,6 +23,12 @@ if [[ "$3" == *"developtools"* ]]; then
   PROJECT_TOP=$(realpath $THIS_DIR/../../../..)
 fi
 
+if [[ "$2" == "out/ohos" || "$2" == "out/ohos_debug" ]]; then
+  if [[ -e "$PROJECT_TOP/out/ohos/gen/cpp/src/protos/services/common_types.pb.cc" || -e "$PROJECT_TOP/out/ohos_debug/gen/cpp/src/protos/services/common_types.pb.cc" ]]; then
+      exit 0
+  fi
+fi
+
 OHOS_X64_OUT=$PROJECT_TOP/$2/
 LIBCXX_X64_OUT=$PROJECT_TOP/$1/ndk/libcxx/linux_x86_64
 SUBSYS_X64_OUT=$PROJECT_TOP/$2/$TAIL_DIR

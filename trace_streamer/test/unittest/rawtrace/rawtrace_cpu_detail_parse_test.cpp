@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "cpu_detail_parser.h"
 #include "ftrace_event_processor.h"
 #include "trace_streamer_selector.h"
@@ -34,6 +35,11 @@ public:
         cpuDetailParser_ =
             std::make_unique<CpuDetailParser>(selector_.traceDataCache_.get(), selector_.streamFilters_.get());
         ftraceEvent_ = std::make_unique<FtraceEvent>();
+        constexpr uint8_t PARAME_CNT_MAX = 10;
+        for (size_t i = 0; i < PARAME_CNT_MAX; i++) {
+            FieldFormat fieldFormat;
+            format_.fields.emplace_back(fieldFormat);
+        }
     }
 
     void TearDown() const {}

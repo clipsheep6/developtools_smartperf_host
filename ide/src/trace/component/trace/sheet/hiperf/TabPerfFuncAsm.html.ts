@@ -74,9 +74,9 @@ export const TabPerfFuncAsmHtml = `
         <lit-table id="perf-function-asm-table" style="display: grid;min-height: 380px">
             <lit-table-column width="0.2fr" title="Self Count" data-index="selfcount" key="selfcount" align="flex-start" order></lit-table-column>
             <lit-table-column width="0.2fr" title="%" data-index="percent" key="percent" align="flex-start" order></lit-table-column>
-            <lit-table-column width="0.4fr" title="Virtual Address" data-index="addr" key="addr" align="flex-start" order></lit-table-column>
-            <lit-table-column width="2fr" title="Source Line" data-index="sourceLine" key="sourceLine" align="flex-start" order hidden></lit-table-column>
-            <lit-table-column width="2fr" title="Assembler Instruction" data-index="instruction" key="instruction" align="flex-start" order></lit-table-column>
+            <lit-table-column width="0.4fr" title="Virtual Address" data-index="addr" key="addr" align="flex-start"></lit-table-column>
+            <lit-table-column width="2fr" title="Source Line" data-index="sourceLine" key="sourceLine" align="flex-start" hidden></lit-table-column>
+            <lit-table-column width="2fr" title="Assembler Instruction" data-index="instruction" key="instruction" align="flex-start"></lit-table-column>
         </lit-table>
     </div>
 </div>

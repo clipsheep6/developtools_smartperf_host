@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "process_parser/pbreader_process_parser.h"
 #include "parser/ptreader_parser/ptreader_parser.h"
 #include "parser/common_types.h"

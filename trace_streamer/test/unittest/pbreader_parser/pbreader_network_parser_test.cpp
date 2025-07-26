@@ -18,6 +18,7 @@
 #include <hwext/gtest-tag.h>
 #include <memory>
 
+#define private public
 #include "network_parser/pbreader_network_parser.h"
 #include "network_plugin_result.pb.h"
 #include "network_plugin_result.pbreader.h"

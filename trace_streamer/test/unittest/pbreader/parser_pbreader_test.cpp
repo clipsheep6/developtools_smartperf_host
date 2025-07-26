@@ -20,6 +20,7 @@
 #include <string>
 #include <unistd.h>
 
+#define private public
 #include "file.h"
 #include "trace_streamer_selector.h"
 constexpr size_t G_FILE_PERMISSION = 664;

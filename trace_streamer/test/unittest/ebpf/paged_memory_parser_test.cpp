@@ -15,6 +15,7 @@
  */
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
+#define private public
 #include "paged_memory_data_parser.h"
 #include "cpu_filter.h"
 #include "ebpf_data_parser.h"

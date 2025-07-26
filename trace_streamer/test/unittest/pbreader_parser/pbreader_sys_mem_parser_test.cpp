@@ -19,6 +19,7 @@
 #include <string>
 #include <unordered_map>
 
+#define private public
 #include "mem_parser/pbreader_mem_parser.h"
 #include "memory_plugin_result.pb.h"
 #include "memory_plugin_result.pbreader.h"

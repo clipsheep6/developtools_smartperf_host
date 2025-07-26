@@ -15,7 +15,7 @@
 
 #ifndef EBPF_DATA_READER_H
 #define EBPF_DATA_READER_H
-#ifndef is_linux
+#if is_mingw || is_mac
 #include "dfx_nonlinux_define.h"
 #else
 #include <elf.h>

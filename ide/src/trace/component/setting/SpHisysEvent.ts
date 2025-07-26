@@ -22,6 +22,8 @@ import { HdcDeviceManager } from '../../../hdc/HdcDeviceManager';
 import { LitAllocationSelect } from '../../../base-ui/select/LitAllocationSelect';
 import { SpHiSysEventHtml } from './SpHisysEvent.html';
 import { LitSelectV } from '../../../base-ui/select/LitSelectV';
+import { WebSocketManager } from '../../../webSocket/WebSocketManager';
+import { TypeConstants } from '../../../webSocket/Constants';
 
 @element('sp-hisys-event')
 export class SpHisysEvent extends BaseElement {
@@ -64,7 +66,7 @@ export class SpHisysEvent extends BaseElement {
   }
 
   get sysEventConfigPath(): string {
-    return '/system/etc/hiview/hisysevent.def';
+    return '//data/system/hiview/unzip_configs/sys_event_def/hisysevent.def';
   }
 
   initElements(): void {
@@ -99,11 +101,11 @@ export class SpHisysEvent extends BaseElement {
       if (SpRecordTrace.serialNumber === '') {
         this.domainInputEL!.dataSource([], '');
       } else {
-        HdcDeviceManager.fileRecv(this.sysEventConfigPath, () => { }).then((pullRes) => {
-          pullRes.arrayBuffer().then((buffer) => {
-            if (buffer.byteLength > 0) {
-              let dec = new TextDecoder();
-              this.eventConfig = JSON.parse(dec.decode(buffer));
+        if (SpRecordTrace.useExtend) {
+          WebSocketManager.getInstance()!.sendMessage(TypeConstants.USB_TYPE, TypeConstants.USB_GET_HISYSTEM, new TextEncoder().encode(SpRecordTrace.serialNumber));
+          setTimeout(() => {
+            if (SpRecordTrace.usbGetHisystem) {
+              this.eventConfig = JSON.parse(SpRecordTrace.usbGetHisystem);
               let domainList = Object.keys(this.eventConfig!);
               if (domainList.length > 0) {
                 this.domainInputEL!.dataSource(domainList, 'ALL-Domain', true);
@@ -111,8 +113,23 @@ export class SpHisysEvent extends BaseElement {
                 this.domainInputEL!.dataSource([], '');
               }
             }
+          }, 1000);
+        } else {
+          HdcDeviceManager.fileRecv(this.sysEventConfigPath, () => { }).then((pullRes) => {
+            pullRes.arrayBuffer().then((buffer) => {
+              if (buffer.byteLength > 0) {
+                let dec = new TextDecoder();
+                this.eventConfig = JSON.parse(dec.decode(buffer));
+                let domainList = Object.keys(this.eventConfig!);
+                if (domainList.length > 0) {
+                  this.domainInputEL!.dataSource(domainList, 'ALL-Domain', true);
+                } else {
+                  this.domainInputEL!.dataSource([], '');
+                }
+              }
+            });
           });
-        });
+        }
       }
       this.domainInputEl!.removeAttribute('readonly');
     } else {

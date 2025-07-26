@@ -19,11 +19,11 @@ if (target == "sdkdemotest") {
   ohos_unittest("trace_streamer_sdk_ut") {
     sources = [ "unittest/sdk_api_test.cpp" ]
     deps = [
-      "${THIRD_PARTY}/googletest:gtest",
-      "${THIRD_PARTY}/googletest:gtest_main",
-      "${THIRD_PARTY}/protobuf:protobuf_lite_static",
-      "${THIRD_PARTY}/protobuf:protobuf_static",
-      "${THIRD_PARTY}/sqlite:sqlite",
+      "//test/unittest:gtest",
+      "//test/unittest:gtest_main",
+      "${SRC}/protos:protobuf_lite_static",
+      "${SRC}/protos:protobuf_static",
+      "${SRC}:ts_sqlite",
       "../:trace_streamer_sdk",
     ]
     include_dirs = [
@@ -46,10 +46,11 @@ if (target == "sdkdemotest") {
       "${THIRD_PARTY}/googletest/googletest/include/gtest",
       "${THIRD_PARTY}/protobuf/src",
       "${THIRD_PARTY}/json/single_include/nlohmann",
+      "${THIRD_PARTY}/zlib"
     ]
     cflags = [
       "-Wno-inconsistent-missing-override",
-      "-Dprivate=public",  #allow test code access private members
+      # "-Dprivate=public",  #allow test code access private members
       "-fprofile-arcs",
       "-ftest-coverage",
       "-Wno-unused-command-line-argument",

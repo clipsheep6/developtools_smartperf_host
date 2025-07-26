@@ -16,6 +16,7 @@
 #include <hwext/gtest-ext.h>
 #include <hwext/gtest-tag.h>
 
+#define private public
 #include "ftrace_field_processor.h"
 #include "trace_streamer_selector.h"
 #include "securec.h"

@@ -107,7 +107,7 @@ export class ThreadSysCallStruct extends BaseStruct {
       threadContext.fillStyle = ColorUtils.funcTextColor(textColor);
       threadContext.textBaseline = 'middle';
       threadContext.font = '8px sans-serif';
-      data.frame.width > 7 && drawString(threadContext, data.name!, 2, data.frame, data);
+      data.frame.width > 7 && data.name && drawString(threadContext, data.name, 2, data.frame, data);
       if (
         ThreadSysCallStruct.selectStruct &&
         ThreadSysCallStruct.equals(ThreadSysCallStruct.selectStruct, data) 

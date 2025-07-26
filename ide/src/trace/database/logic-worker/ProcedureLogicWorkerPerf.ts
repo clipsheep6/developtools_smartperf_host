@@ -1449,10 +1449,13 @@ export class ProcedureLogicWorkerPerf extends LogicHandler {
   combineCallChainForAnalysis(obj?: unknown): PerfAnalysisSample[] {
     let sampleCallChainList: Array<PerfAnalysisSample> = [];
     for (let sample of this.samplesData) {
+      if (!this.callChainData[sample.sampleId]) {
+        continue;
+      }
       let callChains = [...this.callChainData[sample.sampleId]];
       const lastCallChain = callChains[callChains.length - 1];
       const threadName = this.threadData[sample.tid].threadName || 'Thread';
-      const processName = this.threadData[sample.pid].threadName || 'Process';
+      const processName = this.threadData[sample.pid] ? this.threadData[sample.pid].threadName : 'Process';
       const funcName = this.dataCache.dataDict.get(lastCallChain.name as number);
       if (
         //@ts-ignore

@@ -43,9 +43,9 @@ export interface MiningData {
 
 export class CpuStatus {
   cpu: number = 0;
-  small: boolean = false;
+  little: boolean = false;
   medium: boolean = false;
-  large: boolean = false;
+  big: boolean = false;
 }
 
 @element('tab-pane-filter')
@@ -482,7 +482,7 @@ export class TabPaneFilter extends BaseElement {
   }
 
   //添加cpu列表
-  setCoreConfigList(count: number, small: Array<number>, mid: Array<number>, large: Array<number>): void {
+  setCoreConfigList(count: number, little: Array<number>, mid: Array<number>, big: Array<number>): void {
     let divEl = this.shadowRoot!.querySelector('#data-core-popover > div > #tb_core_setting');
     divEl!.innerHTML = '';
     this.createCoreHeaderDiv(divEl);
@@ -490,13 +490,13 @@ export class TabPaneFilter extends BaseElement {
       let obj = {
         cpu: i,
         // @ts-ignore
-        small: small.includes(i),
+        little: little.includes(i),
         // @ts-ignore
         medium: mid.includes(i),
         // @ts-ignore
-        large: large.includes(i),
+        big: big.includes(i),
       };
-      this.createCheckBoxLine(divEl, obj, small, mid, large);
+      this.createCheckBoxLine(divEl, obj, little, mid, big);
     }
   }
 
@@ -507,89 +507,89 @@ export class TabPaneFilter extends BaseElement {
     cpuIdLine.style.fontSize = '12px';
     cpuIdLine.textContent = 'Cpu';
     cpuIdLine.style.textAlign = 'center';
-    let smallLine = document.createElement('div');
-    smallLine.className = 'core_line';
-    smallLine.style.fontWeight = 'bold';
-    smallLine.textContent = 'S';
-    smallLine.style.fontSize = '12px';
-    smallLine.style.textAlign = 'center';
+    let littleLine = document.createElement('div');
+    littleLine.className = 'core_line';
+    littleLine.style.fontWeight = 'bold';
+    littleLine.textContent = 'L';
+    littleLine.style.fontSize = '12px';
+    littleLine.style.textAlign = 'center';
     let mediumLine = document.createElement('div');
     mediumLine.className = 'core_line';
     mediumLine.style.fontWeight = 'bold';
     mediumLine.textContent = 'M';
     mediumLine.style.fontSize = '12px';
     mediumLine.style.textAlign = 'center';
-    let largeLine = document.createElement('div');
-    largeLine.className = 'core_line';
-    largeLine.style.fontWeight = 'bold';
-    largeLine.textContent = 'L';
-    largeLine.style.fontSize = '12px';
-    largeLine.style.textAlign = 'center';
+    let bigLine = document.createElement('div');
+    bigLine.className = 'core_line';
+    bigLine.style.fontWeight = 'bold';
+    bigLine.textContent = 'B';
+    bigLine.style.fontSize = '12px';
+    bigLine.style.textAlign = 'center';
     // @ts-ignore
-    tab?.append(...[cpuIdLine, smallLine, mediumLine, largeLine]);
+    tab?.append(...[cpuIdLine, littleLine, mediumLine, bigLine]);
   }
 
   //添加对应的cpu checkbox,并添加对应的监听事件
   createCheckBoxLine(
     divEl: unknown,
     cpuStatus: CpuStatus,
-    small: Array<number>,
+    little: Array<number>,
     mid: Array<number>,
-    large: Array<number>
+    big: Array<number>
   ): void {
     let div = document.createElement('div');
     div.textContent = cpuStatus.cpu + '';
     div.style.textAlign = 'center';
     div.style.fontWeight = 'normal';
-    let smallCheckBox: LitCheckBox = new LitCheckBox();
-    smallCheckBox.checked = cpuStatus.small;
-    smallCheckBox.setAttribute('not-close', '');
-    smallCheckBox.style.textAlign = 'center';
-    smallCheckBox.style.marginLeft = 'auto';
-    smallCheckBox.style.marginRight = 'auto';
+    let littleCheckBox: LitCheckBox = new LitCheckBox();
+    littleCheckBox.checked = cpuStatus.little;
+    littleCheckBox.setAttribute('not-close', '');
+    littleCheckBox.style.textAlign = 'center';
+    littleCheckBox.style.marginLeft = 'auto';
+    littleCheckBox.style.marginRight = 'auto';
     let midCheckBox: LitCheckBox = new LitCheckBox();
     midCheckBox.checked = cpuStatus.medium;
     midCheckBox.setAttribute('not-close', '');
     midCheckBox.style.textAlign = 'center';
     midCheckBox.style.marginLeft = 'auto';
     midCheckBox.style.marginRight = 'auto';
-    let largeCheckBox: LitCheckBox = new LitCheckBox();
-    largeCheckBox.checked = cpuStatus.large;
-    largeCheckBox.setAttribute('not-close', '');
-    largeCheckBox.style.marginLeft = 'auto';
-    largeCheckBox.style.marginRight = 'auto';
-    smallCheckBox.addEventListener('change', (e: unknown) => {
+    let bigCheckBox: LitCheckBox = new LitCheckBox();
+    bigCheckBox.checked = cpuStatus.big;
+    bigCheckBox.setAttribute('not-close', '');
+    bigCheckBox.style.marginLeft = 'auto';
+    bigCheckBox.style.marginRight = 'auto';
+    littleCheckBox.addEventListener('change', (e: unknown) => {
       midCheckBox.checked = false;
-      largeCheckBox.checked = false;
+      bigCheckBox.checked = false;
       // @ts-ignore
-      cpuStatus.small = e.detail.checked;
+      cpuStatus.little = e.detail.checked;
       // @ts-ignore
-      this.canUpdateCheckList(e.detail.checked, small, cpuStatus.cpu);
+      this.canUpdateCheckList(e.detail.checked, little, cpuStatus.cpu);
       mid = mid.filter((it) => it !== cpuStatus.cpu);
-      large = large.filter((it) => it !== cpuStatus.cpu);
+      big = big.filter((it) => it !== cpuStatus.cpu);
     });
     midCheckBox.addEventListener('change', (e: unknown) => {
-      largeCheckBox.checked = false;
-      smallCheckBox.checked = false;
+      bigCheckBox.checked = false;
+      littleCheckBox.checked = false;
       // @ts-ignore
       cpuStatus.medium = e.detail.checked;
       // @ts-ignore
       this.canUpdateCheckList(e.detail.checked, mid, cpuStatus.cpu);
-      large = large.filter((it) => it !== cpuStatus.cpu);
-      small = small.filter((it) => it !== cpuStatus.cpu);
+      big = big.filter((it) => it !== cpuStatus.cpu);
+      little = little.filter((it) => it !== cpuStatus.cpu);
     });
-    largeCheckBox.addEventListener('change', (e: unknown) => {
+    bigCheckBox.addEventListener('change', (e: unknown) => {
       midCheckBox.checked = false;
-      smallCheckBox.checked = false;
+      littleCheckBox.checked = false;
       // @ts-ignore
-      cpuStatus.large = e.detail.checked;
+      cpuStatus.big = e.detail.checked;
       // @ts-ignore
-      this.canUpdateCheckList(e.detail.checked, large, cpuStatus.cpu);
+      this.canUpdateCheckList(e.detail.checked, big, cpuStatus.cpu);
       mid = mid.filter((it) => it !== cpuStatus.cpu);
-      small = small.filter((it) => it !== cpuStatus.cpu);
+      little = little.filter((it) => it !== cpuStatus.cpu);
     });
     // @ts-ignore
-    divEl!.append(...[div, smallCheckBox, midCheckBox, largeCheckBox]);
+    divEl!.append(...[div, littleCheckBox, midCheckBox, bigCheckBox]);
   }
 
   //判断checkList数组是否需要push数据或删除数据
