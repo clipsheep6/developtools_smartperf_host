@@ -879,7 +879,7 @@ static void HandleQueTaskInfoOut(ConStr &log, int lineno, int pid, QueueTaskInfo
     if (fPos == std::string::npos) {
         return;
     }
-    size_t hPos = log.find("|H:F ", fPos);
+    size_t hPos = log.find("|H:F", fPos);
     if (hPos == std::string::npos) {
         return;
     }
