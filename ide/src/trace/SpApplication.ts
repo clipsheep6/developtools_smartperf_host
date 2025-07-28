@@ -75,6 +75,7 @@ import {
   indexedDataToBufferData,
   isZipFile,
   isZlibFile,
+  loadTraceCompleteEvent,
   postLog,
   readTraceFileBuffer,
   TraceMode
@@ -1367,6 +1368,7 @@ export class SpApplication extends BaseElement {
       Utils.currentTraceName = '';
       this.freshMenuDisable(false);
     }
+    loadTraceCompleteEvent();
     this.progressEL!.loading = false;
     this.headerDiv!.style.pointerEvents = 'auto';
     this.spInfoAndStats!.initInfoAndStatsData();
