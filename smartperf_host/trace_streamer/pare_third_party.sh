@@ -71,7 +71,7 @@ if [ ! -d "hiviewdfx/faultloggerd" ];then
 fi
 
 if [ ! -f "hiperf/BUILD.gn" ];then
-    git clone --depth=1 -b adjust_build_for_smartperf_host git@gitee.com:li-yiting880505/developtools_hiperf_1.git hiperf
+    git clone --depth=1 git@gitee.com:openharmony/developtools_hiperf.git hiperf
 fi
 
 if [ ! -f "bounds_checking_function/BUILD.gn" ];then
