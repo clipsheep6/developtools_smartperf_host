@@ -30,7 +30,7 @@ cd third_party
 
 if [ ! -f "sqlite/BUILD.gn" ];then
     rm -rf sqlite
-    git clone  git@gitee.com:openharmony/third_party_sqlite.git
+    git clone  https://gitee.com/openharmony/third_party_sqlite.git
     if [ -d "third_party_sqlite" ];then
         mv third_party_sqlite sqlite
         cd sqlite
@@ -41,7 +41,7 @@ if [ ! -f "sqlite/BUILD.gn" ];then
 fi
 if [ ! -f "protobuf/BUILD.gn" ];then
     rm -rf protobuf
-    git clone  git@gitee.com:openharmony/third_party_protobuf.git
+    git clone  https://gitee.com/openharmony/third_party_protobuf.git
     if [ -d "third_party_protobuf" ];then
         mv third_party_protobuf protobuf
         cd protobuf
@@ -61,7 +61,7 @@ fi
 
 if [ ! -f "googletest/BUILD.gn" ];then
     rm -rf googletest
-    git clone --depth=1 git@gitee.com:openharmony/third_party_googletest.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_googletest.git
     if [ -d "third_party_googletest" ];then
         mv third_party_googletest googletest
         $cp ../prebuilts/patch_googletest/googletestbuild.gn ../third_party/googletest/BUILD.gn
@@ -71,7 +71,7 @@ fi
 
 if [ ! -f "json/BUILD.gn" ];then
     rm -rf json
-    git clone --depth=1 git@gitee.com:openharmony/third_party_json.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_json.git
     if [ -d "third_party_json" ];then
         mv third_party_json json
     fi
@@ -103,7 +103,7 @@ fi
 
 if [ ! -f "profiler/device/plugins/ftrace_plugin/include/ftrace_common_type.h" ];then
     rm -rf profiler
-    git clone --depth=1 git@gitee.com:openharmony/developtools_profiler.git
+    git clone --depth=1 https://gitee.com/openharmony/developtools_profiler.git
     if [ -d "developtools_profiler" ];then
         mkdir -p profiler/device/plugins/ftrace_plugin/include
         $cp developtools_profiler/device/plugins/ftrace_plugin/include/ftrace_common_type.h profiler/device/plugins/ftrace_plugin/include
@@ -114,7 +114,7 @@ fi
 
 if [ ! -d "llvm-project" ];then
     rm -rf llvm-project
-    git clone --depth=1 git@gitee.com:openharmony/third_party_llvm-project.git
+    git clone --depth=1 https://gitee.com/openharmony/third_party_llvm-project.git
     if [ -d "third_party_llvm-project" ];then
         mv third_party_llvm-project llvm-project
         cd llvm-project
