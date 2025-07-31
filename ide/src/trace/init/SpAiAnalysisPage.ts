@@ -2281,4 +2281,58 @@ export class SpAiAnalysisPage extends BaseElement {
                 a.download = window.sessionStorage.getItem('fileName')! + '诊断报告';
                 a.click();
             })
-    
+                // 新建对话按钮点击事件
+                this.newChatEl?.addEventListener('click', () => {
+                    this.isNewChat = true;
+                    this.token = '';
+                    this.askQuestion!.innerHTML = '';
+                    this.createAiChatBox('有什么可以帮助您的吗？');
+                })
+        
+                // 输入框发送消息
+                this.inputEl?.addEventListener('keydown', (e) => {
+                    if (e.key.toLocaleLowerCase() === 'control' || e.keyCode === 17) {
+                        this.isCtrlDown = true;
+                    }
+                    if (this.isCtrlDown) {
+                        if (e.key.toLocaleLowerCase() === 'enter') {
+                            this.inputEl!.value += '\n';
+                        }
+                    } else {
+                        if (e.key.toLocaleLowerCase() === 'enter') {
+                            this.sendMessage();
+                            // 禁止默认的回车换行
+                            e.preventDefault();
+                        };
+                    };
+                });
+        
+                // 输入框聚焦/失焦--防止触发页面快捷键
+                this.inputEl?.addEventListener('focus', () => {
+                    SpSystemTrace.isAiAsk = true;
+                });
+        
+                this.inputEl?.addEventListener('blur', () => {
+                    SpSystemTrace.isAiAsk = false;
+                })
+        
+                // 监听浏览器刷新，清除db数据
+                window.onbeforeunload = function () {
+                    caches.delete(`${window.localStorage.getItem('fileName')}.db`);
+                    sessionStorage.removeItem('fileName');
+                }
+        
+                // 监听ctrl抬起
+                this.inputEl?.addEventListener('keyup', (e) => {
+                    if (e.key.toLocaleLowerCase() === 'control' || e.keyCode === 17) {
+                        this.isCtrlDown = false;
+                    };
+                });
+        
+                // 下载诊断报告按钮监听
+                this.downloadBtn?.addEventListener('click', (e) => {
+                    let a = document.createElement('a');
+                    a.href = URL.createObjectURL(new Blob([this.reportContent]));
+                    a.download = window.sessionStorage.getItem('fileName')! + '诊断报告';
+                    a.click();
+                })
