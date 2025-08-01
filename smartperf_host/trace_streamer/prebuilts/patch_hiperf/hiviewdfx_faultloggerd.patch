@@ -1,26 +1,26 @@
 diff --git a/common/dfxutil/smart_fd.h b/common/dfxutil/smart_fd.h
-index fd5e838..858ae73 100644
+index f24d67f..4b7eb7a 100644
 --- a/common/dfxutil/smart_fd.h
 +++ b/common/dfxutil/smart_fd.h
-@@ -28,9 +28,11 @@ public:
+@@ -27,9 +27,11 @@ public:
      SmartFd() = default;
      explicit SmartFd(int fd, bool fdsan = true) : fd_(fd), fdsan_(fdsan)
      {
 +#if is_ohos
          if (fd_ >= 0 && fdsan_) {
-             fdsan_exchange_owner_tag(fd_, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+             fdsan_exchange_owner_tag(fd_, 0, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, DFX_FDSAN_DOMAIN));
          }
 +#endif
      }
  
      ~SmartFd()
-@@ -85,11 +87,14 @@ private:
+@@ -84,11 +86,14 @@ private:
          if (fd_ < 0) {
              return;
          }
 +#if is_ohos
          if (fdsan_) {
-             fdsan_close_with_tag(fd_, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, LOG_DOMAIN));
+             fdsan_close_with_tag(fd_, fdsan_create_owner_tag(FDSAN_OWNER_TYPE_FILE, DFX_FDSAN_DOMAIN));
              return;
          }
 +#else
@@ -28,7 +28,7 @@ index fd5e838..858ae73 100644
 +#endif
      }
  
-     int fd_{-1};
+     static constexpr uint64_t DFX_FDSAN_DOMAIN = 0xD002D11;
 diff --git a/common/dfxutil/string_view_util.h b/common/dfxutil/string_view_util.h
 index b44a59e..7dbd356 100644
 --- a/common/dfxutil/string_view_util.h
