@@ -1858,32 +1858,32 @@ export class SpSystemTrace extends BaseElement {
     //@ts-ignore
     window.subscribe(window.SmartEvent.UI.ImportRecord, (data: string) => {
       let record = JSON.parse(data);
-        this.favoriteChartListEL?.removeAllCollectRow();
-        let currentGroup = this.currentCollectGroup;
-        if (record.G1) {
-          this.currentCollectGroup = '1';
-          this.restoreRecordCollectRows(record.G1);
-        }
-        if (record.G2) {
-          this.currentCollectGroup = '2';
-          this.restoreRecordCollectRows(record.G2);
-        }
-        this.restoreRecordExpandAndTimeRange(record);
-        this.currentCollectGroup = currentGroup;
-        if (record.drawFlag !== undefined) {
-          this.timerShaftEL!.sportRuler!.flagList = record.drawFlag;//获取下载时存的旗帜信息
-          this.selectFlag = this.timerShaftEL!.sportRuler!.flagList.find((it) => it.selected);//绘制被选中旗帜对应的线
-        }
-        if (record.markFlag !== undefined) {
-          this.timerShaftEL!.sportRuler!.slicesTimeList = record.markFlag;//获取下载时存的M键信息
-        }
-        TraceRow.range!.refresh = true;
-        this.refreshCanvas(true);
-        this.restoreRecordScrollTop(record.scrollTop, record.favoriteScrollTop);
-        // @ts-ignore
-        document.querySelector('body > sp-application').shadowRoot.querySelector('#lit-search').shadowRoot.querySelector('div.root > input')!.value = record.search ? record.search : '';
-        // @ts-ignore
-        document.querySelector('body > sp-application').shadowRoot.querySelector('#lit-search')!.valueChangeHandler!(record.search ? record.search : '');
+      this.favoriteChartListEL?.removeAllCollectRow();
+      let currentGroup = this.currentCollectGroup;
+      if (record.G1) {
+        this.currentCollectGroup = '1';
+        this.restoreRecordCollectRows(record.G1);
+      }
+      if (record.G2) {
+        this.currentCollectGroup = '2';
+        this.restoreRecordCollectRows(record.G2);
+      }
+      this.restoreRecordExpandAndTimeRange(record);
+      this.currentCollectGroup = currentGroup;
+      if (record.drawFlag !== undefined) {
+        this.timerShaftEL!.sportRuler!.flagList = record.drawFlag;//获取下载时存的旗帜信息
+        this.selectFlag = this.timerShaftEL!.sportRuler!.flagList.find((it) => it.selected);//绘制被选中旗帜对应的线
+      }
+      if (record.markFlag !== undefined) {
+        this.timerShaftEL!.sportRuler!.slicesTimeList = record.markFlag;//获取下载时存的M键信息
+      }
+      TraceRow.range!.refresh = true;
+      this.refreshCanvas(true);
+      this.restoreRecordScrollTop(record.scrollTop, record.favoriteScrollTop);
+      // @ts-ignore
+      document.querySelector('body > sp-application').shadowRoot.querySelector('#lit-search').shadowRoot.querySelector('div.root > input')!.value = record.search ? record.search : '';
+      // @ts-ignore
+      document.querySelector('body > sp-application').shadowRoot.querySelector('#lit-search')!.valueChangeHandler!(record.search ? record.search : '');
     });
   }
 
@@ -1921,7 +1921,7 @@ export class SpSystemTrace extends BaseElement {
     // @ts-ignore
     if (record.leftNS && record.rightNS) {
       // @ts-ignore
-    this.timerShaftEL?.setRangeNS(record.leftNS, record.rightNS);
+      this.timerShaftEL?.setRangeNS(record.leftNS, record.rightNS);
     }
   }
 
@@ -2271,7 +2271,7 @@ export class SpSystemTrace extends BaseElement {
   loadDatabaseArrayBuffer(
     buf: ArrayBuffer,
     thirdPartyWasmConfigUrl: string,
-    configUrl:string,
+    configUrl: string,
     progress: (name: string, percent: number) => void,
     isDistributed: boolean,
     complete?: ((res: { status: boolean; msg: string }) => void) | undefined,
@@ -2813,6 +2813,9 @@ export class SpSystemTrace extends BaseElement {
   }
 
   resetDistributedLine(): void {
+    if (FuncStruct.selectLineFuncStruct.length > 5) {
+      return;
+    }
     if (FuncStruct.selectFuncStruct) {
       let dataList = FuncStruct.selectLineFuncStruct;
       this.removeLinkLinesByBusinessType('distributed');
