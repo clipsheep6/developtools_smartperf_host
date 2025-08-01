@@ -39,7 +39,7 @@ describe('FrameJanksReceiver Test', () => {
   let expectData = {
     frameData: {
       appDur: 16634548,
-      cmdline: "com.huawei.wx",
+      cmdline: "com.wx",
       depth: 2,
       dur: 33269438,
       frameType: "frameTime",

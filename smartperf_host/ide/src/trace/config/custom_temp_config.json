@@ -101,10 +101,6 @@
             {
               "chartName": "accountmgr",
               "chartId": ""
-            },
-            {
-              "chartName": "huawei_id_svc",
-              "chartId": ""
             }
           ]
         }
@@ -506,18 +502,6 @@
             {
               "chartName": "hiview",
               "chartId": ""
-            },
-            {
-              "chartName": "com.huawei.ohos.hiviewx",
-              "chartId": ""
-            },
-            {
-              "chartName": "com.huawei.ohos.hiviewx（nweb）",
-              "chartId": ""
-            },
-            {
-              "chartName": "com.huawei.ohos.hiviewx:workScheduler",
-              "chartId": ""
             }
           ]
         },
@@ -812,7 +796,7 @@
           "component": "location",
           "charts": [
             {
-              "chartName": "com.huawei.hmos.location",
+              "chartName": "",
               "chartId": ""
             }
           ]
@@ -880,7 +864,7 @@
           "component": "updater",
           "charts": [
             {
-              "chartName": "com.huawei.hmos.migrateclient",
+              "chartName": "",
               "chartId": ""
             },
             {
@@ -888,7 +872,7 @@
               "chartId": ""
             },
             {
-              "chartName": "com.huawei.hmos.ouc",
+              "chartName": "",
               "chartId": ""
             }
           ]
