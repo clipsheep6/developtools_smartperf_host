@@ -14,7 +14,7 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
-import("../../../../../build/config.gni")
+import("../../../../build/config.gni")
 hiprofiler_fuzz_output_path = "hiprofiler/hiprofiler"
 
 ##############################fuzztest##########################################

@@ -16,7 +16,7 @@
       "standard"
     ],
     "hisysevent_config": [
-      "//developtools/smartperf_host/hisysevent.yaml"
+      "//developtools/smartperf_host/smartperf_device/hisysevent.yaml"
     ],
     "rom": "188KB",
     "ram": "2000KB",

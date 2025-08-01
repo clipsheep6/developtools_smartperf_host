@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-OHOS_SMARTPERF_HOST_DIR = get_path_info("..", "abspath")
+OHOS_SMARTPERF_HOST_DIR = get_path_info("../..", "abspath")
 
 OHOS_SMARTPERF_DEVICE_SUBSYS_NAME = "developtools"
 OHOS_SMARTPERF_DEVICE_PART_NAME = "smartperf_host"

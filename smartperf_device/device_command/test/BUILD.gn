@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
-import("../../../build/config.gni")
+import("../../build/config.gni")
 
 module_output_path = "${OHOS_SMARTPERF_DEVICE_TEST_MODULE_OUTPUT_PATH}/sp_daemon"
 config("module_private_config") {
