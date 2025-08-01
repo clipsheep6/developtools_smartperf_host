@@ -2813,6 +2813,9 @@ export class SpSystemTrace extends BaseElement {
   }
 
   resetDistributedLine(): void {
+    if(FuncStruct.selectLineFuncStruct.length > 5) {
+      return;
+    }
     if (FuncStruct.selectFuncStruct) {
       let dataList = FuncStruct.selectLineFuncStruct;
       this.removeLinkLinesByBusinessType('distributed');
