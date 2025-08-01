@@ -615,3 +615,12 @@ export function addExportDBToParentEvent() {
     }
   });
 }
+
+export function loadTraceCompleteEvent() {
+  if (window?.parent) {
+      window.parent.postMessage({
+        name:'trace_load_complete',
+        data: null
+      }, '*');
+    }
+}
