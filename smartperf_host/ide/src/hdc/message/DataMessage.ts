@@ -45,6 +45,7 @@ export class DataMessage extends Object {
     let headSize = resultPayloadHead.headSize;
     let dataSize = resultPayloadHead.dataSize;
     let resultPlayProtectBuffer = this.body!.buffer.slice(11, 11 + headSize);
+    // @ts-ignore
     let payloadProtect = Serialize.parsePayloadProtect(resultPlayProtectBuffer);
     this._channelId = payloadProtect.channelId;
     this._commandFlag = payloadProtect.commandFlag;
@@ -53,6 +54,7 @@ export class DataMessage extends Object {
       this._channelClose = true;
     } else {
       if (dataSize > 0) {
+        // @ts-ignore
         this._resArrayBuffer = this.body!.buffer.slice(11 + headSize, 11 + headSize + dataSize);
       }
     }
