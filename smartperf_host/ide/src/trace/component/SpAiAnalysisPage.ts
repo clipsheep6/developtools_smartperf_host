@@ -723,6 +723,7 @@ export class SpAiAnalysisPage extends BaseElement {
             (reqBufferDB: Uint8Array) => {
                 WebSocketManager.getInstance()!.sendMessage(TypeConstants.DIAGNOSIS_TYPE, TypeConstants.SENDDB_CMD, reqBufferDB);
                 // 存入缓存
+                // @ts-ignore
                 const blob = new Blob([reqBufferDB]);
                 const response = new Response(blob);
                 caches.open('DB-file').then(cache => {

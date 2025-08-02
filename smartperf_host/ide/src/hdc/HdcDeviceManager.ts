@@ -294,6 +294,7 @@ export class HdcDeviceManager {
       }
       await hdcStream.closeStream();
       if (finalBuffer) {
+    // @ts-ignore
         return Promise.resolve(new Blob([finalBuffer]));
       }
       return Promise.resolve(new Blob());

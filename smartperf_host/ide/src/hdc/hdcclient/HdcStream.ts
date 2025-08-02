@@ -102,6 +102,7 @@ export class HdcStream {
       let fileRecvResultPayloadHead: PayloadHead = PayloadHead.parsePlayHead(new DataView(fileRecvPlayHeadArray));
       let fileRecvHeadSize = fileRecvResultPayloadHead.headSize;
       let resPlayProtectBuffer = fileRecvDataMessage.body!.buffer.slice(11, 11 + fileRecvHeadSize);
+    // @ts-ignore
       Serialize.parsePayloadProtect(resPlayProtectBuffer);
       await this.handleCommandFileCheck();
     }
@@ -117,6 +118,7 @@ export class HdcStream {
       PayloadHead.getPayloadHeadLength(),
       PayloadHead.getPayloadHeadLength() + fileCheckHeadSize
     );
+    // @ts-ignore
     let fileCheckPayloadProtect = Serialize.parsePayloadProtect(fileCheckResPlayProtectBuffer);
     if (fileCheckPayloadProtect.commandFlag === HdcCommand.CMD_FILE_CHECK) {
       if (fileCheckDataSize > 0) {
@@ -124,6 +126,7 @@ export class HdcStream {
           PayloadHead.getPayloadHeadLength() + fileCheckHeadSize,
           PayloadHead.getPayloadHeadLength() + fileCheckHeadSize + fileCheckDataSize
         );
+        // @ts-ignore
         let fileCheckTransferConfig = Serialize.parseTransferConfig(fileCheckTransferConfigBuffer);
         this.fileSize = fileCheckTransferConfig.fileSize;
       }

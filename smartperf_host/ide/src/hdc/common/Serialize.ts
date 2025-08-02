@@ -211,6 +211,7 @@ export class Serialize {
     let bannerLengthBuf = bannerBuffer.slice(this.writeVarIntU32(this.makeTagWireType(bannerTag, WireType.LENGTH_DELIMETED)).length);
     let bannerSize = this.readVarIntU32(new DataView(bannerLengthBuf));
     let bannerDataBuffer = bannerLengthBuf.slice(this.writeVarIntU32(bannerSize).length);
+    // @ts-ignore
     let banner = this.parseString(bannerDataBuffer, bannerSize);
 
     // authType
@@ -233,6 +234,7 @@ export class Serialize {
     let connectLengthBuffer = connectKeyBuffer.slice(this.writeVarIntU32(this.makeTagWireType(connectKeyTag, WireType.LENGTH_DELIMETED)).length);
     let connectKeySize = this.readVarIntU32(new DataView(connectLengthBuffer));
     let connectDataBuffer = connectLengthBuffer.slice(this.writeVarIntU32(connectKeySize).length);
+    // @ts-ignore
     let connectKey = this.parseString(connectDataBuffer, connectKeySize);
 
     // buf
@@ -241,6 +243,7 @@ export class Serialize {
     let lengthBuffer = bufBuffer.slice(this.writeVarIntU32(this.makeTagWireType(bufTag, WireType.LENGTH_DELIMETED)).length);
     let bufSize = this.readVarIntU32(new DataView(lengthBuffer));
     let dataBuffer = lengthBuffer.slice(this.writeVarIntU32(bufSize).length);
+    // @ts-ignore
     let buf = this.parseString(dataBuffer, bufSize);
 
     // version
@@ -249,6 +252,7 @@ export class Serialize {
     let versionLengthBuffer = versionBuffer.slice(this.writeVarIntU32(this.makeTagWireType(versionTag, WireType.LENGTH_DELIMETED)).length);
     let versionSize = this.readVarIntU32(new DataView(versionLengthBuffer));
     let versionDataBuffer = versionLengthBuffer.slice(this.writeVarIntU32(versionSize).length);
+    // @ts-ignore
     let version = this.parseString(versionDataBuffer, versionSize);
     return new SessionHandShake(banner, authType, sessionId, connectKey, buf, version);
   }

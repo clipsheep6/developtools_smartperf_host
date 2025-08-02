@@ -108,7 +108,9 @@ export class DataProcessing {
     finalBuf.set(data, dataView.byteLength + pbs.byteLength);
     if (this.transmissionChannel) {
       let header = this.buildPacketHeader(sessionId, UsbProtocolOption.USB_OPTION_HEADER, finalBufSize);
+    // @ts-ignore
       await this.transmissionChannel.writeData(header);
+    // @ts-ignore
       await this.transmissionChannel.writeData(finalBuf);
       return true;
     } else {

@@ -307,6 +307,7 @@ function initModuleCallBackAndFun(): void {
       arr = merged();
       bufferSlice.length = 0;
       ffrtFileCacheKey = `ffrt/${new Date().getTime()}-${arr.buffer.byteLength}`;
+    // @ts-ignore
       saveTraceFileBuffer(ffrtFileCacheKey, arr.buffer);
     }
   };
@@ -1008,6 +1009,7 @@ async function handleAllTypeDataByLongTrace(
     for (let fileDataIndex = 0; fileDataIndex < dataArray.length; fileDataIndex++) {
       let receiveData = dataArray[fileDataIndex];
       if (receiveData.dataTypes === 'data') {
+    // @ts-ignore
         [currentChunkOffset, saveIndex, saveStartOffset, currentChunk] = await handleDataTypeBySplitLongTrace(
           receiveData,
           currentChunkOffset,
@@ -1020,6 +1022,7 @@ async function handleAllTypeDataByLongTrace(
         );
       } else {
         if (receiveData.data.length > 0) {
+    // @ts-ignore
           [currentChunkOffset, saveIndex, saveStartOffset, currentChunk] = await handleJsonTypeBySplitLongTrace(
             receiveData,
             allIndexDataList,
