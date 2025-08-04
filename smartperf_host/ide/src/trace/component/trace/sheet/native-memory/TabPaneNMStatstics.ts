@@ -76,6 +76,11 @@ export class TabPaneNMStatstics extends BaseElement {
   queryData(nativeStatisticsParam: SelectionParam): void {
     Promise.all([
       queryNativeHookStatistics(nativeStatisticsParam.leftNs, nativeStatisticsParam.rightNs, this.currentSelectIPid),
+      queryNativeHookStatisticsSubType(
+        nativeStatisticsParam.leftNs,
+        nativeStatisticsParam.rightNs,
+        this.currentSelectIPid
+      ),
       queryNativeHookStatisticsMalloc(
         nativeStatisticsParam.leftNs,
         nativeStatisticsParam.rightNs,
@@ -89,7 +94,7 @@ export class TabPaneNMStatstics extends BaseElement {
       let index3 = nativeStatisticsParam.nativeMemory.indexOf(this.nativeType[2]);
       this.setMemoryTypeData(nativeStatisticsParam, values[0], arr);
       if (index1 !== -1 || index3 !== -1) {
-        this.setSubTypeTableData([values[0][1]], arr);
+        this.setSubTypeTableData(values[1], arr);
       }
       let type = 0;
       if (index1 !== -1 || (index2 !== -1 && index3 !== -1)) {
@@ -97,7 +102,7 @@ export class TabPaneNMStatstics extends BaseElement {
       } else {
         type = index2 !== -1 ? 1 : 2;
       }
-      this.setMallocTableData(values[1], arr, type);
+      this.setMallocTableData(values[2], arr, type);
       this.nativeStatisticsSource = arr;
       this.sortByColumn(this.sortColumn, this.sortType);
     });
