@@ -529,7 +529,6 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			fmt.Println(url, written)
-			pth = "/application" + pth
 			resp(&w)(true, 0, "success", map[string]interface{}{
 				"url":  pth,
 				"size": written,
