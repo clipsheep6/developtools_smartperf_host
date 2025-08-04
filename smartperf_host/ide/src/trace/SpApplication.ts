@@ -808,10 +808,11 @@ export class SpApplication extends BaseElement {
         } else {
           fileName = path.split('/').reverse()[0];
         }
+        localPath = localPath.substr(1);
         this.traceFileName = fileName;
         showFileName = fileName.lastIndexOf('.') === -1 ? fileName : fileName.substring(0, fileName.lastIndexOf('.'));
         TraceRow.rangeSelectObject = undefined;
-        let localUrl = downloadLineFile ? `${window.location.origin}${localPath}` : fullUrl!;
+        let localUrl = downloadLineFile ? `${window.location.origin}${window.location.pathname}${localPath}` : fullUrl!;
         fetch(localUrl)
           .then((res) => {
             res.arrayBuffer().then((arrayBuf) => {
