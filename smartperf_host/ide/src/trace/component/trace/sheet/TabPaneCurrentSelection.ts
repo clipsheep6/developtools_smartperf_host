@@ -72,6 +72,7 @@ import { XpowerWifiStruct } from '../../../database/ui-worker/ProcedureWorkerXpo
 import { XpowerThreadCountStruct } from '../../../database/ui-worker/ProcedureWorkerXpowerThreadCount';
 import { XpowerGpuFreqCountStruct } from '../../../database/ui-worker/ProcedureWorkerXpowerGpuFreqCount';
 import { ThreadSysCallStruct } from '../../../database/ui-worker/ProcedureWorkerThreadSysCall';
+import { InterfaceConfigManager } from '../../../../utils/interfaceConfiguration';
 
 const INPUT_WORD =
   'This is the interval from when the task became eligible to run \n(e.g.because of notifying a wait queue it was a suspended on) to\n when it started running.';
@@ -429,9 +430,11 @@ export class TabPaneCurrentSelection extends BaseElement {
       let informationList: Array<FunDetail> = FunDetailList.filter((v: FunDetail) => {
         return v.slice.indexOf(name) > -1 || name.indexOf(v.slice) > -1;
       });
+      const currentConfig = InterfaceConfigManager.getConfig()?.traceInfoConfig;
       information = informationList && informationList.length > 0 ? informationList[0].CN :
         `<div style="white-space: nowrap;display: flex;align-items: center">
            <div style="white-space:pre-wrap">无相关描述，如您知道具体含义可点击反馈</div>
+               ${currentConfig!.content || ''}
                <lit-icon style="cursor:pointer;margin-left: 5px; margin-top:5px" id="informationJump" name="select" color="#7fa1e7" size="20">
                </lit-icon>
            </a>
