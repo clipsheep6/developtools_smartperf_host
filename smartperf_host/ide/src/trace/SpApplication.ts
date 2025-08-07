@@ -85,14 +85,12 @@ import '../base-ui/chart/scatter/LitChartScatter';
 import { SpThirdParty } from './component/SpThirdParty';
 import './component/SpThirdParty';
 import { cancelCurrentTraceRowHighlight } from './component/SpSystemTrace.init';
-import './component/SpBubblesAI';
 import './component/SpAiAnalysisPage';
 import './component/SpSnapShotView';
 import { WebSocketManager } from '../webSocket/WebSocketManager';
 import { SpAiAnalysisPage } from './component/SpAiAnalysisPage';
 import './component/SpAdvertisement';
 import { ShadowRootInput } from './component/trace/base/ShadowRootInput';
-import { SpBubblesAI } from './component/SpBubblesAI';
 import { SpSnapShotView } from './component/SpSnapShotView';
 import { SnapShotStruct } from './database/ui-worker/ProcedureWorkerSnaps';
 import { InterfaceConfigManager } from '../utils/interfaceConfiguration';
@@ -324,7 +322,6 @@ export class SpApplication extends BaseElement {
     this.contentLeftOption = this.shadowRoot?.querySelector<HTMLDivElement>('.content-left-option');
     this.contentCenterOption = this.shadowRoot?.querySelector<HTMLDivElement>('.content-center-option');
     this.spAiAnalysisPage = this.shadowRoot!.querySelector('#sp-ai-analysis') as SpAiAnalysisPage;
-    let xiaoLubanEl: HTMLElement | null = this.shadowRoot!.querySelector<HTMLElement>('#sp-bubbles');
     SpApplication.spSnapShotView = this.shadowRoot!.querySelector('#sp-snapshot-view') as SpSnapShotView;
     this.initElementsAttr();
     this.initEvents();
@@ -337,7 +334,6 @@ export class SpApplication extends BaseElement {
     this.initGlobalEvents();
     this.initDocumentListener();
     this.initElementsEnd();
-    this.dragXiaolubanEvents(xiaoLubanEl!);
     this.connectWebSocket();
     this.initPlugin();
     SpApplication.spSnapShotView!.addEventListener('mousemove', () => {
@@ -388,24 +384,6 @@ export class SpApplication extends BaseElement {
     } catch (e) {
       console.error(e);
     }
-  }
-
-  private dragXiaolubanEvents(xiaoLubanEl: HTMLElement): void {
-    document.querySelector('body')!.addEventListener('dragover', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    });
-    document.querySelector('body')!.addEventListener('drop', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      if (!SpBubblesAI.isAIHover) {
-        return;
-      };
-      const x = event.clientX - 15 < 0 ? 0 : event.clientX - 15;
-      const y = event.clientY - 15 < 0 ? 0 : event.clientY - 15;
-      xiaoLubanEl!.style.left = `${x}px`;
-      xiaoLubanEl!.style.top = `${y}px`;
-    });
   }
   private connectWebSocket(): void {
     document.addEventListener('DOMContentLoaded', function () {//
