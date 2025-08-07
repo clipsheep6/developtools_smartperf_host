@@ -95,6 +95,7 @@ import { ShadowRootInput } from './component/trace/base/ShadowRootInput';
 import { SpBubblesAI } from './component/SpBubblesAI';
 import { SpSnapShotView } from './component/SpSnapShotView';
 import { SnapShotStruct } from './database/ui-worker/ProcedureWorkerSnaps';
+import { InterfaceConfigManager } from '../utils/interfaceConfiguration';
 
 @element('sp-application')
 export class SpApplication extends BaseElement {
@@ -186,6 +187,7 @@ export class SpApplication extends BaseElement {
   isClear: boolean = false;
   isOpenTrace: boolean = false;
   static spSnapShotView: SpSnapShotView | undefined | null;
+  private spBulletinPage: HTMLDivElement | undefined | null;
 
   static get observedAttributes(): Array<string> {
     return ['server', 'sqlite', 'wasm', 'dark', 'vs', 'query-sql', 'subsection'];
@@ -282,40 +284,13 @@ export class SpApplication extends BaseElement {
     return applicationHtml;
   }
 
-  initPlugin(): void {
-    let url = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
-      }${window.location.pathname}serverInfo`;
-    fetch(url, { method: 'GET' }).then((res) => {
-      if (res.headers) {
-        const headers = res.headers;
-        SpStatisticsHttpUtil.requestServerInfo = headers.get('request_info')!;
-        SpStatisticsHttpUtil.initStatisticsServerConfig();
-        SpStatisticsHttpUtil.addUserVisitAction('visit');
-      }
-    })
-    let aiurl = `${window.location.protocol}//${window.location.host.split(':')[0]}:${window.location.port
-      }${window.location.pathname}getAiInfo`;
-    fetch(aiurl, { method: 'GET' }).then((res) => {
-      if (res.headers) {
-        const headers = res.headers;
-        let aiAnalysisShow = this.shadowRoot
-        ?.querySelector('lit-main-menu')!
-        .shadowRoot!.querySelector('.ai_analysis') as HTMLDivElement;
-        if (headers.get('ai_info') !== '') {
-          aiAnalysisShow.style.display = '';
-        }
-      }
-    })
-    LongTraceDBUtils.getInstance().createDBAndTable().then();
-  }
-
   initElements(): void {
     this.wasm = true;
-    this.initPlugin();
     this.querySql = true;
     this.rootEL = this.shadowRoot!.querySelector<HTMLDivElement>('.root');
     this.headerDiv = this.shadowRoot!.querySelector<HTMLDivElement>('.search-vessel');
     this.spWelcomePage = this.shadowRoot!.querySelector('#sp-welcome') as SpWelcomePage;
+    this.spBulletinPage = this.spWelcomePage.shadowRoot?.querySelector('.home-page');
     this.spMetrics = this.shadowRoot!.querySelector<SpMetrics>('#sp-metrics') as SpMetrics; // new SpMetrics();
     this.spQuerySQL = this.shadowRoot!.querySelector<SpQuerySQL>('#sp-query-sql') as SpQuerySQL; // new SpQuerySQL();
     this.spInfoAndStats = this.shadowRoot!.querySelector<SpInfoAndStats>('#sp-info-and-stats'); // new SpInfoAndStats();
@@ -364,6 +339,7 @@ export class SpApplication extends BaseElement {
     this.initElementsEnd();
     this.dragXiaolubanEvents(xiaoLubanEl!);
     this.connectWebSocket();
+    this.initPlugin();
     SpApplication.spSnapShotView!.addEventListener('mousemove', () => {
       this.clearSnapShot();
     })
@@ -380,6 +356,38 @@ export class SpApplication extends BaseElement {
     SnapShotStruct.hoverSnapShotStruct = undefined;
     SnapShotStruct.isClear = true;
     this.spSystemTrace?.refreshCanvas(true);
+  }
+
+  async initPlugin(): Promise<void> {
+    try {
+      await SpStatisticsHttpUtil.getServerInfo();
+      this.spBulletinPage = this.spWelcomePage!.shadowRoot?.querySelector('.home-page');
+      const litIcon = this.spWelcomePage!.shadowRoot?.querySelector('.lit-icon');
+      const currentConfig = InterfaceConfigManager.getConfig();
+      if (currentConfig?.bulletinConfig?.switch && currentConfig?.bulletinConfig?.content) {
+        this.spBulletinPage!.innerHTML = currentConfig.bulletinConfig.content;
+        this.spBulletinPage!.style.visibility = 'visible';
+        litIcon!.classList.add('adjust');
+      } else {
+        this.spBulletinPage!.style.visibility = 'hidden';
+        litIcon!.classList.remove('adjust');
+      }
+      if (currentConfig?.reportConfig.switch) {
+        SpStatisticsHttpUtil.requestServerInfo = currentConfig?.reportConfig.url;
+        SpStatisticsHttpUtil.initStatisticsServerConfig();
+        SpStatisticsHttpUtil.addUserVisitAction('visit');
+      }
+
+      let aiAnalysisShow = this.shadowRoot?.querySelector('lit-main-menu')!.shadowRoot!.querySelector('.ai_analysis') as HTMLDivElement;
+      if (currentConfig?.aiAssistantConfig.switch) {
+        aiAnalysisShow.style.display = 'block';
+      } else {
+        aiAnalysisShow.style.display = 'none';
+      }
+      LongTraceDBUtils.getInstance().createDBAndTable().then();
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   private dragXiaolubanEvents(xiaoLubanEl: HTMLElement): void {
@@ -442,6 +450,7 @@ export class SpApplication extends BaseElement {
       this.spSystemTrace,
       this.spRecordTrace,
       this.spWelcomePage,
+      this.spBulletinPage,
       this.spAiAnalysisPage,
       this.spMetrics,
       this.spQuerySQL,
