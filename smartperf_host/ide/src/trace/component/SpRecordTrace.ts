@@ -319,11 +319,14 @@ export class SpRecordTrace extends BaseElement {
   }
 
   private getDeviceVersion(version: string): string {
+    let versionNum = parseInt((version.split(" ")[1])[0]);
     if (version.indexOf('3.2') !== -1) {
       return '3.2';
     } else if (version.indexOf('4.') !== -1) {
       return '4.0+';
     } else if (version.indexOf('5.') !== -1) {
+      return '5.0+';
+    } else if (versionNum > 5) {
       return '5.0+';
     }
     return '3.2';
