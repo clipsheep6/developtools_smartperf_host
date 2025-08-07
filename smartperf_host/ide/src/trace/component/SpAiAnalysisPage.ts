@@ -112,7 +112,7 @@ export class SpAiAnalysisPage extends BaseElement {
             // @ts-ignore
             tokens[idx].attrPush(['rel', 'noopener noreferrer']); // 推荐添加 rel="noopener noreferrer" 以提高安全性
             // @ts-ignore
-            return `<a href="${tokens[idx].attrs[href][1]}" target="_blank" rel="noopener noreferrer">`;
+            return `<p><a href="${tokens[idx].attrs[href][1]}" target="_blank" rel="noopener noreferrer"></p>`;
         };
         let aiAssistant = document.querySelector('body > sp-application')!.shadowRoot!.querySelector('#sp-ai-analysis');
         this.chatBar = this.shadowRoot?.querySelector('.chatBar');
