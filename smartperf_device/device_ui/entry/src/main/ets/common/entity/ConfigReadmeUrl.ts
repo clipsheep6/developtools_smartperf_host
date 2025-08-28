@@ -12,6 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CONFIG = {
-  SP_TOOL_HELP_URL: 'https://gitee.com/openharmony/developtools_profiler/blob/master/host/smartperf/client/client_ui/README_zh.md',
+export const configReadme = {
+  SP_README_HELP_URL: 'https://gitee.com/openharmony/developtools_profiler/blob/master/host/smartperf/client/client_ui/README_zh.md',
 };
