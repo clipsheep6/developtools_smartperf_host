@@ -145,7 +145,7 @@ export class QuestionItem {
   }
 }
 
-export const DOCUMENTATION_URL = 'https://gitee.com/openharmony/developtools_smartperf_host/blob/master/smartperf_device/device_ui/README_zh.md';
+const DOCUMENTATION_URL = 'https://gitee.com/openharmony/developtools_smartperf_host/blob/master/smartperf_device/device_ui/README_zh.md';
 export const questionList = new Array(
   new QuestionItem(
     '1.SP工具怎么使用',
