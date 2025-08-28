@@ -145,12 +145,12 @@ export class QuestionItem {
   }
 }
 
-const configReadme = 'developtools_smartperf_host/smartperf_device/device_ui/README_zh.md';
+export const configReadme = 'developtools_smartperf_host/smartperf_device/device_ui/README_zh.md';
 
 export const questionList = new Array(
   new QuestionItem(
     '1.SP工具怎么使用',
-    '有关详细指南, 访问路径OpenHarmony仓: ${configReadme}'
+    '有关详细指南, 访问OpenHarmony仓路径: ' + configReadme
   ),
   new QuestionItem('2.SP工具支持FPS采集吗?', '可以, fps依赖Hidumper能力..'),
   new QuestionItem('3.SP工具支持RAM采集吗?', 'ram采集目前是 读取进程节点内存信息中的PSS值...'),
