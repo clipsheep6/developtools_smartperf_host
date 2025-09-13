@@ -478,20 +478,27 @@ std::string FPS::FindFpsRefreshrate()
 
 std::string FPS::GetHardenRefreshrate(std::string &screenInfo) const
 {
-    if (screenInfo.empty()) {
-        SPUtils::LoadCmd(HIDUMPER_CMD_MAP.at(HidumperCmd::DUMPER_SCREEN), screenInfo);
-    }
     std::string value = "";
-    std::string refreshrate = "refreshrate=";
-    size_t activeModePos = screenInfo.find("activeMode:");
-    if (activeModePos != std::string::npos) {
-        size_t refreshRatePos = screenInfo.find(refreshrate, activeModePos);
-        if (refreshRatePos != std::string::npos) {
-            size_t endPos = screenInfo.find(" ", refreshRatePos);
-            if (endPos != std::string::npos) {
-                value = screenInfo.substr(refreshRatePos + refreshrate.length(),
-                endPos - refreshRatePos - refreshrate.length());
+    if (screenInfo.empty()) {
+        FILE *fd = popen(HIDUMPER_CMD_MAP.at(HidumperCmd::DUMPER_SCREEN).c_str(), "r");
+        if (fd == nullptr) {
+            LOGE("hidumper screen failed");
+            return "";
+        }
+        char buf[1024] = {'\0'};
+        while (fgets(buf, sizeof(buf), fd) != nullptr) {
+            std::string line = buf;
+            if (line.find("activeMode") != std::string::npos) {
+                std::string rate = "refreshRate=";
+                size_t pos = line.find(rate);
+                pos += rate.length();
+                value = line.substr(pos);
+                value.pop_back();
             }
+        }
+        if (pclose(fd) == -1) {
+            LOGE("Error : failed to close file");
+            return "";
         }
     }
     return value;
